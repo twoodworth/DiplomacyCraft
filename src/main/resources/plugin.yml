@@ -4,6 +4,6 @@ version: 0.1.0
 
 commands:
   plot:
-    description: A simple description.
-    aliases: [foobar, fubar]
-    usage: "Usage: /<command> [test|stop]"
+    description: Manage a plot.
+    aliases: [p]
+    usage: "Usage: /<command> ..."
