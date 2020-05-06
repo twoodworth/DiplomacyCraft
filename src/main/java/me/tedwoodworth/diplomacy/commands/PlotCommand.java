@@ -2,6 +2,8 @@ package me.tedwoodworth.diplomacy.commands;
 
 import org.bukkit.command.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
@@ -76,7 +78,35 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return null;
+        if (args.length == 0) {
+            return null;
+        } else {
+            if (args.length == 1) {
+                return Arrays.asList("claim", "transfer", "forsale", "notforsale", "buy", "evict", "permission");
+            } else if(args[0].equalsIgnoreCase("claim")) {
+                return null;
+            } else if(args[0].equalsIgnoreCase("transfer")) {
+                return null; // TODO list nations
+            } else if(args[0].equalsIgnoreCase("forsale")) {
+                return null;
+            } else if(args[0].equalsIgnoreCase("notforsale")) {
+                return null;
+            } else if(args[0].equalsIgnoreCase("buy")) {
+                return null;
+            } else if(args[0].equalsIgnoreCase("evict")) {
+                return null;
+            } else if(args[0].equalsIgnoreCase("permission")) {
+                if(args.length == 2) {
+                    return Arrays.asList("citizen", "ally", "outsider");
+                } else if(args.length == 3) {
+                    return Arrays.asList("allow", "deny");
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
     }
 
     private void plot(CommandSender sender) {
