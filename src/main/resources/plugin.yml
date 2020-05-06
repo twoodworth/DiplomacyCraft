@@ -1,0 +1,9 @@
+name: diplomacy
+main: me.tedwoodworth.diplomacy.Diplomacy
+version: 0.1.0
+
+commands:
+  plot:
+    description: A simple description.
+    aliases: [foobar, fubar]
+    usage: "Usage: /<command> [test|stop]"
