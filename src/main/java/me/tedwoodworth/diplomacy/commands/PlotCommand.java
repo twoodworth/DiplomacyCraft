@@ -56,7 +56,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     }
 
     private void plotClaim(CommandSender sender){
-        
+
     }
 
     private void plotTransfer(CommandSender sender, String nation){
