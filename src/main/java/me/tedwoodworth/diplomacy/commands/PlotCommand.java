@@ -8,13 +8,14 @@ import java.util.List;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotUsage = "/plot ...";
-    private static final String plotClaimUsage = "/plot claim";
-    private static final String plotTransferUsage = "/plot transfer <nation>";
+    private static final String plotContestUsage = "/plot contest";
+    private static final String plotSurrenderUsage = "/plot surrender <nation>";
     private static final String plotForsaleUsage = "/plot forsale <price>";
     private static final String plotNotforsaleUsage = "/plot notforsale";
     private static final String plotBuyUsage = "/plot buy";
     private static final String plotEvictUsage = "/plot evict";
-    private static final String plotPermissionUsage = "/plot permission (citizen|ally|outsider) (allow|deny)";
+    private static final String plotSetUsage = "/plot set (public|private)";
+
 
     public static void register(PluginCommand pluginCommand) {
         PlotCommand plotCommand = new PlotCommand();
@@ -27,17 +28,17 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             plot(sender);
-        } else if (args[0].equalsIgnoreCase("claim")) {
+        } else if (args[0].equalsIgnoreCase("contest")) {
             if (args.length == 1) {
-                plotClaim(sender);
+                plotContest(sender);
             } else {
-                sender.sendMessage(plotClaimUsage);
+                sender.sendMessage(plotContestUsage);
             }
-        } else if (args[0].equalsIgnoreCase("transfer")) {
+        } else if (args[0].equalsIgnoreCase("surrender")) {
             if (args.length == 2) {
-                plotTransfer(sender, args[1]);
+                plotSurrender(sender, args[1]);
             } else {
-                sender.sendMessage(plotTransferUsage);
+                sender.sendMessage(plotSurrenderUsage);
             }
         } else if (args[0].equalsIgnoreCase("forsale")) {
             if (args.length == 2) {
@@ -63,11 +64,17 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(plotEvictUsage);
             }
-        } else if (args[0].equalsIgnoreCase("permission")) {
-            if (args.length == 3) {
-                plotPermission(sender, args[1], args[2]);
+        } else if (args[0].equalsIgnoreCase("set")) {
+            if (args.length > 1) {
+                if(args[1].equalsIgnoreCase("public")) {
+                    plotSetPrivate(sender);
+                } else if(args[1].equalsIgnoreCase("private")) {
+                    plotSetPrivate(sender);
+                } else {
+                    sender.sendMessage(plotSetUsage);
+                }
             } else {
-                sender.sendMessage(plotPermissionUsage);
+                sender.sendMessage(plotEvictUsage);
             }
         } else {
             sender.sendMessage(plotUsage);
@@ -82,10 +89,10 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return null;
         } else {
             if (args.length == 1) {
-                return Arrays.asList("claim", "transfer", "forsale", "notforsale", "buy", "evict", "permission");
-            } else if(args[0].equalsIgnoreCase("claim")) {
+                return Arrays.asList("contest", "surrender", "forsale", "notforsale", "buy", "evict", "permission");
+            } else if(args[0].equalsIgnoreCase("contest")) {
                 return null;
-            } else if(args[0].equalsIgnoreCase("transfer")) {
+            } else if(args[0].equalsIgnoreCase("surrender")) {
                 return null; // TODO list nations
             } else if(args[0].equalsIgnoreCase("forsale")) {
                 return null;
@@ -95,11 +102,9 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                 return null;
             } else if(args[0].equalsIgnoreCase("evict")) {
                 return null;
-            } else if(args[0].equalsIgnoreCase("permission")) {
+            }else if(args[0].equalsIgnoreCase("set")) {
                 if(args.length == 2) {
-                    return Arrays.asList("citizen", "ally", "outsider");
-                } else if(args.length == 3) {
-                    return Arrays.asList("allow", "deny");
+                    return Arrays.asList("private", "public");
                 } else {
                     return null;
                 }
@@ -113,11 +118,11 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void plotClaim(CommandSender sender) {
+    private void plotContest(CommandSender sender) {
 
     }
 
-    private void plotTransfer(CommandSender sender, String nation) {
+    private void plotSurrender(CommandSender sender, String nation) {
 
     }
 
@@ -137,7 +142,11 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void plotPermission(CommandSender sender, String group, String access) {
+    private void plotSetPrivate(CommandSender sender) {
+
+    }
+
+    private void plotSetPublic(CommandSender sender) {
 
     }
 }
