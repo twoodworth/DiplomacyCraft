@@ -2,7 +2,6 @@ package me.tedwoodworth.diplomacy.commands;
 
 import org.bukkit.command.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,11 +9,10 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotUsage = "/plot ...";
     private static final String plotContestUsage = "/plot contest";
     private static final String plotSurrenderUsage = "/plot surrender <nation>";
-    private static final String plotForsaleUsage = "/plot forsale <price>";
-    private static final String plotNotforsaleUsage = "/plot notforsale";
-    private static final String plotBuyUsage = "/plot buy";
-    private static final String plotEvictUsage = "/plot evict";
-    private static final String plotSetUsage = "/plot set (public|private)";
+    private static final String plotGroupUsage = "/plot group ...";
+    private static final String plotGroupSetUsage = "/plot group set <group>";
+    private static final String plotGroupRemoveUsage = "/plot group remove";
+    private static final String plotClearUsage = "/plot clear";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -40,41 +38,29 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(plotSurrenderUsage);
             }
-        } else if (args[0].equalsIgnoreCase("forsale")) {
-            if (args.length == 2) {
-                plotForsale(sender, args[1]);
-            } else {
-                sender.sendMessage(plotForsaleUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("notforsale")) {
+        } else if (args[0].equalsIgnoreCase("group")) {
             if (args.length == 1) {
-                plotNotforsale(sender);
-            } else {
-                sender.sendMessage(plotNotforsaleUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("buy")) {
-            if (args.length == 1) {
-                plotBuy(sender);
-            } else {
-                sender.sendMessage(plotBuyUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("evict")) {
-            if (args.length == 1) {
-                plotEvict(sender);
-            } else {
-                sender.sendMessage(plotEvictUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("set")) {
-            if (args.length > 1) {
-                if(args[1].equalsIgnoreCase("public")) {
-                    plotSetPrivate(sender);
-                } else if(args[1].equalsIgnoreCase("private")) {
-                    plotSetPrivate(sender);
+                plotGroup(sender);
+            } else if (args[1].equalsIgnoreCase("set")) {
+                if (args.length == 3) {
+                    plotGroupSet(sender, args[2]);
                 } else {
-                    sender.sendMessage(plotSetUsage);
+                    sender.sendMessage(plotGroupSetUsage);
+                }
+            } else if (args[1].equalsIgnoreCase("remove")) {
+                if (args.length == 2) {
+                    plotGroupRemove(sender);
+                } else {
+                    sender.sendMessage(plotGroupRemoveUsage);
                 }
             } else {
-                sender.sendMessage(plotEvictUsage);
+                sender.sendMessage(plotGroupUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("clear")) {
+            if (args.length == 1) {
+                plotClear(sender);
+            } else {
+                sender.sendMessage(plotClearUsage);
             }
         } else {
             sender.sendMessage(plotUsage);
@@ -89,25 +75,19 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return null;
         } else {
             if (args.length == 1) {
-                return Arrays.asList("contest", "surrender", "forsale", "notforsale", "buy", "evict", "permission");
-            } else if(args[0].equalsIgnoreCase("contest")) {
+                return Arrays.asList("contest", "surrender", "group", "clear");
+            } else if (args[0].equalsIgnoreCase("contest")) {
                 return null;
-            } else if(args[0].equalsIgnoreCase("surrender")) {
+            } else if (args[0].equalsIgnoreCase("surrender")) {
                 return null; // TODO list nations
-            } else if(args[0].equalsIgnoreCase("forsale")) {
-                return null;
-            } else if(args[0].equalsIgnoreCase("notforsale")) {
-                return null;
-            } else if(args[0].equalsIgnoreCase("buy")) {
-                return null;
-            } else if(args[0].equalsIgnoreCase("evict")) {
-                return null;
-            }else if(args[0].equalsIgnoreCase("set")) {
-                if(args.length == 2) {
-                    return Arrays.asList("private", "public");
+            } else if (args[0].equalsIgnoreCase("group")) {
+                if (args.length == 2) {
+                    return Arrays.asList("set", "remove");
                 } else {
-                    return null;
+                    return null; // TODO List groups
                 }
+            } else if (args[0].equalsIgnoreCase("clear")) {
+                return null;
             } else {
                 return null;
             }
@@ -126,27 +106,19 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void plotForsale(CommandSender sender, String price) {
+    private void plotGroup(CommandSender sender) {
 
     }
 
-    private void plotNotforsale(CommandSender sender) {
+    private void plotGroupSet(CommandSender sender, String group) {
 
     }
 
-    private void plotBuy(CommandSender sender) {
+    private void plotGroupRemove(CommandSender sender) {
 
     }
 
-    private void plotEvict(CommandSender sender) {
-
-    }
-
-    private void plotSetPrivate(CommandSender sender) {
-
-    }
-
-    private void plotSetPublic(CommandSender sender) {
+    private void plotClear(CommandSender sender) {
 
     }
 }

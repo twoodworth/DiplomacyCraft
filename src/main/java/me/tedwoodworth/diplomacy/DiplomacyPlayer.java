@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.nations.Nation;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;

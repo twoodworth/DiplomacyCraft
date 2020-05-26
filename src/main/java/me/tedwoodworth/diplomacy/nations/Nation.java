@@ -1,10 +1,10 @@
-package me.tedwoodworth.diplomacy;
+package me.tedwoodworth.diplomacy.nations;
 
 public class Nation {
 
-    private String name;
+    private final String name;
 
-    public Nation(String name) {
+    Nation(String name) {
         this.name = name;
     }
 
