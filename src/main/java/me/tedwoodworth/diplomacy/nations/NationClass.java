@@ -1,6 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
-import java.util.List;
+import java.util.Map;
 
 public class NationClass {
 
@@ -8,10 +8,10 @@ public class NationClass {
     private String name;
     private String prefix;
     private int tax;
-    private List<Boolean> permissions;
+    private Map<String, Boolean> permissions;
     private String nationID;
 
-    public NationClass(int classID, String name, String prefix, int tax, List<Boolean> permissions, String nationID) {
+    public NationClass(int classID, String name, String prefix, int tax, Map<String, Boolean> permissions, String nationID) {
         this.classID = classID;
         this.name = name;
         this.prefix = prefix;

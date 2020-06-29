@@ -7,3 +7,8 @@ commands:
     description: Manage a plot.
     aliases: [p]
     usage: "Usage: /<command> ..."
+
+  nation:
+    description: Manage a nation.
+    aliases: [n]
+    usage: "Usage: /<command> ..."

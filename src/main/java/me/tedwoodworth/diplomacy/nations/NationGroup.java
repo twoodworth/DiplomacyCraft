@@ -5,9 +5,9 @@ import java.util.List;
 public class NationGroup {
     private int groupID;
     private String groupName;
-    private List<String> chunks;
+    private List<DiplomacyChunk> chunks;
 
-    public NationGroup(int groupID, String groupName, List<String> chunks) {
+    public NationGroup(int groupID, String groupName, List<DiplomacyChunk> chunks) {
         this.groupID = groupID;
         this.groupName = groupName;
         this.chunks = chunks;

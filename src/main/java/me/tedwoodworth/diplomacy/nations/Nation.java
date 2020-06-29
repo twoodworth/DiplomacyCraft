@@ -1,8 +1,8 @@
 package me.tedwoodworth.diplomacy.nations;
 
+import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.DiplomacyPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -11,59 +11,70 @@ import java.util.*;
 public class Nation {
 
     private static String nationID;
+    private String name;
     private List<UUID> leaderIDs;
     private List<NationClass> classes;
     private List<DiplomacyPlayer> members;
-    private int plotCount;
     private List<String> groups;
     private int balance;
-    private int created;
+    private long created;
     private UUID founderID;
     private String color;
     private List<UUID> outlawIDs;
     private List<String> allyNationIDs;
     private List<String> enemyNationIDs;
     private boolean isWilderness;
-    private Set<Chunk> chunks;
+    private List<DiplomacyChunk> chunks;
 
     Nation(String nationID, ConfigurationSection nationSection) {
-        String name = nationSection.getString("Name");
+        this.name = nationSection.getString("Name");
         this.leaderIDs = new ArrayList<>();
         List<String> leadersStr = nationSection.getStringList("Leaders");
         for (String LeaderID : leadersStr) {
             leaderIDs.add(UUID.fromString(LeaderID));
         }
 
-        List<NationClass> classes = new ArrayList<>(9);
-        for (int i = 0; i < 9; i++) {
-            int classID = i + 1;
-            String className = nationSection.getString("Classes." + classID + ".Name");
-            String classPrefix = nationSection.getString("Classes." + classID + ".Prefix");
-            int classTax = nationSection.getInt("Classes." + classID + ".Tax");
-            List<Boolean> classPermissions = nationSection.getBooleanList("Classes." + classID + ".Permissions");
+        this.classes = new ArrayList<>(9);
+        for (int classID = 0; classID < 9; classID++) {
+            ConfigurationSection classSection = nationSection.getConfigurationSection("Classes." + classID);
+            String className = classSection.getString("Name");
+            String classPrefix = classSection.getString("Prefix");
+            int classTax = classSection.getInt("Tax");
+            Map<String, Boolean> classPermissions = new HashMap<>();
+            ConfigurationSection permissionSection = classSection.getConfigurationSection("Permissions");
+            Set<String> permissionSet = permissionSection.getKeys(false);
+            for (String permission : permissionSet) {
+                classPermissions.put(permission, permissionSection.getBoolean(permission));
+            }
             NationClass nationClass = new NationClass(classID, className, classPrefix, classTax, classPermissions, nationID);
-            classes.set(i, nationClass);
+            classes.add(nationClass);
         }
 
         this.members = new ArrayList<>();
-        Set<String> membersStr = nationSection.getConfigurationSection("members").getKeys(true);
+        Set<String> membersStr = Objects.requireNonNull(nationSection.getConfigurationSection("Members")).getKeys(false);
         for (String memberID : membersStr) {
             OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(memberID));
-            NationClass nationClass = classes.get(nationSection.getInt("Members." + memberID + ".class"));
+            NationClass nationClass = classes.get(nationSection.getInt("Members." + memberID + ".Class"));
             List<String> groups = nationSection.getStringList("Members." + memberID + ".Groups");
             List<String> groupsLed = nationSection.getStringList("Members." + memberID + ".GroupsLed");
             DiplomacyPlayer member = new DiplomacyPlayer(player, UUID.fromString(memberID), nationID, nationClass, groups, groupsLed);
             members.add(member);
         }
 
-        this.plotCount = nationSection.getInt("name");
-        Set<String> groupIDs = nationSection.getConfigurationSection("groups").getKeys(true);
+        Set<String> stringGroupIDs = Objects.requireNonNull(nationSection.getConfigurationSection("Groups")).getKeys(false);
         List<NationGroup> groups = new ArrayList<>();
-        for (String groupID : groupIDs) {
-            List<String> chunks = nationSection.getStringList("Groups." + groupID + "Chunks");
+        for (String groupID : stringGroupIDs) {
             String groupName = nationSection.getString("Groups." + groupID + ".Name");
-            int intGroupID = Integer.parseInt(groupID);
-            NationGroup group = new NationGroup(intGroupID, groupName, chunks);
+            List<DiplomacyChunk> chunks = new ArrayList<>();
+            List<Map<?, ?>> chunkMaps = nationSection.getMapList("Groups." + groupID + ".Chunks");
+            for (Map map : chunkMaps) {
+                String world = String.valueOf(map.get("world"));
+                int x = (int) map.get("x");
+                int z = (int) map.get("z");
+                DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
+                chunks.add(chunk);
+            }
+            NationGroup group = new NationGroup(Integer.parseInt(groupID), groupName, chunks);
             groups.add(group);
         }
         this.balance = nationSection.getInt("Balance");
@@ -78,8 +89,30 @@ public class Nation {
         this.allyNationIDs = nationSection.getStringList("AllyNations");
         this.enemyNationIDs = nationSection.getStringList("EnemyNations");
         this.isWilderness = nationSection.getBoolean("IsWilderness");
-        this.chunks = new HashSet<>();
+
+        List<DiplomacyChunk> chunks = new ArrayList<>();
+        List<Map<?, ?>> chunkMaps = nationSection.getMapList("Chunks");
+        for (Map map : chunkMaps) {
+            String world = String.valueOf(map.get("world"));
+            int x = (int) map.get("x");
+            int z = (int) map.get("z");
+            DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
+            chunks.add(chunk);
+        }
+        this.chunks = chunks;
     }
+
+    public static void initializeNation(ConfigurationSection nationSection, OfflinePlayer leader) {
+        Map<String, Object> membersMap = ImmutableMap.of(
+                "Class", "8",
+                "Groups", DiplomacyPlayer.getGroups(leader.getUniqueId()),
+                "GroupsLed", DiplomacyPlayer.getGroupsLed(leader.getUniqueId()));
+
+        nationSection.createSection(nationSection + ".Members." + leader.getUniqueId(), membersMap);
+        nationSection.set("Founder", leader.getUniqueId());
+
+    }
+
 
     public static String getNationID() {
         return nationID;
@@ -88,4 +121,5 @@ public class Nation {
     public void setName(String nationID) {
         this.nationID = nationID;
     }
+
 }

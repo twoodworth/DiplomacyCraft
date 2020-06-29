@@ -13,9 +13,9 @@ public class DiplomacyPlayer {
     private static NamespacedKey nationKey = new NamespacedKey(Diplomacy.getInstance(), "nation");
     private OfflinePlayer player;
     private UUID uuid;
-    private NationClass nationClass;
-    private List<String> groups;
-    private List<String> groupsLed;
+    private static NationClass nationClass;
+    private static List<String> groups;
+    private static List<String> groupsLed;
     private String nationID;
 
 
@@ -36,11 +36,11 @@ public class DiplomacyPlayer {
         return nationClass;
     }
 
-    public List<String> getGroups(UUID uuid) {
+    public static List<String> getGroups(UUID uuid) {
         return groups;
     }
 
-    public List<String> getGroupsLed(UUID uuid) {
+    public static List<String> getGroupsLed(UUID uuid) {
         return groupsLed;
     }
 
@@ -51,6 +51,10 @@ public class DiplomacyPlayer {
             }
         }
         return null;
+    }
+
+    public static void setNationClass(UUID uuid, NationClass newNationClass) {
+        nationClass = newNationClass;
     }
 
 //    public Nation getNation() {
