@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -17,18 +18,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class NationManager {
-    private static final File nationConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "nations.yml");
+public class Nations {
+    private static Nations instance = null;
 
-    private static List<Nation> nations = new ArrayList<>();
+    private final File nationConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "nations.yml");
 
-    private static YamlConfiguration nationConfig;
+    private List<Nation> nations = new ArrayList<>();
 
-    public static List<Nation> getNations() {
+    private YamlConfiguration nationConfig;
+
+    public List<Nation> getNations() {
         return nations;
     }
 
-    public static Nation createNation(String name, OfflinePlayer leader) {
+    public void registerEvents() {
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
+    }
+
+    public Nation createNation(String name, OfflinePlayer leader) {
         String nextNationID = nationConfig.getString("NextNationID");
         if (nextNationID == null) {
             nationConfig.set("NextNationID", "0");
@@ -48,8 +55,14 @@ public class NationManager {
 
     }
 
-    public static void load() {
-        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
+    public static Nations getInstance() {
+        if (instance == null) {
+            instance = new Nations();
+        }
+        return instance;
+    }
+
+    private Nations() {
         nationConfig = YamlConfiguration.loadConfiguration(nationConfigFile);
         ConfigurationSection nationsSection = nationConfig.getConfigurationSection("Nations");
         if (nationsSection == null) {
@@ -63,9 +76,21 @@ public class NationManager {
             Nation nation = new Nation(nationID, nationSection);
             nations.add(nation);
         }
+
     }
 
-    public static void save() {
+    public Nation get(DiplomacyPlayer player) {
+        for (Nation nation : nations) {
+            for (DiplomacyPlayer member : nation.getMembers()) {
+                if (player.equals(member)) {
+                    return nation;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void save() {
         try {
             nationConfig.save(nationConfigFile);
         } catch (IOException e) {
@@ -73,7 +98,7 @@ public class NationManager {
         }
     }
 
-    private static class EventListener implements Listener {
+    private class EventListener implements Listener {
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();

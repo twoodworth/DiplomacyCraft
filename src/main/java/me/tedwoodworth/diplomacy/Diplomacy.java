@@ -2,7 +2,8 @@ package me.tedwoodworth.diplomacy;
 
 import me.tedwoodworth.diplomacy.commands.NationCommand;
 import me.tedwoodworth.diplomacy.commands.PlotCommand;
-import me.tedwoodworth.diplomacy.nations.NationManager;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Diplomacy extends JavaPlugin {
@@ -14,7 +15,8 @@ public class Diplomacy extends JavaPlugin {
         //noinspection ConstantConditions
         PlotCommand.register(getCommand("plot"));
         NationCommand.register(getCommand("nation"));
-        NationManager.load();
+        Nations.getInstance().registerEvents();
+        DiplomacyPlayers.getInstance().registerEvents();
     }
 
     @Override

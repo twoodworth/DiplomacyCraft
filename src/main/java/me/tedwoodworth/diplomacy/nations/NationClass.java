@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class NationClass {
 
+    public static final String WILDERNESS_ID = "WILDERNESS";
     private int classID;
     private String name;
     private String prefix;
@@ -19,4 +20,8 @@ public class NationClass {
         this.permissions = permissions;
         this.nationID = nationID;
     }
+
+//    public static NationClass getWildernessClass() {
+//        NationClass nationClass = new NationClass(WILDERNESS_ID, "Nomad", "", 0, )
+//    }
 }
