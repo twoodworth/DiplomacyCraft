@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -221,9 +222,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationCreate(CommandSender sender, String name) {
-
-        Nation nation = NationManager.createNation(name, (OfflinePlayer) sender);
-        sender.sendMessage(ChatColor.GREEN + "The nation of " + name + " has been founded.");
+        DiplomacyPlayer player = DiplomacyPlayers.getInstance().get(((OfflinePlayer) sender).getUniqueId());
+        Nation nation = Nations.getInstance().get(player);
+        if (nation == null) {
+            Nations.getInstance().createNation(name, (OfflinePlayer) sender);
+            sender.sendMessage(ChatColor.GREEN + "The nation of " + name + " has been founded.");
+        } else {
+            sender.sendMessage(ChatColor.RED + "You must leave your current nation before you can establish a new nation.");
+        }
     }
 
     private void nationRename(CommandSender sender, String name) {
