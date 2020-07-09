@@ -103,6 +103,12 @@ public class Nations {
         return null;
     }
 
+    public void rename(String name, Nation nation) {
+        String oldName = nation.getName();
+        nationConfig.set("Nations." + nation.getNationID() + ".Name", name);
+        nation.setName(name);
+    }
+
     public void save() {
         try {
             nationConfig.save(nationConfigFile);

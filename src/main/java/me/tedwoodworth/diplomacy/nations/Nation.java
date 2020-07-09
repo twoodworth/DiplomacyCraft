@@ -27,6 +27,7 @@ public class Nation {
     private List<DiplomacyChunk> chunks;
 
     Nation(String nationID, ConfigurationSection nationSection) {
+        this.nationID = nationID;
         this.name = nationSection.getString("Name");
         this.leaderIDs = new ArrayList<>();
         List<String> leadersStr = nationSection.getStringList("Leaders");
@@ -36,6 +37,7 @@ public class Nation {
 
         this.classes = new ArrayList<>(9);
         for (int classID = 0; classID < 9; classID++) {
+            String strClassID = String.valueOf(classID);
             ConfigurationSection classSection = nationSection.getConfigurationSection("Classes." + classID);
             String className = classSection.getString("Name");
             String classPrefix = classSection.getString("Prefix");
@@ -46,7 +48,7 @@ public class Nation {
             for (String permission : permissionSet) {
                 classPermissions.put(permission, permissionSection.getBoolean(permission));
             }
-            NationClass nationClass = new NationClass(classID, className, classPrefix, classTax, classPermissions, nationID);
+            NationClass nationClass = new NationClass(strClassID, className, classPrefix, classTax, classPermissions, nationID);
             classes.add(nationClass);
         }
 
@@ -54,7 +56,7 @@ public class Nation {
         Set<String> membersStr = nationSection.getConfigurationSection("Members").getKeys(false);
         for (String memberID : membersStr) {
             DiplomacyPlayer member = DiplomacyPlayers.getInstance().get(UUID.fromString(memberID));
-            String memberClassID = nationSection.getString("Members.memberID");
+            String memberClassID = nationSection.getString("Members." + memberID);
             MemberInfo memberInfo = new MemberInfo(member, memberClassID);
             memberInfos.add(memberInfo);
         }
@@ -129,6 +131,15 @@ public class Nation {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public NationClass getNationClass(String classID) {
+        for (NationClass nationClass : classes) {
+            if (nationClass.getClassID().equals(classID)) {
+                return nationClass;
+            }
+        }
+        return null;
     }
 
 }

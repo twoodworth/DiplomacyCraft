@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.nations.MemberInfo;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -223,24 +224,59 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationCreate(CommandSender sender, String name) {
-        DiplomacyPlayer player = DiplomacyPlayers.getInstance().get(((OfflinePlayer) sender).getUniqueId());
-        UUID uuid = player.getUUID();
+        UUID uuid = ((OfflinePlayer) sender).getUniqueId();
         DiplomacyPlayer leader = DiplomacyPlayers.getInstance().get(uuid);
-        Nation nation = Nations.getInstance().get(player);
+        Nation nation = Nations.getInstance().get(leader);
         Nation sameName = Nations.getInstance().get(name);
         if (nation == null) {
             if (sameName == null) {
                 Nations.getInstance().createNation(name, leader);
-                sender.sendMessage(ChatColor.GREEN + "The nation of " + name + " has been founded.");
+                sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "The nation of '" + name + "' has been founded.");
             } else {
-                sender.sendMessage(ChatColor.RED + "The name \"" + name + "\" is taken, choose another name.");
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The name '" + name + "' is taken, choose another name.");
             }
         } else {
-            sender.sendMessage(ChatColor.RED + "You must leave your current nation before you can establish a new nation.");
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must leave your current nation before you can establish a new nation.");
         }
     }
 
     private void nationRename(CommandSender sender, String name) {
+        UUID uuid = ((OfflinePlayer) sender).getUniqueId();
+        DiplomacyPlayer player = DiplomacyPlayers.getInstance().get(uuid);
+        Nation nation = Nations.getInstance().get(player);
+        MemberInfo playerInfo = null;
+        if (nation != null) {
+            List<MemberInfo> memberInfos = nation.getMemberInfos();
+            for (MemberInfo memberInfo : memberInfos) {
+                if (player.equals(memberInfo.getMember())) {
+                    playerInfo = memberInfo;
+                }
+            }
+        }
+
+        if (playerInfo != null) {
+            String nationClass = playerInfo.getMemberClassID();
+            boolean canRenameNation = nation.getNationClass(nationClass).getPermissions().get("CanRenameNation");
+            Nation sameName = Nations.getInstance().get(name);
+            if (canRenameNation) {
+                String oldName = nation.getName();
+                if (!oldName.equals(name)) {
+                    if (sameName == null) {
+                        Nations.getInstance().rename(name, nation);
+                        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "The nation of \'" + oldName + "\' has been renamed to \'" + name + "\'.");
+                    } else {
+                        sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The name \'" + name + "\' is taken, choose another name.");
+                    }
+                } else {
+                    sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation is already named '" + name + "'.");
+                }
+            } else {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to rename the nation.");
+            }
+        } else {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You are not in a nation.");
+        }
+
 
     }
 

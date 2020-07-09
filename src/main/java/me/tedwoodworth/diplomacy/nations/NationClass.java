@@ -5,14 +5,14 @@ import java.util.Map;
 public class NationClass {
 
     public static final String WILDERNESS_ID = "WILDERNESS";
-    private int classID;
+    private String classID;
     private String name;
     private String prefix;
     private int tax;
     private Map<String, Boolean> permissions;
     private String nationID;
 
-    public NationClass(int classID, String name, String prefix, int tax, Map<String, Boolean> permissions, String nationID) {
+    public NationClass(String classID, String name, String prefix, int tax, Map<String, Boolean> permissions, String nationID) {
         this.classID = classID;
         this.name = name;
         this.prefix = prefix;
@@ -21,7 +21,11 @@ public class NationClass {
         this.nationID = nationID;
     }
 
-//    public static NationClass getWildernessClass() {
-//        NationClass nationClass = new NationClass(WILDERNESS_ID, "Nomad", "", 0, )
-//    }
+    public String getClassID() {
+        return classID;
+    }
+
+    public Map<String, Boolean> getPermissions() {
+        return permissions;
+    }
 }
