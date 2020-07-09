@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.commands.GroupCommand;
 import me.tedwoodworth.diplomacy.commands.NationCommand;
 import me.tedwoodworth.diplomacy.commands.PlotCommand;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -15,6 +16,7 @@ public class Diplomacy extends JavaPlugin {
         //noinspection ConstantConditions
         PlotCommand.register(getCommand("plot"));
         NationCommand.register(getCommand("nation"));
+        GroupCommand.register(getCommand("group"));
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
     }
