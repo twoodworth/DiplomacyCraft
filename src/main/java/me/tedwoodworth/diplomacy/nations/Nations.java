@@ -51,8 +51,7 @@ public class Nations {
 
         nationConfig.set("Nations." + nationID, nationSection);
         nationConfig.set("NextNationID", nextNationID);
-        nationConfig.set("Name", name);
-        ConfigurationSection initializedNationSection = Nation.initializeNation(nationSection, ofLeader);
+        ConfigurationSection initializedNationSection = Nation.initializeNation(nationSection, ofLeader, name);
         Nation nation = new Nation(nationID, initializedNationSection);
         nations.add(nation);
         return nation;
@@ -85,7 +84,8 @@ public class Nations {
 
     public Nation get(DiplomacyPlayer player) {
         for (Nation nation : nations) {
-            for (DiplomacyPlayer member : nation.getMembers()) {
+            for (MemberInfo memberInfo : nation.getMemberInfos()) {
+                DiplomacyPlayer member = memberInfo.getMember();
                 if (player.equals(member)) {
                     return nation;
                 }

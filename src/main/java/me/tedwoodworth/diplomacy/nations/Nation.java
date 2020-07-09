@@ -11,12 +11,11 @@ import java.util.*;
 
 public class Nation {
 
-    public static final String WILDERNESS_ID = "wilderness";
     private static String nationID;
     private String name;
     private List<UUID> leaderIDs;
     private List<NationClass> classes;
-    private List<DiplomacyPlayer> members;
+    private List<MemberInfo> memberInfos;
     private List<String> groups;
     private int balance;
     private long created;
@@ -51,11 +50,13 @@ public class Nation {
             classes.add(nationClass);
         }
 
-        this.members = new ArrayList<>();
+        this.memberInfos = new ArrayList<>();
         Set<String> membersStr = nationSection.getConfigurationSection("Members").getKeys(false);
         for (String memberID : membersStr) {
             DiplomacyPlayer member = DiplomacyPlayers.getInstance().get(UUID.fromString(memberID));
-            members.add(member);
+            String memberClassID = nationSection.getString("Members.memberID");
+            MemberInfo memberInfo = new MemberInfo(member, memberClassID);
+            memberInfos.add(memberInfo);
         }
 
         Set<String> stringGroupIDs = Objects.requireNonNull(nationSection.getConfigurationSection("Groups")).getKeys(false);
@@ -98,7 +99,7 @@ public class Nation {
         this.chunks = chunks;
     }
 
-    public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader) {
+    public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader, String name) {
         Map<String, String> membersMap = ImmutableMap.of(
                 leader.getUniqueId().toString(), "8");
 
@@ -109,6 +110,7 @@ public class Nation {
         leaders.add(leader.getUniqueId().toString());
         nationSection.set("Leaders", leaders);
         nationSection.set("Created", Instant.now().getEpochSecond());
+        nationSection.set("Name", name);
         return nationSection;
     }
 
@@ -117,16 +119,16 @@ public class Nation {
         return nationID;
     }
 
-    public List<DiplomacyPlayer> getMembers() {
-        return members;
+    public List<MemberInfo> getMemberInfos() {
+        return memberInfos;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String nationID) {
-        this.nationID = nationID;
+    public void setName(String name) {
+        this.name = name;
     }
 
 }
