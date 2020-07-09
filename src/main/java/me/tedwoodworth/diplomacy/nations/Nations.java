@@ -18,13 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static org.bukkit.Bukkit.getOfflinePlayer;
+
 public class Nations {
+
     private static Nations instance = null;
-
     private final File nationConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "nations.yml");
-
     private List<Nation> nations = new ArrayList<>();
-
     private YamlConfiguration nationConfig;
 
     public List<Nation> getNations() {
@@ -35,7 +35,8 @@ public class Nations {
         Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
-    public Nation createNation(String name, OfflinePlayer leader) {
+    public Nation createNation(String name, DiplomacyPlayer leader) {
+        OfflinePlayer ofLeader = getOfflinePlayer(leader.getUUID());
         String nextNationID = nationConfig.getString("NextNationID");
         if (nextNationID == null) {
             nationConfig.set("NextNationID", "0");
@@ -50,8 +51,11 @@ public class Nations {
 
         nationConfig.set("Nations." + nationID, nationSection);
         nationConfig.set("NextNationID", nextNationID);
-        Nation.initializeNation(nationSection, leader);
-        return new Nation(nationID, nationSection);
+        nationConfig.set("Name", name);
+        ConfigurationSection initializedNationSection = Nation.initializeNation(nationSection, ofLeader);
+        Nation nation = new Nation(nationID, initializedNationSection);
+        nations.add(nation);
+        return nation;
 
     }
 
@@ -85,6 +89,15 @@ public class Nations {
                 if (player.equals(member)) {
                     return nation;
                 }
+            }
+        }
+        return null;
+    }
+
+    public Nation get(String name) {
+        for (Nation nation : nations) {
+            if (name.equalsIgnoreCase(nation.getName())) {
+                return nation;
             }
         }
         return null;

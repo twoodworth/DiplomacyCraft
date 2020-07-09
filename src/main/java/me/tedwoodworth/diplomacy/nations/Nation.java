@@ -3,7 +3,6 @@ package me.tedwoodworth.diplomacy.nations;
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -53,15 +52,8 @@ public class Nation {
         }
 
         this.members = new ArrayList<>();
-        Set<String> membersStr = new HashSet<String>(1);
-        if (nationSection.getConfigurationSection("Members") != null) {
-            membersStr = Objects.requireNonNull(nationSection.getConfigurationSection("Members")).getKeys(false);
-        }
+        Set<String> membersStr = nationSection.getConfigurationSection("Members").getKeys(false);
         for (String memberID : membersStr) {
-            OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(memberID));
-            NationClass nationClass = classes.get(nationSection.getInt("Members." + memberID + ".Class"));
-            List<String> groups = nationSection.getStringList("Members." + memberID + ".Groups");
-            List<String> groupsLed = nationSection.getStringList("Members." + memberID + ".GroupsLed");
             DiplomacyPlayer member = DiplomacyPlayers.getInstance().get(UUID.fromString(memberID));
             members.add(member);
         }
@@ -106,30 +98,18 @@ public class Nation {
         this.chunks = chunks;
     }
 
-    public static void initializeNation(ConfigurationSection nationSection, OfflinePlayer leader) {
-        List<String> groups = DiplomacyPlayers.getInstance().get(leader.getUniqueId()).getGroups();
-        if (groups == null) {
-            groups = new ArrayList<String>(1);
-        }
+    public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader) {
+        Map<String, String> membersMap = ImmutableMap.of(
+                leader.getUniqueId().toString(), "8");
 
-        List<String> groupsLed = DiplomacyPlayers.getInstance().get(leader.getUniqueId()).getGroupsLed();
-        if (groupsLed == null) {
-            groupsLed = new ArrayList<String>(1);
-        }
-
-        Map<String, Object> membersMap = ImmutableMap.of(
-                "Class", "8");
-
-        Map<String, Map<String, Object>> memberIDMap = ImmutableMap.of(
-                leader.getUniqueId().toString(), membersMap);
-
-        nationSection.set("Members", memberIDMap);
+        nationSection.createSection("Members", membersMap);
         nationSection.set("Founder", leader.getUniqueId().toString());
 
         List<String> leaders = new ArrayList<>(1);
         leaders.add(leader.getUniqueId().toString());
         nationSection.set("Leaders", leaders);
         nationSection.set("Created", Instant.now().getEpochSecond());
+        return nationSection;
     }
 
 
@@ -139,6 +119,10 @@ public class Nation {
 
     public List<DiplomacyPlayer> getMembers() {
         return members;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String nationID) {

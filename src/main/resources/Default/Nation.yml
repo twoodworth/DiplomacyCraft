@@ -1,4 +1,3 @@
-Name:
 Leaders: []
 Classes:
   0:
@@ -398,6 +397,7 @@ Classes:
       CanRemoveFromClass8: true
       CanRemoveFromClass9: true
 Members: {}
+Name:
 Plots: 0
 Chunks: []
 Groups: {}

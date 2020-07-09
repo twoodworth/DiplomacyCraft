@@ -10,6 +10,7 @@ import org.bukkit.command.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationCreateUsage = "/nation create <nation>";
@@ -223,10 +224,17 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     private void nationCreate(CommandSender sender, String name) {
         DiplomacyPlayer player = DiplomacyPlayers.getInstance().get(((OfflinePlayer) sender).getUniqueId());
+        UUID uuid = player.getUUID();
+        DiplomacyPlayer leader = DiplomacyPlayers.getInstance().get(uuid);
         Nation nation = Nations.getInstance().get(player);
+        Nation sameName = Nations.getInstance().get(name);
         if (nation == null) {
-            Nations.getInstance().createNation(name, (OfflinePlayer) sender);
-            sender.sendMessage(ChatColor.GREEN + "The nation of " + name + " has been founded.");
+            if (sameName == null) {
+                Nations.getInstance().createNation(name, leader);
+                sender.sendMessage(ChatColor.GREEN + "The nation of " + name + " has been founded.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "The name \"" + name + "\" is taken, choose another name.");
+            }
         } else {
             sender.sendMessage(ChatColor.RED + "You must leave your current nation before you can establish a new nation.");
         }

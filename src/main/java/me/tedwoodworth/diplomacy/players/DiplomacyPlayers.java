@@ -37,15 +37,13 @@ public class DiplomacyPlayers {
         DiplomacyPlayer player = diplomacyPlayers.get(uuid);
         if (player == null) {
             Map<String, Object> playersMap = ImmutableMap.of(
-                    "Class", "wilderness",
                     "Groups", groups,
                     "GroupsLed", groupsLed);
 
             config.createSection(uuid.toString(), playersMap);
             player = new DiplomacyPlayer(uuid, config.getConfigurationSection(uuid.toString()));
+            diplomacyPlayers.put(uuid, player);
         }
-
-
         return player;
     }
 
