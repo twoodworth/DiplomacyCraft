@@ -3,7 +3,9 @@ package me.tedwoodworth.diplomacy.nations;
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.time.Instant;
@@ -68,7 +70,7 @@ public class Nation {
             List<DiplomacyChunk> chunks = new ArrayList<>();
             List<Map<?, ?>> chunkMaps = nationSection.getMapList("Groups." + groupID + ".Chunks");
             for (Map map : chunkMaps) {
-                String world = String.valueOf(map.get("world"));
+                World world = Bukkit.getWorld(String.valueOf(map.get("world")));
                 int x = (int) map.get("x");
                 int z = (int) map.get("z");
                 DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
@@ -92,9 +94,10 @@ public class Nation {
         List<DiplomacyChunk> chunks = new ArrayList<>();
         List<Map<?, ?>> chunkMaps = nationSection.getMapList("Chunks");
         for (Map map : chunkMaps) {
-            String world = String.valueOf(map.get("world"));
+            World world = Bukkit.getWorld(String.valueOf(map.get("world")));
             int x = (int) map.get("x");
             int z = (int) map.get("z");
+
             DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
             chunks.add(chunk);
         }
@@ -116,6 +119,30 @@ public class Nation {
         return nationSection;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Nation nation = (Nation) o;
+        return balance == nation.balance &&
+                created == nation.created &&
+                com.google.common.base.Objects.equal(name, nation.name) &&
+                com.google.common.base.Objects.equal(leaderIDs, nation.leaderIDs) &&
+                com.google.common.base.Objects.equal(classes, nation.classes) &&
+                com.google.common.base.Objects.equal(memberInfos, nation.memberInfos) &&
+                com.google.common.base.Objects.equal(groups, nation.groups) &&
+                com.google.common.base.Objects.equal(founderID, nation.founderID) &&
+                com.google.common.base.Objects.equal(color, nation.color) &&
+                com.google.common.base.Objects.equal(outlawIDs, nation.outlawIDs) &&
+                com.google.common.base.Objects.equal(allyNationIDs, nation.allyNationIDs) &&
+                com.google.common.base.Objects.equal(enemyNationIDs, nation.enemyNationIDs) &&
+                com.google.common.base.Objects.equal(chunks, nation.chunks);
+    }
+
+    @Override
+    public int hashCode() {
+        return com.google.common.base.Objects.hashCode(name, leaderIDs, classes, memberInfos, groups, balance, created, founderID, color, outlawIDs, allyNationIDs, enemyNationIDs, chunks);
+    }
 
     public String getNationID() {
         return nationID;
@@ -133,6 +160,10 @@ public class Nation {
         this.name = name;
     }
 
+    public List<DiplomacyChunk> getChunks() {
+        return chunks;
+    }
+
     public NationClass getNationClass(String classID) {
         for (NationClass nationClass : classes) {
             if (nationClass.getClassID().equals(classID)) {
@@ -140,6 +171,10 @@ public class Nation {
             }
         }
         return null;
+    }
+
+    public List<String> getAllyNationIDs() {
+        return allyNationIDs;
     }
 
 }
