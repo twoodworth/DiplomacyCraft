@@ -15,7 +15,7 @@ public class DiplomacyChunk {
     }
 
     public Nation getNation() {
-        for (Nation nation : Nations.getInstance().getNations()) {
+        for (var nation : Nations.getInstance().getNations()) {
             if (nation.getChunks().anyMatch(this::equals)) {
                 return nation;
             }

@@ -3,7 +3,6 @@ package me.tedwoodworth.diplomacy.nations;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
@@ -36,14 +35,14 @@ public class Nations {
     }
 
     public Nation createNation(String name, DiplomacyPlayer leader) {
-        OfflinePlayer ofLeader = getOfflinePlayer(leader.getUUID());
-        String nextNationID = nationConfig.getString("NextNationID");
+        var ofLeader = getOfflinePlayer(leader.getUUID());
+        var nextNationID = nationConfig.getString("NextNationID");
         if (nextNationID == null) {
             nationConfig.set("NextNationID", "0");
             nextNationID = "0";
         }
 
-        String nationID = nextNationID;
+        var nationID = nextNationID;
         nextNationID = String.valueOf(Integer.parseInt(nextNationID) + 1);
 
         Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Nation.yml")));
@@ -51,8 +50,8 @@ public class Nations {
 
         nationConfig.set("Nations." + nationID, nationSection);
         nationConfig.set("NextNationID", nextNationID);
-        ConfigurationSection initializedNationSection = Nation.initializeNation(nationSection, ofLeader, name);
-        Nation nation = new Nation(nationID, initializedNationSection);
+        var initializedNationSection = Nation.initializeNation(nationSection, ofLeader, name);
+        var nation = new Nation(nationID, initializedNationSection);
         nations.add(nation);
         return nation;
 
@@ -67,25 +66,25 @@ public class Nations {
 
     private Nations() {
         nationConfig = YamlConfiguration.loadConfiguration(nationConfigFile);
-        ConfigurationSection nationsSection = nationConfig.getConfigurationSection("Nations");
+        var nationsSection = nationConfig.getConfigurationSection("Nations");
         if (nationsSection == null) {
             nationsSection = nationConfig.createSection("Nations");
         }
-        for (String nationID : nationsSection.getKeys(false)) {
-            ConfigurationSection nationSection = nationConfig.getConfigurationSection("Nations." + nationID);
+        for (var nationID : nationsSection.getKeys(false)) {
+            var nationSection = nationConfig.getConfigurationSection("Nations." + nationID);
             assert nationSection != null;
 
 
-            Nation nation = new Nation(nationID, nationSection);
+            var nation = new Nation(nationID, nationSection);
             nations.add(nation);
         }
 
     }
 
     public Nation get(DiplomacyPlayer player) {
-        for (Nation nation : nations) {
-            for (MemberInfo memberInfo : nation.getMemberInfos()) {
-                DiplomacyPlayer member = memberInfo.getMember();
+        for (var nation : nations) {
+            for (var memberInfo : nation.getMemberInfos()) {
+                var member = memberInfo.getMember();
                 if (player.equals(member)) {
                     return nation;
                 }
@@ -95,7 +94,7 @@ public class Nations {
     }
 
     public Nation get(String name) {
-        for (Nation nation : nations) {
+        for (var nation : nations) {
             if (name.equalsIgnoreCase(nation.getName())) {
                 return nation;
             }
@@ -104,7 +103,7 @@ public class Nations {
     }
 
     public void rename(String name, Nation nation) {
-        String oldName = nation.getName();
+        var oldName = nation.getName();
         nationConfig.set("Nations." + nation.getNationID() + ".Name", name);
         nation.setName(name);
     }

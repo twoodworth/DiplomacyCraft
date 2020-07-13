@@ -24,16 +24,16 @@ public class Contest {
     }
 
     public boolean isNearChunk(Player player, Chunk chunk) {
-        Location chunkCenter = new Location(chunk.getWorld(), chunk.getX() * 16 + 8, player.getLocation().getY(), chunk.getZ() * 16 + 8);
+        var chunkCenter = new Location(chunk.getWorld(), chunk.getX() * 16 + 8, player.getLocation().getY(), chunk.getZ() * 16 + 8);
         return player.getWorld().equals(chunk.getWorld()) && player.getLocation().distanceSquared(chunkCenter) < 10000;
     }
 
     public void sendParticles() {
-        Nation defendingNation = diplomacyChunk.getNation();
-        Chunk chunk = diplomacyChunk.getChunk();
+        var defendingNation = diplomacyChunk.getNation();
+        var chunk = diplomacyChunk.getChunk();
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (isNearChunk(player, chunk)) {
-                DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 
                 sendPlayerParticles(chunk, diplomacyPlayer, attackingNation, defendingNation);
             }
@@ -41,18 +41,18 @@ public class Contest {
     }
 
     public void sendPlayerParticles(Chunk chunk, DiplomacyPlayer diplomacyPlayer, Nation attackingNation, Nation defendingNation) {
-        Player player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
-        int baseX = chunk.getX() * 16;
-        int baseZ = chunk.getZ() * 16;
-        World world = chunk.getWorld();
-        boolean defendingNationIsWilderness = Nations.isWilderness(defendingNation);
+        var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
+        var baseX = chunk.getX() * 16;
+        var baseZ = chunk.getZ() * 16;
+        var world = chunk.getWorld();
+        var defendingNationIsWilderness = Nations.isWilderness(defendingNation);
 
-        boolean isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-        boolean isDefendingNationAlly = !defendingNationIsWilderness && defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-        boolean isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
-        boolean isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
+        var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+        var isDefendingNationAlly = !defendingNationIsWilderness && defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+        var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+        var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
 
-        Particle particle = Particle.REDSTONE;
+        var particle = Particle.REDSTONE;
         Particle.DustOptions dustOptions;
         if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
             dustOptions = new Particle.DustOptions(Color.LIME, 1);
@@ -61,10 +61,10 @@ public class Contest {
         } else {
             dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
         }
-        int min = Math.max(0, player.getLocation().getBlockY() - 20);
-        int max = Math.min(255, player.getLocation().getBlockY() + 20);
-        for (int y = min; y < max; y++) {
-            for (int i = 0; i < 16; i += 2) {
+        var min = Math.max(0, player.getLocation().getBlockY() - 20);
+        var max = Math.min(255, player.getLocation().getBlockY() + 20);
+        for (var y = min; y < max; y++) {
+            for (var i = 0; i < 16; i += 2) {
                 player.spawnParticle(particle, new Location(world, baseX + i, y, baseZ), 1, dustOptions);
                 player.spawnParticle(particle, new Location(world, baseX + 16, y, baseZ + i), 1, dustOptions);
                 player.spawnParticle(particle, new Location(world, baseX + 16 - i, y, baseZ + 16), 1, dustOptions);

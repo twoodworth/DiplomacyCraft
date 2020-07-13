@@ -1,9 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.MemberInfo;
-import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -11,7 +9,6 @@ import org.bukkit.command.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationCreateUsage = "/nation create <nation>";
@@ -34,7 +31,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
     public static void register(PluginCommand pluginCommand) {
-        NationCommand nationCommand = new NationCommand();
+        var nationCommand = new NationCommand();
 
         pluginCommand.setExecutor(nationCommand);
         pluginCommand.setTabCompleter(nationCommand);
@@ -224,10 +221,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationCreate(CommandSender sender, String name) {
-        UUID uuid = ((OfflinePlayer) sender).getUniqueId();
-        DiplomacyPlayer leader = DiplomacyPlayers.getInstance().get(uuid);
-        Nation nation = Nations.getInstance().get(leader);
-        Nation sameName = Nations.getInstance().get(name);
+        var uuid = ((OfflinePlayer) sender).getUniqueId();
+        var leader = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(leader);
+        var sameName = Nations.getInstance().get(name);
         if (nation == null) {
             if (sameName == null) {
                 Nations.getInstance().createNation(name, leader);
@@ -241,13 +238,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationRename(CommandSender sender, String name) {
-        UUID uuid = ((OfflinePlayer) sender).getUniqueId();
-        DiplomacyPlayer player = DiplomacyPlayers.getInstance().get(uuid);
-        Nation nation = Nations.getInstance().get(player);
+        var uuid = ((OfflinePlayer) sender).getUniqueId();
+        var player = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(player);
         MemberInfo playerInfo = null;
         if (nation != null) {
-            List<MemberInfo> memberInfos = nation.getMemberInfos();
-            for (MemberInfo memberInfo : memberInfos) {
+            var memberInfos = nation.getMemberInfos();
+            for (var memberInfo : memberInfos) {
                 if (player.equals(memberInfo.getMember())) {
                     playerInfo = memberInfo;
                 }
@@ -255,11 +252,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         if (playerInfo != null) {
-            String nationClass = playerInfo.getMemberClassID();
+            var nationClass = playerInfo.getMemberClassID();
             boolean canRenameNation = nation.getNationClass(nationClass).getPermissions().get("CanRenameNation");
-            Nation sameName = Nations.getInstance().get(name);
+            var sameName = Nations.getInstance().get(name);
             if (canRenameNation) {
-                String oldName = nation.getName();
+                var oldName = nation.getName();
                 if (!oldName.equals(name)) {
                     if (sameName == null) {
                         Nations.getInstance().rename(name, nation);

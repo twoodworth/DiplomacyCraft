@@ -7,7 +7,7 @@ import java.util.List;
 public class GroupCommand implements CommandExecutor, TabCompleter {
 
     public static void register(PluginCommand pluginCommand) {
-        GroupCommand groupCommand = new GroupCommand();
+        var groupCommand = new GroupCommand();
 
         pluginCommand.setExecutor(groupCommand);
         pluginCommand.setTabCompleter(groupCommand);

@@ -34,7 +34,7 @@ public class DiplomacyPlayers {
     public DiplomacyPlayer get(UUID uuid) {
         List<String> groups = new ArrayList<>(1);
         List<String> groupsLed = new ArrayList<>(1);
-        DiplomacyPlayer player = diplomacyPlayers.get(uuid);
+        var player = diplomacyPlayers.get(uuid);
         if (player == null) {
             Map<String, Object> playersMap = ImmutableMap.of(
                     "Groups", groups,

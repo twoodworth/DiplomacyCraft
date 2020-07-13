@@ -1,12 +1,12 @@
 package me.tedwoodworth.diplomacy.nations.contest;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.nations.*;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class ContestManager {
     }
 
     public void startContest(Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
-        Contest contest = contests.get(diplomacyChunk);
+        var contest = contests.get(diplomacyChunk);
         if (contest == null) {
             contest = new Contest(attackingNation, diplomacyChunk, isWilderness);
             contests.put(diplomacyChunk, contest);
@@ -41,7 +41,7 @@ public class ContestManager {
     }
 
     private void onContestTask() {
-        for (Contest contest : contests.values()) {
+        for (var contest : contests.values()) {
             if (contest.isWilderness()) {
                 wildernessProgressChange(contest);
             } else {
@@ -62,11 +62,11 @@ public class ContestManager {
     }
 
     private void winContest(Contest contest) {
-        DiplomacyChunk diplomacyChunk = contest.getDiplomacyChunk();
-        Nation defendingNation = diplomacyChunk.getNation();
+        var diplomacyChunk = contest.getDiplomacyChunk();
+        var defendingNation = diplomacyChunk.getNation();
         defendingNation.removeChunk(contest.getDiplomacyChunk());
         contest.getAttackingNation().addChunk(diplomacyChunk);
-        for (NationGroup group : defendingNation.getGroups()) {
+        for (var group : defendingNation.getGroups()) {
             if (group.getChunks().contains(diplomacyChunk)) {
                 group.removeChunk(diplomacyChunk);
             }
@@ -75,7 +75,7 @@ public class ContestManager {
     }
 
     private void winWildernessContest(Contest contest) {
-        DiplomacyChunk diplomacyChunk = contest.getDiplomacyChunk();
+        var diplomacyChunk = contest.getDiplomacyChunk();
         contest.getAttackingNation().addChunk(diplomacyChunk);
         endContest(contest);
     }
@@ -90,19 +90,19 @@ public class ContestManager {
 
     public void updateProgress(Contest contest) {
 
-        DiplomacyChunk diplomacyChunk = contest.getDiplomacyChunk();
-        Chunk chunk = diplomacyChunk.getChunk();
-        Nation attackingNation = contest.getAttackingNation();
-        Nation defendingNation = diplomacyChunk.getNation();
-        int attackingPlayers = 0;
-        int defendingPlayers = 0;
+        var diplomacyChunk = contest.getDiplomacyChunk();
+        var chunk = diplomacyChunk.getChunk();
+        var attackingNation = contest.getAttackingNation();
+        var defendingNation = diplomacyChunk.getNation();
+        var attackingPlayers = 0;
+        var defendingPlayers = 0;
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getLocation().getChunk().equals(chunk)) {
-                DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                boolean isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-                boolean isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-                boolean isAttackingNation = Nations.getInstance().get(diplomacyPlayer).equals(attackingNation);
-                boolean isDefendingNation = Nations.getInstance().get(diplomacyPlayer).equals(defendingNation);
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+                var isAttackingNation = Nations.getInstance().get(diplomacyPlayer).equals(attackingNation);
+                var isDefendingNation = Nations.getInstance().get(diplomacyPlayer).equals(defendingNation);
                 if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
                     attackingPlayers++;
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
@@ -113,8 +113,8 @@ public class ContestManager {
         //TODO defendingPlayers++ for every defending nation guard within the chunk
         //TODO only defendingPlayers++ if there is an unobstructed line of view between the defender and the attackers (meaning the defenders can be attacked)
 
-        double attackingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, attackingNation, false);
-        double defendingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, defendingNation, false);
+        var attackingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, attackingNation, false);
+        var defendingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, defendingNation, false);
 
         if (attackingPlayers > defendingPlayers) {
             contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayers - defendingPlayers)) * attackingAdjacentCoefficient);
@@ -124,31 +124,31 @@ public class ContestManager {
     }
 
     public void wildernessProgressChange(Contest contest) {
-        DiplomacyChunk diplomacyChunk = contest.getDiplomacyChunk();
-        Chunk chunk = diplomacyChunk.getChunk();
-        Nation nation = contest.getAttackingNation();
-        int players = 0;
+        var diplomacyChunk = contest.getDiplomacyChunk();
+        var chunk = diplomacyChunk.getChunk();
+        var nation = contest.getAttackingNation();
+        var players = 0;
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getLocation().getChunk().equals(chunk)) {
-                DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                boolean isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), nation);
-                boolean isAttackingNationAlly = nation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), nation);
+                var isAttackingNationAlly = nation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
                 if (isAttackingNation || isAttackingNationAlly) {
                     players++;
                 }
             }
         }
-        double adjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, nation, true);
+        var adjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, nation, true);
         if (players > 0) {
             contest.setProgress(contest.getProgress() + Math.pow(2.0, players) * adjacentCoefficient);
         }
     }
 
     public double getAdjacentCoefficient(DiplomacyChunk diplomacyChunk, Nation nation, boolean isWilderness) {
-        World world = diplomacyChunk.getChunk().getWorld();
-        int x = diplomacyChunk.getChunk().getX();
-        int z = diplomacyChunk.getChunk().getZ();
-        int adjacentChunks = 0;
+        var world = diplomacyChunk.getChunk().getWorld();
+        var x = diplomacyChunk.getChunk().getX();
+        var z = diplomacyChunk.getChunk().getZ();
+        var adjacentChunks = 0;
         if (Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(world.getChunkAt(x + 1, z)).getNation(), nation)) {
             adjacentChunks++;
         }

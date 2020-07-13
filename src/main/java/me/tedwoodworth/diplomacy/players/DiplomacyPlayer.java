@@ -37,7 +37,7 @@ public class DiplomacyPlayer {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DiplomacyPlayer that = (DiplomacyPlayer) o;
+        var that = (DiplomacyPlayer) o;
         return Objects.equal(uuid, that.uuid);
     }
 
@@ -47,7 +47,7 @@ public class DiplomacyPlayer {
     }
 
     public Player getPlayer() {
-        Player player = Bukkit.getPlayer(uuid);
+        var player = Bukkit.getPlayer(uuid);
         Validate.notNull(player);
         return player;
     }

@@ -19,7 +19,7 @@ public class DiplomacyChunks {
 
 
     public DiplomacyChunk getDiplomacyChunk(Chunk chunk) {
-        DiplomacyChunk diplomacyChunk = diplomacyChunks.get(chunk);
+        var diplomacyChunk = diplomacyChunks.get(chunk);
         if (diplomacyChunk == null) {
             diplomacyChunk = new DiplomacyChunk(chunk);
             diplomacyChunks.put(chunk, diplomacyChunk);
