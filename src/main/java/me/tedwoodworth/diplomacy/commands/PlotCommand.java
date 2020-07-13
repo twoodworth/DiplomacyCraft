@@ -1,9 +1,20 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Chunk;
+import org.bukkit.Color;
 import org.bukkit.command.*;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotUsage = "/plot ...";
@@ -99,7 +110,20 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     }
 
     private void plotContest(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(Color.RED + "You must be a player to use this command.");
+            return;
+        }
 
+        Player player = (Player) sender;
+        UUID uuid = (player).getUniqueId();
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        Nation attackingNation = Nations.getInstance().get(diplomacyPlayer);
+        Chunk chunk = player.getLocation().getChunk();
+        DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        boolean isWilderness = diplomacyChunk.getNation() == null;
+
+        ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
     }
 
     private void plotSurrender(CommandSender sender, String nation) {

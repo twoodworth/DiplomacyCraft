@@ -4,21 +4,24 @@ import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class Nation {
 
-    private static String nationID;
+    private ConfigurationSection configSection;
+    private String nationID;
     private String name;
     private List<UUID> leaderIDs;
     private List<NationClass> classes;
     private List<MemberInfo> memberInfos;
-    private List<String> groups;
+    private List<NationGroup> groups;
     private int balance;
     private long created;
     private UUID founderID;
@@ -26,9 +29,9 @@ public class Nation {
     private List<UUID> outlawIDs;
     private List<String> allyNationIDs;
     private List<String> enemyNationIDs;
-    private List<DiplomacyChunk> chunks;
 
     Nation(String nationID, ConfigurationSection nationSection) {
+        this.configSection = nationSection;
         this.nationID = nationID;
         this.name = nationSection.getString("Name");
         this.leaderIDs = new ArrayList<>();
@@ -73,8 +76,9 @@ public class Nation {
                 World world = Bukkit.getWorld(String.valueOf(map.get("world")));
                 int x = (int) map.get("x");
                 int z = (int) map.get("z");
-                DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
-                chunks.add(chunk);
+                Chunk chunk = world.getChunkAt(x, z);
+                DiplomacyChunk diplomacyChunk = new DiplomacyChunk(chunk);
+                chunks.add(diplomacyChunk);
             }
             NationGroup group = new NationGroup(Integer.parseInt(groupID), groupName, chunks);
             groups.add(group);
@@ -90,18 +94,6 @@ public class Nation {
         }
         this.allyNationIDs = nationSection.getStringList("AllyNations");
         this.enemyNationIDs = nationSection.getStringList("EnemyNations");
-
-        List<DiplomacyChunk> chunks = new ArrayList<>();
-        List<Map<?, ?>> chunkMaps = nationSection.getMapList("Chunks");
-        for (Map map : chunkMaps) {
-            World world = Bukkit.getWorld(String.valueOf(map.get("world")));
-            int x = (int) map.get("x");
-            int z = (int) map.get("z");
-
-            DiplomacyChunk chunk = new DiplomacyChunk(world, x, z);
-            chunks.add(chunk);
-        }
-        this.chunks = chunks;
     }
 
     public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader, String name) {
@@ -124,24 +116,12 @@ public class Nation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Nation nation = (Nation) o;
-        return balance == nation.balance &&
-                created == nation.created &&
-                com.google.common.base.Objects.equal(name, nation.name) &&
-                com.google.common.base.Objects.equal(leaderIDs, nation.leaderIDs) &&
-                com.google.common.base.Objects.equal(classes, nation.classes) &&
-                com.google.common.base.Objects.equal(memberInfos, nation.memberInfos) &&
-                com.google.common.base.Objects.equal(groups, nation.groups) &&
-                com.google.common.base.Objects.equal(founderID, nation.founderID) &&
-                com.google.common.base.Objects.equal(color, nation.color) &&
-                com.google.common.base.Objects.equal(outlawIDs, nation.outlawIDs) &&
-                com.google.common.base.Objects.equal(allyNationIDs, nation.allyNationIDs) &&
-                com.google.common.base.Objects.equal(enemyNationIDs, nation.enemyNationIDs) &&
-                com.google.common.base.Objects.equal(chunks, nation.chunks);
+        return nationID.equals(nation.nationID);
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(name, leaderIDs, classes, memberInfos, groups, balance, created, founderID, color, outlawIDs, allyNationIDs, enemyNationIDs, chunks);
+        return Objects.hash(nationID);
     }
 
     public String getNationID() {
@@ -160,8 +140,46 @@ public class Nation {
         this.name = name;
     }
 
-    public List<DiplomacyChunk> getChunks() {
-        return chunks;
+    public Stream<DiplomacyChunk> getChunks() {
+
+
+        List<Map<?, ?>> chunkMaps = configSection.getMapList("Chunks");
+        return chunkMaps.stream()
+                .map(this::configMapToChunk);
+    }
+
+    private Map<?, ?> chunkToConfigMap(DiplomacyChunk diplomacyChunk) {
+        return ImmutableMap.of(
+                "world", diplomacyChunk.getChunk().getWorld().getName(),
+                "x", diplomacyChunk.getChunk().getX(),
+                "z", diplomacyChunk.getChunk().getZ()
+        );
+    }
+
+    private DiplomacyChunk configMapToChunk(Map<?, ?> map) {
+        World world = Bukkit.getWorld(String.valueOf(map.get("world")));
+        int x = (Integer) map.get("x");
+        int z = (Integer) map.get("z");
+
+        Chunk chunk = world.getChunkAt(x, z);
+
+        return new DiplomacyChunk(chunk);
+    }
+
+    public void addChunk(DiplomacyChunk diplomacyChunk) {
+        List<Map<?, ?>> list = configSection.getMapList("Chunks");
+        list.add(chunkToConfigMap(diplomacyChunk));
+        configSection.set("Chunks", list);
+    }
+
+    public void removeChunk(DiplomacyChunk diplomacyChunk) {
+        List<Map<?, ?>> list = configSection.getMapList("Chunks");
+        list.remove(chunkToConfigMap(diplomacyChunk));
+        configSection.set("Chunks", list);
+    }
+
+    public List<NationGroup> getGroups() {
+        return groups;
     }
 
     public NationClass getNationClass(String classID) {

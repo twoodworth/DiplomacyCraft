@@ -16,4 +16,12 @@ public class NationGroup {
     public int getGroupID() {
         return groupID;
     }
+
+    public List<DiplomacyChunk> getChunks() {
+        return chunks;
+    }
+
+    public void removeChunk(DiplomacyChunk diplomacyChunk) {
+        chunks.remove(diplomacyChunk);
+    }
 }

@@ -12,3 +12,8 @@ commands:
     description: Manage a nation.
     aliases: [n]
     usage: "Usage: /<command> ..."
+
+  group:
+    description: Manage a group.
+    aliases: [g]
+    usage: "Usage: /<command> ..."

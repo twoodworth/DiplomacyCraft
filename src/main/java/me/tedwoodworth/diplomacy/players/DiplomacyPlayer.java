@@ -1,7 +1,10 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.base.Objects;
+import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +44,12 @@ public class DiplomacyPlayer {
     @Override
     public int hashCode() {
         return Objects.hashCode(uuid);
+    }
+
+    public Player getPlayer() {
+        Player player = Bukkit.getPlayer(uuid);
+        Validate.notNull(player);
+        return player;
     }
 }
 

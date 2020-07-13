@@ -109,6 +109,10 @@ public class Nations {
         nation.setName(name);
     }
 
+    public static boolean isWilderness(Nation nation) {
+        return nation == null;
+    }
+
     public void save() {
         try {
             nationConfig.save(nationConfigFile);
