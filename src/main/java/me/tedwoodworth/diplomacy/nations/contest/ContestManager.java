@@ -7,7 +7,6 @@ import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +95,7 @@ public class ContestManager {
         var defendingNation = diplomacyChunk.getNation();
         var attackingPlayers = 0;
         var defendingPlayers = 0;
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (var player : Bukkit.getOnlinePlayers()) {
             if (player.getLocation().getChunk().equals(chunk)) {
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                 var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
@@ -128,7 +127,7 @@ public class ContestManager {
         var chunk = diplomacyChunk.getChunk();
         var nation = contest.getAttackingNation();
         var players = 0;
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (var player : Bukkit.getOnlinePlayers()) {
             if (player.getLocation().getChunk().equals(chunk)) {
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                 var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), nation);

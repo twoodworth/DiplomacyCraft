@@ -31,7 +31,7 @@ public class Contest {
     public void sendParticles() {
         var defendingNation = diplomacyChunk.getNation();
         var chunk = diplomacyChunk.getChunk();
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (var player : Bukkit.getOnlinePlayers()) {
             if (isNearChunk(player, chunk)) {
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 

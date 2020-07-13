@@ -69,7 +69,7 @@ public class Nation {
             var groupName = nationSection.getString("Groups." + groupID + ".Name");
             List<DiplomacyChunk> chunks = new ArrayList<>();
             var chunkMaps = nationSection.getMapList("Groups." + groupID + ".Chunks");
-            for (Map map : chunkMaps) {
+            for (var map : chunkMaps) {
                 var world = Bukkit.getWorld(String.valueOf(map.get("world")));
                 var x = (int) map.get("x");
                 var z = (int) map.get("z");
