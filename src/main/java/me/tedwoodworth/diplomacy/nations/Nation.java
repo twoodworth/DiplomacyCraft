@@ -5,6 +5,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.*;
@@ -71,8 +72,8 @@ public class Nation {
             var chunkMaps = nationSection.getMapList("Groups." + groupID + ".Chunks");
             for (var map : chunkMaps) {
                 var world = Bukkit.getWorld(String.valueOf(map.get("world")));
-                var x = (int) map.get("x");
-                var z = (int) map.get("z");
+                var x = (Integer) map.get("x");
+                var z = (Integer) map.get("z");
                 var chunk = world.getChunkAt(x, z);
                 var diplomacyChunk = new DiplomacyChunk(chunk);
                 chunks.add(diplomacyChunk);
@@ -179,6 +180,7 @@ public class Nation {
         return groups;
     }
 
+    @Nullable
     public NationClass getNationClass(String classID) {
         for (var nationClass : classes) {
             if (nationClass.getClassID().equals(classID)) {

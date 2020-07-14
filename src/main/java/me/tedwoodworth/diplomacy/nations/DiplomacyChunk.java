@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import org.bukkit.Chunk;
+import org.jetbrains.annotations.Nullable;
 
 public class DiplomacyChunk {
 
@@ -14,6 +15,7 @@ public class DiplomacyChunk {
         return chunk;
     }
 
+    @Nullable
     public Nation getNation() {
         for (var nation : Nations.getInstance().getNations()) {
             if (nation.getChunks().anyMatch(this::equals)) {

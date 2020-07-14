@@ -131,7 +131,8 @@ public class ContestManager {
             if (player.getLocation().getChunk().equals(chunk)) {
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                 var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), nation);
-                var isAttackingNationAlly = nation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
+                var testNation = Nations.getInstance().get(diplomacyPlayer);
+                var isAttackingNationAlly = testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID());
                 if (isAttackingNation || isAttackingNationAlly) {
                     players++;
                 }

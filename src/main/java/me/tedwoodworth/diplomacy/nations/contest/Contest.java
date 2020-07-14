@@ -5,6 +5,7 @@ import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -42,24 +43,32 @@ public class Contest {
 
     public void sendPlayerParticles(Chunk chunk, DiplomacyPlayer diplomacyPlayer, Nation attackingNation, Nation defendingNation) {
         var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
+        Validate.notNull(player);
         var baseX = chunk.getX() * 16;
         var baseZ = chunk.getZ() * 16;
         var world = chunk.getWorld();
-        var defendingNationIsWilderness = Nations.isWilderness(defendingNation);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var isWilderness = nation == null;
 
-        var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-        var isDefendingNationAlly = !defendingNationIsWilderness && defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-        var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
-        var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
 
         var particle = Particle.REDSTONE;
         Particle.DustOptions dustOptions;
-        if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-            dustOptions = new Particle.DustOptions(Color.LIME, 1);
-        } else if (!isWilderness && isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-            dustOptions = new Particle.DustOptions(Color.RED, 1);
+        if (isWilderness) {
+            dustOptions = new Particle.DustOptions(Color.fromRGB(220, 220, 220), 1);
         } else {
-            dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
+            var defendingNationIsWilderness = Nations.isWilderness(defendingNation);
+            var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
+            var isDefendingNationAlly = !defendingNationIsWilderness && defendingNation.getAllyNationIDs().contains(nation.getNationID());
+            var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+            var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
+
+            if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
+                dustOptions = new Particle.DustOptions(Color.LIME, 1);
+            } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                dustOptions = new Particle.DustOptions(Color.RED, 1);
+            } else {
+                dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
+            }
         }
         var min = Math.max(0, player.getLocation().getBlockY() - 20);
         var max = Math.min(255, player.getLocation().getBlockY() + 20);

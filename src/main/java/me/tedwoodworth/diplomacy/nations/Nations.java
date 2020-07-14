@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +82,7 @@ public class Nations {
 
     }
 
+    @Nullable
     public Nation get(DiplomacyPlayer player) {
         for (var nation : nations) {
             for (var memberInfo : nation.getMemberInfos()) {
@@ -93,6 +95,7 @@ public class Nations {
         return null;
     }
 
+    @Nullable
     public Nation get(String name) {
         for (var nation : nations) {
             if (name.equalsIgnoreCase(nation.getName())) {
