@@ -3,6 +3,8 @@ package me.tedwoodworth.diplomacy.nations;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class DiplomacyChunk {
 
     private Chunk chunk;
@@ -13,6 +15,19 @@ public class DiplomacyChunk {
 
     public Chunk getChunk() {
         return chunk;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiplomacyChunk that = (DiplomacyChunk) o;
+        return Objects.equals(chunk, that.chunk);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chunk);
     }
 
     @Nullable

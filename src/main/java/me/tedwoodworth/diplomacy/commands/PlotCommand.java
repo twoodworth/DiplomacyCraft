@@ -1,15 +1,17 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.MemberInfo;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
-import org.bukkit.Color;
+import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotUsage = "/plot ...";
@@ -106,10 +108,9 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     private void plotContest(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(Color.RED + "You must be a player to use this command.");
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
             return;
         }
-
         var player = (Player) sender;
         var uuid = (player).getUniqueId();
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
@@ -118,6 +119,43 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var isWilderness = diplomacyChunk.getNation() == null;
 
+        if (attackingNation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
+            return;
+        }
+        if (Objects.equals(diplomacyChunk.getNation(), attackingNation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest your own territory.");
+            return;
+        }
+        if (ContestManager.getInstance().isBeingContested(diplomacyChunk)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "This plot is already being contested.");
+            return;
+        }
+        if (!isWilderness && attackingNation.getAllyNationIDs().contains(diplomacyChunk.getNation().getNationID())) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest an ally's territory.");
+            return;
+        }
+        MemberInfo playerInfo = null;
+        var memberInfos = attackingNation.getMemberInfos();
+        for (var memberInfo : memberInfos) {
+            if (diplomacyPlayer.equals(memberInfo.getMember())) {
+                playerInfo = memberInfo;
+            }
+        }
+        if (playerInfo != null) {
+            var nationClass = playerInfo.getMemberClassID();
+            var permissions = Objects.requireNonNull(attackingNation.getNationClass(nationClass)).getPermissions();
+            boolean canContest = permissions.get("CanContest");
+            if (!canContest) {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to contest territory.");
+                return;
+            }
+        } else {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
+            return;
+        }
+
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Contest started.");
         ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
     }
 

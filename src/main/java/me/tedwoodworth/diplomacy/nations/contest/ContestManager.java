@@ -39,7 +39,7 @@ public class ContestManager {
         }
     }
 
-    private void onContestTask() {
+    private void onContestTask() { //TODO add progress bar
         for (var contest : contests.values()) {
             if (contest.isWilderness()) {
                 wildernessProgressChange(contest);
@@ -47,7 +47,7 @@ public class ContestManager {
                 updateProgress(contest);
             }
             contest.sendParticles();
-            if (contest.getProgress() >= .03) { //TODO Change to 1.0
+            if (contest.getProgress() >= 1.0) {
                 if (contest.isWilderness()) {
                     winWildernessContest(contest);
                 } else {
@@ -60,7 +60,7 @@ public class ContestManager {
         }
     }
 
-    private void winContest(Contest contest) {
+    private void winContest(Contest contest) { //TODO add fireworks
         var diplomacyChunk = contest.getDiplomacyChunk();
         var defendingNation = diplomacyChunk.getNation();
         defendingNation.removeChunk(contest.getDiplomacyChunk());
@@ -218,5 +218,9 @@ public class ContestManager {
             }
 
         }
+    }
+
+    public boolean isBeingContested(DiplomacyChunk diplomacyChunk) {
+        return contests.containsKey(diplomacyChunk);
     }
 }

@@ -9,6 +9,7 @@ import org.bukkit.command.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationCreateUsage = "/nation create <nation>";
@@ -253,7 +254,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         if (playerInfo != null) {
             var nationClass = playerInfo.getMemberClassID();
-            boolean canRenameNation = nation.getNationClass(nationClass).getPermissions().get("CanRenameNation");
+            boolean canRenameNation = Objects.requireNonNull(nation.getNationClass(nationClass)).getPermissions().get("CanRenameNation");
             var sameName = Nations.getInstance().get(name);
             if (canRenameNation) {
                 var oldName = nation.getName();
