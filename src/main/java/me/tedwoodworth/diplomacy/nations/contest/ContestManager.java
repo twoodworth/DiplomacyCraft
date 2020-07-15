@@ -39,7 +39,7 @@ public class ContestManager {
         }
     }
 
-    private void onContestTask() { //TODO add progress bar
+    private void onContestTask() {
         for (var contest : contests.values()) {
             if (contest.isWilderness()) {
                 wildernessProgressChange(contest);
@@ -47,6 +47,7 @@ public class ContestManager {
                 updateProgress(contest);
             }
             contest.sendParticles();
+            contest.sendSubtitles();
             if (contest.getProgress() >= 1.0) {
                 if (contest.isWilderness()) {
                     winWildernessContest(contest);
@@ -56,7 +57,6 @@ public class ContestManager {
             } else if (contest.getProgress() < 0.0) {
                 endContest(contest);
             }
-            Bukkit.broadcastMessage(String.valueOf(contest.getProgress()));//TODO remove
         }
     }
 
@@ -86,6 +86,7 @@ public class ContestManager {
             contestTaskID = -1;
         }
     }
+
 
     public void updateProgress(Contest contest) {
 

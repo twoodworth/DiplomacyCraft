@@ -194,4 +194,7 @@ public class Nation {
         return allyNationIDs;
     }
 
+    public List<String> getEnemyNationIDs() {
+        return enemyNationIDs;
+    }
 }

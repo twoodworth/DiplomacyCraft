@@ -5,6 +5,8 @@ import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -27,6 +29,118 @@ public class Contest {
     public boolean isNearChunk(Player player, Chunk chunk) {
         var chunkCenter = new Location(chunk.getWorld(), chunk.getX() * 16 + 8, player.getLocation().getY(), chunk.getZ() * 16 + 8);
         return player.getWorld().equals(chunk.getWorld()) && player.getLocation().distanceSquared(chunkCenter) < 10000;
+    }
+
+
+    public void sendSubtitles() {
+        var defendingNation = diplomacyChunk.getNation();
+        var chunk = diplomacyChunk.getChunk();
+        for (var player : Bukkit.getOnlinePlayers()) {
+            var playerChunk = player.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                sendPlayerSubtitle(diplomacyPlayer, attackingNation, defendingNation);
+            }
+        }
+    }
+
+    private void sendPlayerSubtitle(DiplomacyPlayer diplomacyPlayer, Nation attackingNation, Nation defendingNation) {
+        var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
+        Validate.notNull(player);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var playerIsWilderness = nation == null;
+        var defendingNationIsWilderness = Nations.isWilderness(defendingNation);
+
+        ChatColor color1;
+        ChatColor color2;
+
+        if (defendingNationIsWilderness) {
+            color2 = ChatColor.GRAY;
+            if (playerIsWilderness) {
+                color1 = ChatColor.AQUA;
+            } else {
+                var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
+                var isAttackingNationEnemy = attackingNation.getEnemyNationIDs().contains(nation.getNationID());
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+
+                if (isAttackingNationAlly || isAttackingNation) {
+                    color1 = ChatColor.GREEN;
+                } else if (isAttackingNationEnemy) {
+                    color1 = ChatColor.RED;
+                } else {
+                    color1 = ChatColor.AQUA;
+                }
+            }
+        } else {
+            if (playerIsWilderness) {
+                color1 = ChatColor.BLUE;
+                color2 = ChatColor.AQUA;
+            } else {
+                var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
+                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nation.getNationID());
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+                var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
+                var isAttackingNationEnemy = attackingNation.getEnemyNationIDs().contains(nation.getNationID());
+                var isDefendingNationEnemy = defendingNation.getEnemyNationIDs().contains(nation.getNationID());
+                if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
+                    color1 = ChatColor.GREEN;
+                    if (isDefendingNationEnemy) {
+                        color2 = ChatColor.RED;
+                    } else {
+                        color2 = ChatColor.AQUA;
+                    }
+
+                } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                    color2 = ChatColor.GREEN;
+                    if (isAttackingNationEnemy) {
+                        color1 = ChatColor.RED;
+                    } else {
+                        color1 = ChatColor.AQUA;
+                    }
+                } else if (isAttackingNationAlly && isDefendingNationAlly) {
+                    color1 = ChatColor.DARK_GREEN;
+                    color2 = ChatColor.GREEN;
+                } else if (isAttackingNationEnemy && isDefendingNationEnemy) {
+                    color1 = ChatColor.DARK_RED;
+                    color2 = ChatColor.RED;
+                } else {
+                    color1 = ChatColor.BLUE;
+                    color2 = ChatColor.AQUA;
+                }
+            }
+        }
+
+        String attackingNationName = attackingNation.getName();
+        String defendingNationName;
+
+        if (defendingNationIsWilderness) {
+            defendingNationName = "Wilderness";
+        } else {
+            defendingNationName = defendingNation.getName();
+        }
+
+        String subtitle = createSubtitle(color1, color2, attackingNationName, defendingNationName);
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(subtitle));
+
+    }
+
+    private String createSubtitle(ChatColor color1, ChatColor color2, String attackingNationName, String defendingNationName) {
+        var color1bars = (int) (progress * 50);
+        var color2bars = 50 - color1bars;
+
+        String subtitle = "" + color1 + attackingNationName + " ";
+        for (var i = 0; i < color1bars; i++) {
+            subtitle += "|";
+        }
+        subtitle += color2;
+
+        for (var i = 0; i < color2bars; i++) {
+            subtitle += "|";
+        }
+
+        subtitle += " " + defendingNationName;
+
+        return subtitle;
     }
 
     public void sendParticles() {
@@ -66,8 +180,10 @@ public class Contest {
                 dustOptions = new Particle.DustOptions(Color.LIME, 1);
             } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
                 dustOptions = new Particle.DustOptions(Color.RED, 1);
-            } else {
+            } else if (isDefendingNationAlly && isAttackingNationAlly) {
                 dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
+            } else {
+                dustOptions = new Particle.DustOptions(Color.AQUA, 1);
             }
         }
         var min = Math.max(0, player.getLocation().getBlockY() - 20);
