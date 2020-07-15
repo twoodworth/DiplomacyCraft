@@ -6,6 +6,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
@@ -295,6 +296,36 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationEnemy(CommandSender sender, String nation) {
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var senderNation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (senderNation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to become enemies with another nation.");
+            return;
+        }
+
+        var enemyNation = Nations.getInstance().get(nation);
+
+        if (enemyNation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation of " + nation + " does not exist.");
+            return;
+        }
+
+        if (Objects.equals(senderNation, enemyNation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "Your nation cannot become enemies with itself.");
+            return;
+        }
+
+        if (senderNation.getEnemyNationIDs().contains(enemyNation.getNationID())) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "Your nation is already enemies with " + enemyNation.getName() + ".");
+            return;
+        }
+
+        senderNation.addEnemyNation(enemyNation);
+        enemyNation.addEnemyNation(senderNation);
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Your nation is now enemies with " + enemyNation.getName() + ".");
 
     }
 

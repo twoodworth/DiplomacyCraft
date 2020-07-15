@@ -126,7 +126,7 @@ public class Contest {
                 if (isAttackingNationAlly || isAttackingNation) {
                     color1 = ChatColor.GREEN;
                 } else if (isAttackingNationEnemy) {
-                    color1 = ChatColor.RED;
+                    color1 = ChatColor.DARK_RED;
                 } else {
                     color1 = ChatColor.DARK_BLUE;
                 }
@@ -145,7 +145,7 @@ public class Contest {
                 if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
                     color1 = ChatColor.GREEN;
                     if (isDefendingNationEnemy) {
-                        color2 = ChatColor.RED;
+                        color2 = ChatColor.DARK_RED;
                     } else {
                         color2 = ChatColor.DARK_BLUE;
                     }
@@ -153,7 +153,7 @@ public class Contest {
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
                     color2 = ChatColor.GREEN;
                     if (isAttackingNationEnemy) {
-                        color1 = ChatColor.RED;
+                        color1 = ChatColor.DARK_RED;
                     } else {
                         color1 = ChatColor.DARK_BLUE;
                     }

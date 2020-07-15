@@ -26,7 +26,6 @@ public class Nation {
     private String color;
     private List<UUID> outlawIDs;
     private List<String> allyNationIDs;
-    private List<String> enemyNationIDs;
 
     Nation(String nationID, ConfigurationSection nationSection) {
         this.configSection = nationSection;
@@ -91,7 +90,6 @@ public class Nation {
             outlawIDs.add(UUID.fromString(outlaw));
         }
         this.allyNationIDs = nationSection.getStringList("AllyNations");
-        this.enemyNationIDs = nationSection.getStringList("EnemyNations");
     }
 
     public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader, String name) {
@@ -195,6 +193,19 @@ public class Nation {
     }
 
     public List<String> getEnemyNationIDs() {
-        return enemyNationIDs;
+        var list = configSection.getStringList("EnemyNations");
+        return list;
+    }
+
+    public void addEnemyNation(Nation nation) {
+        var list = configSection.getStringList("EnemyNations");
+        list.add(nation.getNationID());
+        configSection.set("EnemyNations", list);
+    }
+
+    public void removeEnemyNation(Nation nation) {
+        var list = configSection.getStringList("EnemyNations");
+        list.remove(nation.getNationID());
+        configSection.set("EnemyNations", list);
     }
 }
