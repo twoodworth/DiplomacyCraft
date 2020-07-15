@@ -70,12 +70,14 @@ public class ContestManager {
                 group.removeChunk(diplomacyChunk);
             }
         }
+        contest.sendFireworks();
         endContest(contest);
     }
 
     private void winWildernessContest(Contest contest) {
         var diplomacyChunk = contest.getDiplomacyChunk();
         contest.getAttackingNation().addChunk(diplomacyChunk);
+        contest.sendFireworks();
         endContest(contest);
     }
 
