@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations.contest;
 
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -10,6 +11,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -20,15 +22,49 @@ import java.util.Random;
 
 public class Contest {
 
+    private ConfigurationSection configSection;
     private double progress = 0.0;
     private final Nation attackingNation;
     private final DiplomacyChunk diplomacyChunk;
     private final boolean isWilderness;
+    private final String contestID;
 
-    Contest(Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
+    Contest(String contestID, ConfigurationSection configSection) {
+        this.configSection = configSection;
+        this.contestID = contestID;
+
+        Nation attackingNation = Nations.getInstance().get(configSection.getString("AttackingNation"));
         this.attackingNation = attackingNation;
+
+        World world = Bukkit.getWorld(configSection.getString("World"));
+        int x = configSection.getInt("x");
+        int z = configSection.getInt("z");
+        Chunk chunk = world.getChunkAt(x, z);
+        DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         this.diplomacyChunk = diplomacyChunk;
-        this.isWilderness = isWilderness;
+
+        this.isWilderness = configSection.getBoolean("IsWilderness");
+    }
+
+    public static ConfigurationSection initializeContest(ConfigurationSection contestSection, Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
+
+        contestSection.set("AttackingNation", attackingNation.getName());
+        Nation defendingNation = diplomacyChunk.getNation();
+        if (defendingNation != null) {
+            contestSection.createSection("DefendingNation");
+            contestSection.set("DefendingNation", diplomacyChunk.getNation().getName());
+            contestSection.set("IsWilderness", false);
+        } else {
+            contestSection.set("IsWilderness", true);
+        }
+        Chunk chunk = diplomacyChunk.getChunk();
+        World world = chunk.getWorld();
+        int x = chunk.getX();
+        int z = chunk.getZ();
+        contestSection.set("World", world.getName());
+        contestSection.set("x", x);
+        contestSection.set("z", z);
+        return contestSection;
     }
 
     public boolean isNearChunk(Player player, Chunk chunk) {
@@ -270,6 +306,7 @@ public class Contest {
 
     public void setProgress(double progress) {
         this.progress = progress;
+        configSection.set("Progress", progress);
     }
 
     public Nation getAttackingNation() {
@@ -282,5 +319,9 @@ public class Contest {
 
     public boolean isWilderness() {
         return isWilderness;
+    }
+
+    public String getContestID() {
+        return contestID;
     }
 }

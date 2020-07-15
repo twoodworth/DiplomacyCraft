@@ -6,8 +6,18 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldSaveEvent;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -16,9 +26,44 @@ public class ContestManager {
 
     private static ContestManager instance = null;
 
+    private File ongoingContestsFile = new File(Diplomacy.getInstance().getDataFolder(), "ongoingContests.yml");
+    private YamlConfiguration config;
+
     private Map<DiplomacyChunk, Contest> contests = new HashMap<>();
 
     private int contestTaskID = -1;
+
+    public void registerEvents() {
+        Bukkit.getPluginManager().registerEvents(new ContestManager.EventListener(), Diplomacy.getInstance());
+    }
+
+    public void startContest(Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
+        var contest = contests.get(diplomacyChunk);
+        if (contest == null) {
+            var nextContestID = config.getString("NextContestID");
+            if (nextContestID == null) {
+                config.set("NextContestID", "0");
+                nextContestID = "0";
+            }
+
+            var contestID = nextContestID;
+            nextContestID = String.valueOf(Integer.parseInt(nextContestID) + 1);
+
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Contest.yml")));
+            ConfigurationSection contestSection = YamlConfiguration.loadConfiguration(reader);
+            config.set("Contests." + contestID, contestSection);
+            config.set("NextContestID", nextContestID);
+
+            var initializedContestSection = Contest.initializeContest(contestSection, attackingNation, diplomacyChunk, isWilderness);
+            contest = new Contest(contestID, initializedContestSection);
+            contests.put(diplomacyChunk, contest);
+        }
+
+        if (contestTaskID == -1) {
+            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
+        }
+    }
+
 
     public static ContestManager getInstance() {
         if (instance == null) {
@@ -27,17 +72,23 @@ public class ContestManager {
         return instance;
     }
 
-    public void startContest(Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
-        var contest = contests.get(diplomacyChunk);
-        if (contest == null) {
-            contest = new Contest(attackingNation, diplomacyChunk, isWilderness);
+    private ContestManager() {
+        config = YamlConfiguration.loadConfiguration(ongoingContestsFile);
+        var contestsSection = config.getConfigurationSection("Contests");
+        if (contestsSection == null) {
+            contestsSection = config.createSection("Contests");
+        }
+        for (var contestID : Objects.requireNonNull(contestsSection).getKeys(false)) {
+            var contestSection = config.getConfigurationSection("Contests." + contestID);
+            Validate.notNull(contestSection);
+
+
+            var contest = new Contest(contestID, contestSection);
+            DiplomacyChunk diplomacyChunk = contest.getDiplomacyChunk();
             contests.put(diplomacyChunk, contest);
         }
-
-        if (contestTaskID == -1) {
-            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
-        }
     }
+
 
     private void onContestTask() {
         for (var contest : contests.values()) {
@@ -84,6 +135,7 @@ public class ContestManager {
     }
 
     private void endContest(Contest contest) {
+        config.set("Contests." + contest.getContestID(), null);
         contests.remove(contest.getDiplomacyChunk());
         if (contests.size() == 0) {
             Bukkit.getScheduler().cancelTask(contestTaskID);
@@ -227,5 +279,20 @@ public class ContestManager {
 
     public boolean isBeingContested(DiplomacyChunk diplomacyChunk) {
         return contests.containsKey(diplomacyChunk);
+    }
+
+    public void save() {
+        try {
+            config.save(ongoingContestsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class EventListener implements Listener {
+        @EventHandler
+        void onWorldSave(WorldSaveEvent event) {
+            save();
+        }
     }
 }

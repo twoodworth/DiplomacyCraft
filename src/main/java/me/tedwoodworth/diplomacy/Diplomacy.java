@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.commands.GroupCommand;
 import me.tedwoodworth.diplomacy.commands.NationCommand;
 import me.tedwoodworth.diplomacy.commands.PlotCommand;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +20,7 @@ public class Diplomacy extends JavaPlugin {
         GroupCommand.register(getCommand("group"));
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
+        ContestManager.getInstance().registerEvents();
     }
 
     @Override
