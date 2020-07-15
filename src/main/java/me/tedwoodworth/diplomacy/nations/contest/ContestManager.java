@@ -61,6 +61,7 @@ public class ContestManager {
 
         if (contestTaskID == -1) {
             contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
+            config.set("ContestTaskRunning", "true");
         }
     }
 
@@ -78,6 +79,17 @@ public class ContestManager {
         if (contestsSection == null) {
             contestsSection = config.createSection("Contests");
         }
+        var strContestTaskRunning = config.getString("ContestTaskRunning");
+        if (strContestTaskRunning == null) {
+            config.set("ContestTaskRunning", "false");
+        }
+        var contestTaskRunning = Boolean.parseBoolean(strContestTaskRunning);
+        if (contestTaskRunning) {
+            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
+        } else {
+            contestTaskID = -1;
+        }
+
         for (var contestID : Objects.requireNonNull(contestsSection).getKeys(false)) {
             var contestSection = config.getConfigurationSection("Contests." + contestID);
             Validate.notNull(contestSection);
@@ -142,6 +154,8 @@ public class ContestManager {
         if (contests.size() == 0) {
             Bukkit.getScheduler().cancelTask(contestTaskID);
             contestTaskID = -1;
+            config.set("ContestTaskRunning", "false");
+
         }
     }
 
@@ -165,6 +179,9 @@ public class ContestManager {
                     attackingPlayers++;
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
                     defendingPlayers++;
+                    contest.setVacantTimer(0);
+                } else if (attackingPlayers == 0 && contest.getVacantTimer() >= 60) {
+
                 }
             }
         }
@@ -178,6 +195,16 @@ public class ContestManager {
             contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayers - defendingPlayers)) * attackingAdjacentCoefficient);
         } else if (attackingPlayers < defendingPlayers) {
             contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingPlayers - attackingPlayers)) * defendingAdjacentCoefficient);
+        } else if (attackingPlayers == 0 && contest.getVacantTimer() == 60) {
+            contest.setProgress(contest.getProgress() - Math.pow(2.0, (0.5)) * defendingAdjacentCoefficient);
+        }
+
+        if (attackingPlayers == 0 && defendingPlayers == 0) {
+            if (contest.getVacantTimer() < 60) {
+                contest.setVacantTimer(contest.getVacantTimer() + 1);
+            }
+        } else {
+            contest.setVacantTimer(0);
         }
     }
 
@@ -200,6 +227,13 @@ public class ContestManager {
         var adjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, nation, true);
         if (players > 0) {
             contest.setProgress(contest.getProgress() + Math.pow(2.0, players) * adjacentCoefficient);
+            if (contest.getVacantTimer() != 0) {
+                contest.setVacantTimer(0);
+            }
+        } else if (contest.getVacantTimer() < 60) {
+            contest.setVacantTimer(contest.getVacantTimer() + 1);
+        } else if (contest.getVacantTimer() == 60) {
+            contest.setProgress(-1.0);
         }
     }
 

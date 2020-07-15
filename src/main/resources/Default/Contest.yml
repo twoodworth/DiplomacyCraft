@@ -1,5 +1,7 @@
 Progress: 0.0
+VacantTimer: 0
 AttackingNation:
+ContestTaskRunning: false
 IsWilderness:
 World:
 x:

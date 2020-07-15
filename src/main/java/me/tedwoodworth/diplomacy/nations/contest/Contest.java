@@ -23,13 +23,26 @@ import java.util.Random;
 public class Contest {
 
     private ConfigurationSection configSection;
-    private double progress = 0.0;
+    private double progress;
+    private int vacantTimer;
     private final Nation attackingNation;
     private final DiplomacyChunk diplomacyChunk;
     private final boolean isWilderness;
     private final String contestID;
 
     Contest(String contestID, ConfigurationSection configSection) {
+        String strProgress = configSection.getString("Progress");
+        if (strProgress == null) {
+            this.progress = 0.0;
+        } else {
+            this.progress = Double.parseDouble(strProgress);
+        }
+        String strVacantTimer = configSection.getString("VacantTimer");
+        if (strVacantTimer == null) {
+            this.vacantTimer = 0;
+        } else {
+            this.vacantTimer = Integer.parseInt(strVacantTimer);
+        }
         this.configSection = configSection;
         this.contestID = contestID;
 
@@ -50,13 +63,9 @@ public class Contest {
 
         contestSection.set("AttackingNation", attackingNation.getName());
         Nation defendingNation = diplomacyChunk.getNation();
-        if (defendingNation != null) {
-            contestSection.createSection("DefendingNation");
-            contestSection.set("DefendingNation", diplomacyChunk.getNation().getName());
-            contestSection.set("IsWilderness", false);
-        } else {
-            contestSection.set("IsWilderness", true);
-        }
+
+        contestSection.set("IsWilderness", defendingNation == null);
+
         Chunk chunk = diplomacyChunk.getChunk();
         World world = chunk.getWorld();
         int x = chunk.getX();
@@ -328,6 +337,15 @@ public class Contest {
     public void setProgress(double progress) {
         this.progress = progress;
         configSection.set("Progress", progress);
+    }
+
+    public int getVacantTimer() {
+        return vacantTimer;
+    }
+
+    public void setVacantTimer(int vacantTimer) {
+        this.vacantTimer = vacantTimer;
+        configSection.set("VacantTimer", vacantTimer);
     }
 
     public Nation getAttackingNation() {
