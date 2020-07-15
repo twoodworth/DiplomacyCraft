@@ -62,7 +62,7 @@ public class Contest {
         if (defendingNationIsWilderness) {
             color2 = ChatColor.GRAY;
             if (playerIsWilderness) {
-                color1 = ChatColor.AQUA;
+                color1 = ChatColor.DARK_BLUE;
             } else {
                 var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
                 var isAttackingNationEnemy = attackingNation.getEnemyNationIDs().contains(nation.getNationID());
@@ -73,12 +73,12 @@ public class Contest {
                 } else if (isAttackingNationEnemy) {
                     color1 = ChatColor.RED;
                 } else {
-                    color1 = ChatColor.AQUA;
+                    color1 = ChatColor.DARK_BLUE;
                 }
             }
         } else {
             if (playerIsWilderness) {
-                color1 = ChatColor.BLUE;
+                color1 = ChatColor.DARK_BLUE;
                 color2 = ChatColor.AQUA;
             } else {
                 var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
@@ -92,7 +92,7 @@ public class Contest {
                     if (isDefendingNationEnemy) {
                         color2 = ChatColor.RED;
                     } else {
-                        color2 = ChatColor.AQUA;
+                        color2 = ChatColor.DARK_BLUE;
                     }
 
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
@@ -100,7 +100,7 @@ public class Contest {
                     if (isAttackingNationEnemy) {
                         color1 = ChatColor.RED;
                     } else {
-                        color1 = ChatColor.AQUA;
+                        color1 = ChatColor.DARK_BLUE;
                     }
                 } else if (isAttackingNationAlly && isDefendingNationAlly) {
                     color1 = ChatColor.DARK_GREEN;
@@ -109,7 +109,7 @@ public class Contest {
                     color1 = ChatColor.DARK_RED;
                     color2 = ChatColor.RED;
                 } else {
-                    color1 = ChatColor.BLUE;
+                    color1 = ChatColor.DARK_BLUE;
                     color2 = ChatColor.AQUA;
                 }
             }

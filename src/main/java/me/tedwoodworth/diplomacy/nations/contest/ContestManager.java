@@ -60,14 +60,16 @@ public class ContestManager {
         }
     }
 
-    private void winContest(Contest contest) { //TODO add fireworks
+    private void winContest(Contest contest) {
         var diplomacyChunk = contest.getDiplomacyChunk();
         var defendingNation = diplomacyChunk.getNation();
         defendingNation.removeChunk(contest.getDiplomacyChunk());
         contest.getAttackingNation().addChunk(diplomacyChunk);
-        for (var group : defendingNation.getGroups()) {
-            if (group.getChunks().contains(diplomacyChunk)) {
-                group.removeChunk(diplomacyChunk);
+        if (defendingNation.getGroups() != null) {
+            for (var group : defendingNation.getGroups()) {
+                if (group.getChunks().contains(diplomacyChunk)) {
+                    group.removeChunk(diplomacyChunk);
+                }
             }
         }
         contest.sendFireworks();
