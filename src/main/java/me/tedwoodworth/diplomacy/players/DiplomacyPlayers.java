@@ -90,13 +90,13 @@ public class DiplomacyPlayers {
                         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                         Nation nation = Nations.getInstance().get(diplomacyPlayer);
                         if (nation == null) {
-                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 30, 5);
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 40, 10);
                         } else if (toNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                            player.sendTitle(ChatColor.RED + toNation.getName(), null, 5, 30, 5);
+                            player.sendTitle(ChatColor.RED + toNation.getName(), null, 5, 40, 10);
                         } else if (toNation.getAllyNationIDs().contains(nation.getNationID()) || toNation.equals(nation)) {
-                            player.sendTitle(ChatColor.GREEN + toNation.getName(), null, 5, 30, 5);
+                            player.sendTitle(ChatColor.GREEN + toNation.getName(), null, 5, 40, 10);
                         } else {
-                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 30, 5);
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 40, 10);
                         }
                     }
                 }

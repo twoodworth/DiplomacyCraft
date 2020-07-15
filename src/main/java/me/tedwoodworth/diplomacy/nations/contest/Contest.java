@@ -89,13 +89,13 @@ public class Contest {
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                 Nation nation = Nations.getInstance().get(diplomacyPlayer);
                 if (nation == null) {
-                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 30, 5);
+                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 40, 10);
                 } else if (attackingNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                    player.sendTitle(ChatColor.RED + attackingNation.getName(), null, 5, 30, 5);
+                    player.sendTitle(ChatColor.RED + attackingNation.getName(), null, 5, 40, 10);
                 } else if (attackingNation.getAllyNationIDs().contains(nation.getNationID()) || attackingNation.equals(nation)) {
-                    player.sendTitle(ChatColor.GREEN + attackingNation.getName(), null, 5, 30, 5);
+                    player.sendTitle(ChatColor.GREEN + attackingNation.getName(), null, 5, 40, 10);
                 } else {
-                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 30, 5);
+                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 40, 10);
                 }
             }
         }

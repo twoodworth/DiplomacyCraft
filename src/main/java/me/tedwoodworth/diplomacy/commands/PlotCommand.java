@@ -2,9 +2,11 @@ package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.MemberInfo;
+import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -162,8 +164,84 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
     }
 
-    private void plotSurrender(CommandSender sender, String nation) {
+    private void plotSurrender(CommandSender sender, String strOtherNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            return;
+        }
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
 
+        if (nation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to surrender territory.");
+            return;
+        }
+
+        MemberInfo playerInfo = null;
+        var memberInfos = nation.getMemberInfos();
+        for (var memberInfo : memberInfos) {
+            if (diplomacyPlayer.equals(memberInfo.getMember())) {
+                playerInfo = memberInfo;
+            }
+            if (playerInfo != null) {
+                var nationClass = playerInfo.getMemberClassID();
+                var permissions = Objects.requireNonNull(nation.getNationClass(nationClass)).getPermissions();
+                boolean canSurrender = permissions.get("CanSurrenderPlot");
+                if (!canSurrender) {
+                    sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to surrender territory.");
+                    return;
+                }
+            } else {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to surrender territory.");
+                return;
+            }
+
+        }
+        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot surrender territory that is not yours.");
+            return;
+        }
+
+        var otherNation = Nations.getInstance().get(strOtherNation);
+
+        if (otherNation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation of '" + strOtherNation + "' does not exist.");
+            return;
+        }
+
+        nation.removeChunk(diplomacyChunk);
+        otherNation.addChunk(diplomacyChunk);
+
+        if (nation.getGroups() != null) {
+            for (var group : nation.getGroups()) {
+                if (group.getChunks().contains(diplomacyChunk)) {
+                    group.removeChunk(diplomacyChunk);
+                }
+            }
+        }
+
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Plot surrendered to '" + otherNation.getName() + "'.");
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var playerChunk = player.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testNation == null) {
+                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                } else if (otherNation.getEnemyNationIDs().contains(testNation.getNationID())) {
+                    player.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
+                } else if (otherNation.getAllyNationIDs().contains(testNation.getNationID()) || otherNation.equals(nation)) {
+                    player.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
+                } else {
+                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                }
+            }
+        }
     }
 
     private void plotGroup(CommandSender sender) {
