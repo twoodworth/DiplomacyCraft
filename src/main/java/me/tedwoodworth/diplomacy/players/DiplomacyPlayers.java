@@ -2,10 +2,16 @@ package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 
 import java.io.File;
@@ -63,6 +69,38 @@ public class DiplomacyPlayers {
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        private void onPlayerMove(PlayerMoveEvent event) {
+            var fromChunk = event.getFrom().getChunk();
+            var toChunk = event.getTo().getChunk();
+            if (!fromChunk.equals(toChunk)) {
+                var fromDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk);
+                var toDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk);
+
+                var fromNation = fromDiplomacyChunk.getNation();
+                var toNation = toDiplomacyChunk.getNation();
+
+                if (!Objects.equals(fromNation, toNation)) {
+                    var player = event.getPlayer();
+                    if (toNation == null) {
+                        player.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 30, 5);
+                    } else {
+                        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+                        if (nation == null) {
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 30, 5);
+                        } else if (toNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                            player.sendTitle(ChatColor.RED + toNation.getName(), null, 5, 30, 5);
+                        } else if (toNation.getAllyNationIDs().contains(nation.getNationID()) || toNation.equals(nation)) {
+                            player.sendTitle(ChatColor.GREEN + toNation.getName(), null, 5, 30, 5);
+                        } else {
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 30, 5);
+                        }
+                    }
+                }
+            }
         }
     }
 }
