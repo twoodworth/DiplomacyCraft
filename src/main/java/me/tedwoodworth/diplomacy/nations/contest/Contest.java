@@ -72,6 +72,25 @@ public class Contest {
         return player.getWorld().equals(chunk.getWorld()) && player.getLocation().distanceSquared(chunkCenter) < 10000;
     }
 
+    public void sendNewNationTitles() {
+        var chunk = diplomacyChunk.getChunk();
+        for (var player : Bukkit.getOnlinePlayers()) {
+            var playerChunk = player.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                Nation nation = Nations.getInstance().get(diplomacyPlayer);
+                if (nation == null) {
+                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 30, 5);
+                } else if (attackingNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    player.sendTitle(ChatColor.RED + attackingNation.getName(), null, 5, 30, 5);
+                } else if (attackingNation.getAllyNationIDs().contains(nation.getNationID()) || attackingNation.equals(nation)) {
+                    player.sendTitle(ChatColor.GREEN + attackingNation.getName(), null, 5, 30, 5);
+                } else {
+                    player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 30, 5);
+                }
+            }
+        }
+    }
 
     public void sendSubtitles() {
         var defendingNation = diplomacyChunk.getNation();
@@ -165,7 +184,8 @@ public class Contest {
 
     }
 
-    private String createSubtitle(ChatColor color1, ChatColor color2, String attackingNationName, String defendingNationName) {
+    private String createSubtitle(ChatColor color1, ChatColor color2, String attackingNationName, String
+            defendingNationName) {
         var color1bars = (int) (progress * 50);
         var color2bars = 50 - color1bars;
 
@@ -196,7 +216,8 @@ public class Contest {
         }
     }
 
-    public void sendPlayerParticles(Chunk chunk, DiplomacyPlayer diplomacyPlayer, Nation attackingNation, Nation defendingNation) {
+    public void sendPlayerParticles(Chunk chunk, DiplomacyPlayer diplomacyPlayer, Nation attackingNation, Nation
+            defendingNation) {
         var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
         Validate.notNull(player);
         var baseX = chunk.getX() * 16;

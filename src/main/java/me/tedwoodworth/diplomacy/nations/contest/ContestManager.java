@@ -124,6 +124,7 @@ public class ContestManager {
             }
         }
         contest.sendFireworks();
+        contest.sendNewNationTitles();
         endContest(contest);
     }
 
@@ -131,6 +132,7 @@ public class ContestManager {
         var diplomacyChunk = contest.getDiplomacyChunk();
         contest.getAttackingNation().addChunk(diplomacyChunk);
         contest.sendFireworks();
+        contest.sendNewNationTitles();
         endContest(contest);
     }
 
