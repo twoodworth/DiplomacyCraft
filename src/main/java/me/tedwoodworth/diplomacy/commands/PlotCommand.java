@@ -123,6 +123,27 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
             return;
         }
+
+        MemberInfo playerInfo = null;
+        var memberInfos = attackingNation.getMemberInfos();
+        for (var memberInfo : memberInfos) {
+            if (diplomacyPlayer.equals(memberInfo.getMember())) {
+                playerInfo = memberInfo;
+            }
+            if (playerInfo != null) {
+                var nationClass = playerInfo.getMemberClassID();
+                var permissions = Objects.requireNonNull(attackingNation.getNationClass(nationClass)).getPermissions();
+                boolean canContest = permissions.get("CanContest");
+                if (!canContest) {
+                    sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to contest territory.");
+                    return;
+                }
+            } else {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
+                return;
+            }
+
+        }
         if (Objects.equals(diplomacyChunk.getNation(), attackingNation)) {
             sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest your own territory.");
             return;
@@ -135,25 +156,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest an ally's territory.");
             return;
         }
-        MemberInfo playerInfo = null;
-        var memberInfos = attackingNation.getMemberInfos();
-        for (var memberInfo : memberInfos) {
-            if (diplomacyPlayer.equals(memberInfo.getMember())) {
-                playerInfo = memberInfo;
-            }
-        }
-        if (playerInfo != null) {
-            var nationClass = playerInfo.getMemberClassID();
-            var permissions = Objects.requireNonNull(attackingNation.getNationClass(nationClass)).getPermissions();
-            boolean canContest = permissions.get("CanContest");
-            if (!canContest) {
-                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to contest territory.");
-                return;
-            }
-        } else {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
-            return;
-        }
+
 
         sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Contest started.");
         ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
