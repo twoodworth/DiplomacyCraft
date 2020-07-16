@@ -166,15 +166,19 @@ public class ContestManager {
         var chunk = diplomacyChunk.getChunk();
         var attackingNation = contest.getAttackingNation();
         var defendingNation = diplomacyChunk.getNation();
+        Validate.notNull(defendingNation);
         var attackingPlayers = 0;
         var defendingPlayers = 0;
         for (var player : Bukkit.getOnlinePlayers()) {
-            if (player.getLocation().getChunk().equals(chunk)) {
-                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(Nations.getInstance().get(diplomacyPlayer).getNationID());
-                var isAttackingNation = Nations.getInstance().get(diplomacyPlayer).equals(attackingNation);
-                var isDefendingNation = Nations.getInstance().get(diplomacyPlayer).equals(defendingNation);
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            var nation = Nations.getInstance().get(diplomacyPlayer);
+            if (player.getLocation().getChunk().equals(chunk) && nation != null) {
+
+                var nationID = nation.getNationID();
+                var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
+                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+                var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
                 if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
                     attackingPlayers++;
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {

@@ -19,6 +19,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotUsage = "/plot ...";
     private static final String plotContestUsage = "/plot contest";
     private static final String plotSurrenderUsage = "/plot surrender <nation>";
+    private static final String plotAbandonUsage = "/plot abandon";
     private static final String plotGroupUsage = "/plot group ...";
     private static final String plotGroupSetUsage = "/plot group set <group>";
     private static final String plotGroupRemoveUsage = "/plot group remove";
@@ -47,6 +48,12 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                 plotSurrender(sender, args[1]);
             } else {
                 sender.sendMessage(plotSurrenderUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("abandon")) {
+            if (args.length == 1) {
+                plotAbandon(sender);
+            } else {
+                sender.sendMessage(plotAbandonUsage);
             }
         } else if (args[0].equalsIgnoreCase("group")) {
             if (args.length == 1) {
@@ -85,7 +92,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return null;
         } else {
             if (args.length == 1) {
-                return Arrays.asList("contest", "surrender", "group", "clear");
+                return Arrays.asList("contest", "surrender", "group", "clear", "abandon");
             } else if (args[0].equalsIgnoreCase("contest")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("surrender")) {
@@ -212,6 +219,10 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation of '" + strOtherNation + "' does not exist.");
             return;
         }
+        if (Objects.equals(nation, otherNation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot surrender territory to your own nation.");
+            return;
+        }
 
         nation.removeChunk(diplomacyChunk);
         otherNation.addChunk(diplomacyChunk);
@@ -240,6 +251,70 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                 } else {
                     player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 }
+            }
+        }
+    }
+
+    private void plotAbandon(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            return;
+        }
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+
+        if (nation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to abandon territory.");
+            return;
+        }
+
+        MemberInfo playerInfo = null;
+        var memberInfos = nation.getMemberInfos();
+        for (var memberInfo : memberInfos) {
+            if (diplomacyPlayer.equals(memberInfo.getMember())) {
+                playerInfo = memberInfo;
+            }
+            if (playerInfo != null) {
+                var nationClass = playerInfo.getMemberClassID();
+                var permissions = Objects.requireNonNull(nation.getNationClass(nationClass)).getPermissions();
+                boolean canSurrender = permissions.get("CanSurrenderPlot");
+                if (!canSurrender) {
+                    sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to abandon territory.");
+                    return;
+                }
+            } else {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to abandon territory.");
+                return;
+            }
+
+        }
+        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot abandon territory that is not yours.");
+            return;
+        }
+
+        nation.removeChunk(diplomacyChunk);
+
+        if (nation.getGroups() != null) {
+            for (var group : nation.getGroups()) {
+                if (group.getChunks().contains(diplomacyChunk)) {
+                    group.removeChunk(diplomacyChunk);
+                }
+            }
+        }
+
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Plot abandoned.");
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var playerChunk = player.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                player.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
             }
         }
     }
