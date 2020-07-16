@@ -1,7 +1,9 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.MemberInfo;
+import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -285,8 +287,66 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void nationSurrender(CommandSender sender, String nation) {
+    private void nationSurrender(CommandSender sender, String otherNationName) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            return;
+        }
 
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to surrender a nation.");
+            return;
+        }
+
+        MemberInfo playerInfo = null;
+        var memberInfos = nation.getMemberInfos();
+        for (var memberInfo : memberInfos) {
+            if (diplomacyPlayer.equals(memberInfo.getMember())) {
+                playerInfo = memberInfo;
+            }
+            if (playerInfo != null) {
+                var nationClass = playerInfo.getMemberClassID();
+                var permissions = Objects.requireNonNull(nation.getNationClass(nationClass)).getPermissions();
+                boolean canSurrender = permissions.get("CanSurrenderNation");
+                if (!canSurrender) {
+                    sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to surrender your nation.");
+                    return;
+                }
+            } else {
+                sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to surrender a nation.");
+                return;
+            }
+        }
+
+        Nation otherNation = Nations.getInstance().get(otherNationName);
+        if (otherNation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation of '" + otherNationName + "' does not exist.");
+            return;
+        }
+
+        if (Objects.equals(nation, otherNation)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot surrender your nation to itself.");
+            return;
+        }
+
+        var diplomacyChunks = nation.getChunks();
+        for (var diplomacyChunk : diplomacyChunks) {
+            nation.removeChunk(diplomacyChunk);
+            otherNation.addChunk(diplomacyChunk);
+        }
+
+        var groups = nation.getGroups();
+        for (var group : groups) {
+            group.setNation(otherNation);
+        }
+
+        if (otherNation.getIsOpen()) { //TODO transfer members of nation to otherNation, only if isOpen == true
+
+        }
     }
 
     private void nationAlly(CommandSender sender, String nation) {

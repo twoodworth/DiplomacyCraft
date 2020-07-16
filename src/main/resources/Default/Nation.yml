@@ -408,7 +408,6 @@ Classes:
 Members: {}
 Name:
 Chunks: []
-Groups: {}
 Balance: 0
 Created:
 Founder:
@@ -416,3 +415,4 @@ Color: ff0000
 Outlaws: []
 AllyNations: []
 EnemyNations: []
+IsOpen: false

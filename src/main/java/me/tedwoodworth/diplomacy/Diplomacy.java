@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy;
 import me.tedwoodworth.diplomacy.commands.GroupCommand;
 import me.tedwoodworth.diplomacy.commands.NationCommand;
 import me.tedwoodworth.diplomacy.commands.PlotCommand;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -21,6 +22,7 @@ public class Diplomacy extends JavaPlugin {
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
+        DiplomacyGroups.getInstance().registerEvents();
     }
 
     @Override

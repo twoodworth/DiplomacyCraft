@@ -1,15 +1,16 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class Nation {
 
@@ -19,7 +20,6 @@ public class Nation {
     private List<UUID> leaderIDs;
     private List<NationClass> classes;
     private List<MemberInfo> memberInfos;
-    private List<NationGroup> groups;
     private int balance;
     private long created;
     private UUID founderID;
@@ -63,23 +63,6 @@ public class Nation {
             memberInfos.add(memberInfo);
         }
 
-        var stringGroupIDs = Objects.requireNonNull(nationSection.getConfigurationSection("Groups")).getKeys(false);
-        List<NationGroup> groups = new ArrayList<>();
-        for (var groupID : stringGroupIDs) {
-            var groupName = nationSection.getString("Groups." + groupID + ".Name");
-            List<DiplomacyChunk> chunks = new ArrayList<>();
-            var chunkMaps = nationSection.getMapList("Groups." + groupID + ".Chunks");
-            for (var map : chunkMaps) {
-                var world = Bukkit.getWorld(String.valueOf(map.get("world")));
-                var x = (Integer) map.get("x");
-                var z = (Integer) map.get("z");
-                var chunk = world.getChunkAt(x, z);
-                var diplomacyChunk = new DiplomacyChunk(chunk);
-                chunks.add(diplomacyChunk);
-            }
-            var group = new NationGroup(Integer.parseInt(groupID), groupName, chunks);
-            groups.add(group);
-        }
         this.balance = nationSection.getInt("Balance");
         this.created = nationSection.getInt("Created");
         this.founderID = UUID.fromString(Objects.requireNonNull(nationSection.getString("Founder")));
@@ -136,45 +119,39 @@ public class Nation {
         this.name = name;
     }
 
-    public Stream<DiplomacyChunk> getChunks() {
-
+    public Set<DiplomacyChunk> getChunks() {
 
         var chunkMaps = configSection.getMapList("Chunks");
         return chunkMaps.stream()
-                .map(this::configMapToChunk);
+                .map(DiplomacyChunks.getInstance()::configMapToChunk)
+                .collect(Collectors.toSet());
     }
 
-    private Map<?, ?> chunkToConfigMap(DiplomacyChunk diplomacyChunk) {
-        return ImmutableMap.of(
-                "world", diplomacyChunk.getChunk().getWorld().getName(),
-                "x", diplomacyChunk.getChunk().getX(),
-                "z", diplomacyChunk.getChunk().getZ()
-        );
-    }
-
-    private DiplomacyChunk configMapToChunk(Map<?, ?> map) {
-        var world = Bukkit.getWorld(String.valueOf(map.get("world")));
-        int x = (Integer) map.get("x");
-        int z = (Integer) map.get("z");
-
-        var chunk = world.getChunkAt(x, z);
-
-        return new DiplomacyChunk(chunk);
+    public boolean hasChunk(DiplomacyChunk diplomacyChunk) {
+        var diplomacyChunkMap = DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk);
+        var chunkMaps = configSection.getMapList("Chunks");
+        return chunkMaps.contains(diplomacyChunkMap);
     }
 
     public void addChunk(DiplomacyChunk diplomacyChunk) {
         var list = configSection.getMapList("Chunks");
-        list.add(chunkToConfigMap(diplomacyChunk));
+        list.add(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
     }
 
     public void removeChunk(DiplomacyChunk diplomacyChunk) {
         var list = configSection.getMapList("Chunks");
-        list.remove(chunkToConfigMap(diplomacyChunk));
+        list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
     }
 
-    public List<NationGroup> getGroups() {
+    public List<DiplomacyGroup> getGroups() {
+        List<DiplomacyGroup> groups = new ArrayList<>();
+        for (var group : DiplomacyGroups.getInstance().getGroups()) {
+            if (Objects.equals(group.getNation(), this)) {
+                groups.add(group);
+            }
+        }
         return groups;
     }
 
@@ -207,5 +184,14 @@ public class Nation {
         var list = configSection.getStringList("EnemyNations");
         list.remove(nation.getNationID());
         configSection.set("EnemyNations", list);
+    }
+
+    public boolean getIsOpen() {
+        var isOpen = configSection.getBoolean("IsOpen");
+        return isOpen;
+    }
+
+    public void setIsOpen(boolean isOpen) {
+        configSection.set("IsOpen", isOpen);
     }
 }

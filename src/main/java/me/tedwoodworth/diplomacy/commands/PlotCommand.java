@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -308,7 +309,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         Chunk chunk = player.getLocation().getChunk();
         DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-        NationGroup group = diplomacyChunk.getGroup();
+        DiplomacyGroup group = diplomacyChunk.getGroup();
         if (group != null) {
             sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "This plot belongs to the group '" + group.getName() + "'.");
         } else {

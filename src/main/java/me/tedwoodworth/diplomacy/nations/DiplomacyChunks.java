@@ -1,5 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
+import com.google.common.collect.ImmutableMap;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
 import java.util.Map;
@@ -25,6 +27,25 @@ public class DiplomacyChunks {
             diplomacyChunks.put(chunk, diplomacyChunk);
         }
         return diplomacyChunk;
+    }
+
+    public Map<?, ?> chunkToConfigMap(DiplomacyChunk diplomacyChunk) {
+        return ImmutableMap.of(
+                "world", diplomacyChunk.getChunk().getWorld().getName(),
+                "x", diplomacyChunk.getChunk().getX(),
+                "z", diplomacyChunk.getChunk().getZ()
+        );
+    }
+
+    public DiplomacyChunk configMapToChunk(Map<?, ?> map) {
+        var world = Bukkit.getWorld(String.valueOf(map.get("world")));
+        int x = (Integer) map.get("x");
+        int z = (Integer) map.get("z");
+
+        var chunk = world.getChunkAt(x, z);
+
+
+        return new DiplomacyChunk(chunk);
     }
 
 
