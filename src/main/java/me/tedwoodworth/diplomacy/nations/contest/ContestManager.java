@@ -183,9 +183,6 @@ public class ContestManager {
                     attackingPlayers++;
                 } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
                     defendingPlayers++;
-                    contest.setVacantTimer(0);
-                } else if (attackingPlayers == 0 && contest.getVacantTimer() >= 60) {
-
                 }
             }
         }

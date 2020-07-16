@@ -172,6 +172,12 @@ public class Contest {
                 } else if (isAttackingNationEnemy && isDefendingNationEnemy) {
                     color1 = ChatColor.DARK_RED;
                     color2 = ChatColor.RED;
+                } else if (isAttackingNationEnemy) {
+                    color1 = ChatColor.DARK_RED;
+                    color2 = ChatColor.DARK_BLUE;
+                } else if (isDefendingNationEnemy) {
+                    color1 = ChatColor.DARK_BLUE;
+                    color2 = ChatColor.DARK_RED;
                 } else {
                     color1 = ChatColor.DARK_BLUE;
                     color2 = ChatColor.AQUA;
