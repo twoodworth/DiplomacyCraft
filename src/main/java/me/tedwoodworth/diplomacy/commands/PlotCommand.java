@@ -10,6 +10,7 @@ import org.bukkit.Chunk;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,9 +20,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String plotContestUsage = "/plot contest";
     private static final String plotSurrenderUsage = "/plot surrender <nation>";
     private static final String plotAbandonUsage = "/plot abandon";
-    private static final String plotGroupUsage = "/plot group ...";
-    private static final String plotGroupSetUsage = "/plot group set <group>";
-    private static final String plotGroupRemoveUsage = "/plot group remove";
+    private static final String plotGroupUsage = "/plot group";
     private static final String plotClearUsage = "/plot clear";
 
 
@@ -57,18 +56,6 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         } else if (args[0].equalsIgnoreCase("group")) {
             if (args.length == 1) {
                 plotGroup(sender);
-            } else if (args[1].equalsIgnoreCase("set")) {
-                if (args.length == 3) {
-                    plotGroupSet(sender, args[2]);
-                } else {
-                    sender.sendMessage(plotGroupSetUsage);
-                }
-            } else if (args[1].equalsIgnoreCase("remove")) {
-                if (args.length == 2) {
-                    plotGroupRemove(sender);
-                } else {
-                    sender.sendMessage(plotGroupRemoveUsage);
-                }
             } else {
                 sender.sendMessage(plotGroupUsage);
             }
@@ -95,13 +82,10 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("contest")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("surrender")) {
-                return null; // TODO list nations
-            } else if (args[0].equalsIgnoreCase("group")) {
-                if (args.length == 2) {
-                    return Arrays.asList("set", "remove");
-                } else {
-                    return null; // TODO List groups
-                }
+                List<String> nations = new ArrayList<>();
+                for (var nation : Nations.getInstance().getNations())
+                    nations.add(nation.getName());
+                return nations;
             } else if (args[0].equalsIgnoreCase("clear")) {
                 return null;
             } else {
@@ -111,7 +95,12 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     }
 
     private void plot(CommandSender sender) {
-
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage plots:");
+        sender.sendMessage(ChatColor.AQUA + plotContestUsage + ChatColor.GRAY + " Contest a plot");
+        sender.sendMessage(ChatColor.AQUA + plotSurrenderUsage + ChatColor.GRAY + " Surrender a plot to another nation");
+        sender.sendMessage(ChatColor.AQUA + plotAbandonUsage + ChatColor.GRAY + " Abandon a plot");
+        sender.sendMessage(ChatColor.AQUA + plotGroupUsage + ChatColor.GRAY + " Get the group that controls a plot");
+        sender.sendMessage(ChatColor.AQUA + plotClearUsage + ChatColor.GRAY + " Remove [private] signs from a plot");
     }
 
     private void plotContest(CommandSender sender) {
@@ -327,15 +316,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void plotGroupSet(CommandSender sender, String group) {
-
-    }
-
-    private void plotGroupRemove(CommandSender sender) {
-
-    }
-
     private void plotClear(CommandSender sender) {
-
+        //TODO add functionality
     }
 }
