@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -103,7 +104,7 @@ public class ContestManager {
 
 
     private void onContestTask() {
-        for (var contest : contests.values()) {
+        for (var contest : new ArrayList<>(contests.values())) {
             if (contest.isWilderness()) {
                 wildernessProgressChange(contest);
             } else {
@@ -234,7 +235,7 @@ public class ContestManager {
         } else if (contest.getVacantTimer() < 60) {
             contest.setVacantTimer(contest.getVacantTimer() + 1);
         } else if (contest.getVacantTimer() == 60) {
-            contest.setProgress(-1.0);
+            contest.setProgress(-.01);
         }
     }
 
