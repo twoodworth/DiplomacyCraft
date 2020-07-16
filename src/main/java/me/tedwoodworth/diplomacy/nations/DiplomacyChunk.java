@@ -39,4 +39,20 @@ public class DiplomacyChunk {
         }
         return null;
     }
+
+    @Nullable
+    public NationGroup getGroup() {
+        Nation nation = this.getNation();
+        if (nation != null) {
+            if (nation.getGroups() != null) {
+                for (var group : nation.getGroups()) {
+                    if (group.getChunks().contains(this)) {
+                        return group;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }

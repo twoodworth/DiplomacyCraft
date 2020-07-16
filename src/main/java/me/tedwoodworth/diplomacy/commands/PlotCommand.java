@@ -1,13 +1,12 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
-import me.tedwoodworth.diplomacy.nations.MemberInfo;
-import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -299,12 +298,8 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
         nation.removeChunk(diplomacyChunk);
 
-        if (nation.getGroups() != null) {
-            for (var group : nation.getGroups()) {
-                if (group.getChunks().contains(diplomacyChunk)) {
-                    group.removeChunk(diplomacyChunk);
-                }
-            }
+        if (diplomacyChunk.getGroup() != null) {
+            diplomacyChunk.getGroup().removeChunk(diplomacyChunk);
         }
 
         sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Plot abandoned.");
@@ -320,7 +315,16 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     }
 
     private void plotGroup(CommandSender sender) {
-
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        Chunk chunk = player.getLocation().getChunk();
+        DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        NationGroup group = diplomacyChunk.getGroup();
+        if (group != null) {
+            sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "This plot belongs to the group '" + group.getName() + "'.");
+        } else {
+            sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "This plot does not belong to any groups.");
+        }
     }
 
     private void plotGroupSet(CommandSender sender, String group) {

@@ -4,12 +4,12 @@ import java.util.List;
 
 public class NationGroup {
     private int groupID;
-    private String groupName;
+    private String name;
     private List<DiplomacyChunk> chunks;
 
-    public NationGroup(int groupID, String groupName, List<DiplomacyChunk> chunks) {
+    public NationGroup(int groupID, String name, List<DiplomacyChunk> chunks) {
         this.groupID = groupID;
-        this.groupName = groupName;
+        this.name = name;
         this.chunks = chunks;
     }
 
@@ -23,5 +23,9 @@ public class NationGroup {
 
     public void removeChunk(DiplomacyChunk diplomacyChunk) {
         chunks.remove(diplomacyChunk);
+    }
+
+    public String getName() {
+        return name;
     }
 }
