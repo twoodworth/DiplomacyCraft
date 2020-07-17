@@ -18,10 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class ContestManager {
 
@@ -124,10 +121,10 @@ public class ContestManager {
         }
     }
 
-    private void winContest(Contest contest) {
+    public void winContest(Contest contest) {
         var diplomacyChunk = contest.getDiplomacyChunk();
         var defendingNation = diplomacyChunk.getNation();
-        defendingNation.removeChunk(contest.getDiplomacyChunk());
+        Objects.requireNonNull(defendingNation).removeChunk(contest.getDiplomacyChunk());
         contest.getAttackingNation().addChunk(diplomacyChunk);
         if (defendingNation.getGroups() != null) {
             for (var group : defendingNation.getGroups()) {
@@ -149,7 +146,7 @@ public class ContestManager {
         endContest(contest);
     }
 
-    private void endContest(Contest contest) {
+    public void endContest(Contest contest) {
         config.set("Contests." + contest.getContestID(), null);
         contests.remove(contest.getDiplomacyChunk());
         if (contests.size() == 0) {
@@ -317,6 +314,10 @@ public class ContestManager {
 
     public boolean isBeingContested(DiplomacyChunk diplomacyChunk) {
         return contests.containsKey(diplomacyChunk);
+    }
+
+    public Collection<Contest> getContests() {
+        return contests.values();
     }
 
     public void save() {

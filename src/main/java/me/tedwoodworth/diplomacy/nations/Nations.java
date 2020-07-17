@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.nations;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +18,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.bukkit.Bukkit.getOfflinePlayer;
 
@@ -73,11 +75,12 @@ public class Nations {
         }
         for (var nationID : nationsSection.getKeys(false)) {
             var nationSection = nationConfig.getConfigurationSection("Nations." + nationID);
-            assert nationSection != null;
-
-
-            var nation = new Nation(nationID, nationSection);
-            nations.add(nation);
+            if (nationSection == null) {
+                nationConfig.set("Nations." + nationID, null);
+            } else {
+                var nation = new Nation(nationID, nationSection);
+                nations.add(nation);
+            }
         }
 
     }
@@ -85,9 +88,9 @@ public class Nations {
     @Nullable
     public Nation get(DiplomacyPlayer player) {
         for (var nation : nations) {
-            for (var memberInfo : nation.getMemberInfos()) {
-                var member = memberInfo.getMember();
-                if (player.equals(member)) {
+            for (var member : nation.getMembers()) {
+                var testPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(member));
+                if (player.equals(testPlayer)) {
                     return nation;
                 }
             }
@@ -106,9 +109,13 @@ public class Nations {
     }
 
     public void rename(String name, Nation nation) {
-        var oldName = nation.getName();
         nationConfig.set("Nations." + nation.getNationID() + ".Name", name);
         nation.setName(name);
+    }
+
+    public void removeNation(Nation nation) {
+        nationConfig.set("Nations." + nation.getNationID(), null);
+        nations.remove(nation);
     }
 
     public static boolean isWilderness(Nation nation) {

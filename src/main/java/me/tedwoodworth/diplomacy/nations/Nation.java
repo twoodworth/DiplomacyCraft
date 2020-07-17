@@ -3,7 +3,8 @@ package me.tedwoodworth.diplomacy.nations;
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +20,6 @@ public class Nation {
     private String name;
     private List<UUID> leaderIDs;
     private List<NationClass> classes;
-    private List<MemberInfo> memberInfos;
-    private int balance;
     private long created;
     private UUID founderID;
     private String color;
@@ -54,16 +53,6 @@ public class Nation {
             classes.add(nationClass);
         }
 
-        this.memberInfos = new ArrayList<>();
-        var membersStr = nationSection.getConfigurationSection("Members").getKeys(false);
-        for (var memberID : membersStr) {
-            var member = DiplomacyPlayers.getInstance().get(UUID.fromString(memberID));
-            var memberClassID = nationSection.getString("Members." + memberID);
-            var memberInfo = new MemberInfo(member, memberClassID);
-            memberInfos.add(memberInfo);
-        }
-
-        this.balance = nationSection.getInt("Balance");
         this.created = nationSection.getInt("Created");
         this.founderID = UUID.fromString(Objects.requireNonNull(nationSection.getString("Founder")));
         this.color = nationSection.getString("Color");
@@ -107,8 +96,46 @@ public class Nation {
         return nationID;
     }
 
-    public List<MemberInfo> getMemberInfos() {
-        return memberInfos;
+    public Set<String> getMembers() {
+        return Objects.requireNonNull(configSection.getConfigurationSection("Members")).getKeys(false);
+    }
+
+    public void addMember(DiplomacyPlayer diplomacyPlayer) {
+        var id = diplomacyPlayer.getUUID().toString();
+        var memberConfig = configSection.getConfigurationSection("Members");
+        Validate.notNull(memberConfig);
+        memberConfig.set(id, "0");
+        configSection.set("Members", memberConfig);
+
+    }
+
+    public void removeMember(DiplomacyPlayer diplomacyPlayer) {
+        var id = diplomacyPlayer.getUUID().toString();
+        var memberConfig = configSection.getConfigurationSection("Members");
+        Validate.notNull(memberConfig);
+        memberConfig.set(id, null);
+        configSection.set("Members", memberConfig);
+    }
+
+    public List<NationClass> getClasses() {
+        return classes;
+    }
+
+    public NationClass getMemberClass(DiplomacyPlayer diplomacyPlayer) {
+        var uuid = diplomacyPlayer.getUUID();
+        var classID = configSection.getString("Members." + uuid.toString());
+        return getClassFromID(classID);
+
+    }
+
+    @Nullable
+    public NationClass getClassFromID(String classID) {
+        for (var nationClass : classes) {
+            if (Objects.equals(nationClass.getClassID(), classID)) {
+                return nationClass;
+            }
+        }
+        return null;
     }
 
     public String getName() {
@@ -163,6 +190,14 @@ public class Nation {
             }
         }
         return null;
+    }
+
+    public int getBalance() {
+        return configSection.getInt("Balance");
+    }
+
+    public void setBalance(int balance) {
+        configSection.set("Balance", balance);
     }
 
     public List<String> getAllyNationIDs() {

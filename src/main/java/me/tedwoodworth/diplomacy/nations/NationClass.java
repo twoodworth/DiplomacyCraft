@@ -28,4 +28,12 @@ public class NationClass {
     public Map<String, Boolean> getPermissions() {
         return permissions;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -46,15 +46,13 @@ public class Contest {
         this.configSection = configSection;
         this.contestID = contestID;
 
-        Nation attackingNation = Nations.getInstance().get(configSection.getString("AttackingNation"));
-        this.attackingNation = attackingNation;
+        this.attackingNation = Nations.getInstance().get(configSection.getString("AttackingNation"));
 
-        World world = Bukkit.getWorld(configSection.getString("World"));
+        World world = Bukkit.getWorld(Objects.requireNonNull(configSection.getString("World")));
         int x = configSection.getInt("x");
         int z = configSection.getInt("z");
-        Chunk chunk = world.getChunkAt(x, z);
-        DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-        this.diplomacyChunk = diplomacyChunk;
+        Chunk chunk = Objects.requireNonNull(world).getChunkAt(x, z);
+        this.diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
 
         this.isWilderness = configSection.getBoolean("IsWilderness");
     }
@@ -166,7 +164,7 @@ public class Contest {
                     } else {
                         color1 = ChatColor.DARK_BLUE;
                     }
-                } else if (isAttackingNationAlly && isDefendingNationAlly) {
+                } else if (isAttackingNationAlly && !isDefendingNationEnemy) {
                     color1 = ChatColor.DARK_GREEN;
                     color2 = ChatColor.GREEN;
                 } else if (isAttackingNationEnemy && isDefendingNationEnemy) {
@@ -257,7 +255,7 @@ public class Contest {
                 dustOptions = new Particle.DustOptions(Color.LIME, 1);
             } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
                 dustOptions = new Particle.DustOptions(Color.RED, 1);
-            } else if (isDefendingNationAlly && isAttackingNationAlly) {
+            } else if (isDefendingNationAlly) {
                 dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
             } else {
                 dustOptions = new Particle.DustOptions(Color.AQUA, 1);
