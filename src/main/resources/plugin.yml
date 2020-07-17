@@ -2,6 +2,8 @@ name: Diplomacy
 main: me.tedwoodworth.diplomacy.Diplomacy
 version: 0.1.0
 
+depend: [Vault]
+
 commands:
   plot:
     description: Manage a plot.
@@ -17,3 +19,4 @@ commands:
     description: Manage a group.
     aliases: [g]
     usage: "Usage: /<command> ..."
+

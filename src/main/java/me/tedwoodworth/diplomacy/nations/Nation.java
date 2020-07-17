@@ -18,7 +18,6 @@ public class Nation {
     private ConfigurationSection configSection;
     private String nationID;
     private String name;
-    private List<UUID> leaderIDs;
     private List<NationClass> classes;
     private long created;
     private UUID founderID;
@@ -30,11 +29,6 @@ public class Nation {
         this.configSection = nationSection;
         this.nationID = nationID;
         this.name = nationSection.getString("Name");
-        this.leaderIDs = new ArrayList<>();
-        var leadersStr = nationSection.getStringList("Leaders");
-        for (var LeaderID : leadersStr) {
-            leaderIDs.add(UUID.fromString(LeaderID));
-        }
 
         this.classes = new ArrayList<>(9);
         for (var classID = 0; classID < 9; classID++) {
@@ -53,6 +47,7 @@ public class Nation {
             classes.add(nationClass);
         }
 
+
         this.created = nationSection.getInt("Created");
         this.founderID = UUID.fromString(Objects.requireNonNull(nationSection.getString("Founder")));
         this.color = nationSection.getString("Color");
@@ -64,16 +59,13 @@ public class Nation {
         this.allyNationIDs = nationSection.getStringList("AllyNations");
     }
 
-    public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer leader, String name) {
+    public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer founder, String name) {
         Map<String, String> membersMap = ImmutableMap.of(
-                leader.getUniqueId().toString(), "8");
+                founder.getUniqueId().toString(), "8");
 
         nationSection.createSection("Members", membersMap);
-        nationSection.set("Founder", leader.getUniqueId().toString());
+        nationSection.set("Founder", founder.getUniqueId().toString());
 
-        List<String> leaders = new ArrayList<>(1);
-        leaders.add(leader.getUniqueId().toString());
-        nationSection.set("Leaders", leaders);
         nationSection.set("Created", Instant.now().getEpochSecond());
         nationSection.set("Name", name);
         return nationSection;

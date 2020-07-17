@@ -38,7 +38,7 @@ public class Nations {
     }
 
     public Nation createNation(String name, DiplomacyPlayer leader) {
-        var ofLeader = getOfflinePlayer(leader.getUUID());
+        var founder = getOfflinePlayer(leader.getUUID());
         var nextNationID = nationConfig.getString("NextNationID");
         if (nextNationID == null) {
             nationConfig.set("NextNationID", "0");
@@ -53,7 +53,7 @@ public class Nations {
 
         nationConfig.set("Nations." + nationID, nationSection);
         nationConfig.set("NextNationID", nextNationID);
-        var initializedNationSection = Nation.initializeNation(nationSection, ofLeader, name);
+        var initializedNationSection = Nation.initializeNation(nationSection, founder, name);
         var nation = new Nation(nationID, initializedNationSection);
         nations.add(nation);
         return nation;
