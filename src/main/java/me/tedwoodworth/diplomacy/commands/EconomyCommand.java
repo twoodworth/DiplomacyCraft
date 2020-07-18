@@ -237,8 +237,8 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (amount < 0.01) {
-            sender.sendMessage(ChatColor.RED + "A minimum deposit of \u00A40.01 is required.");
+        if (amount < 1000.0) {
+            sender.sendMessage(ChatColor.RED + "A minimum deposit of \u00A41000.00 is required.");
             return;
         }
 
@@ -252,9 +252,9 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         if (amount > maxAmount) {
             if (maxAmount >= 1) {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(amount));
+                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(amount) + " in your wallet.");
             } else {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(amount));
+                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(amount) + " in your wallet.");
             }
             return;
         }
@@ -267,7 +267,6 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
         var playerInventory = (Inventory) nMap.get("inventory");
 
         ((Player) sender).getInventory().setContents(playerInventory.getContents());
-        System.out.println(remainingAmount);
 
         Diplomacy.getEconomy().depositPlayer((Player) sender, amount);
 
@@ -409,9 +408,78 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
     }
 
 
-    private void withdraw(CommandSender sender, String amount) {
+    private void withdraw(CommandSender sender, String strAmount) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
+            return;
+        }
+        var amount = 0.0;
+        try {
+            amount = Double.parseDouble(strAmount);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.RED + "Amount must be a number.");
+            return;
+        }
 
+        if (amount < 1000.0) {
+            sender.sendMessage(ChatColor.RED + "A minimum withdrawal of \u00A41000.0 is required.");
+            return;
+        }
+
+        if (amount % 1000 != 0) {
+            sender.sendMessage(ChatColor.RED + "You can only deposit in multiples of \u00A41,000.00.");
+            return;
+        }
+
+        var maxAmount = Diplomacy.getEconomy().getBalance((OfflinePlayer) sender);
+
+        if (amount > maxAmount) {
+            if (maxAmount >= 1) {
+                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(amount) + " in the bank.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(amount) + " in the bank.");
+            }
+            return;
+        }
+
+        var player = (Player) sender;
+        Diplomacy.getEconomy().withdrawPlayer((OfflinePlayer) sender, amount);
+
+        var diamondBlocks = (((int) amount) / 1000) / 9;
+        var diamondBlockStacks = diamondBlocks / 64;
+        var remainingBlocks = diamondBlocks % 64;
+
+        var diamonds = (((int) amount) / 1000) % 9;
+
+
+        var diamondBlockStack = new ItemStack(Material.DIAMOND_BLOCK, 64);
+        var diamondBlock = new ItemStack(Material.DIAMOND_BLOCK, remainingBlocks);
+        var diamond = new ItemStack(Material.DIAMOND, diamonds);
+
+        if (diamondBlockStacks != 0) {
+            for (int i = 0; i < diamondBlockStacks; i++) {
+                if (player.getInventory().firstEmpty() == -1) {
+                    player.getWorld().dropItem(player.getLocation(), diamondBlockStack);
+                } else {
+                    player.getInventory().addItem(diamondBlockStack);
+                }
+            }
+        }
+        if (remainingBlocks != 0) {
+            if (player.getInventory().firstEmpty() == -1) {
+                player.getWorld().dropItem(player.getLocation(), diamondBlock);
+            } else {
+                player.getInventory().addItem(diamondBlock);
+            }
+        }
+        if (diamonds != 0) {
+            if (player.getInventory().firstEmpty() == -1) {
+                player.getWorld().dropItem(player.getLocation(), diamond);
+            } else {
+                player.getInventory().addItem(diamond);
+            }
+        }
+
+        sender.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A4" + formatter.format(amount) + " from the bank.");
     }
-
-
 }
