@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.commands.EconomyCommand;
 import me.tedwoodworth.diplomacy.commands.GroupCommand;
 import me.tedwoodworth.diplomacy.commands.NationCommand;
 import me.tedwoodworth.diplomacy.commands.PlotCommand;
@@ -13,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Diplomacy extends JavaPlugin {
     private static Diplomacy instance;
-    private Economy economy = null;
+    private static Economy economy = null;
 
     @Override
     public void onEnable() {
@@ -22,6 +23,10 @@ public class Diplomacy extends JavaPlugin {
         PlotCommand.register(getCommand("plot"));
         NationCommand.register(getCommand("nation"));
         GroupCommand.register(getCommand("group"));
+        EconomyCommand.register(getCommand("wallet"));
+        EconomyCommand.register(getCommand("pay"));
+        EconomyCommand.register(getCommand("deposit"));
+        EconomyCommand.register(getCommand("withdraw"));
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
@@ -44,7 +49,7 @@ public class Diplomacy extends JavaPlugin {
         return economy != null;
     }
 
-    public Economy getEconomy() {
+    public static Economy getEconomy() {
         return economy;
     }
 

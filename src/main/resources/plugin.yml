@@ -20,3 +20,24 @@ commands:
     aliases: [g]
     usage: "Usage: /<command> ..."
 
+  wallet:
+    description: Check your wallet.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  pay:
+    description: Pay another player.
+    aliases: []
+    usage: "Usage: /<command> ..."
+
+  deposit:
+    description: Deposit money into the bank.
+    aliases: []
+    usage: "Usage: /<command> ..."
+
+  withdraw:
+    description: Withdraw money from the bank.
+    aliases: []
+    usage: "Usage: /<command> ..."
+
+
