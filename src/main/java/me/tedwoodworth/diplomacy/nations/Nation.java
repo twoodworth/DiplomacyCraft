@@ -16,14 +16,13 @@ import java.util.stream.Collectors;
 public class Nation {
 
     private ConfigurationSection configSection;
-    private String nationID;
+    private final String nationID;
     private String name;
     private List<NationClass> classes;
     private long created;
     private UUID founderID;
     private String color;
     private List<UUID> outlawIDs;
-    private List<String> allyNationIDs;
 
     Nation(String nationID, ConfigurationSection nationSection) {
         this.configSection = nationSection;
@@ -56,7 +55,6 @@ public class Nation {
         for (var outlaw : outlawsStr) {
             outlawIDs.add(UUID.fromString(outlaw));
         }
-        this.allyNationIDs = nationSection.getStringList("AllyNations");
     }
 
     public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer founder, String name) {
@@ -193,12 +191,11 @@ public class Nation {
     }
 
     public List<String> getAllyNationIDs() {
-        return allyNationIDs;
+        return configSection.getStringList("AllyNations");
     }
 
     public List<String> getEnemyNationIDs() {
-        var list = configSection.getStringList("EnemyNations");
-        return list;
+        return configSection.getStringList("EnemyNations");
     }
 
     public void addEnemyNation(Nation nation) {
@@ -211,6 +208,19 @@ public class Nation {
         var list = configSection.getStringList("EnemyNations");
         list.remove(nation.getNationID());
         configSection.set("EnemyNations", list);
+
+    }
+
+    public void addAllyNation(Nation nation) {
+        var list = configSection.getStringList("AllyNations");
+        list.add(nation.getNationID());
+        configSection.set("AllyNations", list);
+    }
+
+    public void removeAllyNation(Nation nation) {
+        var list = configSection.getStringList("AllyNations");
+        list.remove(nation.getNationID());
+        configSection.set("AllyNations", list);
     }
 
     public boolean getIsOpen() {
