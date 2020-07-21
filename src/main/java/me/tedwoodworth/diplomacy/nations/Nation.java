@@ -184,11 +184,11 @@ public class Nation {
         return null;
     }
 
-    public int getBalance() {
-        return configSection.getInt("Balance");
+    public double getBalance() {
+        return configSection.getDouble("Balance");
     }
 
-    public void setBalance(int balance) {
+    public void setBalance(double balance) {
         configSection.set("Balance", balance);
     }
 

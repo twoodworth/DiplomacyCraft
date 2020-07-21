@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -52,6 +53,29 @@ public class DiplomacyPlayers {
         }
         return player;
     }
+
+    public List<DiplomacyPlayer> getLeaders(DiplomacyGroup group) {
+        List<DiplomacyPlayer> leaders = new ArrayList<>();
+
+        for (var player : diplomacyPlayers.values()) {
+            if (player.getGroupsLed().contains(group)) {
+                leaders.add(player);
+            }
+        }
+        return leaders;
+    }
+
+    public List<DiplomacyPlayer> getMembers(DiplomacyGroup group) {
+        List<DiplomacyPlayer> members = new ArrayList<>();
+
+        for (var player : diplomacyPlayers.values()) {
+            if (player.getGroups().contains(group)) {
+                members.add(player);
+            }
+        }
+        return members;
+    }
+
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());

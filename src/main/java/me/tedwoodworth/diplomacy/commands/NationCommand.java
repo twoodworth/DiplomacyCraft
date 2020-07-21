@@ -1,5 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -12,12 +14,14 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationCreateUsage = "/nation create <nation>";
     private static final String nationRenameUsage = "/nation rename <nation>";
     private static final String nationSurrenderUsage = "/nation surrender <nation>";
+    private static final String nationDisbandUsage = "/nation surrender";
     private static final String nationAllyUsage = "/nation ally <nation>";
     private static final String nationAcceptUsage = "/nation accept <nation>";
     private static final String nationNeutralUsage = "/nation neutral <nation>";
@@ -32,6 +36,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationOutlawAddUsage = "/nation outlaw add <player>";
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
     private static final String nationOutlawListUsage = "/nation outlaw list <page>";
+    private static final DecimalFormat formatter = new DecimalFormat("#,###.00");
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -62,6 +67,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 nationSurrender(sender, args[1]);
             } else {
                 sender.sendMessage(nationSurrenderUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("disband")) {
+            if (args.length == 1) {
+                nationDisband(sender);
+            } else {
+                sender.sendMessage(nationDisbandUsage);
             }
         } else if (args[0].equalsIgnoreCase("ally")) {
             if (args.length == 2) {
@@ -192,6 +203,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 for (var nation : Nations.getInstance().getNations())
                     nations.add(nation.getName());
                 return nations;
+            } else if (args[0].equalsIgnoreCase("disband")) {
+                return null;
             } else if (args[0].equalsIgnoreCase("ally")) {
                 List<String> nations = new ArrayList<>();
                 for (var nation : Nations.getInstance().getNations())
@@ -297,7 +310,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void nationSurrender(CommandSender sender, String otherNationName) {//TODO transfer nation balance
+    private void nationSurrender(CommandSender sender, String otherNationName) {
         if (!(sender instanceof Player)) {
             sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
             return;
@@ -386,8 +399,16 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             otherNation.addChunk(diplomacyChunk);
         }
 
-        otherNation.setBalance(nation.getBalance());
-        nation.setBalance(0);
+        var balance = nation.getBalance();
+        if (nation.getBalance() >= 0.01) {
+            Diplomacy.getEconomy().depositPlayer(player, balance);
+            if (balance >= 1.0) {
+                sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + "' has been transferred from " + nation.getName() + " to your bank account.");
+            } else {
+                sender.sendMessage(ChatColor.GREEN + "\u00A40" + formatter.format(balance) + "' has been transferred from " + nation.getName() + " to your bank account.");
+            }
+        }
+        nation.setBalance(0.0);
 
 
         Nations.getInstance().removeNation(nation);
@@ -395,6 +416,91 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             onlinePlayer.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "The nation '" + nation.getName() + "' has surrendered to '" + otherNation.getName() + "'.");
         }
+
+    }
+
+    private void nationDisband(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to disband a nation.");
+            return;
+        }
+
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        boolean canSurrender = permissions.get("CanSurrenderNation");
+
+        if (!canSurrender) {
+            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to disband your nation.");
+            return;
+        }
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
+            var testNation = testDiplomacyChunk.getNation();
+            if (Objects.equals(testNation, nation)) {
+                player.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
+            }
+        }
+
+        var groups = nation.getGroups();
+        for (var group : groups) {
+            var leaders = DiplomacyPlayers.getInstance().getLeaders(group);
+            var members = DiplomacyPlayers.getInstance().getMembers(group);
+            for (var leader : leaders) {
+                leader.removeGroupLed(group);
+            }
+
+            for (var member : members) {
+                member.removeGroup(group);
+            }
+
+            DiplomacyGroups.getInstance().removeGroup(group);
+        }
+
+        var contests = ContestManager.getInstance().getContests();
+        for (var contest : contests) {
+            var attackingNation = contest.getAttackingNation();
+            if (attackingNation.equals(nation)) {
+                ContestManager.getInstance().endContest(contest);
+            } else if (Objects.equals(contest.getDiplomacyChunk().getNation(), nation)) {
+                contest.setIsWilderness(true);
+            }
+        }
+
+        var diplomacyChunks = nation.getChunks();
+        for (var diplomacyChunk : diplomacyChunks) {
+            nation.removeChunk(diplomacyChunk);
+
+        }
+
+        var balance = nation.getBalance();
+        if (nation.getBalance() >= 0.01) {
+            Diplomacy.getEconomy().depositPlayer(player, balance);
+            if (balance >= 1.0) {
+                sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + "' has been transferred from " + nation.getName() + " to your bank account.");
+            } else {
+                sender.sendMessage(ChatColor.GREEN + "\u00A40" + formatter.format(balance) + "' has been transferred from " + nation.getName() + " to your bank account.");
+            }
+        }
+        nation.setBalance(0.0);
+
+
+        Nations.getInstance().removeNation(nation);
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            onlinePlayer.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "The nation '" + nation.getName() + "' has disbanded.");
+        }
+
 
     }
 
@@ -540,6 +646,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationOutlawList(CommandSender sender, String page) {
+
+    }
+
+    private void nationDeposit(CommandSender sender, String strAmount) {
+
+    }
+
+    private void nationWithdraw(CommandSender sender, String strAmount) {
 
     }
 }

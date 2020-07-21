@@ -27,7 +27,7 @@ public class Contest {
     private int vacantTimer;
     private final Nation attackingNation;
     private final DiplomacyChunk diplomacyChunk;
-    private final boolean isWilderness;
+    private boolean isWilderness;
     private final String contestID;
 
     Contest(String contestID, ConfigurationSection configSection) {
@@ -362,6 +362,11 @@ public class Contest {
 
     public boolean isWilderness() {
         return isWilderness;
+    }
+
+    public void setIsWilderness(boolean isWilderness) {
+        this.isWilderness = isWilderness;
+        configSection.set("IsWilderness", isWilderness);
     }
 
     public String getContestID() {

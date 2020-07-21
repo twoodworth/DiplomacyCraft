@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.base.Objects;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -30,6 +31,30 @@ public class DiplomacyPlayer {
 
     public List<String> getGroupsLed() {
         return configSection.getStringList("GroupsLed");
+    }
+
+    public void addGroup(DiplomacyGroup group) {
+        var list = this.getGroups();
+        list.add(group.getGroupID());
+        configSection.set("Groups", list);
+    }
+
+    public void removeGroup(DiplomacyGroup group) {
+        var list = this.getGroups();
+        list.remove(group.getGroupID());
+        configSection.set("Groups", list);
+    }
+
+    public void addGroupLed(DiplomacyGroup group) {
+        var list = this.getGroupsLed();
+        list.add(group.getGroupID());
+        configSection.set("GroupsLed", list);
+    }
+
+    public void removeGroupLed(DiplomacyGroup group) {
+        var list = this.getGroupsLed();
+        list.remove(group.getGroupID());
+        configSection.set("GroupsLed", list);
     }
 
 

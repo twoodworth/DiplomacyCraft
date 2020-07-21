@@ -89,6 +89,11 @@ public class DiplomacyGroups {
         return null;
     }
 
+    public void removeGroup(DiplomacyGroup group) {
+        groupConfig.set("Groups." + group.getGroupID(), null);
+        groups.remove(group);
+    }
+
     public void save() {
         try {
             groupConfig.save(groupConfigFile);
