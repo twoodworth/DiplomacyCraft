@@ -90,24 +90,24 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
     private void pay(CommandSender sender, String recipientName, String strAmount) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var senderPlayer = (OfflinePlayer) sender;
         var recipient = (OfflinePlayer) Bukkit.getPlayer(recipientName);
 
         if (recipient == null) {
-            sender.sendMessage(ChatColor.RED + "The player '" + recipientName + "' does not exist.");
+            sender.sendMessage(ChatColor.DARK_RED + "The player \"" + recipientName + "\" does not exist.");
             return;
         }
 
         if (Objects.equals(recipient, senderPlayer)) {
-            sender.sendMessage(ChatColor.RED + "You cannot pay yourself.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot pay yourself.");
             return;
         }
 
         if (!Bukkit.getOnlinePlayers().contains(recipient)) {
-            sender.sendMessage(ChatColor.RED + recipientName + " is not online.");
+            sender.sendMessage(ChatColor.DARK_RED + recipientName + " is not online.");
             return;
         }//TODO remove if I decide players will always be "online" with a dummy replacing them when they log off.
 
@@ -116,7 +116,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
         var isNear = senderLocation.distanceSquared(recipientLocation) < 625;
 
         if (!isNear) {
-            sender.sendMessage(ChatColor.RED + recipientName + " is too far away.");
+            sender.sendMessage(ChatColor.DARK_RED + recipientName + " is too far away.");
             return;
         }
 
@@ -127,19 +127,19 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
             amount = Double.parseDouble(strAmount);
 
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Amount must be a number.");
+            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
             return;
         }
 
         if (amount < 0.01) {
-            sender.sendMessage(ChatColor.RED + "A minimum payment of \u00A40.01 is required.");
+            sender.sendMessage(ChatColor.DARK_RED + "A minimum payment of \u00A40.01 is required.");
             return;
         }
 
         var tooManyDecimals = BigDecimal.valueOf(amount).scale() > 2;
 
         if (tooManyDecimals) {
-            sender.sendMessage(ChatColor.RED + "Too many decimal places.");
+            sender.sendMessage(ChatColor.DARK_RED + "Too many decimal places.");
             return;
         }
 
@@ -151,16 +151,16 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         if (newSenderBalance < 0.0) {
             if (senderBalance < 1.0) {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(senderBalance) + ".");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(senderBalance) + ".");
             } else {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(senderBalance) + ".");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(senderBalance) + ".");
             }
             return;
         }
 
 
         if (newRecipientBalance > 10000000000000.0) {
-            sender.sendMessage(ChatColor.RED + recipient.getName() + " does not have enough room in their bank account.");
+            sender.sendMessage(ChatColor.DARK_RED + recipient.getName() + " does not have enough room in their bank account.");
             return;
         }
 
@@ -179,7 +179,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
     private void wallet(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
 
@@ -226,24 +226,24 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
     private void deposit(CommandSender sender, String strAmount) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var amount = 0.0;
         try {
             amount = Double.parseDouble(strAmount);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Amount must be a number.");
+            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
             return;
         }
 
         if (amount < 1000.0) {
-            sender.sendMessage(ChatColor.RED + "A minimum deposit of \u00A41000.00 is required.");
+            sender.sendMessage(ChatColor.DARK_RED + "A minimum deposit of \u00A41000.00 is required.");
             return;
         }
 
         if (amount % 1000 != 0) {
-            sender.sendMessage(ChatColor.RED + "You can only deposit in multiples of \u00A41,000.00.");
+            sender.sendMessage(ChatColor.DARK_RED + "You can only deposit in multiples of \u00A41,000.00.");
             return;
         }
 
@@ -252,15 +252,15 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         if (amount > maxAmount) {
             if (maxAmount >= 1) {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(amount) + " in your wallet.");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(amount) + " in your wallet.");
             } else {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(amount) + " in your wallet.");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(amount) + " in your wallet.");
             }
             return;
         }
 
         if (Diplomacy.getEconomy().getBalance((OfflinePlayer) sender) + amount > 10000000000000.0) {
-            sender.sendMessage(ChatColor.RED + "You do not have enough room in the bank account.");
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have enough room in the bank account.");
         }
         var nMap = depositDiamonds(amount, inventory, false, false, false, (Player) sender);
         var remainingAmount = (Double) nMap.get("amount");
@@ -410,24 +410,24 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
     private void withdraw(CommandSender sender, String strAmount) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var amount = 0.0;
         try {
             amount = Double.parseDouble(strAmount);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Amount must be a number.");
+            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
             return;
         }
 
         if (amount < 1000.0) {
-            sender.sendMessage(ChatColor.RED + "A minimum withdrawal of \u00A41000.0 is required.");
+            sender.sendMessage(ChatColor.DARK_RED + "A minimum withdrawal of \u00A41000.0 is required.");
             return;
         }
 
         if (amount % 1000 != 0) {
-            sender.sendMessage(ChatColor.RED + "You can only deposit in multiples of \u00A41,000.00.");
+            sender.sendMessage(ChatColor.DARK_RED + "You can only deposit in multiples of \u00A41,000.00.");
             return;
         }
 
@@ -435,9 +435,9 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         if (amount > maxAmount) {
             if (maxAmount >= 1) {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A4" + formatter.format(amount) + " in the bank.");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(amount) + " in the bank.");
             } else {
-                sender.sendMessage(ChatColor.RED + "You only have \u00A40" + formatter.format(amount) + " in the bank.");
+                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(amount) + " in the bank.");
             }
             return;
         }

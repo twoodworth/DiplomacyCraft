@@ -6,7 +6,6 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -110,7 +109,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     private void plotContest(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var player = (Player) sender;
@@ -122,7 +121,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var isWilderness = diplomacyChunk.getNation() == null;
 
         if (attackingNation == null) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to contest territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to contest territory.");
             return;
         }
 
@@ -132,34 +131,34 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
 
         if (!canContest) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to contest territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to contest territory.");
             return;
         }
 
         if (Objects.equals(diplomacyChunk.getNation(), attackingNation)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest your own territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot contest your own territory.");
             return;
         }
 
         if (ContestManager.getInstance().isBeingContested(diplomacyChunk)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "This plot is already being contested.");
+            sender.sendMessage(ChatColor.DARK_RED + "This plot is already being contested.");
             return;
         }
 
         if (!isWilderness && attackingNation.getAllyNationIDs().contains(diplomacyChunk.getNation().getNationID())) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot contest an ally's territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot contest an ally's territory.");
             return;
         }
 
         ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
 
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Contest started.");
+        sender.sendMessage(ChatColor.AQUA + "Contest started.");
 
     }
 
     private void plotSurrender(CommandSender sender, String strOtherNation) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var player = (Player) sender;
@@ -170,7 +169,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
 
         if (nation == null) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to surrender territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to surrender territory.");
             return;
         }
 
@@ -179,23 +178,23 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var canSurrender = permissions.get("CanSurrenderPlot");
 
         if (!canSurrender) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to surrender territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to surrender territory.");
             return;
         }
 
         if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot surrender territory that is not yours.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot surrender territory that is not yours.");
             return;
         }
 
         var otherNation = Nations.getInstance().get(strOtherNation);
 
         if (otherNation == null) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "The nation of '" + strOtherNation + "' does not exist.");
+            sender.sendMessage(ChatColor.DARK_RED + "The nation of '" + ChatColor.BLUE + strOtherNation + ChatColor.DARK_RED + "' does not exist.");
             return;
         }
         if (Objects.equals(nation, otherNation)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot surrender territory to your own nation.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot surrender territory to your own nation.");
             return;
         }
 
@@ -209,7 +208,14 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Plot surrendered to '" + otherNation.getName() + "'.");
+        var color = ChatColor.BLUE;
+        if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+            color = ChatColor.GREEN;
+        } else if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+            color = ChatColor.RED;
+        }
+
+        sender.sendMessage(ChatColor.AQUA + "Plot surrendered to '" + color + otherNation.getName() + ChatColor.AQUA + "'.");
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var playerChunk = player.getLocation().getChunk();
@@ -231,7 +237,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
     private void plotAbandon(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be a player to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
         var player = (Player) sender;
@@ -242,7 +248,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
 
         if (nation == null) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You must be in a nation to abandon territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to abandon territory.");
             return;
         }
 
@@ -252,12 +258,12 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var canSurrender = permissions.get("CanSurrenderPlot");
 
         if (!canSurrender) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You do not have permission to abandon territory.");
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to abandon territory.");
             return;
         }
 
         if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
-            sender.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You cannot abandon territory that is not yours.");
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot abandon territory that is not yours.");
             return;
         }
 
@@ -267,28 +273,25 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             diplomacyChunk.getGroup().removeChunk(diplomacyChunk);
         }
 
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Plot abandoned.");
+        sender.sendMessage(ChatColor.AQUA + "Plot abandoned.");
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var playerChunk = player.getLocation().getChunk();
             if (chunk.equals(playerChunk)) {
-                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
-                Nation testNation = Nations.getInstance().get(testDiplomacyPlayer);
-                player.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
+                testPlayer.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
             }
         }
     }
 
     private void plotGroup(CommandSender sender) {
         Player player = (Player) sender;
-        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         Chunk chunk = player.getLocation().getChunk();
         DiplomacyChunk diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         DiplomacyGroup group = diplomacyChunk.getGroup();
         if (group != null) {
-            sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "This plot belongs to the group '" + group.getName() + "'.");
+            sender.sendMessage(ChatColor.AQUA + "This plot belongs to the group '" + group.getName() + "'.");
         } else {
-            sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "This plot does not belong to any groups.");
+            sender.sendMessage(ChatColor.AQUA + "This plot does not belong to any groups.");
         }
     }
 
