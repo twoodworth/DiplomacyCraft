@@ -534,6 +534,17 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         nation.setBalance(0.0);
 
+        for (var testNationID : nation.getAllyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeAllyNation(nation);
+            nation.removeAllyNation(testNation);
+        }
+
+        for (var testNationID : nation.getEnemyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeEnemyNation(nation);
+            nation.removeEnemyNation(testNation);
+        }
 
         Nations.getInstance().removeNation(nation);
 
@@ -618,12 +629,26 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
             var color = ChatColor.BLUE;
-            if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                color = ChatColor.RED;
-            } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
-                color = ChatColor.GREEN;
+            if (testNation != null) {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.RED;
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.GREEN;
+                }
             }
             onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + color + nation.getName() + ChatColor.AQUA + " has disbanded.");
+        }
+
+        for (var testNationID : nation.getAllyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeAllyNation(nation);
+            nation.removeAllyNation(testNation);
+        }
+
+        for (var testNationID : nation.getEnemyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeEnemyNation(nation);
+            nation.removeEnemyNation(testNation);
         }
 
         Nations.getInstance().removeNation(nation);
@@ -1548,6 +1573,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else {
                 onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + ChatColor.BLUE + nation.getName() + ChatColor.AQUA + "has disbanded.");
             }
+        }
+
+
+        for (var testNationID : nation.getAllyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeAllyNation(nation);
+            nation.removeAllyNation(testNation);
+        }
+
+        for (var testNationID : nation.getEnemyNationIDs()) {
+            var testNation = Nations.getInstance().getFromID(testNationID);
+            Objects.requireNonNull(testNation).removeEnemyNation(nation);
+            nation.removeEnemyNation(testNation);
         }
 
         Nations.getInstance().removeNation(nation);

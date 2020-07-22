@@ -108,6 +108,16 @@ public class Nations {
         return null;
     }
 
+    @Nullable
+    public Nation getFromID(String id) {
+        for (var nation : nations) {
+            if (id.equalsIgnoreCase(nation.getNationID())) {
+                return nation;
+            }
+        }
+        return null;
+    }
+
     public void rename(String name, Nation nation) {
         nationConfig.set("Nations." + nation.getNationID() + ".Name", name);
         nation.setName(name);
