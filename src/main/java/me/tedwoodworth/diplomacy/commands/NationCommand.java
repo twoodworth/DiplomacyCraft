@@ -29,7 +29,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationDisbandUsage = "/nation surrender";
     private static final String nationAllyUsage = "/nation ally <nation>";
     private static final String nationAcceptUsage = "/nation accept [ally/neutral] <nation>";
-    private static final String nationRejectUsage = "/nation decline [ally/neutral] <nation>";
+    private static final String nationDeclineUsage = "/nation decline [ally/neutral] <nation>";
     private static final String nationNeutralUsage = "/nation neutral <nation>";
     private static final String nationEnemyUsage = "/nation enemy <nation>";
     private static final String nationListUsage = "/nation list";
@@ -120,12 +120,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         } else if (args[0].equalsIgnoreCase("decline")) {
             if (args.length == 3) {
                 if (args[1].equalsIgnoreCase("ally")) {
-                    nationRejectAlly(sender, args[2]);
+                    nationDeclineAlly(sender, args[2]);
                 } else if (args[1].equalsIgnoreCase("neutral")) {
-                    nationRejectNeutral(sender, args[2]);
+                    nationDeclineNeutral(sender, args[2]);
                 }
             } else {
-                sender.sendMessage(nationRejectUsage);
+                sender.sendMessage(nationDeclineUsage);
             }
         } else if (args[0].equalsIgnoreCase("neutral")) {
             if (args.length == 2) {
@@ -183,33 +183,25 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(nationKickUsage);
             }
-        } else if (args[0].
-
-                equalsIgnoreCase("open")) {
-            if (args.length == 2) {
+        } else if (args[0].equalsIgnoreCase("open")) {
+            if (args.length == 1) {
                 nationOpen(sender);
             } else {
                 sender.sendMessage(nationOpenUsage);
             }
-        } else if (args[0].
-
-                equalsIgnoreCase("close")) {
+        } else if (args[0].equalsIgnoreCase("close")) {
             if (args.length == 1) {
                 nationClose(sender);
             } else {
                 sender.sendMessage(nationCloseUsage);
             }
-        } else if (args[0].
-
-                equalsIgnoreCase("banner")) {
+        } else if (args[0].equalsIgnoreCase("banner")) {
             if (args.length == 2) {
                 nationBanner(sender, args[1]);
             } else {
                 sender.sendMessage(nationBannerUsage);
             }
-        } else if (args[0].
-
-                equalsIgnoreCase("outlaw")) {
+        } else if (args[0].equalsIgnoreCase("outlaw")) {
             if (args[1].equalsIgnoreCase("add")) {
                 if (args.length == 3) {
                     nationOutlawAdd(sender, args[2]);
@@ -403,10 +395,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
             var color = ChatColor.BLUE;
-            if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                color = ChatColor.RED;
-            } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
-                color = ChatColor.GREEN;
+            if (testNation != null) {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.RED;
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.GREEN;
+                }
             }
             onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + color + oldName + ChatColor.AQUA + " has been renamed to " + color + name + ChatColor.AQUA + ".");
         }
@@ -747,7 +741,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(acceptHoverText)))
                         .bold(true)
                         .append(" ")
-                        .append("[Reject]")
+                        .append("[Decline]")
                         .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/nation decline ally " + senderNation.getName()))
                         .color(net.md_5.bungee.api.ChatColor.RED)
                         .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(declineHoverText)))
@@ -832,7 +826,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void nationRejectAlly(CommandSender sender, String strSenderNation) {
+    private void nationDeclineAlly(CommandSender sender, String strSenderNation) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
             return;
@@ -976,7 +970,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(acceptHoverText)))
                             .bold(true)
                             .append(" ")
-                            .append("[Reject]")
+                            .append("[Decline]")
                             .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/nation decline neutral " + senderNation.getName()))
                             .color(net.md_5.bungee.api.ChatColor.RED)
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(declineHoverText)))
@@ -1073,7 +1067,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void nationRejectNeutral(CommandSender sender, String strSenderNation) {
+    private void nationDeclineNeutral(CommandSender sender, String strSenderNation) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
             return;
@@ -1319,6 +1313,20 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown Nation.");
+            return;
+        }
+
+        if (nation.getIsOpen()) {
+            for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+                var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (Objects.equals(testNation, nation)) {
+                    onlinePlayer.sendMessage(ChatColor.AQUA + player.getName() + " has joined the nation.");
+                }
+            }
+
+            nation.addMember(diplomacyPlayer);
+            sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
             return;
         }
 
@@ -1648,11 +1656,101 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
     private void nationOpen(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
 
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canToggleBorder = permissions.get("CanToggleBorder");
+        if (!canToggleBorder) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to open the borders.");
+            return;
+        }
+
+        if (nation.getIsOpen()) {
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation already has open borders.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (testNation == null) {
+                onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has opened its borders.");
+            } else {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    onlinePlayer.sendMessage(ChatColor.RED + nation.getName() + ChatColor.AQUA + " has opened its borders.");
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    onlinePlayer.sendMessage(ChatColor.GREEN + nation.getName() + ChatColor.AQUA + " has opened its borders.");
+                } else if (Objects.equals(testNation, nation)) {
+                    onlinePlayer.sendMessage(ChatColor.AQUA + "Your nation has opened its borders.");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has opened its borders.");
+                }
+            }
+        }
+        nation.setIsOpen(true);
     }
 
     private void nationClose(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
 
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canToggleBorder = permissions.get("CanToggleBorder");
+        if (!canToggleBorder) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to close the borders.");
+            return;
+        }
+
+        if (!nation.getIsOpen()) {
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation already has closed borders.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (testNation == null) {
+                onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has closed its borders.");
+            } else {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    onlinePlayer.sendMessage(ChatColor.RED + nation.getName() + ChatColor.AQUA + " has closed its borders.");
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    onlinePlayer.sendMessage(ChatColor.GREEN + nation.getName() + ChatColor.AQUA + " has closed its borders.");
+                } else if (Objects.equals(testNation, nation)) {
+                    onlinePlayer.sendMessage(ChatColor.AQUA + "Your nation has closed its borders.");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has closed its borders.");
+                }
+            }
+        }
+        nation.setIsOpen(false);
     }
 
     private void nationBanner(CommandSender sender, String banner) {
