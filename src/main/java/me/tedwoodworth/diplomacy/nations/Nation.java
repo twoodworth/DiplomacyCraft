@@ -7,6 +7,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -22,7 +23,6 @@ public class Nation {
     private long created;
     private UUID founderID;
     private String color;
-    private List<UUID> outlawIDs;
 
     Nation(String nationID, ConfigurationSection nationSection) {
         this.configSection = nationSection;
@@ -50,11 +50,6 @@ public class Nation {
         this.created = nationSection.getInt("Created");
         this.founderID = UUID.fromString(Objects.requireNonNull(nationSection.getString("Founder")));
         this.color = nationSection.getString("Color");
-        this.outlawIDs = new ArrayList<>();
-        var outlawsStr = nationSection.getStringList("Outlaws");
-        for (var outlaw : outlawsStr) {
-            outlawIDs.add(UUID.fromString(outlaw));
-        }
     }
 
     public static ConfigurationSection initializeNation(ConfigurationSection nationSection, OfflinePlayer founder, String name) {
@@ -170,6 +165,29 @@ public class Nation {
             }
         }
         return groups;
+    }
+
+    public List<UUID> getOutlaws() {
+        List<UUID> UUIDs = new ArrayList<>();
+        for (var strUUID : configSection.getStringList("Outlaws")) {
+            var uuid = UUID.fromString(strUUID);
+            UUIDs.add(uuid);
+        }
+        return UUIDs;
+    }
+
+    public void addOutlaw(Player player) {
+        var uuid = player.getUniqueId();
+        var list = configSection.getStringList("Outlaws");
+        list.add(uuid.toString());
+        configSection.set("Outlaws", list);
+    }
+
+    public void removeOutlaw(Player player) {
+        var uuid = player.getUniqueId();
+        var list = configSection.getStringList("Outlaws");
+        list.remove(uuid.toString());
+        configSection.set("Outlaws", list);
     }
 
     @Nullable

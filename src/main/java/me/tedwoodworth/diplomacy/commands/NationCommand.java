@@ -1757,11 +1757,125 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void nationOutlawAdd(CommandSender sender, String player) {
+    private void nationOutlawAdd(CommandSender sender, String strOutlaw) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canManageOutlaws = permissions.get("CanManageOutlaws");
+        if (!canManageOutlaws) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to outlaw players.");
+            return;
+        }
+
+        var outlaw = Bukkit.getPlayer(strOutlaw);
+
+        if (outlaw == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
+        }
+
+        if (nation.getOutlaws().contains(outlaw.getUniqueId())) {
+            sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is already outlawed.");
+            return;
+        }
+
+        var outlawDiplomacyPlayer = DiplomacyPlayers.getInstance().get(Objects.requireNonNull(outlaw).getUniqueId());
+        var outlawNation = Nations.getInstance().get(outlawDiplomacyPlayer);
+
+        var color = ChatColor.BLUE;
+        if (outlawNation != null) {
+            if (Objects.equals(outlawNation, nation) || nation.getAllyNationIDs().contains(outlawNation.getNationID())) {
+                color = ChatColor.GREEN;
+            } else if (nation.getEnemyNationIDs().contains(outlawNation.getNationID())) {
+                color = ChatColor.RED;
+            }
+        }
+
+        nation.addOutlaw(outlaw);
+
+        outlaw.sendMessage(ChatColor.AQUA + "You have been outlawed by " + color + nation.getName());
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (Objects.equals(nation, testNation) && !Objects.equals(onlinePlayer, outlaw)) {
+                sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + ChatColor.AQUA + " has been outlawed.");
+            }
+        }
 
     }
 
-    private void nationOutlawRemove(CommandSender sender, String player) {
+    private void nationOutlawRemove(CommandSender sender, String strOutlaw) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canManageOutlaws = permissions.get("CanManageOutlaws");
+        if (!canManageOutlaws) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to un-outlaw a player.");
+            return;
+        }
+
+        var outlaw = Bukkit.getPlayer(strOutlaw);
+
+        if (outlaw == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
+        }
+
+        if (!nation.getOutlaws().contains(Objects.requireNonNull(outlaw).getUniqueId())) {
+            sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is not outlawed.");
+            return;
+        }
+
+        var outlawDiplomacyPlayer = DiplomacyPlayers.getInstance().get(Objects.requireNonNull(outlaw).getUniqueId());
+        var outlawNation = Nations.getInstance().get(outlawDiplomacyPlayer);
+
+        var color = ChatColor.BLUE;
+        if (outlawNation != null) {
+            if (Objects.equals(outlawNation, nation) || nation.getAllyNationIDs().contains(outlawNation.getNationID())) {
+                color = ChatColor.GREEN;
+            } else if (nation.getEnemyNationIDs().contains(outlawNation.getNationID())) {
+                color = ChatColor.RED;
+            }
+        }
+
+        nation.removeOutlaw(outlaw);
+
+        outlaw.sendMessage(ChatColor.AQUA + "You are no longer outlawed by " + color + nation.getName());
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (Objects.equals(nation, testNation) && !Objects.equals(onlinePlayer, outlaw)) {
+                sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + ChatColor.AQUA + " is no longer outlawed.");
+            }
+        }
 
     }
 
