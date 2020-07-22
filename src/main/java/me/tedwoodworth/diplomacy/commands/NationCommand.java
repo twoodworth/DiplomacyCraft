@@ -1435,7 +1435,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationLeaveConfirm(CommandSender sender) {
-
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -1555,9 +1554,60 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void nationKick(CommandSender sender, String player) {
+    private void nationKick(CommandSender sender, String strPlayer) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var senderDiplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+        var senderNation = Nations.getInstance().get(senderDiplomacyPlayer);
+
+        var senderClass = senderNation.getMemberClass(senderDiplomacyPlayer);
+        var senderPermissions = senderClass.getPermissions();
+        var canKickPlayers = senderPermissions.get("CanKickPlayers");
+        if (!canKickPlayers) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to kick players.");
+            return;
+        }
+
+        var otherPlayer = Bukkit.getPlayer(strPlayer);
+
+        if (otherPlayer == null) {
+            sender.sendMessage("Unknown player.");
+            return;
+        }
+
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
+        var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
+
+        if (!Objects.equals(otherNation, senderNation)) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of your nation.");
+            return;
+        }
+
+        var otherClass = otherNation.getMemberClass(otherDiplomacyPlayer);
+        var otherPermissions = otherClass.getPermissions();
+        var canBeKicked = otherPermissions.get("CanBeKicked");
+        if (!canBeKicked) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " cannot be kicked.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (Objects.equals(testNation, senderNation)) {
+                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " been kicked from the nation.");
+            }
+        }
+
+        otherPlayer.sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + senderNation.getName() + ChatColor.AQUA + ".");
+        senderNation.removeMember(otherDiplomacyPlayer);
+
 
     }
+
 
     private void nationOpen(CommandSender sender) {
 
