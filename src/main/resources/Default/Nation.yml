@@ -26,6 +26,8 @@ Classes:
       CanSeeGuardNotifications: false
       CanManageClasses: false
       CanBeKicked: true
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -72,6 +74,8 @@ Classes:
       CanSeeGuardNotifications: false
       CanManageClasses: false
       CanBeKicked: true
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -118,6 +122,8 @@ Classes:
       CanSeeGuardNotifications: false
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -164,6 +170,8 @@ Classes:
       CanSeeGuardNotifications: false
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -210,6 +218,8 @@ Classes:
       CanSeeGuardNotifications: true
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -256,6 +266,8 @@ Classes:
       CanSeeGuardNotifications: true
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -302,6 +314,8 @@ Classes:
       CanSeeGuardNotifications: true
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -348,6 +362,8 @@ Classes:
       CanSeeGuardNotifications: true
       CanManageClasses: false
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: true
       CanToggleBorder: true
       CanSetClassTo1: true
       CanSetClassTo2: true
@@ -394,6 +410,8 @@ Classes:
       CanSeeGuardNotifications: true
       CanManageClasses: true
       CanBeKicked: false
+      CanDeposit: true
+      CanWithdraw: true
       CanToggleBorder: true
       CanSetClassTo1: true
       CanSetClassTo2: true

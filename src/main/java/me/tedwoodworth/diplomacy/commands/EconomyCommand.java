@@ -160,7 +160,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
 
         if (newRecipientBalance > 10000000000000.0) {
-            sender.sendMessage(ChatColor.DARK_RED + recipient.getName() + " does not have enough room in their bank account.");
+            sender.sendMessage(ChatColor.DARK_RED + recipient.getName() + "'s balance cannot exceed \u00A410,000,000,000,000.00.");
             return;
         }
 
@@ -260,7 +260,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
         }
 
         if (Diplomacy.getEconomy().getBalance((OfflinePlayer) sender) + amount > 10000000000000.0) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have enough room in the bank account.");
+            sender.sendMessage(ChatColor.DARK_RED + "Your balance cannot exceed \u00A410,000,000,000,000.00.");
         }
         var nMap = depositDiamonds(amount, inventory, false, false, false, (Player) sender);
         var remainingAmount = (Double) nMap.get("amount");
