@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -25,6 +26,7 @@ import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationCreateUsage = "/nation create <nation>";
+    private static final String nationInfoUsage = "/nation info <nation>";
     private static final String nationRenameUsage = "/nation rename <nation>";
     private static final String nationSurrenderUsage = "/nation surrender <nation>";
     private static final String nationDisbandUsage = "/nation surrender";
@@ -85,6 +87,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 nationCreate(sender, args[1]);
             } else {
                 sender.sendMessage(nationCreateUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("info")) {
+            if (args.length == 2) {
+                nationInfo(sender, args[1]);
+            } else {
+                sender.sendMessage(nationInfoUsage);
             }
         } else if (args[0].equalsIgnoreCase("rename")) {
             if (args.length == 2) {
@@ -244,21 +252,23 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 0) {
-            return null;
-        } else {
+        if (args.length != 0) {
             if (args.length == 1) {
                 return Arrays.asList(
                         "create",
                         "rename",
                         "surrender",
+                        "disband",
                         "ally",
                         "accept",
+                        "decline",
                         "neutral",
                         "enemy",
                         "list",
+                        "info",
                         "invite",
                         "join",
+                        "declineJoin",
                         "leave",
                         "kick",
                         "open",
@@ -266,6 +276,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         "outlaw");
             } else if (args[0].equalsIgnoreCase("create")) {
                 return null;
+            } else if (args[0].equalsIgnoreCase("info")) {
+                List<String> nations = new ArrayList<>();
+                for (var nation : Nations.getInstance().getNations())
+                    nations.add(nation.getName());
+                return nations;
             } else if (args[0].equalsIgnoreCase("rename")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("surrender")) {
@@ -321,7 +336,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 for (var nation : Nations.getInstance().getNations())
                     nations.add(nation.getName());
                 return nations;
-            } else if (args[0].equalsIgnoreCase("declinejoin")) {
+            } else if (args[0].equalsIgnoreCase("declineJoin")) {
                 List<String> nations = new ArrayList<>();
                 for (var nation : Nations.getInstance().getNations())
                     nations.add(nation.getName());
@@ -345,15 +360,40 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     return null;
                 }
             }
-            return null;
         }
+        return null;
     }
 
     private void nation(CommandSender sender) {
 
     }
 
+    private void nationInfo(CommandSender sender, String strNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not belong to a nation.");
+            return;
+        }
+
+        var gui = new NationGuiFactory().create(nation, player);
+        gui.show(player);
+    }
+
     private void nationCreate(CommandSender sender, String name) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
         var uuid = ((OfflinePlayer) sender).getUniqueId();
         var leader = DiplomacyPlayers.getInstance().get(uuid);
         var nation = Nations.getInstance().get(leader);
@@ -376,6 +416,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationRename(CommandSender sender, String name) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
         var uuid = ((OfflinePlayer) sender).getUniqueId();
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
         var nation = Nations.getInstance().get(diplomacyPlayer);
