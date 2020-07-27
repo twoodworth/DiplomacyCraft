@@ -15,7 +15,17 @@ public class NationGuiFactory {
 
 
     public InventoryGui create(Nation nation, Player player) {
-        var title = nation.getName();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+        var color = ChatColor.BLUE;
+        if (playerNation != null) {
+            if (nation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(nation, playerNation)) {
+                color = ChatColor.GREEN;
+            } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
+                color = ChatColor.RED;
+            }
+        }
+        var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
         String[] guiSetup = {
                 "         ",
                 " a       ",
@@ -25,24 +35,26 @@ public class NationGuiFactory {
                 "         "
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
-        gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS, 1));
+        gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
 
-        gui.addElement(new StaticGuiElement('a',
-                new ItemStack(Material.NAME_TAG),
-                click -> {
-                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                    var testNation = Nations.getInstance().get(diplomacyPlayer);
-                    if (Objects.equals(testNation, nation)) {
-                        Nations.getInstance().rename(nation, name, diplomacyPlayer);
-                        return true;
-                    }
-                    player.sendMessage(ChatColor.RED + "You are not a member of this nation.");
-                    return true;
-                },
-                ChatColor.BOLD + "Nation Name",
-                nation.getName(),
-                "Click: Change name"
-        ));
+        if (Objects.equals(nation, playerNation)) {
+            gui.addElement(new StaticGuiElement('a',
+                    new ItemStack(Material.NAME_TAG),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
+                    color + nation.getName(),
+                    " ",
+                    ChatColor.BLUE + "Change Name:",
+                    ChatColor.GRAY + "/nation rename <name>"
+            ));
+        } else {
+            gui.addElement(new StaticGuiElement('a',
+                    new ItemStack(Material.NAME_TAG),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name",
+                    color + nation.getName()
+            ));
+        }
         return gui;
     }
 }
