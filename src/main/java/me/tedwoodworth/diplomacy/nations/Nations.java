@@ -1,9 +1,11 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.DiplomacyException;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
@@ -118,9 +120,45 @@ public class Nations {
         return null;
     }
 
-    public void rename(String name, Nation nation) {
+    public void rename(Nation nation, String name) throws DiplomacyException {
+        var oldName = nation.getName();
+        if (oldName.equals(name)) {
+            throw new DiplomacyException(ChatColor.DARK_RED + "The nation is already named " + ChatColor.GREEN + name + ChatColor.DARK_RED + ".");
+        }
+
+        var nameTaken = Nations.getInstance().get(name) != null;
+        if (nameTaken) {
+            throw new DiplomacyException(ChatColor.DARK_RED + "The name " + ChatColor.BLUE + name + ChatColor.DARK_RED + " is taken, choose another name.");
+        }
+
         nationConfig.set("Nations." + nation.getNationID() + ".Name", name);
         nation.setName(name);
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            var color = ChatColor.BLUE;
+            if (testNation != null) {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.RED;
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.GREEN;
+                }
+            }
+            onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + color + oldName + ChatColor.AQUA + " has been renamed to " + color + name + ChatColor.AQUA + ".");
+        }
+    }
+
+    public void rename(Nation nation, String name, DiplomacyPlayer diplomacyPlayer) throws DiplomacyException {
+        if (nation == null) {
+            throw new DiplomacyException(ChatColor.DARK_RED + "You are not in a nation.");
+        }
+
+        var nationClass = nation.getMemberClass(diplomacyPlayer);
+        boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
+        if (!canRenameNation) {
+            throw new DiplomacyException(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
+        }
     }
 
     public void removeNation(Nation nation) {

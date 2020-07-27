@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.DiplomacyException;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -425,44 +426,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
         var nation = Nations.getInstance().get(diplomacyPlayer);
 
-        if (nation == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
-            return;
-        }
-
-        var nationClass = nation.getMemberClass(diplomacyPlayer);
-        boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
-        if (!canRenameNation) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
-            return;
-        }
-
-        var oldName = nation.getName();
-        if (oldName.equals(name)) {
-            sender.sendMessage(ChatColor.DARK_RED + "The nation is already named " + ChatColor.GREEN + name + ChatColor.DARK_RED + ".");
-            return;
-        }
-
-        var nameTaken = Nations.getInstance().get(name) != null;
-        if (nameTaken) {
-            sender.sendMessage(ChatColor.DARK_RED + "The name " + ChatColor.BLUE + name + ChatColor.DARK_RED + " is taken, choose another name.");
-            return;
-        }
-
-        Nations.getInstance().rename(name, nation);
-
-        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-            var color = ChatColor.BLUE;
-            if (testNation != null) {
-                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                    color = ChatColor.RED;
-                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
-                    color = ChatColor.GREEN;
-                }
-            }
-            onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + color + oldName + ChatColor.AQUA + " has been renamed to " + color + name + ChatColor.AQUA + ".");
+        try {
+            Nations.getInstance().rename(nation, name);
+        } catch (DiplomacyException e) {
+            e.printStackTrace();
         }
     }
 
