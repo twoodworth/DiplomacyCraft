@@ -26,18 +26,18 @@ compileJava   {
     targetCompatibility = '14'
 }
 
-//jar {
-//    enabled = false
-//    dependsOn shadowJar
-//}
-//
-//shadowJar {
-//    archiveFileName = "Diplomacy.jar"
-//
-//    dependencies {
-//        include dependency('de.themoep:inventorygui')
-//    }
-//
-//    def libPackage = "me.tedwoodworth.diplomacy.lib"
-//    relocate("de.themoep.inventorygui", "${libPackage}.de.themoep.inventorygui")
-//}
+jar {
+    enabled = false
+    dependsOn shadowJar
+}
+
+shadowJar {
+    archiveFileName = "Diplomacy.jar"
+
+    dependencies {
+        include dependency('de.themoep:inventorygui')
+    }
+
+    def libPackage = "me.tedwoodworth.diplomacy.lib"
+    relocate("de.themoep.inventorygui", "${libPackage}.de.themoep.inventorygui")
+}
