@@ -141,7 +141,7 @@ public class Nations {
             if (testNation != null) {
                 if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
                     color = ChatColor.RED;
-                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID()) || Objects.equals(nation, testNation)) {
                     color = ChatColor.GREEN;
                 }
             }

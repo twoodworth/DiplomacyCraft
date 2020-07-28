@@ -80,7 +80,8 @@ public class Nation {
             case 14 -> banner = Material.BLACK_BANNER;
         }
 
-        nationSection.set("Banner", banner);
+        var itemStack = new ItemStack(banner, 1);
+        nationSection.set("Banner", itemStack);
         nationSection.set("Created", Instant.now().getEpochSecond());
         nationSection.set("Name", name);
         return nationSection;
