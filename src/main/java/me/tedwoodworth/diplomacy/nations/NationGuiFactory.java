@@ -28,14 +28,23 @@ public class NationGuiFactory {
         var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
         String[] guiSetup = {
                 "         ",
-                " a       ",
+                " ab      ",
                 "         ",
                 "         ",
                 "         ",
                 "         "
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
-        gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
+        var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
+        if (playerNation != null) {
+            if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {
+                glass = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
+            } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
+                glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+            }
+        }
+
+        gui.setFiller(glass);
 
         if (Objects.equals(nation, playerNation)) {
             gui.addElement(new StaticGuiElement('a',
@@ -47,12 +56,25 @@ public class NationGuiFactory {
                     ChatColor.BLUE + "Change Name:",
                     ChatColor.GRAY + "/nation rename <name>"
             ));
+            gui.addElement(new StaticGuiElement('b',
+                    nation.getBanner(),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:",
+                    " ",
+                    ChatColor.BLUE + "Change Banner:",
+                    ChatColor.GRAY + "/nation banner name"
+            ));
         } else {
             gui.addElement(new StaticGuiElement('a',
                     new ItemStack(Material.NAME_TAG),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name",
                     color + nation.getName()
+            ));
+            gui.addElement(new StaticGuiElement('b',
+                    nation.getBanner(),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:"
             ));
         }
         return gui;

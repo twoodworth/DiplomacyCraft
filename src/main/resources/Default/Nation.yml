@@ -28,6 +28,7 @@ Classes:
       CanBeKicked: true
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -76,6 +77,7 @@ Classes:
       CanBeKicked: true
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -124,6 +126,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -172,6 +175,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -220,6 +224,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -268,6 +273,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -316,6 +322,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: false
+      CanChangeBanner: false
       CanToggleBorder: false
       CanSetClassTo1: false
       CanSetClassTo2: false
@@ -364,6 +371,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: true
+      CanChangeBanner: true
       CanToggleBorder: true
       CanSetClassTo1: true
       CanSetClassTo2: true
@@ -412,6 +420,7 @@ Classes:
       CanBeKicked: false
       CanDeposit: true
       CanWithdraw: true
+      CanChangeBanner: true
       CanToggleBorder: true
       CanSetClassTo1: true
       CanSetClassTo2: true
@@ -442,3 +451,4 @@ Outlaws: []
 AllyNations: []
 EnemyNations: []
 IsOpen: false
+Banner:

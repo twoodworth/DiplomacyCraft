@@ -5,9 +5,11 @@ import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -58,7 +60,27 @@ public class Nation {
 
         nationSection.createSection("Members", membersMap);
         nationSection.set("Founder", founder.getUniqueId().toString());
+        var random = (int) (Math.random() * 15);
+        var banner = Material.WHITE_BANNER;
+        switch (random) {
+            case 0 -> banner = Material.ORANGE_BANNER;
+            case 1 -> banner = Material.MAGENTA_BANNER;
+            case 2 -> banner = Material.LIGHT_BLUE_BANNER;
+            case 3 -> banner = Material.YELLOW_BANNER;
+            case 4 -> banner = Material.LIME_BANNER;
+            case 5 -> banner = Material.PINK_BANNER;
+            case 6 -> banner = Material.GRAY_BANNER;
+            case 7 -> banner = Material.LIGHT_GRAY_BANNER;
+            case 8 -> banner = Material.CYAN_BANNER;
+            case 9 -> banner = Material.PURPLE_BANNER;
+            case 10 -> banner = Material.BLUE_BANNER;
+            case 11 -> banner = Material.BROWN_BANNER;
+            case 12 -> banner = Material.GREEN_BANNER;
+            case 13 -> banner = Material.RED_BANNER;
+            case 14 -> banner = Material.BLACK_BANNER;
+        }
 
+        nationSection.set("Banner", banner);
         nationSection.set("Created", Instant.now().getEpochSecond());
         nationSection.set("Name", name);
         return nationSection;
@@ -129,6 +151,16 @@ public class Nation {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setBanner(ItemStack banner) {
+        var bannerCopy = banner.clone();
+        bannerCopy.setAmount(1);
+        configSection.set("Banner", bannerCopy);
+    }
+
+    public ItemStack getBanner() {
+        return Objects.requireNonNull(configSection.getItemStack("Banner")).clone();
     }
 
     public Set<DiplomacyChunk> getChunks() {

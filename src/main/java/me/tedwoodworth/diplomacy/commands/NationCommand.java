@@ -19,6 +19,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.BannerMeta;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -208,8 +209,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(nationCloseUsage);
             }
         } else if (args[0].equalsIgnoreCase("banner")) {
-            if (args.length == 2) {
-                nationBanner(sender, args[1]);
+            if (args.length == 1) {
+                nationBanner(sender);
             } else {
                 sender.sendMessage(nationBannerUsage);
             }
@@ -257,6 +258,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 return Arrays.asList(
                         "create",
+                        "banner",
                         "rename",
                         "surrender",
                         "disband",
@@ -283,6 +285,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     nations.add(nation.getName());
                 return nations;
             } else if (args[0].equalsIgnoreCase("rename")) {
+                return null;
+            } else if (args[0].equalsIgnoreCase("banner")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("surrender")) {
                 List<String> nations = new ArrayList<>();
@@ -376,12 +380,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         var player = (Player) sender;
-        var uuid = (player).getUniqueId();
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
-        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var nation = Nations.getInstance().get(strNation);
 
         if (nation == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not belong to a nation.");
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
             return;
         }
 
@@ -1780,10 +1782,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         nation.setIsOpen(false);
     }
 
-    private void nationBanner(CommandSender sender, String banner) {
-
-    }
-
     private void nationOutlawAdd(CommandSender sender, String strOutlaw) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
@@ -2089,6 +2087,55 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     } else {
                         sender.sendMessage(ChatColor.GREEN + sender.getName() + " has withdrawn \u00A40" + formatter.format(amount) + " from your nation's balance.");
                     }
+                }
+            }
+        }
+    }
+
+    private void nationBanner(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canChangeBanner = permissions.get("CanChangeBanner");
+        if (!canChangeBanner) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to change your nation's banner.");
+            return;
+        }
+
+        var heldItem = player.getInventory().getItemInMainHand();
+        if (!(heldItem.getItemMeta() instanceof BannerMeta)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be holding a banner.");
+            return;
+        }
+
+        nation.setBanner(heldItem);
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+            var testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (testPlayerNation != null) {
+                if (Objects.equals(testPlayerNation, nation)) {
+                    testPlayer.sendMessage(ChatColor.AQUA + "Your nation's banner has been updated.");
+                } else if (nation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
+                    testPlayer.sendMessage(ChatColor.RED + nation.getName() + ChatColor.AQUA + " has updated their banner.");
+                } else if (nation.getAllyNationIDs().contains(testPlayerNation.getNationID())) {
+                    testPlayer.sendMessage(ChatColor.GREEN + nation.getName() + ChatColor.AQUA + " has updated their banner.");
+                } else {
+                    testPlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has updated their banner.");
                 }
             }
         }
