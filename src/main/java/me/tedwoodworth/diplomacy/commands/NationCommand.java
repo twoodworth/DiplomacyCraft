@@ -1713,23 +1713,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-            if (testNation == null) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has opened its borders.");
-            } else {
-                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                    onlinePlayer.sendMessage(ChatColor.RED + nation.getName() + ChatColor.AQUA + " has opened its borders.");
-                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
-                    onlinePlayer.sendMessage(ChatColor.GREEN + nation.getName() + ChatColor.AQUA + " has opened its borders.");
-                } else if (Objects.equals(testNation, nation)) {
-                    onlinePlayer.sendMessage(ChatColor.AQUA + "Your nation has opened its borders.");
-                } else {
-                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has opened its borders.");
-                }
-            }
-        }
+
         nation.setIsOpen(true);
     }
 
@@ -1762,23 +1746,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-            if (testNation == null) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has closed its borders.");
-            } else {
-                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                    onlinePlayer.sendMessage(ChatColor.RED + nation.getName() + ChatColor.AQUA + " has closed its borders.");
-                } else if (testNation.getAllyNationIDs().contains(nation.getNationID())) {
-                    onlinePlayer.sendMessage(ChatColor.GREEN + nation.getName() + ChatColor.AQUA + " has closed its borders.");
-                } else if (Objects.equals(testNation, nation)) {
-                    onlinePlayer.sendMessage(ChatColor.AQUA + "Your nation has closed its borders.");
-                } else {
-                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has closed its borders.");
-                }
-            }
-        }
         nation.setIsOpen(false);
     }
 

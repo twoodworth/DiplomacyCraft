@@ -188,10 +188,17 @@ public class NationGuiFactory {
             if (permissions.get("CanToggleBorder")) {
                 gui.addElement(new StaticGuiElement('k',
                         new ItemStack(Material.OAK_FENCE),
-                        click -> true,
+                        click -> {
+                            if ((nation.getIsOpen() && status.equals("Open")) || (!nation.getIsOpen() && status.equals("Closed"))) {
+                                nation.setIsOpen(!nation.getIsOpen());
+                            }
+                            var nGui = create(nation, player);
+                            nGui.show(player);
+                            return true;
+                        },
                         "" + ChatColor.YELLOW + ChatColor.BOLD + "Border Status:",
                         ChatColor.GRAY + status,
-                        " ",//TODO add click command
+                        " ",
                         ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Toggle Status"
                 ));
             } else {
