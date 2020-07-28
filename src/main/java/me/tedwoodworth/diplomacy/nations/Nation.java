@@ -1,10 +1,12 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -216,6 +218,17 @@ public class Nation {
         configSection.set("Outlaws", list);
     }
 
+    public String getFounder() {
+        return configSection.getString("Founder");
+    }
+
+    public String getDateCreated() {
+        var strUnix = configSection.getString("Created");
+        var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
+        var time = new java.util.Date((long) unix * 1000);
+        return time.toString();
+    }
+
     public void removeOutlaw(Player player) {
         var uuid = player.getUniqueId();
         var list = configSection.getStringList("Outlaws");
@@ -235,6 +248,17 @@ public class Nation {
 
     public double getBalance() {
         return configSection.getDouble("Balance");
+    }
+
+    public double getMembersBalance() {
+        double memberBalance = 0.0;
+
+        for (var uuid : this.getMembers()) {
+            var player = UUID.fromString(uuid);
+            var offlinePlayer = Bukkit.getOfflinePlayer(player);
+            memberBalance += Diplomacy.getEconomy().getBalance(offlinePlayer);
+        }
+        return memberBalance;
     }
 
     public void setBalance(double balance) {
