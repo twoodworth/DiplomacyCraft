@@ -163,9 +163,7 @@ public class NationGuiFactory {
                     founderItem,
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName(),
-                    " ",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view player info"
+                    ChatColor.GRAY + founder.getName()
             ));
             gui.addElement(new StaticGuiElement('i',
                     new ItemStack(Material.CLOCK),
@@ -272,7 +270,10 @@ public class NationGuiFactory {
             }
             gui.addElement(new StaticGuiElement('t',
                     new ItemStack(Material.BARRIER),
-                    click -> true,
+                    click -> {
+                        gui.close();
+                        return true;
+                    },
                     "" + ChatColor.RED + ChatColor.BOLD + "Escape",
                     ChatColor.GRAY + "Click to escape"//TODO add
             ));
@@ -338,9 +339,7 @@ public class NationGuiFactory {
                     founderItem,
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName(),
-                    " ",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view player info"
+                    ChatColor.GRAY + founder.getName()
             ));
             gui.addElement(new StaticGuiElement('i',
                     new ItemStack(Material.CLOCK),
@@ -420,7 +419,10 @@ public class NationGuiFactory {
             ));
             gui.addElement(new StaticGuiElement('t',
                     new ItemStack(Material.BARRIER),
-                    click -> true,
+                    click -> {
+                        gui.close();
+                        return true;
+                    },
                     "" + ChatColor.RED + ChatColor.BOLD + "Escape",
                     ChatColor.GRAY + "Click to escape"//TODO add
             ));
