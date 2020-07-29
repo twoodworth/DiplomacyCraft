@@ -703,7 +703,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + player.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
 
@@ -866,6 +866,114 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         group.addChunk(diplomacyChunk);
         sender.sendMessage(ChatColor.AQUA + "Plot claimed by " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
 
+    }
+
+    private void groupPromote(CommandSender sender, String strPlayer, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        var otherPlayer = Bukkit.getPlayer(strPlayer);
+        if (otherPlayer == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+        }
+
+        var player = (Player) sender;
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to promote members to leaders in this group.");
+            return;
+        }
+
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+        if (!(otherDiplomacyPlayer.getGroups().contains(group.getGroupID()))) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of this group.");
+            return;
+        }
+
+        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a leader of this group.");
+            return;
+        }
+
+        otherDiplomacyPlayer.addGroupLed(group);
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been promoted to leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            }
+        }
+    }
+
+    private void groupDemote(CommandSender sender, String strPlayer, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        var otherPlayer = Bukkit.getPlayer(strPlayer);
+        if (otherPlayer == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+        }
+
+        var player = (Player) sender;
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to demote leaders in this group.");
+            return;
+        }
+
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+        if (!(otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID()))) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of this group.");
+            return;
+        }
+
+        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a leader of this group.");
+            return;
+        }
+
+        otherDiplomacyPlayer.removeGroupLed(group);
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been demoted from leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            }
+        }
     }
 }
 
