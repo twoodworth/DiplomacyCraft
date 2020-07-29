@@ -1,7 +1,11 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -398,4 +402,117 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
     }
 
+    private void groupSurrender(CommandSender sender, String strGroup, String strOtherNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to use this command.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        boolean canSurrender = permissions.get("CanSurrenderGroup");
+
+        if (!canSurrender) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to surrender groups.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        if (!Objects.equals(group.getNation(), nation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "That group does not belong to your nation.");
+            return;
+        }
+
+        Nation otherNation = Nations.getInstance().get(strOtherNation);
+        if (otherNation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown nation.");
+            return;
+        }
+
+        if (Objects.equals(nation, otherNation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot surrender to your own nation.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID()) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
+                var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testNation != null) {
+                    var color1 = ChatColor.BLUE;
+                    var color2 = ChatColor.BLUE;
+                    if (testNation.getEnemyNationIDs().contains(otherNation.getNationID())) {
+                        color2 = ChatColor.RED;
+                    } else if (testNation.getAllyNationIDs().contains(otherNation.getNationID()) || Objects.equals(testNation, otherNation)) {
+                        color2 = ChatColor.GREEN;
+                    }
+                    if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                        color1 = ChatColor.RED;
+                    } else if (testNation.getAllyNationIDs().contains(nation.getNationID()) || Objects.equals(testNation, nation)) {
+                        color1 = ChatColor.GREEN;
+                    }
+                    onlinePlayer.sendMessage(color1 + nation.getName() + ChatColor.AQUA + " has surrendered the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + " to " + color2 + otherNation.getName() + ChatColor.AQUA + ".");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has surrendered the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + " to " + ChatColor.BLUE + otherNation.getName() + ChatColor.AQUA + ".");
+                }
+            }
+        }
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
+            var testNation = testDiplomacyChunk.getNation();
+            if (Objects.equals(testNation, nation)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testPlayerNation == null) {
+                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                } else if (otherNation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
+                    player.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
+                } else if (otherNation.getAllyNationIDs().contains(testPlayerNation.getNationID()) || otherNation.equals(testPlayerNation)) {
+                    player.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
+                } else {
+                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                }
+            }
+        }
+
+        var contests = ContestManager.getInstance().getContests();
+        for (var contest : contests) {
+            var attackingNation = contest.getAttackingNation();
+            if (attackingNation.equals(nation)) {
+                ContestManager.getInstance().endContest(contest);
+            } else if (Objects.equals(contest.getDiplomacyChunk().getNation(), nation)) {
+                if (attackingNation.equals(otherNation)) {
+                    ContestManager.getInstance().winContest(contest);
+                } else if (attackingNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    ContestManager.getInstance().endContest(contest);
+                }
+            }
+        }
+
+        var diplomacyChunks = group.getChunks();
+        for (var diplomacyChunk : diplomacyChunks) {
+            nation.removeChunk(diplomacyChunk);
+            otherNation.addChunk(diplomacyChunk);
+        }
+
+        group.setNation(otherNation);
+    }
+
 }
+
+
