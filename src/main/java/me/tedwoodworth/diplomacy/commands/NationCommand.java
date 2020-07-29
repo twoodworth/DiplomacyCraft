@@ -27,16 +27,17 @@ import java.time.Instant;
 import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
-    private static final String nationCreateUsage = "/nation create <nation>";
+    private static final String nationCreateUsage = "/nation create <name>";
     private static final String nationInfoUsage = "/nation info <nation>";
-    private static final String nationRenameUsage = "/nation rename <nation>";
+    private static final String nationRenameUsage = "/nation rename <name>";
     private static final String nationSurrenderUsage = "/nation surrender <nation>";
-    private static final String nationDisbandUsage = "/nation surrender";
+    private static final String nationDisbandUsage = "/nation disband";
     private static final String nationAllyUsage = "/nation ally <nation>";
     private static final String nationAcceptUsage = "/nation accept [ally/neutral] <nation>";
     private static final String nationDeclineUsage = "/nation decline [ally/neutral] <nation>";
     private static final String nationNeutralUsage = "/nation neutral <nation>";
     private static final String nationEnemyUsage = "/nation enemy <nation>";
+    private static final String nationRelationshipUsage = "/nation (ally/neutral/enemy) <nation>";
     private static final String nationListUsage = "/nation list";
     private static final String nationInviteUsage = "/nation invite <player>";
     private static final String nationJoinUsage = "/nation join <nation>";
@@ -46,12 +47,15 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationKickUsage = "/nation kick <player>";
     private static final String nationOpenUsage = "/nation open";
     private static final String nationCloseUsage = "/nation close";
+    private static final String nationBorderUsage = "/nation (open/close)";
     private static final String nationBannerUsage = "/nation banner";
+    private static final String nationOutlawUsage = "/nation outlaw (add/remove) <player>";
     private static final String nationOutlawAddUsage = "/nation outlaw add <player>";
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
     private static final String nationOutlawListUsage = "/nation outlaw list <page>";
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
+    private static final String nationDepositWithdrawUsage = "/nation (deposit/withdraw) <amount>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
     private Map<String, Long> requests = new HashMap<>();
@@ -188,9 +192,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(nationLeaveUsage);
             }
-        } else if (args[0].
-
-                equalsIgnoreCase("kick")) {
+        } else if (args[0].equalsIgnoreCase("kick")) {
             if (args.length == 2) {
                 nationKick(sender, args[1]);
             } else {
@@ -335,7 +337,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("list")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("invite")) {
-                return null; //TODO List Nation-less players
+                if (args.length == 2) {
+                    List<String> players = new ArrayList<>();
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        var nation = Nations.getInstance().get(diplomacyPlayer);
+                        if (nation == null) {
+                            players.add(player.getName());
+                        }
+                    }
+                    return players;
+                } else {
+                    return null;
+                }
             } else if (args[0].equalsIgnoreCase("join")) {
                 List<String> nations = new ArrayList<>();
                 for (var nation : Nations.getInstance().getNations())
@@ -370,7 +384,26 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nation(CommandSender sender) {
-
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage Nations:");
+        sender.sendMessage(ChatColor.AQUA + nationListUsage + ChatColor.GRAY + " Get a list of all nations");
+        sender.sendMessage(ChatColor.AQUA + nationInfoUsage + ChatColor.GRAY + " Get info about a nation");
+        sender.sendMessage(ChatColor.AQUA + nationCreateUsage + ChatColor.GRAY + " Create a nation");
+        sender.sendMessage(ChatColor.AQUA + nationRenameUsage + ChatColor.GRAY + " Rename a nation");
+        sender.sendMessage(ChatColor.AQUA + nationSurrenderUsage + ChatColor.GRAY + " Surrender your nation");
+        sender.sendMessage(ChatColor.AQUA + nationDisbandUsage + ChatColor.GRAY + " Disband your nation");
+        sender.sendMessage(ChatColor.AQUA + nationInviteUsage + ChatColor.GRAY + " Invite a player to your nation");
+        sender.sendMessage(ChatColor.AQUA + nationJoinUsage + ChatColor.GRAY + " Join a nation");
+        sender.sendMessage(ChatColor.AQUA + nationKickUsage + ChatColor.GRAY + " Kick a player from your nation");
+        sender.sendMessage(ChatColor.AQUA + nationLeaveUsage + ChatColor.GRAY + " Leave your nation");
+        sender.sendMessage(ChatColor.AQUA + nationDepositWithdrawUsage + ChatColor.GRAY + " Deposit/withdraw from your nation's balance");
+        sender.sendMessage(ChatColor.AQUA + nationRelationshipUsage + ChatColor.GRAY + " Become allies/neutral/enemies with another nation");
+        sender.sendMessage(ChatColor.AQUA + nationBorderUsage + ChatColor.GRAY + " Open/close your nation's borders");
+        sender.sendMessage(ChatColor.AQUA + nationBannerUsage + ChatColor.GRAY + " Set your nation's banner");
+        sender.sendMessage(ChatColor.AQUA + nationOutlawUsage + ChatColor.GRAY + " Add/remove outlaws");
     }
 
     private void nationInfo(CommandSender sender, String strNation) {

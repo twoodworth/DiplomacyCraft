@@ -48,10 +48,8 @@ public class DiplomacyGroups {
 
         groupConfig.set("Groups." + groupID, groupSection);
         groupConfig.set("NextNationID", nextGroupID);
-        groupSection.set("Groups." + groupID + ".Name", name);
-        groupConfig.set("Groups." + groupID + ".Nation", nation.getNationID());
-        groupSection = groupConfig.getConfigurationSection("Groups." + groupID);
-        var group = new DiplomacyGroup(groupID, groupSection);
+        var initializedGroupSection = DiplomacyGroup.initializeGroup(groupSection, nation, name);
+        var group = new DiplomacyGroup(groupID, initializedGroupSection);
         groups.add(group);
         return group;
     }
