@@ -715,7 +715,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
     }
 
-    private void nationBanner(CommandSender sender, String strGroup) {
+    private void groupBanner(CommandSender sender, String strGroup) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -767,6 +767,63 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }
+    }
+
+    private void groupClaim(CommandSender sender, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to claim land for this group.");
+            return;
+        }
+
+        var canManagePlotsOfLedGroups = permissions.get("CanManagePlotsOfLedGroups");
+
+        if (!canManagePlotsOfLedGroups) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to claim land for this group.");
+            return;
+        }
+
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var otherNation = diplomacyChunk.getNation();
+        var groupNation = group.getNation();
+        if (!Objects.equals(otherNation, groupNation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "This land doesn't belong to the same nation as " + group.getName() + ".");
+        }
+
+        var otherGroup = DiplomacyGroups.getInstance().get(chunk);
+        if (otherGroup != null) {
+            var isOtherGroupLeader = diplomacyPlayer.getGroupsLed().contains(otherGroup.getGroupID());
+            if (!(isOtherGroupLeader || canLeadAllGroups)) {
+                sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to claim over land belonging to the group " + otherGroup.getName() + ".");
+                return;
+            }
+            otherGroup.removeChunk(diplomacyChunk);
+        }
+
+        group.addChunk(diplomacyChunk);
+        sender.sendMessage(ChatColor.AQUA + "Plot claimed by " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+
     }
 }
 

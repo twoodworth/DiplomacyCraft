@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
@@ -81,6 +82,16 @@ public class DiplomacyGroups {
     public DiplomacyGroup get(String name) {
         for (var group : groups) {
             if (name.equalsIgnoreCase(group.getName())) {
+                return group;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public DiplomacyGroup get(Chunk chunk) {
+        for (var group : groups) {
+            if (group.getChunks().contains(chunk)) {
                 return group;
             }
         }
