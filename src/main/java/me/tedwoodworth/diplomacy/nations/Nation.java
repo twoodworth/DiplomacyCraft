@@ -133,6 +133,7 @@ public class Nation {
         return classes;
     }
 
+    @Nullable
     public NationClass getMemberClass(DiplomacyPlayer diplomacyPlayer) {
         var uuid = diplomacyPlayer.getUUID();
         var classID = configSection.getString("Members." + uuid.toString());

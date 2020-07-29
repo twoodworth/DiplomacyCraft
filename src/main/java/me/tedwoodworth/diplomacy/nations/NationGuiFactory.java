@@ -17,8 +17,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static java.util.Comparator.comparingDouble;
-import static java.util.Comparator.comparingInt;
+import static java.util.Comparator.*;
 
 public class NationGuiFactory {
 
@@ -745,8 +744,7 @@ public class NationGuiFactory {
                 click -> true,//TODO add player info
                 "" + ChatColor.YELLOW + ChatColor.BOLD + member.getName(),
                 ChatColor.BLUE + "Class: " + ChatColor.GRAY + memberClass,
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(member)),
-                ChatColor.BLUE + "Line: " + ChatColor.GRAY + index++
+                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(member))
         );
     }
 
@@ -763,12 +761,12 @@ public class NationGuiFactory {
         }
         var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
         String[] guiSetup = {
-                "  abcde S",
-                "A fghij  ",
-                "B klmno U",
-                "C pqrst D",
+                "A abcde S",
+                "B fghij  ",
+                "C klmno U",
+                "G pqrst D",
                 "  uvwxy  ",
-                "N z0123 E"
+                "N z{|}~ E"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -944,6 +942,22 @@ public class NationGuiFactory {
                 "" + ChatColor.RED + ChatColor.BOLD + "Escape",
                 ChatColor.GRAY + "Click to escape"
         ));
+        gui.addElement(new StaticGuiElement('G',
+                new ItemStack(Material.BLUE_BANNER),
+                click -> {
+                    if (click.getType().isLeftClick()) {
+                        var nGui = createOutlaws(nation, player, "nation", slot);
+                        nGui.show(player);
+                    } else if (click.getType().isRightClick()) {
+                        var nGui = createOutlaws(nation, player, "reverseNation", slot);
+                        nGui.show(player);
+                    }
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Nation Name",
+                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
+                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
+        ));
 
         var outlawsStr = nation.getOutlaws();
         List<OfflinePlayer> outlaws = new ArrayList<>();
@@ -996,20 +1010,38 @@ public class NationGuiFactory {
                     });
         } else if (sortType.equals("class")) {
             outlaws.stream()
-                    .sorted(Comparator.nullsLast(comparingInt(p -> -Integer.parseInt(nation.getMemberClass(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getClassID()))))
+                    .sorted(Comparator.nullsLast(comparingInt(p -> -Integer.parseInt(Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getMemberClass(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getClassID()))))
                     .skip(skipped)
                     .limit(30)
-                    .forEach(member -> {
-                        var element = createOutlawElement(nation, member, charSlot[0]++);
+                    .forEach(outlaw -> {
+                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseClass")) {
             outlaws.stream()
-                    .sorted(Comparator.nullsLast(comparingInt(p -> Integer.parseInt(nation.getMemberClass(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getClassID()))))
+                    .sorted(Comparator.nullsFirst(comparingInt(p -> Integer.parseInt(Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getMemberClass(DiplomacyPlayers.getInstance().get(p.getUniqueId())).getClassID()))))
                     .skip(skipped)
                     .limit(30)
-                    .forEach(member -> {
-                        var element = createOutlawElement(nation, member, charSlot[0]++);
+                    .forEach(outlaw -> {
+                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("nation")) {
+            outlaws.stream()
+                    .sorted(nullsLast((p1, p2) -> Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUniqueId())).getName().compareToIgnoreCase(Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUniqueId())).getName())))
+                    .skip(skipped)
+                    .limit(30)
+                    .forEach(outlaw -> {
+                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("reverseNation")) {
+            outlaws.stream()
+                    .sorted(nullsFirst((p1, p2) -> -Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUniqueId())).getName().compareToIgnoreCase(Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUniqueId())).getName())))
+                    .skip(skipped)
+                    .limit(30)
+                    .forEach(outlaw -> {
+                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         }
