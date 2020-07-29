@@ -513,6 +513,71 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         group.setNation(otherNation);
     }
 
+    private void groupDisband(CommandSender sender, String strGroup, String strOtherNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to use this command.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        boolean canSurrender = permissions.get("CanSurrenderGroup");
+
+        if (!canSurrender) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to disband groups.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        if (!Objects.equals(group.getNation(), nation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "That group does not belong to your nation.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID()) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
+                var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testNation != null) {
+                    var color = ChatColor.BLUE;
+                    if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                        color = ChatColor.RED;
+                    } else if (testNation.getAllyNationIDs().contains(nation.getNationID()) || Objects.equals(testNation, nation)) {
+                        color = ChatColor.GREEN;
+                    }
+                    onlinePlayer.sendMessage(color + nation.getName() + ChatColor.AQUA + " has disbanded the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has disbanded the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                }
+            }
+        }
+
+        for (var offlinePlayer : Bukkit.getOfflinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(offlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group)) {
+                testDiplomacyPlayer.removeGroup(group);
+            }
+            if (testDiplomacyPlayer.getGroupsLed().contains(group)) {
+                testDiplomacyPlayer.removeGroupLed(group);
+            }
+        }
+        DiplomacyGroups.getInstance().removeGroup(group);
+    }
+
 }
 
 
