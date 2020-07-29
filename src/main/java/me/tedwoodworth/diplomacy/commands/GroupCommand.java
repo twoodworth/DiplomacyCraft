@@ -588,15 +588,14 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Player player = (Player) sender;
-        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-
         var group = DiplomacyGroups.getInstance().get(strGroup);
         if (group == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
             return;
         }
 
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
 
         Nation nation = Nations.getInstance().get(diplomacyPlayer);
@@ -630,6 +629,38 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         otherDiplomacyPlayer.addGroup(group);
     }
 
+    private void groupLeave(CommandSender sender, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        if (!diplomacyPlayer.getGroups().contains(group.getGroupID())) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not a member of that group.");
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+                onlinePlayer.sendMessage(ChatColor.AQUA + player.getName() + " has left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            }
+        }
+
+        diplomacyPlayer.removeGroup(group);
+
+        if (diplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+            diplomacyPlayer.removeGroupLed(group);
+        }
+
+    }
 
 }
 
