@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -229,7 +230,8 @@ public class Nation {
         var strUnix = configSection.getString("Created");
         var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
         var time = new java.util.Date((long) unix * 1000);
-        return time.toString();
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return jdf.format(time);
     }
 
     public void removeOutlaw(Player player) {

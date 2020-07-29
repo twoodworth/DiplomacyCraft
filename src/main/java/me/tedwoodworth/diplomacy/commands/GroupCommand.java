@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
+import me.tedwoodworth.diplomacy.groups.GroupGuiFactory;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -306,6 +307,28 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
+    private void group(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage Groups:");
+        sender.sendMessage(ChatColor.AQUA + groupListUsage + ChatColor.GRAY + " View all groups");
+        sender.sendMessage(ChatColor.AQUA + groupInfoUsage + ChatColor.GRAY + " Get info about a group");
+        sender.sendMessage(ChatColor.AQUA + groupCreateUsage + ChatColor.GRAY + " Create a group");
+        sender.sendMessage(ChatColor.AQUA + groupRenameUsage + ChatColor.GRAY + " Rename a group");
+        sender.sendMessage(ChatColor.AQUA + groupAddUsage + ChatColor.GRAY + " Add a player to a group");
+        sender.sendMessage(ChatColor.AQUA + groupKickUsage + ChatColor.GRAY + " Kick a player from a group");
+        sender.sendMessage(ChatColor.AQUA + groupLeaveUsage + ChatColor.GRAY + " Leave a group");
+        sender.sendMessage(ChatColor.AQUA + groupClaimUsage + ChatColor.GRAY + " Claim a plot for a group");
+        sender.sendMessage(ChatColor.AQUA + groupUnclaimUsage + ChatColor.GRAY + " Unclaim a plot for a group");
+        sender.sendMessage(ChatColor.AQUA + groupSurrenderUsage + ChatColor.GRAY + " Surrender a group");
+        sender.sendMessage(ChatColor.AQUA + groupDisbandUsage + ChatColor.GRAY + " Disband a group");
+        sender.sendMessage(ChatColor.AQUA + groupBannerUsage + ChatColor.GRAY + " Set a group's banner");
+        sender.sendMessage(ChatColor.AQUA + groupPromoteUsage + ChatColor.GRAY + " Promote a member to leader");
+        sender.sendMessage(ChatColor.AQUA + groupDemoteUsage + ChatColor.GRAY + " Demote a member from leader");
+    }
+
     private void groupInfo(CommandSender sender, String strGroup) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
@@ -354,7 +377,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        DiplomacyGroups.getInstance().createGroup(name, nation);
+        DiplomacyGroups.getInstance().createGroup(name, diplomacyPlayer, nation);
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testPlayer);

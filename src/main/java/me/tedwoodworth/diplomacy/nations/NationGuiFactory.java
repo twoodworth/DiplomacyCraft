@@ -439,16 +439,11 @@ public class NationGuiFactory {
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
             ));
 
-            var map = new ItemStack(Material.FILLED_MAP);
-            var mapMeta = (MapMeta) map.getItemMeta();
-            mapMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-            map.setItemMeta(mapMeta);
-
             gui.addElement(new StaticGuiElement('r',
-                    map,
+                    new ItemStack(Material.SHIELD),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "World Map",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View world map"
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",//TODO add
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
             ));
             gui.addElement(new StaticGuiElement('t',
                     new ItemStack(Material.BARRIER),

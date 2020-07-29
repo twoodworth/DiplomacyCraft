@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.groups;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -34,7 +35,7 @@ public class DiplomacyGroups {
         Bukkit.getPluginManager().registerEvents(new DiplomacyGroups.EventListener(), Diplomacy.getInstance());
     }
 
-    public DiplomacyGroup createGroup(String name, Nation nation) {
+    public DiplomacyGroup createGroup(String name, DiplomacyPlayer founder, Nation nation) {
         var nextGroupID = groupConfig.getString("NextGroupID");
         if (nextGroupID == null) {
             groupConfig.set("NextGroupID", "0");
@@ -49,7 +50,7 @@ public class DiplomacyGroups {
 
         groupConfig.set("Groups." + groupID, groupSection);
         groupConfig.set("NextNationID", nextGroupID);
-        var initializedGroupSection = DiplomacyGroup.initializeGroup(groupSection, nation, name);
+        var initializedGroupSection = DiplomacyGroup.initializeGroup(groupSection, founder, nation, name);
         var group = new DiplomacyGroup(groupID, initializedGroupSection);
         groups.add(group);
         return group;

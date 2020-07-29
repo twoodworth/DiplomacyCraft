@@ -4,11 +4,18 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,7 +28,7 @@ public class DiplomacyGroup {
         this.groupSection = groupSection;
     }
 
-    public static ConfigurationSection initializeGroup(ConfigurationSection groupSection, Nation nation, String name) {
+    public static ConfigurationSection initializeGroup(ConfigurationSection groupSection, DiplomacyPlayer founder, Nation nation, String name) {
         var random = (int) (Math.random() * 15);
         var banner = Material.WHITE_BANNER;
         switch (random) {
@@ -47,6 +54,9 @@ public class DiplomacyGroup {
         groupSection.set("Nation", nation.getNationID());
         groupSection.set("Created", Instant.now().getEpochSecond());
         groupSection.set("Name", name);
+
+        var UUID = founder.getUUID();
+        groupSection.set("Founder", UUID.toString());
         return groupSection;
     }
 
@@ -75,6 +85,66 @@ public class DiplomacyGroup {
         var bannerCopy = banner.clone();
         bannerCopy.setAmount(1);
         groupSection.set("Banner", bannerCopy);
+    }
+
+    public ItemStack getBanner() {
+        return Objects.requireNonNull(groupSection.getItemStack("Banner")).clone();
+    }
+
+    public ItemStack getShield() {
+        var banner = this.getBanner();
+
+        var shield = new ItemStack(Material.SHIELD);
+        shield.setItemMeta(banner.getItemMeta());
+        return shield;
+    }
+
+    public String getFounder() {
+        return groupSection.getString("Founder");
+    }
+
+    public String getDateCreated() {
+        var strUnix = groupSection.getString("Created");
+        var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
+        var time = new java.util.Date((long) unix * 1000);
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return jdf.format(time);
+    }
+
+    public List<DiplomacyPlayer> getMembers() {
+        List<DiplomacyPlayer> members = new ArrayList<>();
+        for (var player : Bukkit.getOfflinePlayers()) {
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            if (diplomacyPlayer.getGroups().contains(this.getGroupID())) {
+                members.add(diplomacyPlayer);
+            }
+        }
+        return members;
+    }
+
+    public int getRole(DiplomacyPlayer player) {
+        if (Objects.equals(Nations.getInstance().get(player), this.getNation())) {
+            var permissions = this.getNation().getMemberClass(player).getPermissions();
+            if (permissions.get("CanLeadAllGroups")) {
+                return 0;
+            }
+        } else if (player.getGroupsLed().contains(this.getGroupID())) {
+            return 1;
+        } else if (player.getGroups().contains(this.getGroupID())) {
+            return 2;
+        }
+        return 3;
+    }
+
+    public List<DiplomacyPlayer> getLeaders() {
+        List<DiplomacyPlayer> members = new ArrayList<>();
+        for (var player : Bukkit.getOfflinePlayers()) {
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            if (diplomacyPlayer.getGroupsLed().contains(this.getGroupID())) {
+                members.add(diplomacyPlayer);
+            }
+        }
+        return members;
     }
 
     public Set<DiplomacyChunk> getChunks() {
