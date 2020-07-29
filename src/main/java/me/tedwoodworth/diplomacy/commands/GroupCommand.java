@@ -578,6 +578,59 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         DiplomacyGroups.getInstance().removeGroup(group);
     }
 
+    private void groupList(CommandSender sender) {
+        //TODO add (and also add all groups to nationGui)
+    }
+
+    private void groupAdd(CommandSender sender, String strName, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        boolean canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to add players to this group.");
+            return;
+        }
+
+        var otherPlayer = Bukkit.getPlayer(strName);
+        if (otherPlayer == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+            return;
+        }
+
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
+        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a member of that group.");
+            return;
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " has joined " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            }
+        }
+        otherDiplomacyPlayer.addGroup(group);
+    }
+
+
 }
 
 
