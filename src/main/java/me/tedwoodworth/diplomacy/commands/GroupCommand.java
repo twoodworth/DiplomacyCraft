@@ -12,6 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.BannerMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -662,6 +663,111 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
     }
 
+    private void groupKick(CommandSender sender, String strPlayer, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to kick players from this group.");
+            return;
+        }
+
+        var otherPlayer = Bukkit.getPlayer(strPlayer);
+        if (otherPlayer == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+            return;
+        }
+
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
+        if (!otherDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of that group.");
+        }
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+                onlinePlayer.sendMessage(ChatColor.BLUE + player.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            }
+        }
+
+        otherDiplomacyPlayer.removeGroup(group);
+
+        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+            otherDiplomacyPlayer.removeGroupLed(group);
+        }
+
+    }
+
+    private void nationBanner(CommandSender sender, String strGroup) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown group.");
+            return;
+        }
+
+        Player player = (Player) sender;
+        DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        boolean canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to change this group's banner.");
+            return;
+        }
+
+        var heldItem = player.getInventory().getItemInMainHand();
+        if (!(heldItem.getItemMeta() instanceof BannerMeta)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be holding a banner.");
+            return;
+        }
+
+        group.setBanner(heldItem);
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+            if (testDiplomacyPlayer.getGroups().contains(group)) {
+                var testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testPlayerNation != null) {
+                    if (Objects.equals(testPlayerNation, nation)) {
+                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.GREEN + group.getName() + ChatColor.AQUA + "has been updated.");
+                    } else if (nation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
+                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.RED + group.getName() + ChatColor.AQUA + "has been updated.");
+                    } else if (nation.getAllyNationIDs().contains(testPlayerNation.getNationID())) {
+                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.GREEN + group.getName() + ChatColor.AQUA + "has been updated.");
+                    } else {
+                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + "has been updated.");
+                    }
+                }
+            }
+        }
+    }
 }
 
 

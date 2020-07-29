@@ -71,6 +71,12 @@ public class DiplomacyGroup {
         groupSection.set("Name", name);
     }
 
+    public void setBanner(ItemStack banner) {
+        var bannerCopy = banner.clone();
+        bannerCopy.setAmount(1);
+        groupSection.set("Banner", bannerCopy);
+    }
+
     public Set<DiplomacyChunk> getChunks() {
 
         var chunkMaps = groupSection.getMapList("Chunks");
