@@ -306,11 +306,22 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
-    private void groupInfo(CommandSender sender, String strGroup) {//TODO add
+    private void groupInfo(CommandSender sender, String strGroup) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
+
+        var player = (Player) sender;
+        var group = DiplomacyGroups.getInstance().get(strGroup);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Group not found.");
+            return;
+        }
+
+        var gui = new GroupGuiFactory().create(group, player);
+        gui.show(player);
     }
 
     private void groupCreate(CommandSender sender, String name) {
@@ -514,7 +525,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         group.setNation(otherNation);
     }
 
-    private void groupDisband(CommandSender sender, String strGroup, String strOtherNation) {
+    private void groupDisband(CommandSender sender, String strGroup) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
