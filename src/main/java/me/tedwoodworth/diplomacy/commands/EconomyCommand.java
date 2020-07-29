@@ -26,7 +26,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
     private static final String walletUsage = "/wallet";
     private static final String depositUsage = "/deposit <amount>";
     private static final String withdrawUsage = "/withdraw <amount>";
-    private static final DecimalFormat formatter = new DecimalFormat("#,###.00");
+    private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
 
     public static void register(PluginCommand pluginCommand) {
         var economyCommand = new EconomyCommand();
@@ -270,11 +270,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         Diplomacy.getEconomy().depositPlayer((Player) sender, amount);
 
-        if (amount >= 1) {
-            sender.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount));
-        } else {
-            sender.sendMessage(ChatColor.GREEN + "You have deposited \u00A40" + formatter.format(amount));
-        }
+        sender.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount));
     }
 
     private Map<String, ?> depositDiamonds(double amount, Inventory inventory, boolean isShulkerBox, boolean isEnderChest, boolean checkedEnderchest, Player player) {
@@ -434,11 +430,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
         var maxAmount = Diplomacy.getEconomy().getBalance((OfflinePlayer) sender);
 
         if (amount > maxAmount) {
-            if (maxAmount >= 1) {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(amount) + " in the bank.");
-            } else {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(amount) + " in the bank.");
-            }
+            sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(amount) + " in the bank.");
             return;
         }
 

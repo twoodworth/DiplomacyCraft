@@ -29,12 +29,12 @@ public class NationGuiFactory {
         var color = ChatColor.BLUE;
         if (playerNation != null) {
             if (nation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(nation, playerNation)) {
-                color = ChatColor.GREEN;
+                color = ChatColor.DARK_GREEN;
             } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
                 color = ChatColor.RED;
             }
         }
-        var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
+        var title = "" + color + ChatColor.BOLD + nation.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Main";
         String[] guiSetup = {
                 "         ",
                 " abcdefg ",
@@ -469,12 +469,12 @@ public class NationGuiFactory {
         var color = ChatColor.BLUE;
         if (playerNation != null) {
             if (nation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(nation, playerNation)) {
-                color = ChatColor.GREEN;
+                color = ChatColor.DARK_GREEN;
             } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
                 color = ChatColor.RED;
             }
         }
-        var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
+        var title = "" + color + ChatColor.BOLD + nation.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Members";
         String[] guiSetup = {
                 "  abcde S",
                 "A fghij  ",
@@ -533,7 +533,7 @@ public class NationGuiFactory {
                     }
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Balance",
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Balance",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Largest first",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Smallest first"
         ));
@@ -549,7 +549,7 @@ public class NationGuiFactory {
                     }
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Class",
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Class",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Highest first",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Lowest first"
         ));
@@ -754,12 +754,12 @@ public class NationGuiFactory {
         var color = ChatColor.BLUE;
         if (playerNation != null) {
             if (nation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(nation, playerNation)) {
-                color = ChatColor.GREEN;
+                color = ChatColor.DARK_GREEN;
             } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
                 color = ChatColor.RED;
             }
         }
-        var title = ChatColor.BOLD + "Nation: " + color + ChatColor.BOLD + nation.getName();
+        var title = "" + color + ChatColor.BOLD + nation.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Outlaws";
         String[] guiSetup = {
                 "A abcde S",
                 "B fghij  ",
@@ -818,7 +818,7 @@ public class NationGuiFactory {
                     }
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Balance",
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Balance",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Largest first",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Smallest first"
         ));
@@ -834,7 +834,7 @@ public class NationGuiFactory {
                     }
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Class",
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Class",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Highest first",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Lowest first"
         ));
@@ -871,7 +871,7 @@ public class NationGuiFactory {
                         }
                         var nGui = createOutlaws(nation, player, sortType, nSlot);
                         nGui.show(player);
-                    }//TODO make sure scrolling works properly
+                    }
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Scroll Up",
@@ -954,7 +954,7 @@ public class NationGuiFactory {
                     }
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "By Nation Name",
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Nation Name",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
         ));

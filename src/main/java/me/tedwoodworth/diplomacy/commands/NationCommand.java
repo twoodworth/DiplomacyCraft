@@ -53,7 +53,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
 
-    private static final DecimalFormat formatter = new DecimalFormat("#,###.00");
+    private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
     private Map<String, Long> requests = new HashMap<>();
     private int requestTaskID = -1;
 
@@ -1586,11 +1586,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
             Diplomacy.getEconomy().depositPlayer(player, balance);
-            if (balance >= 1.0) {
-                sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            } else {
-                sender.sendMessage(ChatColor.GREEN + "\u00A40" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            }
+            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
         }
         nation.setBalance(0.0);
 
@@ -1649,8 +1645,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var otherPlayer = Bukkit.getPlayer(strPlayer);
 
         if (otherPlayer == null) {
-            sender.sendMessage("Unknown player.");
-            return;
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+            return;//TODO make it so you can kick offline players
         }
 
         var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
@@ -1926,11 +1922,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
         if (newPlayerBalance < 0.0) {
-            if (playerBalance < 1.0) {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(playerBalance) + ".");
-            } else {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(playerBalance) + ".");
-            }
+            sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(playerBalance) + ".");
             return;
         }
 
@@ -1951,21 +1943,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
             if (Objects.equals(testNation, nation)) {
                 if (Objects.equals(testPlayer, player)) {
-                    if (amount >= 1) {
-                        testPlayer.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
-                    } else {
-                        testPlayer.sendMessage(ChatColor.GREEN + "You have deposited \u00A40" + formatter.format(amount) + " into your nation's balance.");
-                    }
-                } else {
-                    if (amount >= 1) {
-                        sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
-                    } else {
-                        sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A40" + formatter.format(amount) + " into your nation's balance.");
-                    }
+                    testPlayer.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
                 }
+            } else {
+                sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
             }
         }
     }
+
 
     private void nationWithdraw(CommandSender sender, String strAmount) {
         if (!(sender instanceof Player)) {
@@ -2018,12 +2003,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
         if (newNationBalance < 0.0) {
-            if (nationBalance < 1.0) {
-                sender.sendMessage(ChatColor.DARK_RED + "Your nation only has a balance of \u00A40" + formatter.format(nationBalance) + ".");
-            } else {
-                sender.sendMessage(ChatColor.DARK_RED + "Your nation only has a balance of \u00A4" + formatter.format(nationBalance) + ".");
-
-            }
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation only has a balance of \u00A4" + formatter.format(nationBalance) + ".");
             return;
         }
 
@@ -2045,14 +2025,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 if (Objects.equals(testPlayer, player)) {
                     if (amount >= 1) {
                         testPlayer.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
-                    } else {
-                        testPlayer.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A40" + formatter.format(amount) + " from your nation's balance.");
                     }
                 } else {
                     if (amount >= 1) {
                         sender.sendMessage(ChatColor.GREEN + sender.getName() + " has withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
-                    } else {
-                        sender.sendMessage(ChatColor.GREEN + sender.getName() + " has withdrawn \u00A40" + formatter.format(amount) + " from your nation's balance.");
                     }
                 }
             }
