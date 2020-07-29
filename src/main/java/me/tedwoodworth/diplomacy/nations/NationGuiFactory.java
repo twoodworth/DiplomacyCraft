@@ -1079,7 +1079,7 @@ public class NationGuiFactory {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + outlaw.getName(),
                 ChatColor.BLUE + "Nation: " + color + strOutlawNation,
                 ChatColor.BLUE + "Class: " + ChatColor.GRAY + strClass,
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + formatter.format(Diplomacy.getEconomy().getBalance(outlaw))
+                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(outlaw))
         );
     }
 }
