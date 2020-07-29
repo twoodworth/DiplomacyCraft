@@ -769,6 +769,48 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private void groupUnclaim(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var group = DiplomacyGroups.getInstance().get(chunk);
+
+        if (group == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "This plot does not belong to any groups.");
+            return;
+        }
+
+
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
+
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+
+        if (!(isGroupLeader || canLeadAllGroups)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to unclaim land for this group.");
+            return;
+        }
+
+        var canManagePlotsOfLedGroups = permissions.get("CanManagePlotsOfLedGroups");
+
+        if (!canManagePlotsOfLedGroups) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to unclaim land for this group.");
+            return;
+        }
+
+        group.removeChunk(diplomacyChunk);
+        sender.sendMessage(ChatColor.AQUA + "Plot unclaimed.");
+
+    }
+
     private void groupClaim(CommandSender sender, String strGroup) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
