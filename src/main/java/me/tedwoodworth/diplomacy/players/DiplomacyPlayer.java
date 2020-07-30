@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +26,16 @@ public class DiplomacyPlayer {
         return uuid;
     }
 
+    public long getAge() {
+        return Instant.now().getEpochSecond() - Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
+    }
+
+    public String getDateJoined() {
+        var joined = Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
+        var time = new java.util.Date(joined);
+        SimpleDateFormat jdf = new SimpleDateFormat("MM-dd-yyyy");
+        return jdf.format(time);
+    }
 
     public List<String> getGroups() {
         return configSection.getStringList("Groups");

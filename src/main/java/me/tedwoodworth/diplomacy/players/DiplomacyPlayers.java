@@ -45,7 +45,8 @@ public class DiplomacyPlayers {
         if (player == null) {
             Map<String, Object> playersMap = ImmutableMap.of(
                     "Groups", groups,
-                    "GroupsLed", groupsLed);
+                    "GroupsLed", groupsLed
+            );
 
             config.createSection(uuid.toString(), playersMap);
             player = new DiplomacyPlayer(uuid, config.getConfigurationSection(uuid.toString()));

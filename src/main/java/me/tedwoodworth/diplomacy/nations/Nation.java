@@ -193,7 +193,7 @@ public class Nation {
         var squaredBalance = Math.pow(scaledBalance, 2);
 
         var squaredPower = squaredPopulation + squaredTerritory + squaredBalance;
-        return Math.sqrt(squaredPower);
+        return Math.sqrt(squaredPower / 3);
     }
 
     public String getName() {

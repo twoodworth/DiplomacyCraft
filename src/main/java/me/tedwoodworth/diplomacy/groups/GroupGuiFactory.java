@@ -203,12 +203,12 @@ public class GroupGuiFactory {
         }
         var title = "" + color + ChatColor.BOLD + group.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Members";
         String[] guiSetup = {
-                "A abcde S",
+                "A abcde N",
                 "B fghij  ",
                 "R klmno U",
                 "C pqrst D",
-                "  uvwxy  ",
-                "N z{|}~ E"
+                "G uvwxy  ",
+                "  z{|}~ E"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -296,11 +296,21 @@ public class GroupGuiFactory {
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
         ));
-        gui.addElement(new StaticGuiElement('S',
-                new ItemStack(Material.COMPASS),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Search",//TODO add
-                ChatColor.BLUE + "to be added"
+        gui.addElement(new StaticGuiElement('G',
+                new ItemStack(Material.CLOCK),
+                click -> {
+                    if (click.getType().isLeftClick()) {
+                        var nGui = createMembers(group, player, "age", slot);
+                        nGui.show(player);
+                    } else if (click.getType().isRightClick()) {
+                        var nGui = createMembers(group, player, "reverseAge", slot);
+                        nGui.show(player);
+                    }
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Age",
+                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Oldest First",
+                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Youngest First"
         ));
 
         var scrollUp = new ItemStack(Material.WHITE_BANNER);
@@ -472,6 +482,24 @@ public class GroupGuiFactory {
                         var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
+        } else if (sortType.equals("age")) {
+            members.stream()
+                    .sorted((p1, p2) -> (int) -(p1.getAge() - p2.getAge()))
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(member -> {
+                        var element = createMemberElement(group, member, slotChar[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("reverseAge")) {
+            members.stream()
+                    .sorted((p1, p2) -> (int) (p1.getAge() - p2.getAge()))
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(member -> {
+                        var element = createMemberElement(group, member, slotChar[0]++);
+                        gui.addElement(element);
+                    });
         }
         return gui;
     }
@@ -507,7 +535,8 @@ public class GroupGuiFactory {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + offlinePlayer.getName(),
                 ChatColor.BLUE + "Nation: " + ChatColor.GRAY + strNation,
                 ChatColor.BLUE + "Role: " + ChatColor.GRAY + role,
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(offlinePlayer))
+                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(offlinePlayer)),
+                ChatColor.BLUE + "Server Join Date: " + ChatColor.GRAY + DiplomacyPlayers.getInstance().get(member.getUUID()).getDateJoined()
         );
     }
 }
