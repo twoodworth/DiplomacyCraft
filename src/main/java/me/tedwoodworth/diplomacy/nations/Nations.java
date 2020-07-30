@@ -111,6 +111,16 @@ public class Nations {
     }
 
     @Nullable
+    public Nation get(int id) {
+        for (var nation : nations) {
+            if (id == Integer.parseInt(nation.getNationID())) {
+                return nation;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     public Nation getFromID(String id) {
         for (var nation : nations) {
             if (id.equalsIgnoreCase(nation.getNationID())) {

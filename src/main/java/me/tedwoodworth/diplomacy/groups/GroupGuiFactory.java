@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.groups;
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -28,15 +29,15 @@ import static java.util.Comparator.comparingInt;
 public class GroupGuiFactory {
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
 
-    public InventoryGui create(DiplomacyGroup group, Player player) {
+    public static InventoryGui create(DiplomacyGroup group, Player player) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var playerNation = Nations.getInstance().get(diplomacyPlayer);
         var groupNation = group.getNation();
         var color = ChatColor.BLUE;
         if (playerNation != null) {
-            if (groupNation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(groupNation, playerNation)) {
+            if ((groupNation.getAllyNationIDs() != null && groupNation.getAllyNationIDs().contains(playerNation.getNationID())) || Objects.equals(groupNation, playerNation)) {
                 color = ChatColor.DARK_GREEN;
-            } else if (groupNation.getEnemyNationIDs().contains(playerNation.getNationID())) {
+            } else if (groupNation.getEnemyNationIDs() != null && groupNation.getEnemyNationIDs().contains(playerNation.getNationID())) {
                 color = ChatColor.RED;
             }
         }
@@ -63,8 +64,11 @@ public class GroupGuiFactory {
 
         var isLeader = diplomacyPlayer.getGroupsLed().contains(group);
         var isSameNation = Objects.equals(playerNation, groupNation);
-        var permissions = playerNation.getMemberClass(diplomacyPlayer).getPermissions();
-        var leadsAllGroups = isSameNation && permissions.get("CanLeadAllGroups");
+        var leadsAllGroups = false;
+        if (playerNation != null) {
+            var permissions = playerNation.getMemberClass(diplomacyPlayer).getPermissions();
+            leadsAllGroups = isSameNation && permissions.get("CanLeadAllGroups");
+        }
         if (isLeader || leadsAllGroups) {
             gui.addElement(new StaticGuiElement('a',
                     new ItemStack(Material.NAME_TAG),
@@ -84,15 +88,14 @@ public class GroupGuiFactory {
         }
         if (isLeader || leadsAllGroups) {
             gui.addElement(new StaticGuiElement('b',
-                    group.getBanner(),
+                    group.getShield(),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",
-                    " ",//TODO add click command
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",//TODO add click command
                     ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/group banner " + group.getName()
             ));
         } else {
             gui.addElement(new StaticGuiElement('b',
-                    group.getBanner(),
+                    group.getShield(),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:"
             ));
@@ -108,9 +111,18 @@ public class GroupGuiFactory {
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
         ));
 
+        var banner = group.getNation().getBanner();
+        var itemMeta = banner.getItemMeta();
+        itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        banner.setItemMeta(itemMeta);
+
         gui.addElement(new StaticGuiElement('d',
-                group.getNation().getBanner(),
-                click -> true,
+                banner,
+                click -> {
+                    var nGui = NationGuiFactory.create(group.getNation(), player);
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation",//TODO add
                 ChatColor.GRAY + group.getNation().getName(),
                 " ",
@@ -178,7 +190,7 @@ public class GroupGuiFactory {
         return gui;
     }
 
-    public InventoryGui createMembers(DiplomacyGroup group, Player player, String sortType, int slot) {
+    public static InventoryGui createMembers(DiplomacyGroup group, Player player, String sortType, int slot) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var playerNation = Nations.getInstance().get(diplomacyPlayer);
         var color = ChatColor.BLUE;
@@ -363,13 +375,8 @@ public class GroupGuiFactory {
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Scroll down six lines"
         ));
 
-        var shield = group.getShield();
-        var bannerMeta = (BannerMeta) shield.getItemMeta();
-        bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        shield.setItemMeta(bannerMeta);
-
         gui.addElement(new StaticGuiElement('N',
-                shield,
+                group.getShield(),
                 click -> {
                     var nGui = create(group, player);
                     nGui.show(player);
@@ -447,9 +454,27 @@ public class GroupGuiFactory {
                         var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
-        } else if (sortType.equals("role")) {
+        } else if (sortType.equals("reverseRole")) {
             members.stream()
-                    .sorted(comparingInt(group::getRole).reversed())
+                    .sorted((p1, p2) -> -(group.getRole(p1) - group.getRole(p2)))
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(member -> {
+                        var element = createMemberElement(group, member, slotChar[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("nation")) {
+            members.stream()
+                    .sorted((p1, p2) -> Nations.getInstance().get(p1).getName().compareToIgnoreCase(Nations.getInstance().get(p2).getName()))
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(member -> {
+                        var element = createMemberElement(group, member, slotChar[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("reverseNation")) {
+            members.stream()
+                    .sorted((p1, p2) -> -Nations.getInstance().get(p1).getName().compareToIgnoreCase(Nations.getInstance().get(p2).getName()))
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
@@ -460,9 +485,7 @@ public class GroupGuiFactory {
         return gui;
     }
 
-    int index = 0;
-
-    private StaticGuiElement createMemberElement(DiplomacyGroup group, DiplomacyPlayer member, char slot) {
+    private static StaticGuiElement createMemberElement(DiplomacyGroup group, DiplomacyPlayer member, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(member.getUUID()));
@@ -475,7 +498,7 @@ public class GroupGuiFactory {
         var role = "Unknown";
         var memberRole = group.getRole(member);
         if (memberRole == 0) {
-            role = "Leader of all " + group.getNation() + " groups";
+            role = "Leader of all " + group.getNation().getName() + " groups";
         } else if (memberRole == 1) {
             role = "Leader";
         } else if (memberRole == 2) {

@@ -1,11 +1,11 @@
 package me.tedwoodworth.diplomacy.groups;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
@@ -90,7 +90,7 @@ public class DiplomacyGroups {
     }
 
     @Nullable
-    public DiplomacyGroup get(Chunk chunk) {
+    public DiplomacyGroup get(DiplomacyChunk chunk) {
         for (var group : groups) {
             if (group.getChunks().contains(chunk)) {
                 return group;

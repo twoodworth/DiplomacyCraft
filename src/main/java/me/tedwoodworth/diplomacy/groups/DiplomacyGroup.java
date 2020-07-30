@@ -7,9 +7,14 @@ import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.block.Banner;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
+import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -65,8 +70,8 @@ public class DiplomacyGroup {
     }
 
     public Nation getNation() {
-        String nationName = groupSection.getString("Nation");
-        return Nations.getInstance().get(nationName);
+        String nationID = groupSection.getString("Nation");
+        return Nations.getInstance().get(Integer.parseInt(nationID));
     }
 
     public void setNation(Nation nation) {
@@ -93,9 +98,36 @@ public class DiplomacyGroup {
 
     public ItemStack getShield() {
         var banner = this.getBanner();
-
         var shield = new ItemStack(Material.SHIELD);
-        shield.setItemMeta(banner.getItemMeta());
+        ItemMeta meta = shield.getItemMeta();
+        BlockStateMeta bsm = (BlockStateMeta) meta;
+        Banner nBanner = (Banner) bsm.getBlockState();
+
+        var bannerColor = banner.getType();
+        var dyeColor = DyeColor.WHITE;
+        switch (bannerColor) {
+            case ORANGE_BANNER -> dyeColor = DyeColor.ORANGE;
+            case MAGENTA_BANNER -> dyeColor = DyeColor.MAGENTA;
+            case LIGHT_BLUE_BANNER -> dyeColor = DyeColor.LIGHT_BLUE;
+            case YELLOW_BANNER -> dyeColor = DyeColor.YELLOW;
+            case LIME_BANNER -> dyeColor = DyeColor.LIME;
+            case PINK_BANNER -> dyeColor = DyeColor.PINK;
+            case GRAY_BANNER -> dyeColor = DyeColor.GRAY;
+            case LIGHT_GRAY_BANNER -> dyeColor = DyeColor.LIGHT_GRAY;
+            case CYAN_BANNER -> dyeColor = DyeColor.CYAN;
+            case PURPLE_BANNER -> dyeColor = DyeColor.PURPLE;
+            case BLUE_BANNER -> dyeColor = DyeColor.BLUE;
+            case BROWN_BANNER -> dyeColor = DyeColor.BROWN;
+            case GREEN_BANNER -> dyeColor = DyeColor.GREEN;
+            case RED_BANNER -> dyeColor = DyeColor.RED;
+            case BLACK_BANNER -> dyeColor = DyeColor.BLACK;
+        }
+
+        nBanner.setBaseColor(dyeColor);
+        nBanner.setPatterns(((BannerMeta) (banner.getItemMeta())).getPatterns());
+        nBanner.update();
+        bsm.setBlockState(nBanner);
+        shield.setItemMeta(bsm);
         return shield;
     }
 
@@ -107,7 +139,7 @@ public class DiplomacyGroup {
         var strUnix = groupSection.getString("Created");
         var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
         var time = new java.util.Date((long) unix * 1000);
-        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd");
         return jdf.format(time);
     }
 
@@ -171,5 +203,19 @@ public class DiplomacyGroup {
         var list = groupSection.getMapList("Chunks");
         list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         groupSection.set("Chunks", list);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiplomacyGroup that = (DiplomacyGroup) o;
+        return Objects.equals(groupID, that.groupID) &&
+                Objects.equals(groupSection, that.groupSection);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupID, groupSection);
     }
 }

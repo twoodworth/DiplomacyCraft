@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,18 +44,11 @@ public class DiplomacyChunk {
 
     @Nullable
     public DiplomacyGroup getGroup() {
-        Nation nation = this.getNation();
-        if (nation != null) {
-            if (nation.getGroups() != null) {
-                for (var group : nation.getGroups()) {
-                    if (group.getChunks().contains(this)) {
-                        return group;
-                    }
-                }
+        for (var group : DiplomacyGroups.getInstance().getGroups()) {
+            if (group.hasChunk(this)) {
+                return group;
             }
         }
         return null;
     }
-
-
 }

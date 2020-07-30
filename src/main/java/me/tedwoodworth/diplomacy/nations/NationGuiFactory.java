@@ -23,7 +23,8 @@ public class NationGuiFactory {
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
 
-    public InventoryGui create(Nation nation, Player player) {
+
+    public static InventoryGui create(Nation nation, Player player) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var playerNation = Nations.getInstance().get(diplomacyPlayer);
         var color = ChatColor.BLUE;
@@ -458,7 +459,7 @@ public class NationGuiFactory {
         return gui;
     }
 
-    public InventoryGui createMembers(Nation nation, Player player, String sortType, int slot) {
+    public static InventoryGui createMembers(Nation nation, Player player, String sortType, int slot) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var playerNation = Nations.getInstance().get(diplomacyPlayer);
         var color = ChatColor.BLUE;
@@ -725,7 +726,7 @@ public class NationGuiFactory {
 
     int index = 0;
 
-    private StaticGuiElement createMemberElement(Nation nation, OfflinePlayer member, char slot) {
+    private static StaticGuiElement createMemberElement(Nation nation, OfflinePlayer member, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(member);
@@ -743,7 +744,7 @@ public class NationGuiFactory {
         );
     }
 
-    public InventoryGui createOutlaws(Nation nation, Player player, String sortType, int slot) {
+    public static InventoryGui createOutlaws(Nation nation, Player player, String sortType, int slot) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var playerNation = Nations.getInstance().get(diplomacyPlayer);
         var color = ChatColor.BLUE;
@@ -1043,7 +1044,7 @@ public class NationGuiFactory {
         return gui;
     }
 
-    private StaticGuiElement createOutlawElement(Nation nation, OfflinePlayer outlaw, char slot) {
+    private static StaticGuiElement createOutlawElement(Nation nation, OfflinePlayer outlaw, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(outlaw);

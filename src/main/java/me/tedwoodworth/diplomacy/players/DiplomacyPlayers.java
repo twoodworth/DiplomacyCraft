@@ -106,21 +106,28 @@ public class DiplomacyPlayers {
                 var fromNation = fromDiplomacyChunk.getNation();
                 var toNation = toDiplomacyChunk.getNation();
 
-                if (!Objects.equals(fromNation, toNation)) {
+                var fromGroup = fromDiplomacyChunk.getGroup();
+                var toGroup = toDiplomacyChunk.getGroup();
+
+                if (!Objects.equals(fromNation, toNation) || !Objects.equals(fromGroup, toGroup)) {
                     var player = event.getPlayer();
                     if (toNation == null) {
-                        player.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 30, 5);
+                        player.sendTitle(ChatColor.GRAY + "Wilderness", " ", 5, 30, 5);
                     } else {
                         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                         Nation nation = Nations.getInstance().get(diplomacyPlayer);
+                        var toGroupName = "";
+                        if (toGroup != null) {
+                            toGroupName = toGroup.getName();
+                        }
                         if (nation == null) {
-                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 40, 10);
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), ChatColor.BLUE + toGroupName, 5, 40, 10);
                         } else if (toNation.getEnemyNationIDs().contains(nation.getNationID())) {
-                            player.sendTitle(ChatColor.RED + toNation.getName(), null, 5, 40, 10);
+                            player.sendTitle(ChatColor.RED + toNation.getName(), ChatColor.RED + toGroupName, 5, 40, 10);
                         } else if (toNation.getAllyNationIDs().contains(nation.getNationID()) || toNation.equals(nation)) {
-                            player.sendTitle(ChatColor.GREEN + toNation.getName(), null, 5, 40, 10);
+                            player.sendTitle(ChatColor.GREEN + toNation.getName(), ChatColor.GREEN + toGroupName, 5, 40, 10);
                         } else {
-                            player.sendTitle(ChatColor.BLUE + toNation.getName(), null, 5, 40, 10);
+                            player.sendTitle(ChatColor.BLUE + toNation.getName(), ChatColor.BLUE + toGroupName, 5, 40, 10);
                         }
                     }
                 }
