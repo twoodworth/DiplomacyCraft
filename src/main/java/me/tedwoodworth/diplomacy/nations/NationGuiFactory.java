@@ -106,7 +106,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
             ));
 
@@ -117,7 +117,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view outlaws"
             ));
 
@@ -162,13 +162,13 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
             ));
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.NETHER_STAR),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
             ));
 
@@ -245,7 +245,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View ally nations"
             ));
             gui.addElement(new StaticGuiElement('n',
@@ -255,13 +255,13 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View enemy nations"
             ));
             gui.addElement(new StaticGuiElement('o',
                     new ItemStack(Material.GOLD_BLOCK),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",
                     ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
                     ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
                     ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
@@ -290,7 +290,7 @@ public class NationGuiFactory {
             gui.addElement(new StaticGuiElement('u',
                     new ItemStack(Material.EMERALD),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",
                     ChatColor.GRAY + formatter.format(100 * nation.getPower()) + "%"
             ));
             if (permissions.get("CanManageGuards")) {
@@ -308,7 +308,7 @@ public class NationGuiFactory {
                         return true;
                     },
                     "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                    ChatColor.GRAY + "Click to escape"//TODO add
+                    ChatColor.GRAY + "Click to escape"
             ));
         } else {
             gui.addElement(new StaticGuiElement('a',
@@ -329,7 +329,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View members"
             ));
             gui.addElement(new StaticGuiElement('d',
@@ -339,7 +339,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View outlaws"
             ));
 
@@ -361,7 +361,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
             ));
             gui.addElement(new StaticGuiElement('g',
@@ -426,7 +426,7 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View ally nations"
             ));
             gui.addElement(new StaticGuiElement('n',
@@ -436,13 +436,13 @@ public class NationGuiFactory {
                         nGui.show(player);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View enemy nations"
             ));
             gui.addElement(new StaticGuiElement('o',
                     new ItemStack(Material.GOLD_BLOCK),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",
                     ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
                     ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
                     ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
@@ -464,7 +464,7 @@ public class NationGuiFactory {
             gui.addElement(new StaticGuiElement('u',
                     new ItemStack(Material.EMERALD),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",//TODO add
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",
                     ChatColor.GRAY + formatter.format(100 * nation.getPower()) + "%"
             ));
             gui.addElement(new StaticGuiElement('r',
@@ -619,7 +619,7 @@ public class NationGuiFactory {
                         }
                         var nGui = createMembers(nation, player, sortType, nSlot);
                         nGui.show(player);
-                    }//TODO make sure scrolling works properly
+                    }
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Scroll Up",
