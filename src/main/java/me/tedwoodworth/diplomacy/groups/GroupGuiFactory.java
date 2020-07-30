@@ -398,15 +398,6 @@ public class GroupGuiFactory {
 
         var members = group.getMembers();
 
-        for (var strUUID : group.getNation().getMembers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(strUUID));
-            if (group.getNation().getMemberClass(testDiplomacyPlayer).getPermissions().get("CanLeadAllGroups")) {
-                if (!members.contains(testDiplomacyPlayer)) {
-                    members.add(testDiplomacyPlayer);
-                }
-            }
-        }
-
         var slotChar = new char[]{'a'};
 
         if (sortType.equals("alphabet")) {

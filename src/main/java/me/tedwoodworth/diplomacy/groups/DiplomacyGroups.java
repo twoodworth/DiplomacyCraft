@@ -4,7 +4,6 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,7 +48,7 @@ public class DiplomacyGroups {
         ConfigurationSection groupSection = YamlConfiguration.loadConfiguration(reader);
 
         groupConfig.set("Groups." + groupID, groupSection);
-        groupConfig.set("NextNationID", nextGroupID);
+        groupConfig.set("NextGroupID", nextGroupID);
         var initializedGroupSection = DiplomacyGroup.initializeGroup(groupSection, founder, nation, name);
         var group = new DiplomacyGroup(groupID, initializedGroupSection);
         groups.add(group);
@@ -71,11 +70,12 @@ public class DiplomacyGroups {
         }
         for (var groupID : groupsSection.getKeys(false)) {
             var groupSection = groupConfig.getConfigurationSection("Groups." + groupID);
-            Validate.notNull(groupSection);
-
-
-            var group = new DiplomacyGroup(groupID, groupSection);
-            groups.add(group);
+            if (groupSection == null) {
+                groupConfig.set("Groups." + groupID, null);
+            } else {
+                var group = new DiplomacyGroup(groupID, groupSection);
+                groups.add(group);
+            }
         }
     }
 

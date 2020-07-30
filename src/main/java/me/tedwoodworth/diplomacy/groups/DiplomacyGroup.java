@@ -149,6 +149,8 @@ public class DiplomacyGroup {
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             if (diplomacyPlayer.getGroups().contains(this.getGroupID())) {
                 members.add(diplomacyPlayer);
+            } else if (Objects.equals(Nations.getInstance().get(diplomacyPlayer), this.getNation()) && this.getNation().getMemberClass(diplomacyPlayer).getPermissions().get("CanLeadAllGroups")) {
+                members.add(diplomacyPlayer);
             }
         }
         return members;
