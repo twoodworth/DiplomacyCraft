@@ -139,8 +139,15 @@ public class DiplomacyGroup {
         var strUnix = groupSection.getString("Created");
         var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
         var time = new java.util.Date((long) unix * 1000);
-        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat jdf = new SimpleDateFormat("MM-dd-yyyy");
         return jdf.format(time);
+    }
+
+    public long getAge() {
+        var strUnix = groupSection.getString("Created");
+        var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
+        var now = Instant.now().getEpochSecond();
+        return now - unix;
     }
 
     public List<DiplomacyPlayer> getMembers() {

@@ -1088,10 +1088,10 @@ public class NationGuiFactory {
         }
         var title = "" + color + ChatColor.BOLD + nation.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Groups";
         String[] guiSetup = {
-                "  abcde S",
-                "A fghij  ",
-                "B klmno U",
-                "C pqrst D",
+                "A abcde S",
+                "B fghij  ",
+                "C klmno U",
+                "G pqrst D",
                 "  uvwxy  ",
                 "N z{|}~ E"
         };
@@ -1164,6 +1164,22 @@ public class NationGuiFactory {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Territory Size",
                 ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Largest first",
                 ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Smallest first"
+        ));
+        gui.addElement(new StaticGuiElement('G',
+                new ItemStack(Material.CLOCK),
+                click -> {
+                    if (click.getType().isLeftClick()) {
+                        var nGui = createGroups(nation, player, "age", slot);
+                        nGui.show(player);
+                    } else if (click.getType().isRightClick()) {
+                        var nGui = createGroups(nation, player, "reverseAge", slot);
+                        nGui.show(player);
+                    }
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Age",
+                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Oldest First",
+                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Youngest First"
         ));
         gui.addElement(new StaticGuiElement('S',
                 new ItemStack(Material.COMPASS),
@@ -1294,7 +1310,7 @@ public class NationGuiFactory {
                     });
         } else if (sortType.equals("population")) {
             groups.stream()
-                    .sorted(comparingInt(p -> p.getMembers().size()))
+                    .sorted((p1, p2) -> -(p1.getMembers().size() - p2.getMembers().size()))
                     .skip(slot)
                     .limit(30)
                     .forEach(group -> {
@@ -1303,7 +1319,7 @@ public class NationGuiFactory {
                     });
         } else if (sortType.equals("reversePopulation")) {
             groups.stream()
-                    .sorted((p1, p2) -> -(p1.getMembers().size() - p2.getMembers().size()))
+                    .sorted(comparingInt(p -> p.getMembers().size()))
                     .skip(slot)
                     .limit(30)
                     .forEach(group -> {
@@ -1322,6 +1338,24 @@ public class NationGuiFactory {
         } else if (sortType.equals("reverseTerritory")) {
             groups.stream()
                     .sorted((p1, p2) -> -p1.getChunks().size() - p2.getChunks().size())
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(group -> {
+                        var element = createGroupElement(nation, player, group, slotChar[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("age")) {
+            groups.stream()
+                    .sorted((p1, p2) -> (int) (p1.getAge() - p2.getAge()))
+                    .skip(slot)
+                    .limit(30)
+                    .forEach(group -> {
+                        var element = createGroupElement(nation, player, group, slotChar[0]++);
+                        gui.addElement(element);
+                    });
+        } else if (sortType.equals("reverseAge")) {
+            groups.stream()
+                    .sorted((p1, p2) -> (int) -(p1.getAge() - p2.getAge()))
                     .skip(slot)
                     .limit(30)
                     .forEach(group -> {
@@ -1350,7 +1384,8 @@ public class NationGuiFactory {
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + group.getName(),
                 ChatColor.BLUE + "Population: " + ChatColor.GRAY + group.getMembers().size(),
-                ChatColor.BLUE + "Territory: " + ChatColor.GRAY + chunks + label
+                ChatColor.BLUE + "Territory: " + ChatColor.GRAY + chunks + label,
+                ChatColor.BLUE + "Created On: " + ChatColor.GRAY + group.getDateCreated()
         );
     }
 }

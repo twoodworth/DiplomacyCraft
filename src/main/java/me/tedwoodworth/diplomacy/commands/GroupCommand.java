@@ -659,22 +659,23 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a leader of all " + group.getNation() + " groups.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation() + " groups.");
             return;
         }
 
-        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a member of that group.");
+        if (group.getMembers().contains(otherDiplomacyPlayer)) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a member of that group.");
             return;
         }
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
-                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " has joined " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
+                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " has been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
         otherDiplomacyPlayer.addGroup(group);
+        otherPlayer.sendMessage(ChatColor.AQUA + "You have been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
     }
 
     private void groupLeave(CommandSender sender, String strGroup) {
@@ -693,13 +694,13 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var nation = Nations.getInstance().get(diplomacyPlayer);
         var sameNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), group.getNation());
-        var otherCanLeadAllGroups = false;
+        var canLeadAllGroups = false;
         if (nation != null) {
-            otherCanLeadAllGroups = nation.getMemberClass(diplomacyPlayer).getPermissions().get("CanLeadAllGroups");
+            canLeadAllGroups = nation.getMemberClass(diplomacyPlayer).getPermissions().get("CanLeadAllGroups");
         }
 
-        if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + "As a leader of all groups in your nation, you cannot leave any groups.");
+        if (sameNation && canLeadAllGroups) {
+            sender.sendMessage(ChatColor.DARK_RED + "As a leader of all groups in your nation, you cannot leave.");
             return;
         }
 
@@ -707,14 +708,15 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.DARK_RED + "You are not a member of that group.");
         }
 
+        diplomacyPlayer.removeGroup(group);
+        player.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
                 onlinePlayer.sendMessage(ChatColor.AQUA + player.getName() + " has left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
 
-        diplomacyPlayer.removeGroup(group);
 
         if (diplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
             diplomacyPlayer.removeGroupLed(group);
@@ -764,23 +766,23 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " cannot be kicked from that group.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " cannot be kicked from that group.");
             return;
         }
 
-        if (!otherDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of that group.");
+        if (!group.getMembers().contains(otherDiplomacyPlayer)) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of that group.");
             return;
         }
-
+        otherDiplomacyPlayer.removeGroup(group);
+        otherPlayer.sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
                 onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
 
-        otherDiplomacyPlayer.removeGroup(group);
 
         if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
             otherDiplomacyPlayer.removeGroupLed(group);
