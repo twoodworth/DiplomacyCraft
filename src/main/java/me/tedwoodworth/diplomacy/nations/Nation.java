@@ -160,6 +160,17 @@ public class Nation {
     }
 
     public double getPower() {
+        var totalPower = 0.0;
+        for (var nation : Nations.getInstance().getNations()) {
+            totalPower += nation.getUnscaledPower();
+        }
+        if (totalPower == 0.0) {
+            totalPower = 1.0;
+        }
+        return this.getUnscaledPower() / totalPower;
+    }
+
+    public double getUnscaledPower() {
         var totalPopulation = 0.0;
         var totalTerritory = 0.0;
         var totalBalance = 0.0;
@@ -193,7 +204,7 @@ public class Nation {
         var squaredBalance = Math.pow(scaledBalance, 2);
 
         var squaredPower = squaredPopulation + squaredTerritory + squaredBalance;
-        return Math.sqrt(squaredPower / 3);
+        return Math.sqrt(squaredPower);
     }
 
     public String getName() {
