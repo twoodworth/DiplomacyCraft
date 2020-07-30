@@ -119,10 +119,7 @@ public class NationGuiFactory {
 
             var nationWealth = nation.getBalance();
 
-            var strNationWealth = "\u00A40" + formatter.format(nationWealth);
-            if (nationWealth >= 1.0) {
-                strNationWealth = "\u00A4" + formatter.format(nationWealth);
-            }
+            var strNationWealth = "\u00A4" + formatter.format(nationWealth);
             if (permissions.get("CanDeposit")) {
                 if (permissions.get("CanWithdraw")) {
                     gui.addElement(new StaticGuiElement('e',
@@ -332,10 +329,7 @@ public class NationGuiFactory {
 
             var nationWealth = nation.getBalance();
 
-            var strNationWealth = "\u00A40" + formatter.format(nationWealth);
-            if (nationWealth >= 1.0) {
-                strNationWealth = "\u00A4" + formatter.format(nationWealth);
-            }
+            var strNationWealth = "\u00A4" + formatter.format(nationWealth);
 
             gui.addElement(new StaticGuiElement('e',
                     new ItemStack(Material.DIAMOND),

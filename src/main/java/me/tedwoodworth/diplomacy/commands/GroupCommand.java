@@ -637,8 +637,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         boolean canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to add players to this group.");
             return;
         }
@@ -741,8 +742,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to kick players from this group.");
             return;
         }
@@ -803,12 +805,13 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var isGroupLeader = diplomacyPlayer.getGroupsLed().contains(group.getGroupID());
 
-        Nation nation = Nations.getInstance().get(diplomacyPlayer);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
-        boolean canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to change this group's banner.");
             return;
         }
@@ -870,8 +873,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to unclaim land for this group.");
             return;
         }
@@ -909,8 +913,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to claim land for this group.");
             return;
         }
@@ -925,7 +930,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var chunk = player.getLocation().getChunk();
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var otherNation = diplomacyChunk.getNation();
-        var groupNation = group.getNation();
+
         if (!Objects.equals(otherNation, groupNation)) {
             sender.sendMessage(ChatColor.DARK_RED + "This land doesn't belong to the same nation as " + group.getName() + ".");
             return;
@@ -979,8 +984,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to promote members to leaders in this group.");
             return;
         }
@@ -994,17 +1000,17 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a leader of all " + group.getNation().getName() + " groups.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation().getName() + " groups.");
             return;
         }
 
         if (!(otherDiplomacyPlayer.getGroups().contains(group.getGroupID()))) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of this group.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of this group.");
             return;
         }
 
         if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is already a leader of this group.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of this group.");
             return;
         }
 
@@ -1044,8 +1050,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         var memberClass = nation.getMemberClass(diplomacyPlayer);
         var permissions = memberClass.getPermissions();
         var canLeadAllGroups = permissions.get("CanLeadAllGroups");
+        var groupNation = group.getNation();
 
-        if (!(isGroupLeader || canLeadAllGroups)) {
+        if (!(isGroupLeader || (canLeadAllGroups && Objects.equals(nation, groupNation)))) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to demote leaders in this group.");
             return;
         }
@@ -1059,17 +1066,17 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " cannot be demoted as a leader of all " + group.getNation().getName() + " groups.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " cannot be demoted as a leader of all " + group.getNation().getName() + " groups.");
             return;
         }
 
         if (!(otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID()))) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a member of this group.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of this group.");
             return;
         }
 
         if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
-            sender.sendMessage(ChatColor.DARK_RED + player.getName() + " is not a leader of this group.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a leader of this group.");
             return;
         }
 

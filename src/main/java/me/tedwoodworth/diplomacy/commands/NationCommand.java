@@ -582,11 +582,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
             Diplomacy.getEconomy().depositPlayer(player, balance);
-            if (balance >= 1.0) {
                 sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            } else {
-                sender.sendMessage(ChatColor.GREEN + "\u00A40" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            }
+
         }
         nation.setBalance(0.0);
 
@@ -673,11 +670,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
             Diplomacy.getEconomy().depositPlayer(player, balance);
-            if (balance >= 1.0) {
                 sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            } else {
-                sender.sendMessage(ChatColor.GREEN + "\u00A40" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-            }
         }
         nation.setBalance(0.0);
 
