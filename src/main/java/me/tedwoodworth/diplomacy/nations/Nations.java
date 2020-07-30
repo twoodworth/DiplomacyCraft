@@ -17,10 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static org.bukkit.Bukkit.getOfflinePlayer;
 
@@ -169,6 +166,41 @@ public class Nations {
         if (!canRenameNation) {
             throw new DiplomacyException(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
         }
+    }
+
+    public int getPowerRank(Nation nation) {
+        var nations = this.getNations();
+        nations.sort(Comparator.comparingDouble(Nation::getPower).reversed());
+
+        return nations.indexOf(nation) + 1;
+    }
+
+    public int getPopulationRank(Nation nation) {
+        var nations = this.getNations();
+        nations.sort((p1, p2) -> -(p1.getMembers().size() - p2.getMembers().size()));
+
+        return nations.indexOf(nation) + 1;
+    }
+
+    public int getTerritoryRank(Nation nation) {
+        var nations = this.getNations();
+        nations.sort((p1, p2) -> -(p1.getChunks().size() - p2.getChunks().size()));
+
+        return nations.indexOf(nation) + 1;
+    }
+
+    public int getBalanceRank(Nation nation) {
+        var nations = this.getNations();
+        nations.sort(Comparator.comparingDouble(Nation::getBalance).reversed());
+
+        return nations.indexOf(nation) + 1;
+    }
+
+    public int getAgeRank(Nation nation) {
+        var nations = this.getNations();
+        nations.sort(Comparator.comparingLong(Nation::getAge).reversed());
+
+        return nations.indexOf(nation) + 1;
     }
 
     public void removeNation(Nation nation) {

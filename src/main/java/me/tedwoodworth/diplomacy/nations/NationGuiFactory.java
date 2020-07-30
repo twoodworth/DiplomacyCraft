@@ -251,12 +251,11 @@ public class NationGuiFactory {
                     new ItemStack(Material.EMERALD),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",//TODO add
-                    ChatColor.BLUE + "Power Rating:",
-                    ChatColor.BLUE + "Population:",
-                    ChatColor.BLUE + "Territory Size:",
-                    ChatColor.BLUE + "Balance:",
-                    ChatColor.BLUE + "Age:"
-
+                    ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
+                    ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
+                    ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
+                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "#" + Nations.getInstance().getBalanceRank(nation),
+                    ChatColor.BLUE + "Age: " + ChatColor.GRAY + "#" + Nations.getInstance().getAgeRank(nation)
             ));
             gui.addElement(new StaticGuiElement('p',
                     new ItemStack(Material.BLUE_BANNER),
@@ -419,11 +418,11 @@ public class NationGuiFactory {
                     new ItemStack(Material.EMERALD),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",//TODO add
-                    ChatColor.BLUE + "Power Rating:",
-                    ChatColor.BLUE + "Population:",
-                    ChatColor.BLUE + "Territory Size:",
-                    ChatColor.BLUE + "Balance:",
-                    ChatColor.BLUE + "Age:"
+                    ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
+                    ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
+                    ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
+                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "#" + Nations.getInstance().getBalanceRank(nation),
+                    ChatColor.BLUE + "Age: " + ChatColor.GRAY + "#" + Nations.getInstance().getAgeRank(nation)
             ));
             gui.addElement(new StaticGuiElement('p',
                     new ItemStack(Material.BLUE_BANNER),
