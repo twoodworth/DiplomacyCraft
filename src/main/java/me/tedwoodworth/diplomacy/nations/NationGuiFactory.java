@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.text.DecimalFormat;
@@ -155,13 +154,13 @@ public class NationGuiFactory {
                     new ItemStack(Material.SHIELD),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view groups"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
             ));
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.NETHER_STAR),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view classes"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
             ));
 
             var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
@@ -266,16 +265,11 @@ public class NationGuiFactory {
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
             ));
 
-            var map = new ItemStack(Material.FILLED_MAP);
-            var mapMeta = (MapMeta) map.getItemMeta();
-            mapMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-            map.setItemMeta(mapMeta);
-
             gui.addElement(new StaticGuiElement('r',
-                    map,
+                    new ItemStack(Material.SHIELD),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "World Map",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View world map"
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",//TODO add
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
             ));
             if (permissions.get("CanManageGuards")) {
                 gui.addElement(new StaticGuiElement('s',
@@ -314,7 +308,7 @@ public class NationGuiFactory {
                         return true;
                     },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View members"
             ));
             gui.addElement(new StaticGuiElement('d',
                     new ItemStack(Material.SKELETON_SKULL),
@@ -324,7 +318,7 @@ public class NationGuiFactory {
                         return true;
                     },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view outlaws"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View outlaws"
             ));
 
             var nationWealth = nation.getBalance();
@@ -342,13 +336,13 @@ public class NationGuiFactory {
                     new ItemStack(Material.SHIELD),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view groups"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
             ));
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.NETHER_STAR),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",//TODO add
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view classes"
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
             ));
 
             var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
