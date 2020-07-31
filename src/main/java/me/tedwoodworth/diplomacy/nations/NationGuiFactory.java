@@ -40,7 +40,7 @@ public class NationGuiFactory {
         String[] guiSetup = {
                 "         ",
                 " abcdefg ",
-                "         ",
+                "        E",
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
@@ -117,9 +117,13 @@ public class NationGuiFactory {
 
         gui.addElement(new StaticGuiElement('f',
                 head,
-                click -> true,//TODO add player info
+                click -> {
+                    var nGui = createPlayer(player, Bukkit.getOfflinePlayer(player.getUniqueId()));
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " (You)",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View your player info"
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
         ));
 
         gui.addElement(new StaticGuiElement('g',
@@ -127,6 +131,168 @@ public class NationGuiFactory {
                 click -> true,//TODO player group gui
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Your Groups",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View your groups"
+        ));
+        gui.addElement(new StaticGuiElement('E',
+                new ItemStack(Material.BARRIER),
+                click -> {
+                    gui.close();
+                    return true;
+                },
+                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
+                ChatColor.GRAY + "Click to escape"
+        ));
+        return gui;
+    }
+
+    public static InventoryGui createPlayer(Player player, OfflinePlayer otherPlayer) {
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
+        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+        var otherPlayerNation = Nations.getInstance().get(otherDiplomacyPlayer);
+
+        var color = ChatColor.BLUE;
+        var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
+        if (otherPlayerNation == null) {
+            color = ChatColor.DARK_GRAY;
+            glass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+        } else {
+            if (playerNation != null) {
+                if (otherPlayerNation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(otherPlayerNation, playerNation)) {
+                    color = ChatColor.DARK_GREEN;
+                    glass = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
+                } else if (otherPlayerNation.getEnemyNationIDs().contains(playerNation.getNationID())) {
+                    color = ChatColor.RED;
+                    glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+                }
+            }
+        }
+
+        var title = "" + color + ChatColor.BOLD + otherPlayer.getName();
+        String[] guiSetup = {
+                "        g",
+                " abcdef  ",
+                "        h"
+        };
+
+        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setFiller(glass);
+
+        var head = new ItemStack(Material.PLAYER_HEAD);
+        var headMeta = (SkullMeta) head.getItemMeta();
+        headMeta.setOwningPlayer(otherPlayer);
+        head.setItemMeta(headMeta);
+
+        gui.addElement(new StaticGuiElement('a',
+                head,
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + otherPlayer.getName()
+        ));
+
+        if (otherPlayerNation != null) {
+
+            var banner = otherPlayerNation.getBanner();
+            var bannerMeta = (BannerMeta) banner.getItemMeta();
+            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+            banner.setItemMeta(bannerMeta);
+            gui.addElement(new StaticGuiElement('b',
+                    banner,
+                    click -> {
+                        var nGui = create(otherPlayerNation, player);
+                        nGui.show(player);
+                        return true;
+                    },
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation",
+                    ChatColor.GRAY + otherPlayerNation.getName(),
+                    " ",
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View nation"
+            ));
+        } else {
+            if (Objects.equals(Bukkit.getOfflinePlayer(player.getUniqueId()), otherPlayer)) {
+                gui.addElement(new StaticGuiElement('b',
+                        new ItemStack(Material.WHITE_BANNER),
+                        click -> true,
+                        "" + ChatColor.YELLOW + ChatColor.BOLD + "No nation",
+                        ChatColor.BLUE + "Create a nation: " + ChatColor.GRAY + "/nation create <name>"
+                ));
+            } else {
+                gui.addElement(new StaticGuiElement('b',
+                        new ItemStack(Material.WHITE_BANNER),
+                        click -> true,
+                        "" + ChatColor.YELLOW + ChatColor.BOLD + "No nation"
+                ));
+            }
+        }
+
+        gui.addElement(new StaticGuiElement('c',
+                new ItemStack(Material.SHIELD),
+                click -> true,//TODO add groups
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
+        ));
+
+
+        if (Objects.equals(Bukkit.getOfflinePlayer(player.getUniqueId()), otherPlayer)) {
+            gui.addElement(new StaticGuiElement('d',
+                    new ItemStack(Material.DIAMOND),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
+                    ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(otherPlayer)),
+                    " ",
+                    ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/deposit <amount>",
+                    ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/withdraw <amount>"
+            ));
+        } else {
+            gui.addElement(new StaticGuiElement('d',
+                    new ItemStack(Material.DIAMOND),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
+                    ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(otherPlayer))
+            ));
+        }
+
+        if (otherPlayerNation != null) {
+            gui.addElement(new StaticGuiElement('e',
+                    new ItemStack(Material.NETHER_STAR),
+                    click -> true,//TODO view permissions
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Class",
+                    ChatColor.GRAY + otherPlayerNation.getMemberClass(otherDiplomacyPlayer).getName(),
+                    " ",
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View permissions"
+            ));
+        } else {
+            gui.addElement(new StaticGuiElement('e',
+                    new ItemStack(Material.NETHER_STAR),
+                    click -> true,
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Class",
+                    ChatColor.GRAY + "None"
+            ));
+        }
+        gui.addElement(new StaticGuiElement('f',
+                new ItemStack(Material.CLOCK),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Joined",
+                ChatColor.GRAY + otherDiplomacyPlayer.getDateJoined()
+        ));
+
+        gui.addElement(new StaticGuiElement('g',
+                new ItemStack(Material.PLAYER_HEAD),
+                click -> {
+                    var nGui = createPlayers(player, "alphabet", 0);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
+        ));
+
+        gui.addElement(new StaticGuiElement('h',
+                new ItemStack(Material.BARRIER),
+                click -> {
+                    gui.close();
+                    return true;
+                },
+                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
+                ChatColor.GRAY + "Click to escape"
         ));
         return gui;
     }
@@ -294,9 +460,15 @@ public class NationGuiFactory {
 
             gui.addElement(new StaticGuiElement('h',
                     founderItem,
-                    click -> true,
+                    click -> {
+                        var nGui = createPlayer(player, founder);
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName()
+                    ChatColor.GRAY + founder.getName(),
+                    " ",
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
             ));
             gui.addElement(new StaticGuiElement('i',
                     new ItemStack(Material.CLOCK),
@@ -515,9 +687,15 @@ public class NationGuiFactory {
 
             gui.addElement(new StaticGuiElement('h',
                     founderItem,
-                    click -> true,
+                    click -> {
+                        var nGui = createPlayer(player, founder);
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName()
+                    ChatColor.GRAY + founder.getName(),
+                    " ",
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
             ));
             gui.addElement(new StaticGuiElement('i',
                     new ItemStack(Material.CLOCK),
@@ -857,7 +1035,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAlphabet")) {
@@ -866,7 +1044,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("balance")) {
@@ -875,7 +1053,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseBalance")) {
@@ -884,7 +1062,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("class")) {
@@ -893,7 +1071,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseClass")) {
@@ -902,7 +1080,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("age")) {
@@ -911,7 +1089,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAge")) {
@@ -920,14 +1098,14 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(nation, member, slotChar[0]++);
+                        var element = createMemberElement(nation, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         }
         return gui;
     }
 
-    private static StaticGuiElement createMemberElement(Nation nation, OfflinePlayer member, char slot) {
+    private static StaticGuiElement createMemberElement(Nation nation, Player player, OfflinePlayer member, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(member);
@@ -938,7 +1116,11 @@ public class NationGuiFactory {
 
         return new StaticGuiElement(slot,
                 memberHead,
-                click -> true,//TODO add player info
+                click -> {
+                    var nGui = createPlayer(player, member);
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + member.getName(),
                 ChatColor.BLUE + "Class: " + ChatColor.GRAY + memberClass,
                 ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(member)),
@@ -1170,7 +1352,7 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        var element = createOutlawElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAlphabet")) {
@@ -1179,7 +1361,7 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createMemberElement(nation, outlaw, charSlot[0]++);
+                        var element = createMemberElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("balance")) {
@@ -1188,7 +1370,7 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createMemberElement(nation, outlaw, charSlot[0]++);
+                        var element = createMemberElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseBalance")) {
@@ -1197,7 +1379,7 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        var element = createOutlawElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("age")) {
@@ -1206,7 +1388,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createMemberElement(nation, outlaw, charSlot[0]++);
+                        var element = createMemberElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAge")) {
@@ -1215,7 +1397,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createMemberElement(nation, outlaw, charSlot[0]++);
+                        var element = createMemberElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("nation")) {
@@ -1236,7 +1418,7 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        var element = createOutlawElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseNation")) {
@@ -1257,14 +1439,14 @@ public class NationGuiFactory {
                     .skip(skipped)
                     .limit(30)
                     .forEach(outlaw -> {
-                        var element = createOutlawElement(nation, outlaw, charSlot[0]++);
+                        var element = createOutlawElement(nation, player, outlaw, charSlot[0]++);
                         gui.addElement(element);
                     });
         }
         return gui;
     }
 
-    private static StaticGuiElement createOutlawElement(Nation nation, OfflinePlayer outlaw, char slot) {
+    private static StaticGuiElement createOutlawElement(Nation nation, Player player, OfflinePlayer outlaw, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(outlaw);
@@ -1291,7 +1473,11 @@ public class NationGuiFactory {
 
         return new StaticGuiElement(slot,
                 memberHead,
-                click -> true,//TODO add player info
+                click -> {
+                    var nGui = createPlayer(player, outlaw);
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + outlaw.getName(),
                 ChatColor.BLUE + "Nation: " + color + strOutlawNation,
                 ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(outlaw)),
@@ -2872,7 +3058,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAlphabet")) {
@@ -2881,7 +3067,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("balance")) {
@@ -2890,7 +3076,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseBalance")) {
@@ -2899,7 +3085,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("nation")) {
@@ -2920,7 +3106,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseNation")) {
@@ -2941,7 +3127,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("age")) {
@@ -2950,7 +3136,7 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAge")) {
@@ -2959,14 +3145,14 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, slotChar[0]++);
+                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
                         gui.addElement(element);
                     });
         }
         return gui;
     }
 
-    private static StaticGuiElement createPlayerElement(DiplomacyPlayer player, char slot) {
+    private static StaticGuiElement createPlayerElement(DiplomacyPlayer player, Player sender, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUUID()));
@@ -2982,7 +3168,11 @@ public class NationGuiFactory {
 
         return new StaticGuiElement(slot,
                 memberHead,
-                click -> true,//TODO add player info
+                click -> {
+                    var nGui = createPlayer(sender, player.getPlayer());
+                    nGui.show(sender);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + offlinePlayer.getName(),
                 ChatColor.BLUE + "Nation: " + ChatColor.GRAY + strNation,
                 ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(offlinePlayer)),

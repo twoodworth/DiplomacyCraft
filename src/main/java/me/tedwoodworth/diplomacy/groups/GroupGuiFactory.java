@@ -149,7 +149,11 @@ public class GroupGuiFactory {
 
         gui.addElement(new StaticGuiElement('f',
                 founderItem,
-                click -> true,
+                click -> {
+                    var nGui = NationGuiFactory.createPlayer(player, founder);
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
                 ChatColor.GRAY + founder.getName()
         ));
@@ -428,7 +432,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAlphabet")) {
@@ -437,7 +441,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("balance")) {
@@ -446,7 +450,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseBalance")) {
@@ -455,7 +459,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("role")) {
@@ -464,7 +468,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseRole")) {
@@ -473,7 +477,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("nation")) {
@@ -494,7 +498,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseNation")) {
@@ -515,7 +519,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("age")) {
@@ -524,7 +528,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAge")) {
@@ -533,14 +537,14 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, member, slotChar[0]++);
+                        var element = createMemberElement(group, player, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         }
         return gui;
     }
 
-    private static StaticGuiElement createMemberElement(DiplomacyGroup group, DiplomacyPlayer member, char slot) {
+    private static StaticGuiElement createMemberElement(DiplomacyGroup group, Player player, DiplomacyPlayer member, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(member.getUUID()));
@@ -567,7 +571,11 @@ public class GroupGuiFactory {
 
         return new StaticGuiElement(slot,
                 memberHead,
-                click -> true,//TODO add player info
+                click -> {
+                    var nGui = NationGuiFactory.createPlayer(player, Bukkit.getOfflinePlayer(member.getUUID()));
+                    nGui.show(player);
+                    return true;
+                },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + offlinePlayer.getName(),
                 ChatColor.BLUE + "Nation: " + ChatColor.GRAY + strNation,
                 ChatColor.BLUE + "Role: " + ChatColor.GRAY + role,
