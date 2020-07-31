@@ -149,6 +149,23 @@ public class Nation {
 
     }
 
+    public void setMemberClass(DiplomacyPlayer diplomacyPlayer, NationClass nationClass) {
+        var uuid = diplomacyPlayer.getUUID();
+        var classID = nationClass.getClassID();
+        configSection.set("Members." + uuid.toString(), classID);
+        for (var memberStr : this.getMembers()) {
+            var player = Bukkit.getPlayer(UUID.fromString(memberStr));
+            if (player != null) {
+                var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(memberStr));
+                if (Objects.equals(otherDiplomacyPlayer, diplomacyPlayer)) {
+                    player.sendMessage(ChatColor.AQUA + "Your nation class has been set to " + nationClass.getName() + ".");
+                } else {
+                    player.sendMessage(ChatColor.AQUA + Bukkit.getOfflinePlayer(diplomacyPlayer.getUUID()).getName() + "'s nation class has been set to " + nationClass.getName() + ".");
+                }
+            }
+        }
+    }
+
     @Nullable
     public NationClass getClassFromID(String classID) {
         for (var nationClass : classes) {

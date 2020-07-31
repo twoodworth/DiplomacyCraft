@@ -447,7 +447,11 @@ public class NationGuiFactory {
             ));
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.NETHER_STAR),
-                    click -> true,
+                    click -> {
+                        var nGui = ClassGuiFactory.create(nation, player);
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
             ));
@@ -674,8 +678,12 @@ public class NationGuiFactory {
             ));
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.NETHER_STAR),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",//TODO add
+                    click -> {
+                        var nGui = ClassGuiFactory.create(nation, player);
+                        nGui.show(player);
+                        return true;
+                    },
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
             ));
 

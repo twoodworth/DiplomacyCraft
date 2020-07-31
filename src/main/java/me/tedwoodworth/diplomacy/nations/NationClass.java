@@ -4,11 +4,10 @@ import java.util.Map;
 
 public class NationClass {
 
-    public static final String WILDERNESS_ID = "WILDERNESS";
-    private String classID;
+    private final String classID;
     private String name;
     private String prefix;
-    private int tax;
+    private double tax;
     private Map<String, Boolean> permissions;
     private String nationID;
 
@@ -23,6 +22,14 @@ public class NationClass {
 
     public String getClassID() {
         return classID;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public double getTax() {
+        return tax;
     }
 
     public Map<String, Boolean> getPermissions() {

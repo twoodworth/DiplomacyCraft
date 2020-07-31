@@ -582,7 +582,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
             Diplomacy.getEconomy().depositPlayer(player, balance);
-                sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
+            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
 
         }
         nation.setBalance(0.0);
@@ -670,7 +670,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
             Diplomacy.getEconomy().depositPlayer(player, balance);
-                sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
+            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
         }
         nation.setBalance(0.0);
 
@@ -1961,8 +1961,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         nation.setBalance(newNationBalance);
         Diplomacy.getEconomy().withdrawPlayer(player, amount);
 
-        System.out.println(nation.getBalance()); //TODO Remove
-
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
@@ -1970,9 +1968,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             if (Objects.equals(testNation, nation)) {
                 if (Objects.equals(testPlayer, player)) {
                     testPlayer.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
                 }
-            } else {
-                sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
             }
         }
     }
