@@ -1,9 +1,6 @@
 package me.tedwoodworth.diplomacy;
 
-import me.tedwoodworth.diplomacy.commands.EconomyCommand;
-import me.tedwoodworth.diplomacy.commands.GroupCommand;
-import me.tedwoodworth.diplomacy.commands.NationCommand;
-import me.tedwoodworth.diplomacy.commands.PlotCommand;
+import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
@@ -27,6 +24,7 @@ public class Diplomacy extends JavaPlugin {
         EconomyCommand.register(getCommand("pay"));
         EconomyCommand.register(getCommand("deposit"));
         EconomyCommand.register(getCommand("withdraw"));
+        MenuCommand.register(getCommand("menu"));
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();

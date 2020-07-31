@@ -659,7 +659,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sameNation && otherCanLeadAllGroups) {
-            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation() + " groups.");
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation().getName() + " groups.");
             return;
         }
 

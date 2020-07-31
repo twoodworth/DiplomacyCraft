@@ -107,7 +107,7 @@ public class GroupGuiFactory {
                     nGui.show(player);
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",//TODO add
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
         ));
 
@@ -123,22 +123,22 @@ public class GroupGuiFactory {
                     nGui.show(player);
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation",//TODO add
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation",
                 ChatColor.GRAY + group.getNation().getName(),
                 " ",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view nation"
         ));
 
-        var chunks = group.getChunks().size();
-        var label = " chunks";
-        if (chunks == 1) {
-            label = " chunk";
+        var plots = group.getChunks().size();
+        var label = " plots";
+        if (plots == 1) {
+            label = " plot";
         }
         gui.addElement(new StaticGuiElement('e',
                 new ItemStack(Material.GRASS_BLOCK),
                 click -> true,
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Territory Size",
-                ChatColor.GRAY + String.valueOf(chunks) + label
+                ChatColor.GRAY + String.valueOf(plots) + label
         ));
 
         var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
@@ -162,20 +162,32 @@ public class GroupGuiFactory {
 
         gui.addElement(new StaticGuiElement('h',
                 new ItemStack(Material.BLUE_BANNER),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",//TODO add
+                click -> {
+                    var nGui = NationGuiFactory.createNations(player, "alphabet", 0);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all nations"
         ));
         gui.addElement(new StaticGuiElement('i',
                 new ItemStack(Material.PLAYER_HEAD),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",//TODO add
+                click -> {
+                    var nGui = NationGuiFactory.createPlayers(player, "alphabet", 0);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
         ));
         gui.addElement(new StaticGuiElement('j',
                 new ItemStack(Material.SHIELD),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",//TODO add
+                click -> {
+                    var nGui = NationGuiFactory.createAllGroups(player, "alphabet", 0);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
         ));
         gui.addElement(new StaticGuiElement('k',
@@ -185,7 +197,7 @@ public class GroupGuiFactory {
                     return true;
                 },
                 "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                ChatColor.GRAY + "Click to escape"//TODO add
+                ChatColor.GRAY + "Click to escape"
         ));
         return gui;
     }
@@ -466,7 +478,19 @@ public class GroupGuiFactory {
                     });
         } else if (sortType.equals("nation")) {
             members.stream()
-                    .sorted((p1, p2) -> Nations.getInstance().get(p1).getName().compareToIgnoreCase(Nations.getInstance().get(p2).getName()))
+                    .sorted((p1, p2) -> {
+                        var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
+                        var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
+                        if (p1value == null) {
+                            if (p2value == null) {
+                                return 0;
+                            }
+                            return 1;
+                        } else if (p2value == null) {
+                            return -1;
+                        }
+                        return p1value.getName().compareToIgnoreCase(p2value.getName());
+                    })
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
@@ -475,7 +499,19 @@ public class GroupGuiFactory {
                     });
         } else if (sortType.equals("reverseNation")) {
             members.stream()
-                    .sorted((p1, p2) -> -Nations.getInstance().get(p1).getName().compareToIgnoreCase(Nations.getInstance().get(p2).getName()))
+                    .sorted((p1, p2) -> {
+                        var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
+                        var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
+                        if (p1value == null) {
+                            if (p2value == null) {
+                                return 0;
+                            }
+                            return -1;
+                        } else if (p2value == null) {
+                            return 1;
+                        }
+                        return -p1value.getName().compareToIgnoreCase(p2value.getName());
+                    })
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {

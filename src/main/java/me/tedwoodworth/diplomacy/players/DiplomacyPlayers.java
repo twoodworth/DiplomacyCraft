@@ -55,6 +55,18 @@ public class DiplomacyPlayers {
         return player;
     }
 
+    public List<DiplomacyPlayer> getPlayers() {
+        var players = new ArrayList<DiplomacyPlayer>();
+
+        var strUUIDs = config.getKeys(false);
+        for (var strUUID : strUUIDs) {
+            var uuid = UUID.fromString(strUUID);
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+            players.add(diplomacyPlayer);
+        }
+        return players;
+    }
+
     public List<DiplomacyPlayer> getLeaders(DiplomacyGroup group) {
         List<DiplomacyPlayer> leaders = new ArrayList<>();
 

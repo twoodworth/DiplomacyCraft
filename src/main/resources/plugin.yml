@@ -41,4 +41,9 @@ commands:
     aliases: []
     usage: "Usage: /<command> ..."
 
+  menu:
+    description: Open the diplomacy menu.
+    aliases: []
+    usage: "Usage: /<command>"
+
 
