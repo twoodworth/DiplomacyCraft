@@ -867,6 +867,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             cancelTask();
         }
 
+        if (senderNation.getEnemyNationIDs().contains(receiverNation.getNationID())) {
+            senderNation.removeEnemyNation(receiverNation);
+            receiverNation.removeEnemyNation(senderNation);
+        }
+
         senderNation.addAllyNation(receiverNation);
         receiverNation.addAllyNation(senderNation);
 
