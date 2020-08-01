@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
-import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -26,7 +25,6 @@ public class Nation {
     private ConfigurationSection configSection;
     private final String nationID;
     private String name;
-    private List<NationClass> classes;
     private long created;
     private UUID founderID;
     private String color;
@@ -35,25 +33,6 @@ public class Nation {
         this.configSection = nationSection;
         this.nationID = nationID;
         this.name = nationSection.getString("Name");
-
-        this.classes = new ArrayList<>(9);
-        for (var classID = 0; classID < 9; classID++) {
-            var strClassID = String.valueOf(classID);
-            var classSection = nationSection.getConfigurationSection("Classes." + classID);
-            var className = classSection.getString("Name");
-            var classPrefix = classSection.getString("Prefix");
-            var classTax = classSection.getInt("Tax");
-            Map<String, Boolean> classPermissions = new HashMap<>();
-            var permissionSection = classSection.getConfigurationSection("Permissions");
-            var permissionSet = permissionSection.getKeys(false);
-            for (var permission : permissionSet) {
-                classPermissions.put(permission, permissionSection.getBoolean(permission));
-            }
-            var nationClass = new NationClass(strClassID, className, classPrefix, classTax, classPermissions, nationID);
-            classes.add(nationClass);
-        }
-
-
         this.created = nationSection.getInt("Created");
         this.founderID = UUID.fromString(Objects.requireNonNull(nationSection.getString("Founder")));
         this.color = nationSection.getString("Color");
@@ -138,7 +117,48 @@ public class Nation {
     }
 
     public List<NationClass> getClasses() {
+        var classes = new ArrayList<NationClass>(9);
+        for (var classID = 0; classID < 9; classID++) {
+            var strClassID = String.valueOf(classID);
+            var classSection = configSection.getConfigurationSection("Classes." + classID);
+            var className = classSection.getString("Name");
+            var classPrefix = classSection.getString("Prefix");
+            var classTax = classSection.getInt("Tax");
+            Map<String, Boolean> classPermissions = new HashMap<>();
+            var permissionSection = classSection.getConfigurationSection("Permissions");
+            var permissionSet = permissionSection.getKeys(false);
+            for (var permission : permissionSet) {
+                classPermissions.put(permission, permissionSection.getBoolean(permission));
+            }
+            var nationClass = new NationClass(strClassID, className, classPrefix, classTax, classPermissions, nationID);
+            classes.add(nationClass);
+        }
         return classes;
+    }
+
+    public void toggleClassPermission(NationClass nationClass, String permission) {
+        var classID = nationClass.getClassID();
+        var current = nationClass.getPermissions().get(permission);
+
+        if (current) {
+            configSection.set("Classes." + classID + ".Permissions." + permission, false);
+        } else {
+            configSection.set("Classes." + classID + ".Permissions." + permission, true);
+        }
+        Map<String, Boolean> classPermissions = new HashMap<>();
+        var permissionSection = configSection.getConfigurationSection("Classes." + classID + ".Permissions");
+        var permissionSet = permissionSection.getKeys(false);
+        for (var setPermission : permissionSet) {
+            classPermissions.put(setPermission, permissionSection.getBoolean(setPermission));
+        }
+        nationClass.setPermissions(classPermissions);
+
+        for (var member : this.getMembers()) {
+            if (Bukkit.getPlayer(UUID.fromString(member)) != null) {
+                var player = Bukkit.getPlayer(UUID.fromString(member));
+                player.sendMessage(ChatColor.AQUA + permission + " set to " + !current + " for the class " + nationClass.getName());
+            }
+        }
     }
 
     @Nullable
@@ -168,7 +188,7 @@ public class Nation {
 
     @Nullable
     public NationClass getClassFromID(String classID) {
-        for (var nationClass : classes) {
+        for (var nationClass : this.getClasses()) {
             if (Objects.equals(nationClass.getClassID(), classID)) {
                 return nationClass;
             }
@@ -315,7 +335,7 @@ public class Nation {
 
     @Nullable
     public NationClass getNationClass(String classID) {
-        for (var nationClass : classes) {
+        for (var nationClass : this.getClasses()) {
             if (nationClass.getClassID().equals(classID)) {
                 return nationClass;
             }
@@ -325,17 +345,6 @@ public class Nation {
 
     public double getBalance() {
         return configSection.getDouble("Balance");
-    }
-
-    public double getMembersBalance() {
-        double memberBalance = 0.0;
-
-        for (var uuid : this.getMembers()) {
-            var player = UUID.fromString(uuid);
-            var offlinePlayer = Bukkit.getOfflinePlayer(player);
-            memberBalance += Diplomacy.getEconomy().getBalance(offlinePlayer);
-        }
-        return memberBalance;
     }
 
     public void setBalance(double balance) {

@@ -36,6 +36,11 @@ public class NationClass {
         return permissions;
     }
 
+    public void setPermissions(Map<String, Boolean> permissions) {
+        this.permissions = permissions;
+    }
+
+
     public String getName() {
         return name;
     }
