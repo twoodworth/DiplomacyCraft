@@ -28,12 +28,20 @@ public class NationClass {
         return prefix;
     }
 
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     public Nation getNation() {
         return Nations.getInstance().get(Integer.parseInt(nationID));
     }
 
     public double getTax() {
         return tax;
+    }
+
+    public void setTax(double tax) {
+        this.tax = tax;
     }
 
     public Map<String, Boolean> getPermissions() {

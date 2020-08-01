@@ -46,4 +46,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  class:
+    description: Manage classes.
+    aliases: []
+    usage: "Usage: /<command> ..."
+
 

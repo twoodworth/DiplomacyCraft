@@ -2426,26 +2426,19 @@ public class ClassGuiFactory {
                 new ItemStack(Material.NAME_TAG),
                 click -> true,
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Class Name",
-                ChatColor.GRAY + nationClass.getName(),
-                " ",
-                ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/class rename " + nationClass.getName() + " <new name>"
+                ChatColor.GRAY + nationClass.getName()
         ));
         gui.addElement(new StaticGuiElement('C',
                 new ItemStack(Material.PAPER),
                 click -> true,
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Class Prefix",
-                ChatColor.GRAY + currentPrefix,
-                " ",
-                ChatColor.BLUE + "Change Prefix: " + ChatColor.GRAY + "/class prefix " + nationClass.getName() + " <new prefix>",
-                ChatColor.BLUE + "Remove Prefix: " + ChatColor.GRAY + "/class clearPrefix " + nationClass.getName()
+                ChatColor.GRAY + currentPrefix
         ));
         gui.addElement(new StaticGuiElement('D',
                 new ItemStack(Material.DIAMOND),
                 click -> true,
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Class Tax",
-                ChatColor.GRAY + "\u00A4" + formatter.format(nationClass.getTax()),
-                " ",
-                ChatColor.BLUE + "Set Tax: " + ChatColor.GRAY + "/class tax " + nationClass.getName() + " <amount>"
+                ChatColor.GRAY + "\u00A4" + formatter.format(nationClass.getTax())
         ));
         gui.addElement(new StaticGuiElement('E',
                 new ItemStack(Material.NETHER_STAR),

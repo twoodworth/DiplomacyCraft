@@ -25,6 +25,7 @@ public class Diplomacy extends JavaPlugin {
         EconomyCommand.register(getCommand("deposit"));
         EconomyCommand.register(getCommand("withdraw"));
         MenuCommand.register(getCommand("menu"));
+        ClassCommand.register(getCommand("class"));
         Nations.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();

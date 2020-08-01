@@ -177,6 +177,30 @@ public class Nation {
         }
     }
 
+    public void renameClass(NationClass nationClass, String newName) {
+        var classID = nationClass.getClassID();
+        configSection.set("Classes." + classID + ".Name", newName);
+        nationClass.setName(newName);
+    }
+
+    public void setClassPrefix(NationClass nationClass, String newPrefix) {
+        var classID = nationClass.getClassID();
+        configSection.set("Classes." + classID + ".Prefix", newPrefix);
+        nationClass.setPrefix(newPrefix);
+    }
+
+    public void clearClassPrefix(NationClass nationClass) {
+        var classID = nationClass.getClassID();
+        configSection.set("Classes." + classID + ".Prefix", null);
+        nationClass.setPrefix(null);
+    }
+
+    public void setClassTax(NationClass nationClass, double amount) {
+        var classID = nationClass.getClassID();
+        configSection.set("Classes." + classID + ".Tax", amount);
+        nationClass.setTax(amount);
+    }
+
     @Nullable
     public NationClass getMemberClass(DiplomacyPlayer diplomacyPlayer) {
         var uuid = diplomacyPlayer.getUUID();
