@@ -136,7 +136,23 @@ public class Nation {
         return classes;
     }
 
-    public void toggleClassPermission(NationClass nationClass, String permission) {
+    public void toggleClassPermission(NationClass nationClass, Player user, String permission) {
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(user.getUniqueId());
+        var nationClassNation = nationClass.getNation();
+        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+        if (!Objects.equals(playerNation, nationClassNation)) {
+            user.sendMessage(ChatColor.DARK_RED + "You must be in the nation " + nationClassNation.getName() + " to do this.");
+            return;
+        }
+
+        var playerPermissions = playerNation.getMemberClass(diplomacyPlayer).getPermissions();
+
+        if (!playerPermissions.get("CanManageClasses")) {
+            user.sendMessage(ChatColor.DARK_RED + "You do not have sufficient permissions to do this.");
+            return;
+        }
+
+
         var classID = nationClass.getClassID();
         var current = nationClass.getPermissions().get(permission);
 

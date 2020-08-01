@@ -28,6 +28,10 @@ public class NationClass {
         return prefix;
     }
 
+    public Nation getNation() {
+        return Nations.getInstance().get(Integer.parseInt(nationID));
+    }
+
     public double getTax() {
         return tax;
     }

@@ -280,7 +280,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('a',
                     new ItemStack(Material.DIRT),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(0));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(0).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class0prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(0).getTax()),
@@ -294,7 +298,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('b',
                     new ItemStack(Material.STONE),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(1));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(1).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class1prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(1).getTax()),
@@ -308,7 +316,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('c',
                     new ItemStack(Material.IRON_BLOCK),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(2));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(2).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class2prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(2).getTax()),
@@ -322,7 +334,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('d',
                     new ItemStack(Material.GOLD_BLOCK),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(3));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(3).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class3prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(3).getTax()),
@@ -336,7 +352,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('e',
                     new ItemStack(Material.DIAMOND_BLOCK),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(4));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(4).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class4prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(4).getTax()),
@@ -350,7 +370,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('f',
                     new ItemStack(Material.OBSIDIAN),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(5));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(5).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class5prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(5).getTax()),
@@ -364,7 +388,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('g',
                     new ItemStack(Material.ANCIENT_DEBRIS),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(6));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(6).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class6prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(6).getTax()),
@@ -378,7 +406,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('h',
                     new ItemStack(Material.NETHERITE_BLOCK),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(7));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(7).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class7prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(7).getTax()),
@@ -392,7 +424,11 @@ public class ClassGuiFactory {
             }
             gui.addElement(new StaticGuiElement('i',
                     new ItemStack(Material.BEDROCK),
-                    click -> true,
+                    click -> {
+                        var nGui = createViewClassSettings(nation, player, classes.get(8));
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(8).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class8prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(8).getTax()),
@@ -1155,7 +1191,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('a',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, aPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, aPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1183,7 +1219,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('b',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, bPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, bPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1209,7 +1245,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('c',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, cPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, cPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1237,7 +1273,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('d',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, dPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, dPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1263,7 +1299,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('e',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, ePermissionKey);
+                    nation.toggleClassPermission(nationClass, player, ePermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1291,7 +1327,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('f',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, fPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, fPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1317,7 +1353,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('g',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, gPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, gPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1343,7 +1379,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('h',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, hPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, hPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1372,7 +1408,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('i',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, iPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, iPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1401,7 +1437,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('j',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, jPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, jPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1427,7 +1463,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('k',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, kPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, kPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1455,7 +1491,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('l',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, lPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, lPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1483,7 +1519,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('m',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, mPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, mPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1509,7 +1545,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('n',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, nPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, nPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1535,7 +1571,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('o',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, oPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, oPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1561,7 +1597,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('p',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, pPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, pPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1587,7 +1623,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('q',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, qPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, qPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1613,7 +1649,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('r',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, rPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, rPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1639,7 +1675,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('s',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, sPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, sPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1665,7 +1701,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('t',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, tPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, tPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1691,7 +1727,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('u',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, uPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, uPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1717,7 +1753,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('v',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, vPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, vPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1744,7 +1780,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('w',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, wPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, wPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1770,7 +1806,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('x',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, xPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, xPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1796,7 +1832,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('y',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, yPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, yPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1823,7 +1859,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('z',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, zPermissionKey);
+                    nation.toggleClassPermission(nationClass, player, zPermissionKey);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1849,7 +1885,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('1',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey1);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey1);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1875,7 +1911,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('2',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey2);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey2);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1901,7 +1937,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('3',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey3);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey3);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1927,7 +1963,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('4',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey4);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey4);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1953,7 +1989,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('5',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey5);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey5);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -1979,7 +2015,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('6',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey6);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey6);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2005,7 +2041,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('7',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey7);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey7);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2031,7 +2067,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('8',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey8);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey8);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2057,7 +2093,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('9',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKey9);
+                    nation.toggleClassPermission(nationClass, player, PermissionKey9);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2083,7 +2119,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('G',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyG);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyG);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2092,10 +2128,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(0)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(0)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(0)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(0)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2109,7 +2147,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('H',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyH);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyH);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2118,10 +2156,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(1)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(1)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(1)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(1)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2135,7 +2175,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('I',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyI);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyI);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2144,10 +2184,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(2)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(2)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(2)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(2)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2161,7 +2203,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('J',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyJ);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyJ);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2170,10 +2212,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(3)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(3)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(3)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(3)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2187,7 +2231,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('K',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyK);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyK);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2196,10 +2240,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(4)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(4)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(4)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(4)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2213,7 +2259,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('L',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyL);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyL);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2222,10 +2268,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(5)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(5)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(5)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(5)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2239,7 +2287,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('M',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyM);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyM);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2248,10 +2296,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(6)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(6)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(6)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(6)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2265,7 +2315,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyN);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyN);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2274,10 +2324,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(7)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(7)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(7)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(7)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2291,7 +2343,7 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('O',
                 item,
                 click -> {
-                    nation.toggleClassPermission(nationClass, PermissionKeyO);
+                    nation.toggleClassPermission(nationClass, player, PermissionKeyO);
                     var nGui = createChangeClassSettings(nation, player, nationClass);
                     nGui.show(player);
                     return true;
@@ -2300,10 +2352,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(8)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(8)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(8)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(8)).getName()
         ));
         return gui;
     }
@@ -3182,10 +3236,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(0)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(0)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(0)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(0)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3203,10 +3259,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(1)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(1)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(1)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(1)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3224,10 +3282,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(2)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(2)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(2)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(2)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3245,10 +3305,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(3)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(3)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(3)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(3)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3266,10 +3328,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(4)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(4)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(4)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(4)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3287,10 +3351,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(5)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(5)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(5)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(5)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3308,10 +3374,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(6)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(6)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(6)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(6)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3329,10 +3397,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(7)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(7)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(7)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(7)).getName()
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3350,10 +3420,12 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "Currently: " + color + permission,
                 " ",
                 ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(8)).getName(),
+                ChatColor.GRAY + "Player can change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(8)).getName(),
                 " ",
                 ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player remove another player from the class " + nation.getClassFromID(String.valueOf(8)).getName()
+                ChatColor.GRAY + "Player cannot change the class of another player if ",
+                ChatColor.GRAY + "the other player's class is " + nation.getClassFromID(String.valueOf(8)).getName()
         ));
         return gui;
     }
