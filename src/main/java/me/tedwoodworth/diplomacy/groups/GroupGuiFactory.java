@@ -43,12 +43,12 @@ public class GroupGuiFactory {
         }
         var title = "" + color + ChatColor.BOLD + group.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Main";
         String[] guiSetup = {
-                "         ",
-                " abcdefg ",
-                "         ",
-                "         ",
-                "   hij   ",
-                "    k    "
+                "        l",
+                "        h",
+                "   bag  i",
+                "   ced  j",
+                "    f    ",
+                "        k"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -69,6 +69,18 @@ public class GroupGuiFactory {
             var permissions = playerNation.getMemberClass(diplomacyPlayer).getPermissions();
             leadsAllGroups = isSameNation && permissions.get("CanLeadAllGroups");
         }
+
+        gui.addElement(new StaticGuiElement('l',
+                new ItemStack(Material.PAINTING),
+                click -> {
+                    var nGui = NationGuiFactory.createMenu(player);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
+        ));
+
         if (isLeader || leadsAllGroups) {
             gui.addElement(new StaticGuiElement('a',
                     new ItemStack(Material.NAME_TAG),
