@@ -87,7 +87,7 @@ public class GroupGuiFactory {
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Name:",
                     ChatColor.GRAY + group.getName(),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/group rename " + group.getName() + " <name>"
             ));
         } else {
@@ -102,7 +102,7 @@ public class GroupGuiFactory {
             gui.addElement(new StaticGuiElement('b',
                     group.getShield(),
                     click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",//TODO add click command
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",
                     ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/group banner " + group.getName()
             ));
         } else {

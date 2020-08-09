@@ -220,12 +220,12 @@ public class Nation {
         var classID = nationClass.getClassID();
         configSection.set("Members." + uuid.toString(), classID);
         for (var otherDiplomacyPlayer : this.getMembers()) {
-            var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
-            if (player != null) {
+            var player = otherDiplomacyPlayer.getPlayer();
+            if (player.isOnline()) {
                 if (Objects.equals(otherDiplomacyPlayer, diplomacyPlayer)) {
-                    player.sendMessage(ChatColor.AQUA + "Your nation class has been set to " + nationClass.getName() + ".");
+                    player.getPlayer().sendMessage(ChatColor.AQUA + "Your class has been set to " + nationClass.getName() + ".");
                 } else {
-                    player.sendMessage(ChatColor.AQUA + Bukkit.getOfflinePlayer(diplomacyPlayer.getUUID()).getName() + "'s nation class has been set to " + nationClass.getName() + ".");
+                    player.getPlayer().sendMessage(ChatColor.GREEN + diplomacyPlayer.getPlayer().getName() + ChatColor.AQUA + " had their class set to " + nationClass.getName() + ".");
                 }
             }
         }
@@ -432,6 +432,24 @@ public class Nation {
     public boolean getIsOpen() {
         var isOpen = configSection.getBoolean("IsOpen");
         return isOpen;
+    }
+
+    public void guiSetIsOpen(boolean isOpen, Player player) {
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        if (nation == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You are not a member of this nation.");
+            return;
+        }
+
+        var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+        var canToggle = permissions.get("CanToggleBorder");
+        if (!canToggle) {
+            player.sendMessage(ChatColor.DARK_RED + "You do not have permission to toggle the border.");
+            return;
+        }
+
+        setIsOpen(isOpen);
     }
 
     public void setIsOpen(boolean isOpen) {

@@ -2093,7 +2093,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         nation.setBalance(newNationBalance);
         Diplomacy.getEconomy().depositPlayer(player, amount);
-        System.out.println(nation.getBalance());//TODO Remove
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());

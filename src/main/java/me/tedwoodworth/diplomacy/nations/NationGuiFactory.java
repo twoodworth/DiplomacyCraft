@@ -352,7 +352,7 @@ public class NationGuiFactory {
                         click -> true,
                         "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
                         ChatColor.GRAY + nation.getName(),
-                        " ",//TODO add click command
+                        " ",
                         ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/nation rename <name>"
 
                 ));
@@ -369,7 +369,7 @@ public class NationGuiFactory {
                         nation.getBanner(),
                         click -> true,
                         "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:",
-                        " ",//TODO add click command
+                        " ",
                         ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/nation banner"
                 ));
             } else {
@@ -423,7 +423,7 @@ public class NationGuiFactory {
                             click -> true,
                             "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
                             ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                            " ",//TODO add click command
+                            " ",
                             ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
                             ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
 
@@ -434,7 +434,7 @@ public class NationGuiFactory {
                             click -> true,
                             "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
                             ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                            " ",//TODO add click command
+                            " ",
                             ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>"
 
                     ));
@@ -509,7 +509,7 @@ public class NationGuiFactory {
                         new ItemStack(Material.OAK_FENCE),
                         click -> {
                             if ((nation.getIsOpen() && status.equals("Open")) || (!nation.getIsOpen() && status.equals("Closed"))) {
-                                nation.setIsOpen(!nation.getIsOpen());
+                                nation.guiSetIsOpen(!nation.getIsOpen(), player);
                             }
                             var nGui = create(nation, player);
                             nGui.show(player);

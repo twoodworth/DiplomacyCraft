@@ -89,7 +89,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(0).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class0prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(0).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -113,7 +113,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(1).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class1prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(1).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -136,7 +136,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(2).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class2prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(2).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -159,7 +159,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(3).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class3prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(3).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -182,7 +182,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(4).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class4prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(4).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -205,7 +205,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(5).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class5prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(5).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -228,7 +228,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(6).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class6prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(6).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -251,7 +251,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(7).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class7prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(7).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings",
                     ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Change class settings"
             ));
@@ -269,7 +269,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(8).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class8prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(8).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -288,7 +288,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(0).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class0prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(0).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -306,7 +306,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(1).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class1prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(1).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -324,7 +324,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(2).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class2prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(2).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -342,7 +342,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(3).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class3prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(3).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -360,7 +360,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(4).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class4prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(4).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -378,7 +378,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(5).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class5prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(5).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -396,7 +396,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(6).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class6prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(6).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -414,7 +414,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(7).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class7prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(7).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
 
@@ -432,7 +432,7 @@ public class ClassGuiFactory {
                     "" + ChatColor.YELLOW + ChatColor.BOLD + classes.get(8).getName(),
                     ChatColor.BLUE + "Prefix: " + ChatColor.GRAY + class8prefix,
                     ChatColor.BLUE + "Tax: " + ChatColor.GRAY + "\u00A4" + formatter.format(classes.get(8).getTax()),
-                    " ",//TODO add click command
+                    " ",
                     ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View class settings"
             ));
         }
@@ -446,7 +446,7 @@ public class ClassGuiFactory {
                         return true;
                     },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Change a player's class",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "List players",//TODO add click command
+                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "List players",
                     " ",
                     ChatColor.DARK_GRAY + "Players will only be listed",
                     ChatColor.DARK_GRAY + "if you have sufficient",
