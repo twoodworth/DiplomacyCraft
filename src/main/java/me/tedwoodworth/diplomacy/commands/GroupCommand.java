@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.groups.GroupGuiFactory;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -80,7 +81,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(incorrectUsage + groupDisbandUsage);
             }
         } else if (args[0].equalsIgnoreCase("list")) {
-            if (args.length == 2) {
+            if (args.length == 1) {
                 groupList(sender);
             } else {
                 sender.sendMessage(incorrectUsage + groupListUsage);
@@ -619,7 +620,13 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     private void groupList(CommandSender sender) {
-        //TODO add (and also add all groups to nationGui)
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nGui = NationGuiFactory.createAllGroups((Player) sender, "alphabet", 0);
+        nGui.show((Player) sender);
     }
 
     private void groupAdd(CommandSender sender, String strName, String strGroup) {
@@ -1041,10 +1048,23 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         otherDiplomacyPlayer.addGroupLed(group);
 
+
+        var color = ChatColor.BLUE;
+        if (otherNation != null) {
+            if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.RED;
+            } else if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.GREEN;
+            }
+        }
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (group.getMembers().contains(testDiplomacyPlayer)) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been promoted to leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                if (!Objects.equals(onlinePlayer, otherPlayer)) {
+                    onlinePlayer.sendMessage(color + otherPlayer.getName() + ChatColor.AQUA + " has been promoted to leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.AQUA + "You have been promoted to leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                }
             }
         }
     }
@@ -1095,22 +1115,35 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (!(otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID()))) {
+        if (!(otherDiplomacyPlayer.getGroups().contains(group.getGroupID()))) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of this group.");
             return;
         }
 
-        if (otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID())) {
+        if (!(otherDiplomacyPlayer.getGroupsLed().contains(group.getGroupID()))) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a leader of this group.");
             return;
         }
 
         otherDiplomacyPlayer.removeGroupLed(group);
 
+
+        var color = ChatColor.BLUE;
+        if (otherNation != null) {
+            if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.RED;
+            } else if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.GREEN;
+            }
+        }
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been demoted from leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
+                if (!Objects.equals(otherPlayer, onlinePlayer)) {
+                    onlinePlayer.sendMessage(color + otherPlayer.getName() + ChatColor.AQUA + " has been demoted from leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                } else {
+                    onlinePlayer.sendMessage(ChatColor.AQUA + "You have been demoted from leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                }
             }
         }
     }

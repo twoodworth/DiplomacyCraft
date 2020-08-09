@@ -159,7 +159,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(incorrectUsage + nationEnemyUsage);
             }
         } else if (args[0].equalsIgnoreCase("list")) {
-            if (args.length == 2) {
+            if (args.length == 1) {
                 nationList(sender);
             } else {
                 sender.sendMessage(incorrectUsage + nationListUsage);
@@ -1250,7 +1250,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     }
 
     private void nationList(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
 
+        var nGui = NationGuiFactory.createNations((Player) sender, "alphabet", 0);
+        nGui.show((Player) sender);
     }
 
     private void nationInvite(CommandSender sender, String strInvited) {
