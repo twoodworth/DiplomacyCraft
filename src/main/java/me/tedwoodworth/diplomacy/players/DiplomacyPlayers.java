@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.players;
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
+import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -12,6 +13,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 
@@ -155,5 +158,76 @@ public class DiplomacyPlayers {
                 }
             }
         }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        private void onBlockPlaceEvent(BlockPlaceEvent event) {
+            var chunk = event.getBlock().getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            if (group != null) {
+                if (group.getMembers().contains(diplomacyPlayer)) {
+                    return;
+                }
+            }
+
+
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (canBuildAnywhere) {
+                    return;
+                }
+            }
+
+            player.sendMessage(ChatColor.RED + "You cannot build here.");
+            event.setCancelled(true);
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        private void onBlockBreakEvent(BlockBreakEvent event) {
+            var chunk = event.getBlock().getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            if (group != null) {
+                if (group.getMembers().contains(diplomacyPlayer)) {
+                    return;
+                }
+            }
+
+
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (canBuildAnywhere) {
+                    return;
+                }
+            }
+
+            player.sendMessage(ChatColor.RED + "You cannot destroy here.");
+            event.setCancelled(true);
+        }
+
     }
 }
