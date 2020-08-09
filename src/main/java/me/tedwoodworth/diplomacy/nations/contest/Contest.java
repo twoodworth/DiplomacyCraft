@@ -261,14 +261,14 @@ public class Contest {
                 dustOptions = new Particle.DustOptions(Color.AQUA, 1);
             }
         }
-        var min = Math.max(0, player.getLocation().getBlockY() - 20);
+        var min = Math.max(0, player.getLocation().getBlockY() - 17);
         var max = Math.min(255, player.getLocation().getBlockY() + 20);
-        for (var y = min; y < max; y++) {
-            for (var i = 0; i < 16; i += 2) {
-                player.spawnParticle(particle, new Location(world, baseX + i, y, baseZ), 1, dustOptions);
-                player.spawnParticle(particle, new Location(world, baseX + 16, y, baseZ + i), 1, dustOptions);
-                player.spawnParticle(particle, new Location(world, baseX + 16 - i, y, baseZ + 16), 1, dustOptions);
-                player.spawnParticle(particle, new Location(world, baseX, y, baseZ + 16 - i), 1, dustOptions);
+        for (var y = min; y < max; y += 6) {
+            for (var i = 0; i < 16; i += 1) {
+                player.spawnParticle(particle, new Location(world, baseX + i, y, baseZ + .3), 1, dustOptions);
+                player.spawnParticle(particle, new Location(world, baseX + 16 - .3, y, baseZ + i), 1, dustOptions);
+                player.spawnParticle(particle, new Location(world, baseX + 16 - i, y, baseZ + 16 - .3), 1, dustOptions);
+                player.spawnParticle(particle, new Location(world, baseX - .3, y, baseZ + 16 - i), 1, dustOptions);
 
             }
 

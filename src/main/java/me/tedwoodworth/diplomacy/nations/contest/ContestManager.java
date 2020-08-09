@@ -30,6 +30,7 @@ public class ContestManager {
     private Map<DiplomacyChunk, Contest> contests = new HashMap<>();
 
     private int contestTaskID = -1;
+    private int particleTaskID = -1;
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new ContestManager.EventListener(), Diplomacy.getInstance());
@@ -58,7 +59,8 @@ public class ContestManager {
         }
 
         if (contestTaskID == -1) {
-            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
+            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 2L);
+            particleTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onParticleTask, 0L, 30L);
             config.set("ContestTaskRunning", "true");
         }
     }
@@ -83,9 +85,11 @@ public class ContestManager {
         }
         var contestTaskRunning = Boolean.parseBoolean(strContestTaskRunning);
         if (contestTaskRunning) {
-            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 20L);
+            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 2L);
+            particleTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onParticleTask, 0L, 30L);
         } else {
             contestTaskID = -1;
+            particleTaskID = -1;
         }
 
         for (var contestID : Objects.requireNonNull(contestsSection).getKeys(false)) {
@@ -107,7 +111,6 @@ public class ContestManager {
             } else {
                 updateProgress(contest);
             }
-            contest.sendParticles();
             contest.sendSubtitles();
             if (contest.getProgress() >= 1.0) {
                 if (contest.isWilderness()) {
@@ -118,6 +121,12 @@ public class ContestManager {
             } else if (contest.getProgress() < 0.0) {
                 endContest(contest);
             }
+        }
+    }
+
+    private void onParticleTask() {
+        for (var contest : new ArrayList<>(contests.values())) {
+            contest.sendParticles();
         }
     }
 
@@ -152,6 +161,10 @@ public class ContestManager {
         if (contests.size() == 0) {
             Bukkit.getScheduler().cancelTask(contestTaskID);
             contestTaskID = -1;
+
+            Bukkit.getScheduler().cancelTask(particleTaskID);
+            particleTaskID = -1;
+
             config.set("ContestTaskRunning", "false");
 
         }
@@ -194,12 +207,12 @@ public class ContestManager {
             contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayers - defendingPlayers)) * attackingAdjacentCoefficient);
         } else if (attackingPlayers < defendingPlayers) {
             contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingPlayers - attackingPlayers)) * defendingAdjacentCoefficient);
-        } else if (attackingPlayers == 0 && contest.getVacantTimer() == 60) {
+        } else if (attackingPlayers == 0 && contest.getVacantTimer() == 600) {
             contest.setProgress(contest.getProgress() - Math.pow(2.0, (0.5)) * defendingAdjacentCoefficient);
         }
 
         if (attackingPlayers == 0 && defendingPlayers == 0) {
-            if (contest.getVacantTimer() < 60) {
+            if (contest.getVacantTimer() < 600) {
                 contest.setVacantTimer(contest.getVacantTimer() + 1);
             }
         } else {
@@ -229,9 +242,9 @@ public class ContestManager {
             if (contest.getVacantTimer() != 0) {
                 contest.setVacantTimer(0);
             }
-        } else if (contest.getVacantTimer() < 60) {
+        } else if (contest.getVacantTimer() < 600) {
             contest.setVacantTimer(contest.getVacantTimer() + 1);
-        } else if (contest.getVacantTimer() == 60) {
+        } else if (contest.getVacantTimer() == 600) {
             contest.setProgress(-.01);
         }
     }
@@ -269,44 +282,44 @@ public class ContestManager {
         if (!isWilderness) {
             switch (adjacentChunks) {
                 case 8:
-                    return 20.0 / 200.0;
+                    return 2.0 / 200.0;
                 case 7:
-                    return 20.0 / 300.0;
+                    return 2.0 / 300.0;
                 case 6:
-                    return 20.0 / 400.0;
+                    return 2.0 / 400.0;
                 case 5:
-                    return 20.0 / 500.0;
+                    return 2.0 / 500.0;
                 case 4:
-                    return 20.0 / 600.0;
+                    return 2.0 / 600.0;
                 case 3:
-                    return 20.0 / 800.0;
+                    return 2.0 / 800.0;
                 case 2:
-                    return 20.0 / 3000.0;
+                    return 2.0 / 3000.0;
                 case 1:
-                    return 20.0 / 72000.0;
+                    return 2.0 / 72000.0;
                 default:
-                    return 20.0 / 360000.0;
+                    return 2.0 / 360000.0;
             }
         } else {
             switch (adjacentChunks) {
                 case 8:
-                    return 20.0 / 100.0;
+                    return 2.0 / 100.0;
                 case 7:
-                    return 20.0 / 150.0;
+                    return 2.0 / 150.0;
                 case 6:
-                    return 20.0 / 200.0;
+                    return 2.0 / 200.0;
                 case 5:
-                    return 20.0 / 250.0;
+                    return 2.0 / 250.0;
                 case 4:
-                    return 20.0 / 300.0;
+                    return 2.0 / 300.0;
                 case 3:
-                    return 20.0 / 400.0;
+                    return 2.0 / 400.0;
                 case 2:
-                    return 20.0 / 600.0;
+                    return 2.0 / 600.0;
                 case 1:
-                    return 20.0 / 3000.0;
+                    return 2.0 / 3000.0;
                 default:
-                    return 20.0 / 12000.0;
+                    return 2.0 / 12000.0;
             }
 
         }

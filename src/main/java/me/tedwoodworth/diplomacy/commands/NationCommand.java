@@ -844,7 +844,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 if (receiverNation.getEnemyNationIDs().contains(senderNation.getNationID())) {
                     color = ChatColor.RED;
                 }
-                testPlayer.sendMessage(ChatColor.AQUA + "An alliance request has been sent to " + color + senderNation.getName() + ChatColor.AQUA + " (Expires in 60 seconds)");
+                testPlayer.sendMessage(ChatColor.AQUA + "An alliance request has been sent to " + color + receiverNation.getName() + ChatColor.AQUA + " (Expires in 60 seconds)");
             }
         }
     }
@@ -907,8 +907,23 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             receiverNation.removeEnemyNation(senderNation);
         }
 
+        var contests = ContestManager.getInstance().getContests();
+        for (var contest : contests) {
+            var attackingNation = contest.getAttackingNation();
+            if (attackingNation.equals(senderNation)) {
+                ContestManager.getInstance().endContest(contest);
+            } else if (Objects.equals(contest.getDiplomacyChunk().getNation(), senderNation)) {
+                if (attackingNation.equals(receiverNation)) {
+                    ContestManager.getInstance().winContest(contest);
+                } else if (attackingNation.getAllyNationIDs().contains(senderNation.getNationID())) {
+                    ContestManager.getInstance().endContest(contest);
+                }
+            }
+        }
+
         senderNation.addAllyNation(receiverNation);
         receiverNation.addAllyNation(senderNation);
+
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
@@ -1073,7 +1088,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                             .create();
                     testPlayer.spigot().sendMessage(message);
                 } else if (Objects.equals(testPlayerNation, senderNation) && testCanNeutralNations) {
-                    testPlayer.sendMessage(ChatColor.AQUA + "A neutrality request has been sent to " + ChatColor.RED + senderNation.getName() + ChatColor.AQUA + " (Expires in 60 seconds)");
+                    testPlayer.sendMessage(ChatColor.AQUA + "A neutrality request has been sent to " + ChatColor.RED + otherNation.getName() + ChatColor.AQUA + " (Expires in 60 seconds)");
                 }
             }
         } else if (senderNation.getAllyNationIDs().contains(otherNation.getNationID())) {
