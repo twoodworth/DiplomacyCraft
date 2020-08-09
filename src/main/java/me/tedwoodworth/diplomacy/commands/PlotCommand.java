@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
-    private static final String plotUsage = "/plot ...";
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String plotUsage = "/plot";
     private static final String plotContestUsage = "/plot contest";
     private static final String plotSurrenderUsage = "/plot surrender <nation>";
     private static final String plotAbandonUsage = "/plot abandon";
@@ -43,36 +44,35 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 plotContest(sender);
             } else {
-                sender.sendMessage(plotContestUsage);
+                sender.sendMessage(incorrectUsage + plotContestUsage);
             }
         } else if (args[0].equalsIgnoreCase("surrender")) {
             if (args.length == 2) {
                 plotSurrender(sender, args[1]);
             } else {
-                sender.sendMessage(plotSurrenderUsage);
+                sender.sendMessage(incorrectUsage + plotSurrenderUsage);
             }
         } else if (args[0].equalsIgnoreCase("abandon")) {
             if (args.length == 1) {
                 plotAbandon(sender);
             } else {
-                sender.sendMessage(plotAbandonUsage);
+                sender.sendMessage(incorrectUsage + plotAbandonUsage);
             }
         } else if (args[0].equalsIgnoreCase("group")) {
             if (args.length == 1) {
                 plotGroup(sender);
             } else {
-                sender.sendMessage(plotGroupUsage);
+                sender.sendMessage(incorrectUsage + plotGroupUsage);
             }
         } else if (args[0].equalsIgnoreCase("clear")) {
             if (args.length == 1) {
                 plotClear(sender);
             } else {
-                sender.sendMessage(plotClearUsage);
+                sender.sendMessage(incorrectUsage + plotClearUsage);
             }
         } else {
-            sender.sendMessage(plotUsage);
+            sender.sendMessage(incorrectUsage + plotUsage);
         }
-
         return true;
     }
 

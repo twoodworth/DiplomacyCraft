@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class GroupCommand implements CommandExecutor, TabCompleter {
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String groupCreateUsage = "/group create <name>";
     private static final String groupInfoUsage = "/group info <group>";
     private static final String groupRenameUsage = "/group rename <group> <name>";
@@ -35,6 +36,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     private static final String groupUnclaimUsage = "/group unclaim";
     private static final String groupPromoteUsage = "/group promote <player> <group>";
     private static final String groupDemoteUsage = "/group demote <player> <group>";
+    private static final String groupUsage = "/group";
 
     public static void register(PluginCommand pluginCommand) {
         var groupCommand = new GroupCommand();
@@ -51,86 +53,88 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             if (args.length == 2) {
                 groupCreate(sender, args[1]);
             } else {
-                sender.sendMessage(groupCreateUsage);
+                sender.sendMessage(incorrectUsage + groupCreateUsage);
             }
         } else if (args[0].equalsIgnoreCase("info")) {
             if (args.length == 2) {
                 groupInfo(sender, args[1]);
             } else {
-                sender.sendMessage(groupInfoUsage);
+                sender.sendMessage(incorrectUsage + groupInfoUsage);
             }
         } else if (args[0].equalsIgnoreCase("rename")) {
             if (args.length == 3) {
                 groupRename(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupRenameUsage);
+                sender.sendMessage(incorrectUsage + groupRenameUsage);
             }
         } else if (args[0].equalsIgnoreCase("surrender")) {
             if (args.length == 3) {
                 groupSurrender(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupSurrenderUsage);
+                sender.sendMessage(incorrectUsage + groupSurrenderUsage);
             }
         } else if (args[0].equalsIgnoreCase("disband")) {
             if (args.length == 2) {
                 groupDisband(sender, args[1]);
             } else {
-                sender.sendMessage(groupDisbandUsage);
+                sender.sendMessage(incorrectUsage + groupDisbandUsage);
             }
         } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 2) {
                 groupList(sender);
             } else {
-                sender.sendMessage(groupListUsage);
+                sender.sendMessage(incorrectUsage + groupListUsage);
             }
         } else if (args[0].equalsIgnoreCase("add")) {
             if (args.length == 3) {
                 groupAdd(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupAddUsage);
+                sender.sendMessage(incorrectUsage + groupAddUsage);
             }
         } else if (args[0].equalsIgnoreCase("leave")) {
             if (args.length == 2) {
                 groupLeave(sender, args[1]);
             } else {
-                sender.sendMessage(groupLeaveUsage);
+                sender.sendMessage(incorrectUsage + groupLeaveUsage);
             }
         } else if (args[0].equalsIgnoreCase("kick")) {
             if (args.length == 3) {
                 groupKick(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupKickUsage);
+                sender.sendMessage(incorrectUsage + groupKickUsage);
             }
         } else if (args[0].equalsIgnoreCase("banner")) {
             if (args.length == 2) {
                 groupBanner(sender, args[1]);
             } else {
-                sender.sendMessage(groupBannerUsage);
+                sender.sendMessage(incorrectUsage + groupBannerUsage);
             }
         } else if (args[0].equalsIgnoreCase("claim")) {
             if (args.length == 2) {
                 groupClaim(sender, args[1]);
             } else {
-                sender.sendMessage(groupClaimUsage);
+                sender.sendMessage(incorrectUsage + groupClaimUsage);
             }
         } else if (args[0].equalsIgnoreCase("unclaim")) {
             if (args.length == 1) {
                 groupUnclaim(sender);
             } else {
-                sender.sendMessage(groupUnclaimUsage);
+                sender.sendMessage(incorrectUsage + groupUnclaimUsage);
             }
         } else if (args[0].equalsIgnoreCase("promote")) {
             if (args.length == 3) {
                 groupPromote(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupPromoteUsage);
+                sender.sendMessage(incorrectUsage + groupPromoteUsage);
             }
         } else if (args[0].equalsIgnoreCase("demote")) {
             if (args.length == 3) {
                 groupDemote(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(groupDemoteUsage);
+                sender.sendMessage(incorrectUsage + groupDemoteUsage);
             }
+        } else {
+            sender.sendMessage(incorrectUsage + groupUsage);
         }
         return true;
     }
@@ -429,10 +433,11 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testPlayer);
-            if (Objects.equals(nation, testNation) || testPlayer.getGroups().contains(group.getGroupID())) {
+            if (Objects.equals(nation, testNation) || group.getMembers().contains(testPlayer)) {
                 onlinePlayer.sendMessage(ChatColor.AQUA + "The group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + " has been renamed to " + ChatColor.BLUE + name + ChatColor.AQUA + ".");
             }
         }
+
         group.setName(name);
 
     }
@@ -485,7 +490,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID()) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
+            if (group.getMembers().contains(testDiplomacyPlayer) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), otherNation)) {
                 var testNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testNation != null) {
                     var color1 = ChatColor.BLUE;
@@ -514,13 +519,13 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testPlayerNation == null) {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
-                    player.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getAllyNationIDs().contains(testPlayerNation.getNationID()) || otherNation.equals(testPlayerNation)) {
-                    player.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
                 } else {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 }
             }
         }
@@ -585,7 +590,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID()) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
+            if (group.getMembers().contains(testDiplomacyPlayer) || Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
                 var testNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testNation != null) {
                     var color = ChatColor.BLUE;
@@ -668,10 +673,19 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        var color = ChatColor.BLUE;
+        if (otherNation != null) {
+            if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.RED;
+            } else if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.GREEN;
+            }
+        }
+
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (group.getMembers().contains(testDiplomacyPlayer)) {
-                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " has been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                onlinePlayer.sendMessage(color + otherPlayer.getName() + ChatColor.AQUA + " has been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
         otherDiplomacyPlayer.addGroup(group);
@@ -710,10 +724,22 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         diplomacyPlayer.removeGroup(group);
         player.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+
+
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var color = ChatColor.BLUE;
+            var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
+            if (otherNation != null) {
+                if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.RED;
+                } else if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.GREEN;
+                }
+            }
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (group.getMembers().contains(testDiplomacyPlayer)) {
-                onlinePlayer.sendMessage(ChatColor.AQUA + player.getName() + " has left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                onlinePlayer.sendMessage(color + player.getName() + ChatColor.AQUA + " has left " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
 
@@ -776,10 +802,19 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
         otherDiplomacyPlayer.removeGroup(group);
         otherPlayer.sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+
+        var color = ChatColor.BLUE;
+        if (otherNation != null) {
+            if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.RED;
+            } else if (otherNation.getAllyNationIDs().contains(nation.getNationID())) {
+                color = ChatColor.GREEN;
+            }
+        }
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (group.getMembers().contains(testDiplomacyPlayer)) {
-                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+                onlinePlayer.sendMessage(color + otherPlayer.getName() + ChatColor.AQUA + " has been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }
 
@@ -833,20 +868,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
-            var testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
-            var testCanLeadAllGroups = (Objects.equals(testPlayerNation, nation) && testPlayerNation.getMemberClass(testDiplomacyPlayer).getPermissions().get("CanLeadAllGroups"));
-            if (testDiplomacyPlayer.getGroups().contains(group) || testCanLeadAllGroups) {
-                if (testPlayerNation != null) {
-                    if (Objects.equals(testPlayerNation, nation)) {
-                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.GREEN + group.getName() + ChatColor.AQUA + " has been updated.");
-                    } else if (nation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
-                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.RED + group.getName() + ChatColor.AQUA + " has been updated.");
-                    } else if (nation.getAllyNationIDs().contains(testPlayerNation.getNationID())) {
-                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.GREEN + group.getName() + ChatColor.AQUA + " has been updated.");
-                    } else {
-                        testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + " has been updated.");
-                    }
-                }
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
+                testPlayer.sendMessage(ChatColor.AQUA + "The banner of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + " has been updated.");
             }
         }
     }
@@ -1020,7 +1043,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
-            if (testDiplomacyPlayer.getGroups().contains(group.getGroupID())) {
+            if (group.getMembers().contains(testDiplomacyPlayer)) {
                 onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been promoted to leader of " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
             }
         }

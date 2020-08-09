@@ -27,6 +27,8 @@ import java.time.Instant;
 import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String nationUsage = "/nation";
     private static final String nationCreateUsage = "/nation create <name>";
     private static final String nationInfoUsage = "/nation info <nation>";
     private static final String nationRenameUsage = "/nation rename <name>";
@@ -92,37 +94,37 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             if (args.length == 2) {
                 nationCreate(sender, args[1]);
             } else {
-                sender.sendMessage(nationCreateUsage);
+                sender.sendMessage(incorrectUsage + nationCreateUsage);
             }
         } else if (args[0].equalsIgnoreCase("info")) {
             if (args.length == 2) {
                 nationInfo(sender, args[1]);
             } else {
-                sender.sendMessage(nationInfoUsage);
+                sender.sendMessage(incorrectUsage + nationInfoUsage);
             }
         } else if (args[0].equalsIgnoreCase("rename")) {
             if (args.length == 2) {
                 nationRename(sender, args[1]);
             } else {
-                sender.sendMessage(nationRenameUsage);
+                sender.sendMessage(incorrectUsage + nationRenameUsage);
             }
         } else if (args[0].equalsIgnoreCase("surrender")) {
             if (args.length == 2) {
                 nationSurrender(sender, args[1]);
             } else {
-                sender.sendMessage(nationSurrenderUsage);
+                sender.sendMessage(incorrectUsage + nationSurrenderUsage);
             }
         } else if (args[0].equalsIgnoreCase("disband")) {
             if (args.length == 1) {
                 nationDisband(sender);
             } else {
-                sender.sendMessage(nationDisbandUsage);
+                sender.sendMessage(incorrectUsage + nationDisbandUsage);
             }
         } else if (args[0].equalsIgnoreCase("ally")) {
             if (args.length == 2) {
                 nationAlly(sender, args[1]);
             } else {
-                sender.sendMessage(nationAllyUsage);
+                sender.sendMessage(incorrectUsage + nationAllyUsage);
             }
         } else if (args[0].equalsIgnoreCase("accept")) {
             if (args.length == 3) {
@@ -132,7 +134,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     nationAcceptNeutral(sender, args[2]);
                 }
             } else {
-                sender.sendMessage(nationAcceptUsage);
+                sender.sendMessage(incorrectUsage + nationAcceptUsage);
             }
         } else if (args[0].equalsIgnoreCase("decline")) {
             if (args.length == 3) {
@@ -142,43 +144,43 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     nationDeclineNeutral(sender, args[2]);
                 }
             } else {
-                sender.sendMessage(nationDeclineUsage);
+                sender.sendMessage(incorrectUsage + nationDeclineUsage);
             }
         } else if (args[0].equalsIgnoreCase("neutral")) {
             if (args.length == 2) {
                 nationNeutral(sender, args[1]);
             } else {
-                sender.sendMessage(nationNeutralUsage);
+                sender.sendMessage(incorrectUsage + nationNeutralUsage);
             }
         } else if (args[0].equalsIgnoreCase("enemy")) {
             if (args.length == 2) {
                 nationEnemy(sender, args[1]);
             } else {
-                sender.sendMessage(nationEnemyUsage);
+                sender.sendMessage(incorrectUsage + nationEnemyUsage);
             }
         } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 2) {
                 nationList(sender);
             } else {
-                sender.sendMessage(nationListUsage);
+                sender.sendMessage(incorrectUsage + nationListUsage);
             }
         } else if (args[0].equalsIgnoreCase("invite")) {
             if (args.length == 2) {
                 nationInvite(sender, args[1]);
             } else {
-                sender.sendMessage(nationInviteUsage);
+                sender.sendMessage(incorrectUsage + nationInviteUsage);
             }
         } else if (args[0].equalsIgnoreCase("join")) {
             if (args.length == 2) {
                 nationJoin(sender, args[1]);
             } else {
-                sender.sendMessage(nationJoinUsage);
+                sender.sendMessage(incorrectUsage + nationJoinUsage);
             }
         } else if (args[0].equalsIgnoreCase("declinejoin")) {
             if (args.length == 2) {
                 nationDeclineJoin(sender, args[1]);
             } else {
-                sender.sendMessage(nationDeclineJoinUsage);
+                sender.sendMessage(incorrectUsage + nationDeclineJoinUsage);
             }
         } else if (args[0].equalsIgnoreCase("leave")) {
             if (args.length == 1) {
@@ -187,47 +189,47 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     nationLeaveConfirm(sender);
                 } else {
-                    sender.sendMessage(nationLeaveConfirmUsage);
+                    sender.sendMessage(incorrectUsage + nationLeaveConfirmUsage);
                 }
             } else {
-                sender.sendMessage(nationLeaveUsage);
+                sender.sendMessage(incorrectUsage + nationLeaveUsage);
             }
         } else if (args[0].equalsIgnoreCase("kick")) {
             if (args.length == 2) {
                 nationKick(sender, args[1]);
             } else {
-                sender.sendMessage(nationKickUsage);
+                sender.sendMessage(incorrectUsage + nationKickUsage);
             }
         } else if (args[0].equalsIgnoreCase("open")) {
             if (args.length == 1) {
                 nationOpen(sender);
             } else {
-                sender.sendMessage(nationOpenUsage);
+                sender.sendMessage(incorrectUsage + nationOpenUsage);
             }
         } else if (args[0].equalsIgnoreCase("close")) {
             if (args.length == 1) {
                 nationClose(sender);
             } else {
-                sender.sendMessage(nationCloseUsage);
+                sender.sendMessage(incorrectUsage + nationCloseUsage);
             }
         } else if (args[0].equalsIgnoreCase("banner")) {
             if (args.length == 1) {
                 nationBanner(sender);
             } else {
-                sender.sendMessage(nationBannerUsage);
+                sender.sendMessage(incorrectUsage + nationBannerUsage);
             }
         } else if (args[0].equalsIgnoreCase("outlaw")) {
             if (args[1].equalsIgnoreCase("add")) {
                 if (args.length == 3) {
                     nationOutlawAdd(sender, args[2]);
                 } else {
-                    sender.sendMessage(nationOutlawAddUsage);
+                    sender.sendMessage(incorrectUsage + nationOutlawAddUsage);
                 }
             } else if (args[1].equalsIgnoreCase("remove")) {
                 if (args.length == 3) {
                     nationOutlawRemove(sender, args[2]);
                 } else {
-                    sender.sendMessage(nationOutlawRemoveUsage);
+                    sender.sendMessage(incorrectUsage + nationOutlawRemoveUsage);
                 }
             } else if (args[1].equalsIgnoreCase("list")) {
                 if (args.length == 2) {
@@ -236,20 +238,22 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     nationOutlawList(sender, args[2]);
                 }
             } else {
-                sender.sendMessage(nationOutlawListUsage);
+                sender.sendMessage(incorrectUsage + nationOutlawListUsage);
             }
         } else if (args[0].equalsIgnoreCase("deposit")) {
             if (args.length == 2) {
                 nationDeposit(sender, args[1]);
             } else {
-                sender.sendMessage(nationDepositUsage);
+                sender.sendMessage(incorrectUsage + nationDepositUsage);
             }
         } else if (args[0].equalsIgnoreCase("withdraw")) {
             if (args.length == 2) {
                 nationWithdraw(sender, args[1]);
             } else {
-                sender.sendMessage(nationWithdrawUsage);
+                sender.sendMessage(incorrectUsage + nationWithdrawUsage);
             }
+        } else {
+            sender.sendMessage(incorrectUsage + nationUsage);
         }
         return true;
     }

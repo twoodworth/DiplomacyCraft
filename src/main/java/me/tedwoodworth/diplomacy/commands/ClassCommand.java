@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ClassCommand implements CommandExecutor, TabCompleter {
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String classUsage = "/class";
     private static final String classRenameUsage = "/class rename <class> <new name>";
     private static final String classPrefixUsage = "/class prefix <class> <new prefix>";
@@ -41,28 +42,28 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             if (args.length == 3) {
                 classRename(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(classRenameUsage);
+                sender.sendMessage(incorrectUsage + classRenameUsage);
             }
         } else if (args[0].equalsIgnoreCase("prefix")) {
             if (args.length == 3) {
                 classPrefix(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(classPrefixUsage);
+                sender.sendMessage(incorrectUsage + classPrefixUsage);
             }
         } else if (args[0].equalsIgnoreCase("clearPrefix")) {
             if (args.length == 2) {
                 classClearPrefix(sender, args[1]);
             } else {
-                sender.sendMessage(classClearPrefixUsage);
+                sender.sendMessage(incorrectUsage + classClearPrefixUsage);
             }
         } else if (args[0].equalsIgnoreCase("tax")) {
             if (args.length == 3) {
                 classTax(sender, args[1], args[2]);
             } else {
-                sender.sendMessage(classTaxUsage);
+                sender.sendMessage(incorrectUsage + classTaxUsage);
             }
         } else {
-            sender.sendMessage(classUsage);
+            sender.sendMessage(incorrectUsage + classUsage);
         }
         return true;
     }

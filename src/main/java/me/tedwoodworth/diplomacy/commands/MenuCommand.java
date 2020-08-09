@@ -9,6 +9,7 @@ import java.util.List;
 
 public class MenuCommand implements CommandExecutor, TabCompleter {
 
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String menuUsage = "/menu";
 
     public static void register(PluginCommand pluginCommand) {
@@ -23,9 +24,9 @@ public class MenuCommand implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             menu(sender);
         } else {
-            sender.sendMessage(menuUsage);
+            sender.sendMessage(incorrectUsage + menuUsage);
         }
-        return false;
+        return true;
     }
 
     @Override

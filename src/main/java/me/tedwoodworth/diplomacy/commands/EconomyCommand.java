@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class EconomyCommand implements CommandExecutor, TabCompleter {
+    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String payUsage = "/pay <user> <amount>";
     private static final String walletUsage = "/wallet";
     private static final String depositUsage = "/deposit <amount>";
@@ -41,13 +42,13 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
             if (args.length == 2) {
                 pay(sender, args[0], args[1]);
             } else {
-                sender.sendMessage(payUsage);
+                sender.sendMessage(incorrectUsage + payUsage);
             }
         } else if (command.getName().equalsIgnoreCase("wallet")) {
             if (args.length == 0) {
                 wallet(sender);
             } else {
-                sender.sendMessage(walletUsage);
+                sender.sendMessage(incorrectUsage + walletUsage);
             }
         } else if (command.getName().equalsIgnoreCase("deposit")) {
             if (args.length == 1) {
