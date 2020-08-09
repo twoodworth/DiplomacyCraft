@@ -139,7 +139,7 @@ public class DiplomacyGroup {
         var strUnix = groupSection.getString("Created");
         var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
         var time = new java.util.Date((long) unix * 1000);
-        SimpleDateFormat jdf = new SimpleDateFormat("MM-dd-yyyy");
+        SimpleDateFormat jdf = new SimpleDateFormat("MM/dd/yyyy");
         return jdf.format(time);
     }
 

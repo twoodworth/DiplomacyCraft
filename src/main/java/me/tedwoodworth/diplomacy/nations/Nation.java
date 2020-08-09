@@ -362,7 +362,7 @@ public class Nation {
         var strUnix = configSection.getString("Created");
         var unix = Integer.parseInt(Objects.requireNonNull(strUnix));
         var time = new java.util.Date((long) unix * 1000);
-        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat jdf = new SimpleDateFormat("MM/dd/yyyy");
         return jdf.format(time);
     }
 

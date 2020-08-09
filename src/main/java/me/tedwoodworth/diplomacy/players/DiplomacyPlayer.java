@@ -33,7 +33,7 @@ public class DiplomacyPlayer {
     public String getDateJoined() {
         var joined = Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
         var time = new java.util.Date(joined);
-        SimpleDateFormat jdf = new SimpleDateFormat("MM-dd-yyyy");
+        SimpleDateFormat jdf = new SimpleDateFormat("MM/dd/yyyy");
         return jdf.format(time);
     }
 

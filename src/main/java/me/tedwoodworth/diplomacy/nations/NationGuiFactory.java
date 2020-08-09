@@ -261,7 +261,11 @@ public class NationGuiFactory {
         if (otherPlayerNation != null) {
             gui.addElement(new StaticGuiElement('e',
                     new ItemStack(Material.NETHER_STAR),
-                    click -> true,//TODO view permissions
+                    click -> {
+                        var nGui = ClassGuiFactory.createPlayerClassSettings(otherDiplomacyPlayer, player);
+                        nGui.show(player);
+                        return true;
+                    },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Class",
                     ChatColor.GRAY + otherPlayerNation.getMemberClass(otherDiplomacyPlayer).getName(),
                     " ",
