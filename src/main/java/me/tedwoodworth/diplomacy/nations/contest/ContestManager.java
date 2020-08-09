@@ -269,42 +269,42 @@ public class ContestManager {
         if (!isWilderness) {
             switch (adjacentChunks) {
                 case 8:
-                    return 20.0 / 1200.0;
+                    return 20.0 / 200.0;
                 case 7:
-                    return 20.0 / 2400.0;
+                    return 20.0 / 300.0;
                 case 6:
-                    return 20.0 / 4800.0;
+                    return 20.0 / 400.0;
                 case 5:
-                    return 20.0 / 7200.0;
+                    return 20.0 / 500.0;
                 case 4:
-                    return 20.0 / 12000.0;
+                    return 20.0 / 600.0;
                 case 3:
-                    return 20.0 / 24000.0;
+                    return 20.0 / 800.0;
                 case 2:
-                    return 20.0 / 48000.0;
+                    return 20.0 / 3000.0;
                 case 1:
                     return 20.0 / 72000.0;
                 default:
-                    return 20.0 / 288000.0;
+                    return 20.0 / 360000.0;
             }
         } else {
             switch (adjacentChunks) {
                 case 8:
-                    return 20.0 / 200.0;
+                    return 20.0 / 100.0;
                 case 7:
-                    return 20.0 / 400.0;
+                    return 20.0 / 150.0;
                 case 6:
-                    return 20.0 / 600.0;
+                    return 20.0 / 200.0;
                 case 5:
-                    return 20.0 / 800.0;
+                    return 20.0 / 250.0;
                 case 4:
-                    return 20.0 / 1000.0;
+                    return 20.0 / 300.0;
                 case 3:
-                    return 20.0 / 1200.0;
+                    return 20.0 / 400.0;
                 case 2:
-                    return 20.0 / 1800.0;
+                    return 20.0 / 600.0;
                 case 1:
-                    return 20.0 / 2400.0;
+                    return 20.0 / 3000.0;
                 default:
                     return 20.0 / 12000.0;
             }
