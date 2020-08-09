@@ -1041,9 +1041,8 @@ public class NationGuiFactory {
 
         List<OfflinePlayer> members = new ArrayList<>();
 
-        for (var memberStr : membersStr) {
-            var member = Bukkit.getOfflinePlayer(UUID.fromString(memberStr));
-            members.add(member);
+        for (var member : membersStr) {
+            members.add(member.getPlayer());
         }
 
 

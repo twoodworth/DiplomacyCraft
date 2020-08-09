@@ -95,8 +95,14 @@ public class Nation {
         return now - unix;
     }
 
-    public Set<String> getMembers() {
-        return Objects.requireNonNull(configSection.getConfigurationSection("Members")).getKeys(false);
+    public Set<DiplomacyPlayer> getMembers() {
+        var members = new HashSet<DiplomacyPlayer>();
+        var strMembers = Objects.requireNonNull(configSection.getConfigurationSection("Members")).getKeys(false);
+        for (var strMember : strMembers) {
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(strMember));
+            members.add(diplomacyPlayer);
+        }
+        return members;
     }
 
     public void addMember(DiplomacyPlayer diplomacyPlayer) {
@@ -170,8 +176,8 @@ public class Nation {
         nationClass.setPermissions(classPermissions);
 
         for (var member : this.getMembers()) {
-            if (Bukkit.getPlayer(UUID.fromString(member)) != null) {
-                var player = Bukkit.getPlayer(UUID.fromString(member));
+            if (Bukkit.getPlayer(member.getUUID()) != null) {
+                var player = Bukkit.getPlayer(member.getUUID());
                 player.sendMessage(ChatColor.AQUA + permission + " set to " + !current + " for the class " + nationClass.getName());
             }
         }
@@ -213,10 +219,9 @@ public class Nation {
         var uuid = diplomacyPlayer.getUUID();
         var classID = nationClass.getClassID();
         configSection.set("Members." + uuid.toString(), classID);
-        for (var memberStr : this.getMembers()) {
-            var player = Bukkit.getPlayer(UUID.fromString(memberStr));
+        for (var otherDiplomacyPlayer : this.getMembers()) {
+            var player = Bukkit.getPlayer(diplomacyPlayer.getUUID());
             if (player != null) {
-                var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(memberStr));
                 if (Objects.equals(otherDiplomacyPlayer, diplomacyPlayer)) {
                     player.sendMessage(ChatColor.AQUA + "Your nation class has been set to " + nationClass.getName() + ".");
                 } else {
@@ -347,7 +352,7 @@ public class Nation {
         return UUIDs;
     }
 
-    public void addOutlaw(Player player) {
+    public void addOutlaw(OfflinePlayer player) {
         var uuid = player.getUniqueId();
         var list = configSection.getStringList("Outlaws");
         list.add(uuid.toString());
@@ -366,7 +371,7 @@ public class Nation {
         return jdf.format(time);
     }
 
-    public void removeOutlaw(Player player) {
+    public void removeOutlaw(OfflinePlayer player) {
         var uuid = player.getUniqueId();
         var list = configSection.getStringList("Outlaws");
         list.remove(uuid.toString());

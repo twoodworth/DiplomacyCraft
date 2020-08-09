@@ -14,7 +14,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class ClassCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
@@ -198,8 +197,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        for (var strUUID : nation.getMembers()) {
-            var player = Bukkit.getPlayer(UUID.fromString(strUUID));
+        for (var member : nation.getMembers()) {
+            var player = Bukkit.getPlayer(member.getUUID());
             if (player != null) {
                 player.sendMessage(ChatColor.AQUA + "The class '" + nationClass.getName() + "' has been renamed to '" + newClassName + "'.");
             }
@@ -250,8 +249,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        for (var strUUID : nation.getMembers()) {
-            var player = Bukkit.getPlayer(UUID.fromString(strUUID));
+        for (var member : nation.getMembers()) {
+            var player = Bukkit.getPlayer(member.getUUID());
             if (player != null) {
                 player.sendMessage(ChatColor.AQUA + "The prefix of the class '" + nationClass.getName() + "' has been set to '" + newPrefix + "'.");
             }
@@ -302,8 +301,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
         }
 
 
-        for (var strUUID : nation.getMembers()) {
-            var player = Bukkit.getPlayer(UUID.fromString(strUUID));
+        for (var member : nation.getMembers()) {
+            var player = Bukkit.getPlayer(member.getUUID());
             if (player != null) {
                 player.sendMessage(ChatColor.AQUA + "The prefix of the class '" + nationClass.getName() + "' has been removed.");
             }
@@ -364,8 +363,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
         }
 
 
-        for (var strUUID : nation.getMembers()) {
-            var player = Bukkit.getPlayer(UUID.fromString(strUUID));
+        for (var member : nation.getMembers()) {
+            var player = Bukkit.getPlayer(member.getUUID());
             if (player != null) {
                 player.sendMessage(ChatColor.AQUA + "The tax for the class '" + nationClass.getName() + "' has been set to \u00A4" + formatter.format(amount));
             }

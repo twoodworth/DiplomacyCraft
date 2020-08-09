@@ -55,6 +55,15 @@ public class DiplomacyPlayers {
         return player;
     }
 
+    public DiplomacyPlayer get(String strPlayer) {
+        for (var player : this.getPlayers()) {
+            if (player.getPlayer().getName().equalsIgnoreCase(strPlayer)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     public List<DiplomacyPlayer> getPlayers() {
         var players = new ArrayList<DiplomacyPlayer>();
 

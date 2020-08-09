@@ -18,7 +18,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.Comparator.comparingInt;
@@ -693,8 +692,7 @@ public class ClassGuiFactory {
         for (int index = 0; index < 8; index++) {
             var next = String.valueOf(index + 1);
             if (permissions.get("CanRemoveFromClass" + next)) {
-                for (var memberStr : nation.getMembers()) {
-                    var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(memberStr));
+                for (var testDiplomacyPlayer : nation.getMembers()) {
                     if (nation.getMemberClass(testDiplomacyPlayer).getClassID().equals(String.valueOf(index))) {
                         members.add(Bukkit.getOfflinePlayer(testDiplomacyPlayer.getUUID()));
                     }
@@ -703,16 +701,14 @@ public class ClassGuiFactory {
         }
 
         var leaderCount = 0;
-        for (var memberStr : nation.getMembers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(memberStr));
+        for (var testDiplomacyPlayer : nation.getMembers()) {
             if (nation.getMemberClass(testDiplomacyPlayer).getClassID().equals("8")) {
                 leaderCount++;
             }
         }
 
         if (leaderCount > 1 && permissions.get("CanRemoveFromClass9")) {
-            for (var memberStr : nation.getMembers()) {
-                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(memberStr));
+            for (var testDiplomacyPlayer : nation.getMembers()) {
                 if (nation.getMemberClass(testDiplomacyPlayer).getClassID().equals("8")) {
                     members.add(Bukkit.getOfflinePlayer(testDiplomacyPlayer.getUUID()));
                 }

@@ -17,7 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 import static org.bukkit.Bukkit.getOfflinePlayer;
 
@@ -87,8 +90,7 @@ public class Nations {
     @Nullable
     public Nation get(DiplomacyPlayer player) {
         for (var nation : nations) {
-            for (var member : nation.getMembers()) {
-                var testPlayer = DiplomacyPlayers.getInstance().get(UUID.fromString(member));
+            for (var testPlayer : nation.getMembers()) {
                 if (player.equals(testPlayer)) {
                     return nation;
                 }

@@ -225,14 +225,16 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("add")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                        players.add(player.getPlayer().getName());
                     }
                     return players;
                 } else if (args.length == 3) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (!(group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1])))) {
+                            groups.add(group.getName());
+                        }
                     }
                     return groups;
                 }
@@ -241,7 +243,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (group.getMembers().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()))) {
+                            groups.add(group.getName());
+                        }
                     }
                     return groups;
                 } else {
@@ -250,8 +254,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("kick")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                        players.add(player.getPlayer().getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -267,7 +271,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()))) {
+                            groups.add(group.getName());
+                        }
                     }
                     return groups;
                 } else {
@@ -278,14 +284,18 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("promote")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                        players.add(player.getPlayer().getName());
                     }
                     return players;
                 } else if (args.length == 3) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        var canPromote = group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()));
+                        var isMember = DiplomacyPlayers.getInstance().get(args[1]) != null && group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1]));
+                        if (canPromote && isMember) {
+                            groups.add(group.getName());
+                        }
                     }
                     return groups;
                 } else {
@@ -294,14 +304,18 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("demote")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                        players.add(player.getPlayer().getName());
                     }
                     return players;
                 } else if (args.length == 3) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        var canDemote = group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()));
+                        var isMember = DiplomacyPlayers.getInstance().get(args[1]) != null && group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1]));
+                        if (canDemote && isMember) {
+                            groups.add(group.getName());
+                        }
                     }
                     return groups;
                 } else {
@@ -656,19 +670,20 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var otherPlayer = Bukkit.getPlayer(strName);
-        if (otherPlayer == null) {
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(strName);
+        if (otherDiplomacyPlayer == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
             return;
         }
 
-        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
         var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
         var sameNation = Objects.equals(otherNation, group.getNation());
         var otherCanLeadAllGroups = false;
         if (otherNation != null) {
             otherCanLeadAllGroups = otherNation.getMemberClass(otherDiplomacyPlayer).getPermissions().get("CanLeadAllGroups");
         }
+
+        var otherPlayer = otherDiplomacyPlayer.getPlayer();
 
         if (sameNation && otherCanLeadAllGroups) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation().getName() + " groups.");
@@ -696,7 +711,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             }
         }
         otherDiplomacyPlayer.addGroup(group);
-        otherPlayer.sendMessage(ChatColor.AQUA + "You have been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+        if (otherPlayer.isOnline()) {
+            otherPlayer.getPlayer().sendMessage(ChatColor.AQUA + "You have been added to the group " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+        }
     }
 
     private void groupLeave(CommandSender sender, String strGroup) {
@@ -784,19 +801,20 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var otherPlayer = Bukkit.getPlayer(strPlayer);
-        if (otherPlayer == null) {
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(strPlayer);
+        if (otherDiplomacyPlayer == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
             return;
         }
 
-        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
         var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
         var sameNation = Objects.equals(Nations.getInstance().get(otherDiplomacyPlayer), group.getNation());
         var otherCanLeadAllGroups = false;
         if (otherNation != null) {
             otherCanLeadAllGroups = otherNation.getMemberClass(otherDiplomacyPlayer).getPermissions().get("CanLeadAllGroups");
         }
+
+        var otherPlayer = otherDiplomacyPlayer.getPlayer();
 
         if (sameNation && otherCanLeadAllGroups) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " cannot be kicked from that group.");
@@ -808,8 +826,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
         otherDiplomacyPlayer.removeGroup(group);
-        otherPlayer.sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
-
+        if (otherPlayer.isOnline()) {
+            otherPlayer.getPlayer().sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + group.getName() + ChatColor.AQUA + ".");
+        }
         var color = ChatColor.BLUE;
         if (otherNation != null) {
             if (otherNation.getEnemyNationIDs().contains(nation.getNationID())) {
@@ -919,6 +938,24 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
+            var testNation = testDiplomacyChunk.getNation();
+            if (Objects.equals(testNation, nation)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testPlayerNation == null) {
+                    testPlayer.sendTitle(ChatColor.BLUE + nation.getName(), null, 5, 40, 10);
+                } else if (nation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
+                    testPlayer.sendTitle(ChatColor.RED + nation.getName(), null, 5, 40, 10);
+                } else if (nation.getAllyNationIDs().contains(testPlayerNation.getNationID()) || nation.equals(testPlayerNation)) {
+                    testPlayer.sendTitle(ChatColor.GREEN + nation.getName(), null, 5, 40, 10);
+                } else {
+                    testPlayer.sendTitle(ChatColor.BLUE + nation.getName(), null, 5, 40, 10);
+                }
+            }
+        }
+
         group.removeChunk(diplomacyChunk);
         sender.sendMessage(ChatColor.AQUA + "Plot unclaimed.");
 
@@ -982,6 +1019,24 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 return;
             }
             otherGroup.removeChunk(diplomacyChunk);
+        }
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
+            var testNation = testDiplomacyChunk.getNation();
+            if (Objects.equals(testNation, nation)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testPlayerNation == null) {
+                    testPlayer.sendTitle(ChatColor.BLUE + nation.getName(), ChatColor.BLUE + group.getName(), 5, 40, 10);
+                } else if (nation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
+                    testPlayer.sendTitle(ChatColor.RED + nation.getName(), ChatColor.RED + group.getName(), 5, 40, 10);
+                } else if (nation.getAllyNationIDs().contains(testPlayerNation.getNationID()) || nation.equals(testPlayerNation)) {
+                    testPlayer.sendTitle(ChatColor.GREEN + nation.getName(), ChatColor.GREEN + group.getName(), 5, 40, 10);
+                } else {
+                    testPlayer.sendTitle(ChatColor.BLUE + nation.getName(), ChatColor.BLUE + group.getName(), 5, 40, 10);
+                }
+            }
         }
 
 

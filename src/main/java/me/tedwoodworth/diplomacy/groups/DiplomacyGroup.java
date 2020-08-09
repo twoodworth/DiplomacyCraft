@@ -178,14 +178,19 @@ public class DiplomacyGroup {
     }
 
     public List<DiplomacyPlayer> getLeaders() {
-        List<DiplomacyPlayer> members = new ArrayList<>();
-        for (var player : Bukkit.getOfflinePlayers()) {
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            if (diplomacyPlayer.getGroupsLed().contains(this.getGroupID())) {
-                members.add(diplomacyPlayer);
+        List<DiplomacyPlayer> leaders = new ArrayList<>();
+        for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+            if (player.getGroupsLed().contains(this.getGroupID())) {
+                leaders.add(player);
+            } else if (Objects.equals(this.getNation(), Nations.getInstance().get(player))) {
+                var nation = Nations.getInstance().get(player);
+                var permissions = nation.getMemberClass(player).getPermissions();
+                if (permissions.get("CanLeadAllGroups")) {
+                    leaders.add(player);
+                }
             }
         }
-        return members;
+        return leaders;
     }
 
     public Set<DiplomacyChunk> getChunks() {

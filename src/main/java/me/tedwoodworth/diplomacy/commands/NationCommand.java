@@ -367,7 +367,20 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("leave")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("kick")) {
-                return null; //TODO List Players in nation that can be kicked
+                List<String> players = new ArrayList<>();
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+                if (Nations.getInstance().get(diplomacyPlayer) != null) {
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    for (var player : nation.getMembers()) {
+                        var permissions = nation.getMemberClass(player).getPermissions();
+                        if (permissions.get("CanBeKicked")) {
+                            players.add(player.getPlayer().getName());
+                        }
+                    }
+                } else {
+                    return null;
+                }
+                return players;
             } else if (args[0].equalsIgnoreCase("open")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("close")) {
@@ -376,11 +389,30 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     return Arrays.asList("add", "remove", "list");
                 } else if (args[1].equalsIgnoreCase("add")) {
-                    return null; //TODO List Players
-                } else if (args[1].equalsIgnoreCase("remove")) {
-                    return null; //TODO List Outlawed players
-                } else {
+                    var players = new ArrayList<String>();
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+                    if (Nations.getInstance().get(diplomacyPlayer) != null) {
+                        var nation = Nations.getInstance().get(diplomacyPlayer);
+                        for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                            if (!nation.getOutlaws().contains(player.getUUID())) {
+                                players.add(player.getPlayer().getName());
+                            }
+                        }
+                        return players;
+                    }
                     return null;
+                } else if (args[1].equalsIgnoreCase("remove")) {
+                    var players = new ArrayList<String>();
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+                    if (Nations.getInstance().get(diplomacyPlayer) != null) {
+                        var nation = Nations.getInstance().get(diplomacyPlayer);
+                        for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                            if (nation.getOutlaws().contains(player.getUUID())) {
+                                players.add(player.getPlayer().getName());
+                            }
+                        }
+                        return players;
+                    }
                 }
             }
         }
@@ -532,11 +564,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         var members = nation.getMembers();
         for (var member : members) {
-            var diplomacyMember = DiplomacyPlayers.getInstance().get(UUID.fromString(member));
             if (otherNation.getIsOpen()) {
-                otherNation.addMember(diplomacyMember);
+                otherNation.addMember(member);
             }
-            nation.removeMember(diplomacyMember);
+            nation.removeMember(member);
         }
 
 
@@ -1391,7 +1422,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
                 var testNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (Objects.equals(testNation, nation)) {
-                    onlinePlayer.sendMessage(ChatColor.AQUA + player.getName() + " has joined the nation.");
+                    onlinePlayer.sendMessage(ChatColor.GREEN + player.getName() + " has joined the nation.");
                 }
             }
 
@@ -1521,8 +1552,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         var leaderCount = 0;
         for (var member : members) {
-            var diplomacyMember = DiplomacyPlayers.getInstance().get(UUID.fromString(member));
-            if (nation.getMemberClass(diplomacyMember).getClassID().equals("8")) {
+            if (nation.getMemberClass(member).getClassID().equals("8")) {
                 leaderCount++;
             }
         }
@@ -1567,8 +1597,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
             var leaderCount = 0;
             for (var member : members) {
-                var diplomacyMember = DiplomacyPlayers.getInstance().get(UUID.fromString(member));
-                if (nation.getMemberClass(diplomacyMember).getClassID().equals("8")) {
+                if (nation.getMemberClass(member).getClassID().equals("8")) {
                     leaderCount++;
                 }
             }
@@ -1683,15 +1712,15 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var otherPlayer = Bukkit.getPlayer(strPlayer);
+        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(strPlayer);
 
-        if (otherPlayer == null) {
+        if (otherDiplomacyPlayer == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
-            return;//TODO make it so you can kick offline players
+            return;
         }
 
-        var otherDiplomacyPlayer = DiplomacyPlayers.getInstance().get(otherPlayer.getUniqueId());
         var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
+        var otherPlayer = otherDiplomacyPlayer.getPlayer();
 
         if (!Objects.equals(otherNation, senderNation)) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of your nation.");
@@ -1710,14 +1739,15 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
             if (Objects.equals(testNation, senderNation)) {
-                onlinePlayer.sendMessage(ChatColor.AQUA + otherPlayer.getName() + " been kicked from the nation.");
+                onlinePlayer.sendMessage(ChatColor.BLUE + otherPlayer.getName() + ChatColor.AQUA + " has been kicked from the nation.");
             }
         }
 
-        otherPlayer.sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + senderNation.getName() + ChatColor.AQUA + ".");
+        if (otherPlayer.isOnline()) {
+            otherPlayer.getPlayer().sendMessage(ChatColor.AQUA + "You have been kicked from " + ChatColor.BLUE + senderNation.getName() + ChatColor.AQUA + ".");
+        }
+
         senderNation.removeMember(otherDiplomacyPlayer);
-
-
     }
 
 
@@ -1810,11 +1840,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var outlaw = Bukkit.getPlayer(strOutlaw);
+        var diplomacyOutlaw = DiplomacyPlayers.getInstance().get(strOutlaw);
 
-        if (outlaw == null) {
+        if (diplomacyOutlaw == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
+            return;
         }
+
+        var outlaw = diplomacyOutlaw.getPlayer();
 
         if (nation.getOutlaws().contains(outlaw.getUniqueId())) {
             sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is already outlawed.");
@@ -1835,13 +1868,15 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         nation.addOutlaw(outlaw);
 
-        outlaw.sendMessage(ChatColor.AQUA + "You have been outlawed by " + color + nation.getName());
+        if (outlaw.isOnline()) {
+            outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You have been outlawed by " + color + nation.getName());
+        }
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
             if (Objects.equals(nation, testNation) && !Objects.equals(onlinePlayer, outlaw)) {
-                sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + ChatColor.AQUA + " has been outlawed.");
+                sender.sendMessage(color + outlaw.getName() + ChatColor.AQUA + " has been outlawed.");
             }
         }
 
@@ -1871,11 +1906,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var outlaw = Bukkit.getPlayer(strOutlaw);
+        var diplomacyOutlaw = DiplomacyPlayers.getInstance().get(strOutlaw);
 
-        if (outlaw == null) {
+        if (diplomacyOutlaw == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
         }
+
+        var outlaw = diplomacyOutlaw.getPlayer();
 
         if (!nation.getOutlaws().contains(Objects.requireNonNull(outlaw).getUniqueId())) {
             sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is not outlawed.");
@@ -1896,13 +1933,15 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         nation.removeOutlaw(outlaw);
 
-        outlaw.sendMessage(ChatColor.AQUA + "You are no longer outlawed by " + color + nation.getName());
+        if (outlaw.isOnline()) {
+            outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You are no longer outlawed by " + color + nation.getName());
+        }
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
             if (Objects.equals(nation, testNation) && !Objects.equals(onlinePlayer, outlaw)) {
-                sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + ChatColor.AQUA + " is no longer outlawed.");
+                sender.sendMessage(color + outlaw.getName() + ChatColor.AQUA + " is no longer outlawed.");
             }
         }
 

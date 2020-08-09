@@ -4,8 +4,8 @@ import com.google.common.base.Objects;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -83,8 +83,8 @@ public class DiplomacyPlayer {
         return Objects.hashCode(uuid);
     }
 
-    public Player getPlayer() {
-        var player = Bukkit.getPlayer(uuid);
+    public OfflinePlayer getPlayer() {
+        var player = Bukkit.getOfflinePlayer(uuid);
         Validate.notNull(player);
         return player;
     }
