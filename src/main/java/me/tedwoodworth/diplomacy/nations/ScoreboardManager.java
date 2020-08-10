@@ -36,11 +36,11 @@ public class ScoreboardManager {
             team.setColor(ChatColor.BLUE);
             if (nation != null) {
                 if (nation.getAllyNationIDs().contains(testNation.getNationID())) {
-                    team.setColor(ChatColor.GREEN);
+                    team.setColor(ChatColor.DARK_GREEN);
                 } else if (nation.getEnemyNationIDs().contains(testNation.getNationID())) {
                     team.setColor(ChatColor.RED);
                 } else if (Objects.equals(nation, testNation)) {
-                    team.setColor(ChatColor.DARK_GREEN);
+                    team.setColor(ChatColor.GREEN);
                 }
             }
         }
@@ -58,4 +58,9 @@ public class ScoreboardManager {
         player.setScoreboard(scoreboard);
     }
 
+    public void updateScoreboards() {
+        for (var player : Bukkit.getOnlinePlayers()) {
+            createScoreboard(player);
+        }
+    }
 }

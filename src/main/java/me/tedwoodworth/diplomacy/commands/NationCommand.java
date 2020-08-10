@@ -3,10 +3,7 @@ package me.tedwoodworth.diplomacy.commands;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyException;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
-import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
-import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -473,6 +470,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         if (nation == null) {
             if (sameName == null) {
                 Nations.getInstance().createNation(name, leader);
+                ScoreboardManager.getInstance().updateScoreboards();
                 sender.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.GREEN + name + ChatColor.AQUA + " has been founded.");
                 for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
                     if (!Objects.equals(uuid, onlinePlayer.getUniqueId())) {
@@ -499,6 +497,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         try {
             Nations.getInstance().rename(nation, name);
+            ScoreboardManager.getInstance().updateScoreboards();
         } catch (DiplomacyException e) {
             e.printStackTrace();
         }
@@ -635,6 +634,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 
@@ -736,6 +736,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
 
     }
@@ -923,6 +924,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         senderNation.addAllyNation(receiverNation);
         receiverNation.addAllyNation(senderNation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
@@ -1095,6 +1097,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
             senderNation.removeAllyNation(otherNation);
             otherNation.removeAllyNation(senderNation);
+            ScoreboardManager.getInstance().updateScoreboards();
 
             for (var testPlayer : Bukkit.getOnlinePlayers()) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
@@ -1165,6 +1168,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         senderNation.removeEnemyNation(receiverNation);
         receiverNation.removeEnemyNation(senderNation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
@@ -1283,6 +1287,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         senderNation.addEnemyNation(enemyNation);
         enemyNation.addEnemyNation(senderNation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
@@ -1466,6 +1471,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.addMember(diplomacyPlayer);
+        ScoreboardManager.getInstance().updateScoreboards();
         sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
 
 
@@ -1579,6 +1585,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
         nation.removeMember(diplomacyPlayer);
+        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 
@@ -1627,6 +1634,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
             sender.sendMessage(ChatColor.AQUA + "Since another player has joined your nation, it will not disband.");
             nation.removeMember(diplomacyPlayer);
+            ScoreboardManager.getInstance().updateScoreboards();
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
@@ -1763,6 +1771,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         senderNation.removeMember(otherDiplomacyPlayer);
+        ScoreboardManager.getInstance().updateScoreboards();
     }
 
 
