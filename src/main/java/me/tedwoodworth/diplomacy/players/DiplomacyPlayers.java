@@ -234,7 +234,7 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
-            ScoreboardManager.getInstance().createScoreboard(player);
+            ScoreboardManager.getInstance().updateScoreboards();
         }
     }
 }

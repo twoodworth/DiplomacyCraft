@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.DiplomacyException;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
@@ -466,22 +465,29 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var uuid = ((OfflinePlayer) sender).getUniqueId();
         var leader = DiplomacyPlayers.getInstance().get(uuid);
         var nation = Nations.getInstance().get(leader);
-        var sameName = Nations.getInstance().get(name);
-        if (nation == null) {
-            if (sameName == null) {
-                Nations.getInstance().createNation(name, leader);
-                ScoreboardManager.getInstance().updateScoreboards();
-                sender.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.GREEN + name + ChatColor.AQUA + " has been founded.");
-                for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
-                    if (!Objects.equals(uuid, onlinePlayer.getUniqueId())) {
-                        onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.BLUE + name + ChatColor.AQUA + " has been founded.");
-                    }
-                }
-            } else {
-                sender.sendMessage(ChatColor.DARK_RED + "The name " + ChatColor.BLUE + name + ChatColor.DARK_RED + " is taken, choose another name.");
-            }
-        } else {
+        var sameName = Nations.getInstance().get(name) != null;
+
+        if (nation != null) {
             sender.sendMessage(ChatColor.DARK_RED + "You must leave your current nation before you can establish a new nation.");
+            return;
+        }
+
+        if (sameName) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is taken, choose another name.");
+            return;
+        }
+
+        if (name.length() > 10) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
+        }
+
+        Nations.getInstance().createNation(name, leader);
+        ScoreboardManager.getInstance().updateScoreboards();
+        sender.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.GREEN + name + ChatColor.AQUA + " has been founded.");
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (!Objects.equals(uuid, onlinePlayer.getUniqueId())) {
+                onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.BLUE + name + ChatColor.AQUA + " has been founded.");
+            }
         }
     }
 
@@ -491,15 +497,53 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var uuid = ((OfflinePlayer) sender).getUniqueId();
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
         var nation = Nations.getInstance().get(diplomacyPlayer);
 
-        try {
-            Nations.getInstance().rename(nation, name);
-            ScoreboardManager.getInstance().updateScoreboards();
-        } catch (DiplomacyException e) {
-            e.printStackTrace();
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var oldName = nation.getName();
+        if (oldName.equals(name)) {
+            sender.sendMessage(ChatColor.DARK_RED + "The nation is already named " + name + ".");
+            return;
+        }
+
+        var nameTaken = Nations.getInstance().get(name) != null;
+        if (nameTaken) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is taken, choose another name.");
+            return;
+        }
+
+        if (name.length() > 10) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
+            return;
+        }
+
+        var nationClass = nation.getMemberClass(diplomacyPlayer);
+        boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
+        if (!canRenameNation) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
+            return;
+        }
+
+        Nations.getInstance().rename(nation, name);
+        ScoreboardManager.getInstance().updateScoreboards();
+
+        for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
+            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
+            var color = ChatColor.BLUE;
+            if (testNation != null) {
+                if (testNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.RED;
+                } else if (testNation.getAllyNationIDs().contains(nation.getNationID()) || Objects.equals(nation, testNation)) {
+                    color = ChatColor.GREEN;
+                }
+            }
+            onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + color + oldName + ChatColor.AQUA + " has been renamed to " + color + name + ChatColor.AQUA + ".");
         }
     }
 
@@ -1697,7 +1741,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 }
                 onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + color + nation.getName() + ChatColor.AQUA + " has disbanded.");
             } else {
-                onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + ChatColor.BLUE + nation.getName() + ChatColor.AQUA + "has disbanded.");
+                onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + ChatColor.BLUE + nation.getName() + ChatColor.AQUA + " has disbanded.");
             }
         }
 
@@ -1715,6 +1759,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
+        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 

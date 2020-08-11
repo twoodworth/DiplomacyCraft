@@ -396,6 +396,11 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        if (name.length() > 10) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
+            return;
+        }
+
         DiplomacyGroups.getInstance().createGroup(name, diplomacyPlayer, nation);
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
@@ -444,6 +449,10 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        if (name.length() > 10) {
+            sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
+            return;
+        }
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
