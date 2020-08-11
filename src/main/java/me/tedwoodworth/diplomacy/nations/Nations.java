@@ -1,6 +1,8 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.events.NationCreateEvent;
+import me.tedwoodworth.diplomacy.events.NationDisbandEvent;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -54,6 +56,7 @@ public class Nations {
         nationConfig.set("NextNationID", nextNationID);
         var initializedNationSection = Nation.initializeNation(nationSection, founder, name);
         var nation = new Nation(nationID, initializedNationSection);
+        Bukkit.getPluginManager().callEvent(new NationCreateEvent(nation));
         nations.add(nation);
         return nation;
 
@@ -168,7 +171,9 @@ public class Nations {
 
     public void removeNation(Nation nation) {
         nationConfig.set("Nations." + nation.getNationID(), null);
+        var nationID = nation.getNationID();
         nations.remove(nation);
+        Bukkit.getPluginManager().callEvent(new NationDisbandEvent(nationID));
     }
 
     public static boolean isWilderness(Nation nation) {

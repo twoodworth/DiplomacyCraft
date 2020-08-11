@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.commands.MapMaker;
+import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -118,6 +119,7 @@ public class Nation {
     }
 
     public void addMember(DiplomacyPlayer diplomacyPlayer) {
+        Bukkit.getPluginManager().callEvent(new NationJoinEvent(diplomacyPlayer, this));
         var id = diplomacyPlayer.getUUID().toString();
         var memberConfig = configSection.getConfigurationSection("Members");
         Validate.notNull(memberConfig);
@@ -127,6 +129,7 @@ public class Nation {
     }
 
     public void removeMember(DiplomacyPlayer diplomacyPlayer) {
+        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(diplomacyPlayer, this));
         var id = diplomacyPlayer.getUUID().toString();
         var memberConfig = configSection.getConfigurationSection("Members");
         Validate.notNull(memberConfig);
@@ -306,7 +309,9 @@ public class Nation {
     }
 
     public void setName(String name) {
+        var oldName = this.getName();
         this.name = name;
+        Bukkit.getPluginManager().callEvent(new NationRenameEvent(this, oldName, this.getName()));
     }
 
     public void setBanner(ItemStack banner) {
@@ -338,13 +343,16 @@ public class Nation {
         list.add(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
         MapMaker.getInstance().paintChunk(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationAddChunkEvent(this, diplomacyChunk));
     }
 
     public void removeChunk(DiplomacyChunk diplomacyChunk) {
+        var chunk = diplomacyChunk.getChunk();
         var list = configSection.getMapList("Chunks");
         list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
         MapMaker.getInstance().unpaintChunk(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunkEvent(this, chunk));
     }
 
     public List<DiplomacyGroup> getGroups() {
