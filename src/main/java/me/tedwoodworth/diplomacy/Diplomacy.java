@@ -27,6 +27,7 @@ public class Diplomacy extends JavaPlugin {
         MenuCommand.register(getCommand("menu"));
         ClassCommand.register(getCommand("class"));
         Nations.getInstance().registerEvents();
+        MapMaker.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
         DiplomacyGroups.getInstance().registerEvents();

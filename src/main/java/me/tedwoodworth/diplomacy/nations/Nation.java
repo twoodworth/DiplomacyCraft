@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
+import me.tedwoodworth.diplomacy.commands.MapMaker;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -15,8 +16,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,15 @@ public class Nation {
         nationSection.set("Banner", itemStack);
         nationSection.set("Created", Instant.now().getEpochSecond());
         nationSection.set("Name", name);
+
+        var r = (int) (Math.random() * 256);
+        var g = (int) (Math.random() * 256);
+        var b = (int) (Math.random() * 256);
+
+        var color = new Color(r, g, b);
+        nationSection.set("Color.Red", color.getRed());
+        nationSection.set("Color.Green", color.getGreen());
+        nationSection.set("Color.Blue", color.getBlue());
         return nationSection;
     }
 
@@ -325,12 +337,14 @@ public class Nation {
         var list = configSection.getMapList("Chunks");
         list.add(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
+        MapMaker.getInstance().paintChunk(diplomacyChunk);
     }
 
     public void removeChunk(DiplomacyChunk diplomacyChunk) {
         var list = configSection.getMapList("Chunks");
         list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
+        MapMaker.getInstance().unpaintChunk(diplomacyChunk);
     }
 
     public List<DiplomacyGroup> getGroups() {
@@ -450,6 +464,14 @@ public class Nation {
         }
 
         setIsOpen(isOpen);
+    }
+
+    public Color getColor() {
+        var red = configSection.getInt("Color.Red");
+        var green = configSection.getInt("Color.Green");
+        var blue = configSection.getInt("Color.Blue");
+
+        return new Color(red, green, blue);
     }
 
     public void setIsOpen(boolean isOpen) {
