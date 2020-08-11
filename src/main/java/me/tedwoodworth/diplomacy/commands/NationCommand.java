@@ -477,7 +477,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (name.length() > 10) {
+        if (name.length() > 16) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
         }
 
@@ -517,7 +517,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (name.length() > 10) {
+        if (name.length() > 16) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
             return;
         }
