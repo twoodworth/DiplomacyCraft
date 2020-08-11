@@ -16,12 +16,8 @@ import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerSet;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DiplomacyDynmap {
-    private static Logger log;
-
     private Map<String, AreaMarker> resareas = new HashMap<>();
     private Map<String, Marker> resmark = new HashMap<>();
     private boolean reload = false;
@@ -43,6 +39,16 @@ public class DiplomacyDynmap {
     private boolean playersets;
     private long updatePeriod;
     private boolean stop;
+
+
+    private static DiplomacyDynmap instance = null;
+
+    public static DiplomacyDynmap getInstance() {
+        if (instance == null) {
+            instance = new DiplomacyDynmap();
+        }
+        return instance;
+    }
 
     public void load() {
         var pluginManager = Bukkit.getPluginManager();
@@ -108,9 +114,7 @@ public class DiplomacyDynmap {
         stop = false;
 
         scheduleSyncDelayedTask(new DiplomacyUpdate(this), 40);
-        Bukkit.getServer().getPluginManager().registerEvents(new OurServerListener(this), diplomacy);
-
-        info("version " + Diplomacy.getInstance().getDescription().getVersion() + " (DiplomacyDynmap) is activated");
+        Bukkit.getServer().getPluginManager().registerEvents(new OurServerListener(), diplomacy);
     }
 
     public void updateClaimedChunk() {
@@ -296,7 +300,6 @@ public class DiplomacyDynmap {
                     if (areaMarker == null) {
                         areaMarker = set.createAreaMarker(polyId, nationName, false, world, x, z, false);
                         if (areaMarker == null) {
-                            info("error adding area marker " + polyId);
                             return;
                         }
                     } else {
@@ -377,11 +380,6 @@ public class DiplomacyDynmap {
         }
         return true;
     }
-
-    public static void info(String msg) {
-        log.log(Level.INFO, msg);
-    }
-
     public void requestUpdateDiplomacy() {
         final DiplomacyUpdate diplomacyUpdate = new DiplomacyUpdate(this);
         diplomacyUpdate.setRunOnce(true);

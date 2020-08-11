@@ -1,6 +1,8 @@
 package me.tedwoodworth.diplomacy;
 
 import me.tedwoodworth.diplomacy.commands.*;
+import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
+import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
@@ -26,11 +28,13 @@ public class Diplomacy extends JavaPlugin {
         EconomyCommand.register(getCommand("withdraw"));
         MenuCommand.register(getCommand("menu"));
         ClassCommand.register(getCommand("class"));
+        OurServerListener.getInstance().registerEvents();
         Nations.getInstance().registerEvents();
         MapMaker.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
         DiplomacyGroups.getInstance().registerEvents();
+        DiplomacyDynmap.getInstance().load();
 
         if (!setupEconomy()) {
             throw new RuntimeException("Unable to set up vault economy.");

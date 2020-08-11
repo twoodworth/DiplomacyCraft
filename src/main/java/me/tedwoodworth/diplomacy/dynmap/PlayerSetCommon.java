@@ -7,8 +7,6 @@ import org.dynmap.markers.MarkerAPI;
 import java.util.HashSet;
 import java.util.Set;
 
-import static me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap.info;
-
 public class PlayerSetCommon {
 
     private static final String MESSAGE_ADDED_PLAYER = "Added player visibility set '";
@@ -31,7 +29,6 @@ public class PlayerSetCommon {
 
         if (set == null && nation != null) {
             markerApi.createPlayerSet(setId, true, playerIds, false);
-            info(MESSAGE_ADDED_PLAYER + setId + MESSAGE_FOR_NATION + nationID);
         } else if (nation != null) {
             set.setPlayers(playerIds);
         } else {

@@ -3,7 +3,7 @@ main: me.tedwoodworth.diplomacy.Diplomacy
 version: 0.1.0
 
 api-version: 1.16
-depend: [Vault]
+depend: [ Vault, dynmap ]
 
 commands:
   plot:

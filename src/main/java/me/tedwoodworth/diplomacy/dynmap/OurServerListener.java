@@ -1,6 +1,8 @@
 package me.tedwoodworth.diplomacy.dynmap;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.events.*;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -9,10 +11,18 @@ import org.bukkit.plugin.Plugin;
 
 public class OurServerListener implements Listener {
 
-    private final DiplomacyDynmap kernel;
+    private static OurServerListener instance = null;
+    private DiplomacyDynmap kernel = DiplomacyDynmap.getInstance();
 
-    public OurServerListener(final DiplomacyDynmap kernel) {
-        this.kernel = kernel;
+    public void registerEvents() {
+        Bukkit.getPluginManager().registerEvents(new OurServerListener(), Diplomacy.getInstance());
+    }
+
+    public static OurServerListener getInstance() {
+        if (instance == null) {
+            instance = new OurServerListener();
+        }
+        return instance;
     }
 
     @EventHandler
@@ -71,3 +81,4 @@ public class OurServerListener implements Listener {
         kernel.requestUpdateDiplomacy();
     }
 }
+
