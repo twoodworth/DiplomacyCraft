@@ -47,7 +47,7 @@ public class Nation {
 
         nationSection.createSection("Members", membersMap);
         nationSection.set("Founder", founder.getUniqueId().toString());
-        var random = (int) (Math.random() * 15);
+        var random = (int) (Math.random() * 16);
         var banner = Material.WHITE_BANNER;
         switch (random) {
             case 0 -> banner = Material.ORANGE_BANNER;

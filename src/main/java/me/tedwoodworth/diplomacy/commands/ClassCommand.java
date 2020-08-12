@@ -197,6 +197,11 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        if (newClassName.length() > 16) {
+            sender.sendMessage(ChatColor.RED + "That name is too long.");
+            return;
+        }
+
         for (var member : nation.getMembers()) {
             var player = Bukkit.getPlayer(member.getUUID());
             if (player != null) {
@@ -246,6 +251,11 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
 
         if (newPrefix.equalsIgnoreCase(nationClass.getPrefix())) {
             sender.sendMessage(ChatColor.RED + "The class prefix is already set to that.");
+            return;
+        }
+
+        if (newPrefix.length() > 16) {
+            sender.sendMessage(ChatColor.RED + "That prefix is too long.");
             return;
         }
 
