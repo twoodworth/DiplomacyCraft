@@ -498,7 +498,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             red = Integer.parseInt(strRed);
             green = Integer.parseInt(strGreen);
             blue = Integer.parseInt(strBlue);
-        } catch (InputMismatchException e) {
+        } catch (NumberFormatException e) {
             sender.sendMessage(ChatColor.DARK_RED + "Values must be numbers.");
             return;
         }
