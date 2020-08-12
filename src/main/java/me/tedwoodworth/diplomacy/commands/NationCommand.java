@@ -513,7 +513,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        nation.setColor(red, green, blue); //TODO ChangeColorEvent
+        nation.setColor(red, green, blue);
         var color = new Color(red, green, blue);
         var message = new ComponentBuilder()
                 .append("Your nation's map color has been set to this color: ")

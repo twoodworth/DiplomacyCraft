@@ -69,6 +69,26 @@ public class DiplomacyPlayer {
         configSection.set("GroupsLed", list);
     }
 
+    public int getLives() {
+        var lives = configSection.getString("Lives");
+        if (lives == null) {
+            this.setLives(20);
+        }
+        return configSection.getInt("Lives");
+    }
+
+    public void setLives(int lives) {
+        configSection.set("Lives", lives);
+    }
+
+    public boolean getJoinedToday() {
+        return configSection.getBoolean("JoinedToday");
+    }
+
+    public void setJoinedToday(boolean joinedToday) {
+        configSection.set("JoinedToday", joinedToday);
+    }
+
 
     @Override
     public boolean equals(Object o) {

@@ -48,7 +48,7 @@ public class ChatCommand implements CommandExecutor, TabCompleter {
             if (args.length == 0) {
                 lc(sender);
             } else {
-                sender.sendMessage(incorrectUsage + ncUsage);
+                sender.sendMessage(incorrectUsage + lcUsage);
             }
         }
         return true;

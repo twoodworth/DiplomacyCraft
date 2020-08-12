@@ -18,7 +18,6 @@ public class DiplomacyUpdate implements Runnable {
             kernel.updateClaimedChunk();
             if (!isRunOnce()) {
                 kernel.scheduleSyncDelayedTask(this, kernel.getUpdatePeriod());
-                //TODO continue
             }
         }
     }

@@ -71,4 +71,14 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  lives:
+    description: Get your lives.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  giveLives:
+    description: Give another player lives.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

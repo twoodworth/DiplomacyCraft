@@ -6,6 +6,8 @@ import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
+import me.tedwoodworth.diplomacy.lives.LivesCommand;
+import me.tedwoodworth.diplomacy.lives.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -34,6 +36,9 @@ public class Diplomacy extends JavaPlugin {
         ChatCommand.register(getCommand("gc"));
         ChatCommand.register(getCommand("lc"));
         ChatCommand.register(getCommand("ac"));
+        LivesCommand.register(getCommand("lives"));
+        LivesCommand.register(getCommand("giveLives"));
+        LivesManager.getInstance().registerEvents();
         OurServerListener.getInstance().registerEvents();
         Nations.getInstance().registerEvents();
         ChatManager.getInstance().registerEvents();
@@ -41,6 +46,7 @@ public class Diplomacy extends JavaPlugin {
         ContestManager.getInstance().registerEvents();
         DiplomacyGroups.getInstance().registerEvents();
         DiplomacyDynmap.getInstance().load();
+        LivesManager.getInstance().startScheduler();
 
         if (!setupEconomy()) {
             throw new RuntimeException("Unable to set up vault economy.");

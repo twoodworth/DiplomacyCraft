@@ -19,6 +19,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,23 +45,26 @@ public class DiplomacyPlayers {
     }
 
     public DiplomacyPlayer get(UUID uuid) {
-        List<String> groups = new ArrayList<>(1);
-        List<String> groupsLed = new ArrayList<>(1);
         var player = diplomacyPlayers.get(uuid);
         if (player == null) {
-            Map<String, Object> playersMap = ImmutableMap.of(
-                    "Groups", groups,
-                    "GroupsLed", groupsLed
-            );
-
-            config.createSection(uuid.toString(), playersMap);
+            if (config.getConfigurationSection(uuid.toString()) == null) {
+                List<String> groups = new ArrayList<>(1);
+                List<String> groupsLed = new ArrayList<>(1);
+                Map<String, Object> playersMap = ImmutableMap.of(
+                        "Groups", groups,
+                        "GroupsLed", groupsLed,
+                        "Lives", 20,
+                        "JoinedToday", true
+                );
+                config.createSection(uuid.toString(), playersMap);
+            }
             player = new DiplomacyPlayer(uuid, config.getConfigurationSection(uuid.toString()));
             diplomacyPlayers.put(uuid, player);
         }
         return player;
     }
 
-    public DiplomacyPlayer get(String strPlayer) {
+    public @Nullable DiplomacyPlayer get(String strPlayer) {
         for (var player : this.getPlayers()) {
             if (player.getPlayer().getName().equalsIgnoreCase(strPlayer)) {
                 return player;
