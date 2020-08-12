@@ -326,8 +326,8 @@ public class NationGuiFactory {
                 "   bai  p",
                 "  oeumn q",
                 "  cdsgf r",
-                "   klj   ",
-                "    h   t"
+                "   klh   ",
+                "        t"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -491,12 +491,6 @@ public class NationGuiFactory {
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Founded:",
                     ChatColor.GRAY + nation.getDateCreated()
-            ));
-            gui.addElement(new StaticGuiElement('j',
-                    new ItemStack(Material.WHITE_WOOL),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Dynmap Color:",
-                    ChatColor.GRAY + "to be added"//TODO add
             ));
             String status;
             if (nation.getIsOpen()) {
@@ -722,12 +716,6 @@ public class NationGuiFactory {
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Founded:",
                     ChatColor.GRAY + nation.getDateCreated()
-            ));
-            gui.addElement(new StaticGuiElement('j',
-                    new ItemStack(Material.WHITE_WOOL),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Dynmap Color:",
-                    ChatColor.GRAY + "to be added"//TODO add
             ));
             String status;
             if (nation.getIsOpen()) {
