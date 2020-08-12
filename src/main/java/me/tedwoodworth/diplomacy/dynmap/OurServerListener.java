@@ -80,5 +80,10 @@ public class OurServerListener implements Listener {
     public void onNationRemoveChunk(NationRemoveChunkEvent event) {
         kernel.requestUpdateDiplomacy();
     }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onNationColor(NationColorEvent event) {
+        kernel.requestUpdateDiplomacy();
+    }
 }
 

@@ -30,7 +30,6 @@ public class Diplomacy extends JavaPlugin {
         ClassCommand.register(getCommand("class"));
         OurServerListener.getInstance().registerEvents();
         Nations.getInstance().registerEvents();
-        MapMaker.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
         DiplomacyGroups.getInstance().registerEvents();

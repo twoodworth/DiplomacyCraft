@@ -17,9 +17,11 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BannerMeta;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Instant;
+import java.util.List;
 import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
@@ -54,6 +56,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
     private static final String nationDepositWithdrawUsage = "/nation (deposit/withdraw) <amount>";
+    private static final String nationColorUsage = "/nation color <red> <green> <blue>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
     private Map<String, Long> requests = new HashMap<>();
@@ -103,6 +106,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 nationRename(sender, args[1]);
             } else {
                 sender.sendMessage(incorrectUsage + nationRenameUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("color")) {
+            if (args.length == 4) {
+                nationColor(sender, args[1], args[2], args[3]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationColorUsage);
             }
         } else if (args[0].equalsIgnoreCase("surrender")) {
             if (args.length == 2) {
@@ -260,6 +269,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 return Arrays.asList(
                         "create",
+                        "color",
                         "banner",
                         "rename",
                         "surrender",
@@ -280,6 +290,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         "close",
                         "outlaw");
             } else if (args[0].equalsIgnoreCase("create")) {
+                return null;
+            } else if (args[0].equalsIgnoreCase("color")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("info")) {
                 List<String> nations = new ArrayList<>();
@@ -436,6 +448,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.AQUA + nationBorderUsage + ChatColor.GRAY + " Open/close your nation's borders");
         sender.sendMessage(ChatColor.AQUA + nationBannerUsage + ChatColor.GRAY + " Set your nation's banner");
         sender.sendMessage(ChatColor.AQUA + nationOutlawUsage + ChatColor.GRAY + " Add/remove outlaws");
+        sender.sendMessage(ChatColor.AQUA + nationColorUsage + ChatColor.GRAY + " Set your nation's map color");
     }
 
     private void nationInfo(CommandSender sender, String strNation) {
@@ -454,6 +467,69 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         var gui = new NationGuiFactory().create(nation, player);
         gui.show(player);
+    }
+
+    private void nationColor(CommandSender sender, String strRed, String strBlue, String strGreen) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
+            return;
+        }
+
+        var nationClass = nation.getMemberClass(diplomacyPlayer);
+        boolean canSetNationColor = nationClass.getPermissions().get("CanSetNationColor");
+        if (!canSetNationColor) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to set the nation's color.");
+            return;
+        }
+
+        var red = 0;
+        var green = 0;
+        var blue = 0;
+
+        try {
+            red = Integer.parseInt(strRed);
+            green = Integer.parseInt(strGreen);
+            blue = Integer.parseInt(strBlue);
+        } catch (InputMismatchException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Values must be numbers.");
+            return;
+        }
+
+        if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
+            sender.sendMessage(ChatColor.DARK_RED + "Numbers cannot be below 0 or above 255.");
+            return;
+        }
+
+        if (nation.getColor().getRed() == red && nation.getColor().getGreen() == green && nation.getColor().getBlue() == blue) {
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation's color is already set to that.");
+            return;
+        }
+
+        nation.setColor(red, green, blue); //TODO ChangeColorEvent
+        var color = new Color(red, green, blue);
+        var message = new ComponentBuilder()
+                .append("Your nation's map color has been set to this color: ")
+                .color(net.md_5.bungee.api.ChatColor.AQUA)
+                .append("\u2588\u2588\u2588")
+                .color(net.md_5.bungee.api.ChatColor.BOLD)
+                .color(net.md_5.bungee.api.ChatColor.of(color))
+                .create();
+
+        for (var member : nation.getMembers()) {
+            if (member.getPlayer().isOnline()) {
+
+                member.getPlayer().getPlayer().spigot().sendMessage(message);
+            }
+        }
+
     }
 
     private void nationCreate(CommandSender sender, String name) {
@@ -505,6 +581,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        var nationClass = nation.getMemberClass(diplomacyPlayer);
+        boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
+        if (!canRenameNation) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
+            return;
+        }
+
         var oldName = nation.getName();
         if (oldName.equals(name)) {
             sender.sendMessage(ChatColor.DARK_RED + "The nation is already named " + name + ".");
@@ -519,13 +602,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         if (name.length() > 16) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
-            return;
-        }
-
-        var nationClass = nation.getMemberClass(diplomacyPlayer);
-        boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
-        if (!canRenameNation) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to rename the nation.");
             return;
         }
 

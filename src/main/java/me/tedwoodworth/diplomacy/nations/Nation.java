@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
-import me.tedwoodworth.diplomacy.commands.MapMaker;
 import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -342,7 +341,6 @@ public class Nation {
         var list = configSection.getMapList("Chunks");
         list.add(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
-        MapMaker.getInstance().paintChunk(diplomacyChunk);
         Bukkit.getPluginManager().callEvent(new NationAddChunkEvent(this, diplomacyChunk));
     }
 
@@ -351,7 +349,6 @@ public class Nation {
         var list = configSection.getMapList("Chunks");
         list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
-        MapMaker.getInstance().unpaintChunk(diplomacyChunk);
         Bukkit.getPluginManager().callEvent(new NationRemoveChunkEvent(this, chunk));
     }
 
@@ -480,6 +477,13 @@ public class Nation {
         var blue = configSection.getInt("Color.Blue");
 
         return new Color(red, green, blue);
+    }
+
+    public void setColor(int red, int green, int blue) {
+        configSection.set("Color.Red", red);
+        configSection.set("Color.Green", green);
+        configSection.set("Color.Blue", blue);
+        Bukkit.getPluginManager().callEvent(new NationColorEvent(this, new Color(red, green, blue)));
     }
 
     public void setIsOpen(boolean isOpen) {
