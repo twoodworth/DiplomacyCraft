@@ -2245,13 +2245,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
             if (Objects.equals(testNation, nation)) {
                 if (Objects.equals(testPlayer, player)) {
-                    if (amount >= 1) {
-                        testPlayer.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
-                    }
-                } else {
-                    if (amount >= 1) {
-                        sender.sendMessage(ChatColor.GREEN + sender.getName() + " has withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
-                    }
+                    testPlayer.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
                 }
             }
         }

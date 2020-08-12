@@ -151,11 +151,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
 
         if (newSenderBalance < 0.0) {
-            if (senderBalance < 1.0) {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A40" + formatter.format(senderBalance) + ".");
-            } else {
-                sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(senderBalance) + ".");
-            }
+            sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(senderBalance) + ".");
             return;
         }
 
@@ -186,11 +182,7 @@ public class EconomyCommand implements CommandExecutor, TabCompleter {
 
         var inventory = ((Player) sender).getInventory();
         double amount = getDiamonds(inventory, false, false, false, ((Player) sender));
-        if (amount >= 1) {
-            sender.sendMessage(ChatColor.GREEN + "You currently have \u00A4" + formatter.format(amount) + " in your pockets.");
-        } else {
-            sender.sendMessage(ChatColor.GREEN + "You currently have \u00A40" + formatter.format(amount) + " in your pockets.");
-        }
+        sender.sendMessage(ChatColor.GREEN + "You currently have \u00A4" + formatter.format(amount) + " in your pockets.");
     }
 
     private double getDiamonds(Inventory inventory, boolean isShulkerBox, boolean isEnderChest, boolean checkedEnderchest, Player player) {
