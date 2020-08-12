@@ -3,6 +3,8 @@ package me.tedwoodworth.diplomacy.dynmap.area;
 
 import org.dynmap.markers.MarkerIcon;
 
+import java.awt.*;
+
 public class AreaStyle {
     private final String strokecolor;
     private final double strokeopacity;
@@ -46,11 +48,11 @@ public class AreaStyle {
         return homeicon;
     }
 
-    public AreaStyle() {
-        strokecolor = "#FF0000";
+    public AreaStyle(Color color) {
+        strokecolor = color.toString();
         strokeopacity = 0.8;
         strokeweight = 3;
-        fillcolor = "#FF0000";
+        fillcolor = color.toString();
         fillopacity = 0.35;
         homemarker = null;
         boost = false;

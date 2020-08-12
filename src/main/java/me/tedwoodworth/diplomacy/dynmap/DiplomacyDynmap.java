@@ -15,6 +15,7 @@ import org.dynmap.markers.Marker;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerSet;
 
+import java.awt.*;
 import java.util.*;
 
 public class DiplomacyDynmap {
@@ -32,7 +33,6 @@ public class DiplomacyDynmap {
     private MarkerAPI markerAPI;
     private boolean use3d;
     private String infoWindow;
-    private AreaStyle defstyle;
     private Map<String, AreaStyle> cusstyle;
     private Set<String> visible;
     private Set<String> hidden;
@@ -105,7 +105,7 @@ public class DiplomacyDynmap {
                 "<br /><span style=\"font-weight:bold;\">Members: %members%</span></div>";
         displayNationName = true;
 
-        defstyle = new AreaStyle();
+        var color = Color.decode("#FF0000");
         cusstyle = new HashMap<>();
 
         playersets = false;
@@ -309,6 +309,7 @@ public class DiplomacyDynmap {
                     areaMarker.setDescription(desc); /* Set popup */
 
                     /* Set line and fill properties */
+                    var defstyle = new AreaStyle(nation.getColor());
                     addStyle(cusstyle, defstyle, nationName, areaMarker);
 
                     /* Set the nation name */
@@ -324,14 +325,23 @@ public class DiplomacyDynmap {
         }
     }
 
+    public static int decodeColor(String strColor) {
+        var red = Integer.parseInt(strColor.substring(strColor.indexOf('=') + 1, strColor.indexOf(',')));
+        strColor = strColor.substring(strColor.indexOf('g'));
+        var green = Integer.parseInt(strColor.substring(strColor.indexOf('=') + 1, strColor.indexOf(',')));
+        strColor = strColor.substring(strColor.indexOf('b'));
+        var blue = Integer.parseInt(strColor.substring(strColor.indexOf('=') + 1, strColor.indexOf(']')));
+
+        return (red << 16) | (green << 8) | blue;
+    }
+
     public static void addStyle(final Map<String, AreaStyle> cusstyle, final AreaStyle defstyle, final String resid, final AreaMarker areaMarker) {
         AreaStyle as = cusstyle.get(resid);
         if (as == null) {
             as = defstyle;
         }
-
-        int sc = 0xFF0000;
-        int fc = 0xFF0000;
+        int fc = decodeColor(as.getFillcolor());
+        int sc = decodeColor(as.getStrokecolor());
         try {
             sc = Integer.parseInt(as.getStrokecolor().substring(1), 16);
             fc = Integer.parseInt(as.getFillcolor().substring(1), 16);
