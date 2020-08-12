@@ -51,4 +51,24 @@ commands:
     aliases: []
     usage: "Usage: /<command> ..."
 
+  gc:
+    description: Enter global Chat.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  ac:
+    description: Enter ally Chat.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  nc:
+    description: Enter nation Chat.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  lc:
+    description: Enter local Chat.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

@@ -1,5 +1,7 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.chat.ChatCommand;
+import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
@@ -28,8 +30,13 @@ public class Diplomacy extends JavaPlugin {
         EconomyCommand.register(getCommand("withdraw"));
         MenuCommand.register(getCommand("menu"));
         ClassCommand.register(getCommand("class"));
+        ChatCommand.register(getCommand("nc"));
+        ChatCommand.register(getCommand("gc"));
+        ChatCommand.register(getCommand("lc"));
+        ChatCommand.register(getCommand("ac"));
         OurServerListener.getInstance().registerEvents();
         Nations.getInstance().registerEvents();
+        ChatManager.getInstance().registerEvents();
         DiplomacyPlayers.getInstance().registerEvents();
         ContestManager.getInstance().registerEvents();
         DiplomacyGroups.getInstance().registerEvents();
