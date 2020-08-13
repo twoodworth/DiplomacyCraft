@@ -31,6 +31,11 @@ public class ScoreboardManager {
         wildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Wilderness" + ChatColor.GRAY + "] ");
         wildernessTeam.setColor(ChatColor.GRAY);
 
+        scoreboard.registerNewTeam("Wilderness-O");
+        var outlawWildernessTeam = scoreboard.getTeam("Wilderness-O");
+        outlawWildernessTeam.setDisplayName("Wilderness-O");
+        outlawWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Wilderness" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] ");
+
         for (var testNation : Nations.getInstance().getNations()) {
             scoreboard.registerNewTeam(String.valueOf(testNation.getNationID()));
             var team = scoreboard.getTeam(String.valueOf(testNation.getNationID()));
@@ -54,15 +59,28 @@ public class ScoreboardManager {
         }
 
         for (var testPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
+
+            var testOnlinePlayer = testPlayer.getPlayer().getPlayer();
+            if (testOnlinePlayer == null) {
+                continue;
+            }
             var testNation = Nations.getInstance().get(testPlayer);
 
             if (testNation == null) {
-                wildernessTeam.addEntry(testPlayer.getPlayer().getName());
+                if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                    outlawWildernessTeam.addEntry(testOnlinePlayer.getName());
+                } else {
+                    wildernessTeam.addEntry(testOnlinePlayer.getName());
+                }
             } else if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
-                scoreboard.getTeam(testNation.getNationID() + "-O").addEntry(testPlayer.getPlayer().getName());
+                scoreboard.getTeam(testNation.getNationID() + "-O").addEntry(testOnlinePlayer.getName());
             } else {
-                scoreboard.getTeam(String.valueOf(testNation.getNationID())).addEntry(testPlayer.getPlayer().getName());
+                scoreboard.getTeam(String.valueOf(testNation.getNationID())).addEntry(testOnlinePlayer.getName());
             }
+        }
+        {
+
+
         }//TODO fix bug where everyone sees the same team
 
         player.setScoreboard(scoreboard);
