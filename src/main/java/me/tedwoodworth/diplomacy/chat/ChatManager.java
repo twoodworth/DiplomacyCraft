@@ -99,9 +99,9 @@ public class ChatManager {
                             var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
                             var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
                             if (Objects.equals(nation, testNation) && prefix != null) {
-                                recipient.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD + prefix + " " + player.getName() + " " + ChatColor.GRAY + event.getMessage());
+                                recipient.sendMessage("" + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                             } else {
-                                recipient.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " " + ChatColor.GRAY + event.getMessage());
+                                recipient.sendMessage("" + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                             }
                         }
                     }
@@ -115,9 +115,9 @@ public class ChatManager {
                         }
                         var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
                         if (Objects.equals(nation, testNation) && prefix != null) {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + prefix + " " + player.getName() + " " + ChatColor.AQUA + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.AQUA + event.getMessage());
                         } else {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " " + ChatColor.AQUA + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.AQUA + event.getMessage());
                         }
                     }
                     event.setCancelled(true);
@@ -130,9 +130,9 @@ public class ChatManager {
                         }
                         var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
                         if (prefix != null) {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.GREEN + ChatColor.BOLD + "N" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + prefix + " " + player.getName() + " " + ChatColor.GREEN + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.GREEN + ChatColor.BOLD + "N" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.GREEN + event.getMessage());
                         } else {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.GREEN + ChatColor.BOLD + "N" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " " + ChatColor.GREEN + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.GREEN + ChatColor.BOLD + "N" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.GREEN + event.getMessage());
                         }
                     }
                     event.setCancelled(true);
@@ -148,12 +148,12 @@ public class ChatManager {
                         if (nation != null) {
                             var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
                             if (prefix != null && Objects.equals(nation, testNation)) {
-                                recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.WHITE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + prefix + " " + player.getName() + " " + ChatColor.WHITE + ChatColor.BOLD + event.getMessage());
+                                recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
                             } else {
-                                recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.WHITE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " " + ChatColor.WHITE + ChatColor.BOLD + event.getMessage());
+                                recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
                             }
                         } else {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.WHITE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " " + ChatColor.WHITE + ChatColor.BOLD + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
                         }
                     }
                     event.setCancelled(true);

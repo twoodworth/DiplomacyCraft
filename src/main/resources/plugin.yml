@@ -106,4 +106,14 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  tag:
+    description: Send combat log tag message.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  untag:
+    description: Send combat log untag message.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

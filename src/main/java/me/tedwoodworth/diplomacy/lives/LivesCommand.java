@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class LivesCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
@@ -98,6 +99,11 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         var player = (Player) sender;
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var lives = diplomacyPlayer.getLives();
+
+        if (Objects.equals(diplomacyPlayer, recipient)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot give yourself lives.");
+            return;
+        }
 
         if (lives - amount == 0) {
             sender.sendMessage(ChatColor.DARK_RED + "You cannot give another player your last life.");
