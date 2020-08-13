@@ -15,6 +15,7 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String livesUsage = "/lives";
     private static final String giveLivesUsage = "/giveLives <player> <amount>";
+    private static final String addLifeUsage = "/addLife <player>";
 
     public static void register(PluginCommand pluginCommand) {
         var livesCommand = new LivesCommand();
@@ -37,6 +38,12 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + giveLivesUsage);
             }
+        } else if (command.getName().equalsIgnoreCase("addLife")) {
+            if (args.length == 1) {
+                addLife(sender, args[0]);
+            }
+        } else {
+            sender.sendMessage(incorrectUsage + addLifeUsage);
         }
         return true;
     }
@@ -49,8 +56,34 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
                 players.add(player.getPlayer().getName());
             }
             return players;
+        } else if (command.getName().equalsIgnoreCase("addLife") && args.length == 1) {
+            List<String> players = new ArrayList<>();
+            for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
+                players.add(player.getPlayer().getName());
+            }
+            return players;
         }
         return null;
+    }
+
+    private void addLife(CommandSender sender, String strPlayer) {
+        if ((sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "Players cannot use this command.");
+            return;
+        }
+
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(strPlayer);
+        if (diplomacyPlayer == null) {
+            sender.sendMessage("Player not found");
+            return;
+        }
+
+        diplomacyPlayer.setLives(diplomacyPlayer.getLives() + 1);
+
+        var player = diplomacyPlayer.getPlayer();
+        if (player.isOnline()) {
+            player.getPlayer().sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
+        }
     }
 
     private void lives(CommandSender sender) {

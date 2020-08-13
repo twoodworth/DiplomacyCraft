@@ -39,6 +39,7 @@ public class Diplomacy extends JavaPlugin {
         ChatCommand.register(getCommand("ac"));
         LivesCommand.register(getCommand("lives"));
         LivesCommand.register(getCommand("giveLives"));
+        LivesCommand.register(getCommand("addLife"));
         TeleportCommand.register(getCommand("ott"));
         TeleportCommand.register(getCommand("ottConfirm"));
         TeleportCommand.register(getCommand("ottCancel"));
