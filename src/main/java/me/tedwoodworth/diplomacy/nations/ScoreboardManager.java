@@ -45,7 +45,12 @@ public class ScoreboardManager {
                     color = ChatColor.GREEN;
                 }
             }
+
+            scoreboard.registerNewTeam(testNation.getNationID() + "-O");
+            var outlawTeam = scoreboard.getTeam(testNation.getNationID() + "-O");
+            outlawTeam.setDisplayName(testNation.getNationID() + "-O");
             team.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] ");
+            outlawTeam.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] ");
         }
 
         for (var testPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
@@ -53,6 +58,8 @@ public class ScoreboardManager {
 
             if (testNation == null) {
                 wildernessTeam.addEntry(testPlayer.getPlayer().getName());
+            } else if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                scoreboard.getTeam(testNation.getNationID() + "-O").addEntry(testPlayer.getPlayer().getName());
             } else {
                 scoreboard.getTeam(String.valueOf(testNation.getNationID())).addEntry(testPlayer.getPlayer().getName());
             }

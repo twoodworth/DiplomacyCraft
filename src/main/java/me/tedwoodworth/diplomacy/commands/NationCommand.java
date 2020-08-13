@@ -933,7 +933,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         if (Objects.equals(senderNation, receiverNation)) {
-            sender.sendMessage(ChatColor.DARK_RED + "Your nation cannot become enemies with itself.");
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation cannot become allies with itself.");
             return;
         }
 
@@ -2052,6 +2052,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.addOutlaw(outlaw);
+        ScoreboardManager.getInstance().updateScoreboards();
 
         if (outlaw.isOnline()) {
             outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You have been outlawed by " + color + nation.getName());
@@ -2117,6 +2118,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.removeOutlaw(outlaw);
+        ScoreboardManager.getInstance().updateScoreboards();
 
         if (outlaw.isOnline()) {
             outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You are no longer outlawed by " + color + nation.getName());

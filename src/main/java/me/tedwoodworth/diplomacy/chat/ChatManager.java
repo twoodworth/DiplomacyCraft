@@ -98,7 +98,7 @@ public class ChatManager {
                         if (nation != null) {
                             var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
                             var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
-                            if (Objects.equals(nation, testNation) && prefix != null) {
+                            if ((Objects.equals(nation, testNation) || (testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
                                 recipient.sendMessage("" + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                             } else {
                                 recipient.sendMessage("" + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
@@ -114,10 +114,10 @@ public class ChatManager {
                             continue;
                         }
                         var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
-                        if (Objects.equals(nation, testNation) && prefix != null) {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.AQUA + event.getMessage());
+                        if ((Objects.equals(nation, testNation) || (nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.DARK_GREEN + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.DARK_GREEN + event.getMessage());
                         } else {
-                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.AQUA + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.AQUA + event.getMessage());
+                            recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.DARK_GREEN + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.DARK_GREEN + event.getMessage());
                         }
                     }
                     event.setCancelled(true);
@@ -141,13 +141,13 @@ public class ChatManager {
                     var location = player.getLocation();
                     for (var recipient : event.getRecipients()) {
                         var testLocation = recipient.getLocation();
-                        if (location.distanceSquared(testLocation) > 62500) {
+                        if (!(Objects.equals(recipient.getWorld().getName(), player.getWorld().getName())) || location.distanceSquared(testLocation) > 62500) {
                             continue;
                         }
                         var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
                         if (nation != null) {
                             var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
-                            if (prefix != null && Objects.equals(nation, testNation)) {
+                            if ((Objects.equals(nation, testNation) || (testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
                                 recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
                             } else {
                                 recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
