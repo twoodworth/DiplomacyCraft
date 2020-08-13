@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -340,6 +341,8 @@ public class SpawnManager {
                     || (getNetherBiomes().contains(player.getLocation().getBlock().getBiome()) && !Objects.equals(player.getWorld(), player.getBedSpawnLocation().getWorld()))
                     || (getNetherBiomes().contains(player.getBedSpawnLocation().getBlock().getBiome()) && !getNetherBiomes().contains(player.getLocation().getBlock().getBiome()))) {
                 event.setRespawnLocation(getRespawnLocation(player.getLocation()));
+            } else {
+                event.setRespawnLocation(player.getBedSpawnLocation());
             }
         }
 
@@ -349,6 +352,12 @@ public class SpawnManager {
             if (!player.hasPlayedBefore()) {
                 player.teleport(getSpawnLocation());
             }
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private void onPlayerBedEnter(PlayerBedEnterEvent event) {
+            event.getPlayer().setBedSpawnLocation(event.getBed().getLocation());
+            event.setCancelled(true);
         }
     }
 }
