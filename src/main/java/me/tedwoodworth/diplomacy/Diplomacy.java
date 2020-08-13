@@ -46,6 +46,8 @@ public class Diplomacy extends JavaPlugin {
         TeleportCommand.register(getCommand("ottDecline"));
         CombatLogCommand.register(getCommand("tag"));
         CombatLogCommand.register(getCommand("untag"));
+        MapCommand.register(getCommand("map"));
+        DiplomacyConfig.getInstance().registerEvents();
         SpawnManager.getInstance().registerEvents();
         LivesManager.getInstance().registerEvents();
         OurServerListener.getInstance().registerEvents();

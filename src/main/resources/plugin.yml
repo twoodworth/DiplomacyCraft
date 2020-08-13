@@ -116,4 +116,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  map:
+    description: Get a link to the map.
+    aliases: []
+    usage: "Usage: /<command>"
+
 
