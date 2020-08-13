@@ -81,6 +81,14 @@ public class DiplomacyPlayer {
         configSection.set("Lives", lives);
     }
 
+    public boolean getCanTeleport() {
+        return configSection.getBoolean("CanTeleport");
+    }
+
+    public void setCanTeleport(boolean canTeleport) {
+        configSection.set("CanTeleport", canTeleport);
+    }
+
     public boolean getJoinedToday() {
         return configSection.getBoolean("JoinedToday");
     }

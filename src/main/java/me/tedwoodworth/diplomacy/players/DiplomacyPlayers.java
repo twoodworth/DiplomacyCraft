@@ -54,7 +54,8 @@ public class DiplomacyPlayers {
                         "Groups", groups,
                         "GroupsLed", groupsLed,
                         "Lives", 20,
-                        "JoinedToday", true
+                        "JoinedToday", true,
+                        "CanTeleport", true
                 );
                 config.createSection(uuid.toString(), playersMap);
             }

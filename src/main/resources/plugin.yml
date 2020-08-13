@@ -81,4 +81,29 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  ott:
+    description: Teleport to another player.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  ottConfirm:
+    description: Confirm using ott.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  ottCancel:
+    description: Cancel using ott.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  ottAccept:
+    description: Accept an ott request.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  ottDecline:
+    description: Decline an ott request.
+    aliases: []
+    usage: "Usage: /<command>"
+
 
