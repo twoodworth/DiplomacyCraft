@@ -2,10 +2,7 @@ package me.tedwoodworth.diplomacy.spawning;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -37,9 +34,6 @@ public class SpawnManager {
 
     public Chunk getSpawnChunk() {
         var chunks = getSpawnChunks();
-        if (chunks.size() == 0) {
-            return Bukkit.getWorld("world").getSpawnLocation().getChunk();
-        }
         var index = (int) (Math.random() * chunks.size());
         return chunks.get(index);
     }
@@ -163,6 +157,12 @@ public class SpawnManager {
     }
 
     public Location getSpawnLocation() {
+
+        var chunks = getSpawnChunks();
+        if (chunks.size() == 0) {
+            return Bukkit.getWorld("world").getSpawnLocation();
+        }
+
         var x = Math.random() * 16;
         var z = Math.random() * 16;
         var chunk = getSpawnChunk();
@@ -345,6 +345,9 @@ public class SpawnManager {
             var player = event.getPlayer();
             if (!player.hasPlayedBefore()) {
                 player.teleport(getSpawnLocation());
+                for (var testPlayer : Bukkit.getOnlinePlayers()) {
+                    testPlayer.sendMessage(ChatColor.AQUA + player.getName() + " has joined for the first time.");
+                }
             }
         }
     }
