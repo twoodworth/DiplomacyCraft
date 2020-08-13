@@ -2153,7 +2153,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
         if (newNationBalance > 10000000000000.0) {
-            sender.sendMessage("Your nation's balance cannot exceed \u00A410,000,000,000,000.00.");
+            sender.sendMessage(ChatColor.DARK_RED + "Your nation's balance cannot exceed \u00A410,000,000,000,000.00.");
+            return;
+        }
+
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be inside your nation's borders to do this.");
             return;
         }
 
@@ -2233,6 +2240,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         if (newPlayerBalance > 10000000000000.0) {
             sender.sendMessage(ChatColor.DARK_RED + "Your balance cannot exceed \u00A410,000,000,000,000.00.");
+            return;
+        }
+
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be inside your nation's borders to do this.");
             return;
         }
 

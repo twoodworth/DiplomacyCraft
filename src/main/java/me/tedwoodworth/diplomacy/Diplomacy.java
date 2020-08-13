@@ -11,6 +11,7 @@ import me.tedwoodworth.diplomacy.lives.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,6 +39,7 @@ public class Diplomacy extends JavaPlugin {
         ChatCommand.register(getCommand("ac"));
         LivesCommand.register(getCommand("lives"));
         LivesCommand.register(getCommand("giveLives"));
+        SpawnManager.getInstance().registerEvents();
         LivesManager.getInstance().registerEvents();
         OurServerListener.getInstance().registerEvents();
         Nations.getInstance().registerEvents();
