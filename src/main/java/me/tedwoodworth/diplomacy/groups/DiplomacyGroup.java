@@ -35,7 +35,7 @@ public class DiplomacyGroup {
 
     public static ConfigurationSection initializeGroup(ConfigurationSection groupSection, DiplomacyPlayer founder, Nation nation, String name) {
         var random = (int) (Math.random() * 16);
-        var banner = Material.WHITE_BANNER;
+        Material banner;
         switch (random) {
             case 0 -> banner = Material.ORANGE_BANNER;
             case 1 -> banner = Material.MAGENTA_BANNER;
@@ -52,6 +52,7 @@ public class DiplomacyGroup {
             case 12 -> banner = Material.GREEN_BANNER;
             case 13 -> banner = Material.RED_BANNER;
             case 14 -> banner = Material.BLACK_BANNER;
+            default -> banner = Material.WHITE_BANNER;
         }
 
         var itemStack = new ItemStack(banner, 1);

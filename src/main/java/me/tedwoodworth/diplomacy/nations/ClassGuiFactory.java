@@ -1085,8 +1085,8 @@ public class ClassGuiFactory {
 
         var title = "" + color + ChatColor.BOLD + nation.getName() + " " + ChatColor.DARK_GRAY + ChatColor.BOLD + nationClass.getName();
         String[] guiSetup = {
-                "  ABCD  E",
-                "abcdefghF",
+                "F ABCD  E",
+                "abcdefghP",
                 "ijklmnopq",
                 "rstuvwxyz",
                 "123456789",
@@ -1363,6 +1363,32 @@ public class ClassGuiFactory {
                 " ",
                 ChatColor.BLUE + "If false: ",
                 ChatColor.GRAY + "Player cannot use the command \"/group disband\"."
+        ));
+
+        item = new ItemStack(Material.REDSTONE_BLOCK);
+        color = ChatColor.RED;
+        var permissionKeyP = "CanUnlock";
+        permission = permissions.get(permissionKeyP);
+        if (permission) {
+            item = new ItemStack(Material.EMERALD_BLOCK);
+            color = ChatColor.GREEN;
+        }
+        gui.addElement(new StaticGuiElement('P',
+                item,
+                click -> {
+                    nation.toggleClassPermission(nationClass, player, permissionKeyP);
+                    var nGui = createChangeClassSettings(nation, player, nationClass);
+                    nGui.show(player);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + permissionKeyP,
+                ChatColor.BLUE + "Currently: " + color + permission,
+                " ",
+                ChatColor.BLUE + "If true: ",
+                ChatColor.GRAY + "Player can use the command \"/plot unlock\".",
+                " ",
+                ChatColor.BLUE + "If false: ",
+                ChatColor.GRAY + "Player cannot use the command \"/plot unlock\"."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2373,8 +2399,8 @@ public class ClassGuiFactory {
 
         var title = "" + color + ChatColor.BOLD + nation.getName() + " " + ChatColor.DARK_GRAY + ChatColor.BOLD + nationClass.getName();
         String[] guiSetup = {
-                "  ABCD  E",
-                "abcdefghF",
+                "F ABCD  E",
+                "abcdefghP",
                 "ijklmnopq",
                 "rstuvwxyz",
                 "123456789",
@@ -2610,6 +2636,28 @@ public class ClassGuiFactory {
                 ChatColor.BLUE + "If false: ",
                 ChatColor.GRAY + "Player cannot use the command \"/group disband\"."
         ));
+
+        item = new ItemStack(Material.REDSTONE_BLOCK);
+        color = ChatColor.RED;
+        var permissionKeyP = "CanUnlock";
+        permission = permissions.get(permissionKeyP);
+        if (permission) {
+            item = new ItemStack(Material.EMERALD_BLOCK);
+            color = ChatColor.GREEN;
+        }
+        gui.addElement(new StaticGuiElement('P',
+                item,
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + permissionKeyP,
+                ChatColor.BLUE + "Currently: " + color + permission,
+                " ",
+                ChatColor.BLUE + "If true: ",
+                ChatColor.GRAY + "Player can use the command \"/plot unlock\".",
+                " ",
+                ChatColor.BLUE + "If false: ",
+                ChatColor.GRAY + "Player cannot use the command \"/plot unlock\"."
+        ));
+
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
         color = ChatColor.RED;
@@ -3436,8 +3484,8 @@ public class ClassGuiFactory {
 
         var title = "" + color + ChatColor.BOLD + otherPlayer.getName() + " " + ChatColor.DARK_GRAY + ChatColor.BOLD + "Class";
         String[] guiSetup = {
-                "  ABCD  E",
-                "abcdefghF",
+                "F ABCD  E",
+                "abcdefghP",
                 "ijklmnopq",
                 "rstuvwxyz",
                 "123456789",
@@ -3679,6 +3727,27 @@ public class ClassGuiFactory {
                 " ",
                 ChatColor.BLUE + "If false: ",
                 ChatColor.GRAY + "Player cannot use the command \"/group disband\"."
+        ));
+
+        item = new ItemStack(Material.REDSTONE_BLOCK);
+        color = ChatColor.RED;
+        var permissionKeyP = "CanUnlock";
+        permission = permissions.get(permissionKeyP);
+        if (permission) {
+            item = new ItemStack(Material.EMERALD_BLOCK);
+            color = ChatColor.GREEN;
+        }
+        gui.addElement(new StaticGuiElement('P',
+                item,
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + permissionKeyP,
+                ChatColor.BLUE + "Currently: " + color + permission,
+                " ",
+                ChatColor.BLUE + "If true: ",
+                ChatColor.GRAY + "Player can use the command \"/plot unlock\".",
+                " ",
+                ChatColor.BLUE + "If false: ",
+                ChatColor.GRAY + "Player cannot use the command \"/plot unlock\"."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);

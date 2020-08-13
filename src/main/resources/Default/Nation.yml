@@ -30,6 +30,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -79,6 +80,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -128,6 +130,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -177,6 +180,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -226,6 +230,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -275,6 +280,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -324,6 +330,7 @@ Classes:
       CanWithdraw: false
       CanChangeBanner: false
       CanToggleBorder: false
+      CanUnlock: false
       CanSetClassTo1: false
       CanSetClassTo2: false
       CanSetClassTo3: false
@@ -373,6 +380,7 @@ Classes:
       CanWithdraw: true
       CanChangeBanner: true
       CanToggleBorder: true
+      CanUnlock: true
       CanSetClassTo1: true
       CanSetClassTo2: true
       CanSetClassTo3: true
@@ -422,6 +430,7 @@ Classes:
       CanWithdraw: true
       CanChangeBanner: true
       CanToggleBorder: true
+      CanUnlock: true
       CanSetClassTo1: true
       CanSetClassTo2: true
       CanSetClassTo3: true

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.*;
 
 public class NationCommand implements CommandExecutor, TabCompleter {
-    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String nationUsage = "/nation";
     private static final String nationCreateUsage = "/nation create <name>";
     private static final String nationInfoUsage = "/nation info <nation>";
@@ -89,6 +89,24 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             nation(sender);
+        } else if (args[0].equalsIgnoreCase("1")) {
+            if (args.length == 1) {
+                nation(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + nationUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("2")) {
+            if (args.length == 1) {
+                nation2(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + nationUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("3")) {
+            if (args.length == 1) {
+                nation3(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + nationUsage);
+            }
         } else if (args[0].equalsIgnoreCase("create")) {
             if (args.length == 2) {
                 nationCreate(sender, args[1]);
@@ -432,23 +450,45 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage Nations:");
-        sender.sendMessage(ChatColor.AQUA + nationListUsage + ChatColor.GRAY + " Get a list of all nations");
-        sender.sendMessage(ChatColor.AQUA + nationInfoUsage + ChatColor.GRAY + " Get info about a nation");
-        sender.sendMessage(ChatColor.AQUA + nationCreateUsage + ChatColor.GRAY + " Create a nation");
-        sender.sendMessage(ChatColor.AQUA + nationRenameUsage + ChatColor.GRAY + " Rename a nation");
-        sender.sendMessage(ChatColor.AQUA + nationSurrenderUsage + ChatColor.GRAY + " Surrender your nation");
-        sender.sendMessage(ChatColor.AQUA + nationDisbandUsage + ChatColor.GRAY + " Disband your nation");
-        sender.sendMessage(ChatColor.AQUA + nationInviteUsage + ChatColor.GRAY + " Invite a player to your nation");
-        sender.sendMessage(ChatColor.AQUA + nationJoinUsage + ChatColor.GRAY + " Join a nation");
-        sender.sendMessage(ChatColor.AQUA + nationKickUsage + ChatColor.GRAY + " Kick a player from your nation");
-        sender.sendMessage(ChatColor.AQUA + nationLeaveUsage + ChatColor.GRAY + " Leave your nation");
-        sender.sendMessage(ChatColor.AQUA + nationDepositWithdrawUsage + ChatColor.GRAY + " Deposit/withdraw from your nation's balance");
-        sender.sendMessage(ChatColor.AQUA + nationRelationshipUsage + ChatColor.GRAY + " Become allies/neutral/enemies with another nation");
-        sender.sendMessage(ChatColor.AQUA + nationBorderUsage + ChatColor.GRAY + " Open/close your nation's borders");
-        sender.sendMessage(ChatColor.AQUA + nationBannerUsage + ChatColor.GRAY + " Set your nation's banner");
-        sender.sendMessage(ChatColor.AQUA + nationOutlawUsage + ChatColor.GRAY + " Add/remove outlaws");
-        sender.sendMessage(ChatColor.AQUA + nationColorUsage + ChatColor.GRAY + " Set your nation's map color");
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/nation list" + ChatColor.WHITE + " Get a list of all nations");
+        sender.sendMessage(ChatColor.GOLD + "/nation info" + ChatColor.WHITE + " Get info about a nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation create" + ChatColor.WHITE + " Create a nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation rename" + ChatColor.WHITE + " Rename a nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation surrender" + ChatColor.WHITE + " Surrender your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation disband" + ChatColor.WHITE + " Disband your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation invite" + ChatColor.WHITE + " Invite a player to your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation join" + ChatColor.WHITE + " Join a nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation kick" + ChatColor.WHITE + " Kick a player from your nation");
+        sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 2 " + ChatColor.GOLD + "to read the next page.");
+    }
+
+    private void nation2(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "2" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/nation leave" + ChatColor.WHITE + " Leave your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation deposit" + ChatColor.WHITE + " Deposit into your nation's balance");
+        sender.sendMessage(ChatColor.GOLD + "/nation withdraw" + ChatColor.WHITE + " Withdraw from your nation's balance");
+        sender.sendMessage(ChatColor.GOLD + "/nation ally" + ChatColor.WHITE + " Become allies with another nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation neutral" + ChatColor.WHITE + " Become neutral with another nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation enemy" + ChatColor.WHITE + " Become enemies with another nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation open" + ChatColor.WHITE + " Open your nation's borders");
+        sender.sendMessage(ChatColor.GOLD + "/nation close" + ChatColor.WHITE + " Close your nation's borders");
+        sender.sendMessage(ChatColor.GOLD + "/nation banner" + ChatColor.WHITE + " Set your nation's banner");
+        sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 3 " + ChatColor.GOLD + "to read the next page.");
+    }
+
+    private void nation3(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "3" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/nation outlaw" + ChatColor.WHITE + " Add/remove outlaws");
+        sender.sendMessage(ChatColor.GOLD + "/nation color" + ChatColor.WHITE + " Set your nation's map color");
     }
 
     private void nationInfo(CommandSender sender, String strNation) {
@@ -787,7 +827,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
             var testNation = testDiplomacyChunk.getNation();
             if (Objects.equals(testNation, nation)) {
-                testPlayer.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
+                testPlayer.sendTitle(ChatColor.WHITE + "Wilderness", null, 5, 40, 10);
             }
         }
 

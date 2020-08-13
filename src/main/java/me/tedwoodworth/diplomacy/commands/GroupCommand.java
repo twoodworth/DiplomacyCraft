@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class GroupCommand implements CommandExecutor, TabCompleter {
-    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String groupCreateUsage = "/group create <name>";
     private static final String groupInfoUsage = "/group info <group>";
     private static final String groupRenameUsage = "/group rename <group> <name>";
@@ -50,6 +50,18 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             group(sender);
+        } else if (args[0].equalsIgnoreCase("1")) {
+            if (args.length == 1) {
+                group(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + groupUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("2")) {
+            if (args.length == 1) {
+                group2(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + groupUsage);
+            }
         } else if (args[0].equalsIgnoreCase("create")) {
             if (args.length == 2) {
                 groupCreate(sender, args[1]);
@@ -331,21 +343,32 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage Groups:");
-        sender.sendMessage(ChatColor.AQUA + groupListUsage + ChatColor.GRAY + " View all groups");
-        sender.sendMessage(ChatColor.AQUA + groupInfoUsage + ChatColor.GRAY + " Get info about a group");
-        sender.sendMessage(ChatColor.AQUA + groupCreateUsage + ChatColor.GRAY + " Create a group");
-        sender.sendMessage(ChatColor.AQUA + groupRenameUsage + ChatColor.GRAY + " Rename a group");
-        sender.sendMessage(ChatColor.AQUA + groupAddUsage + ChatColor.GRAY + " Add a player to a group");
-        sender.sendMessage(ChatColor.AQUA + groupKickUsage + ChatColor.GRAY + " Kick a player from a group");
-        sender.sendMessage(ChatColor.AQUA + groupLeaveUsage + ChatColor.GRAY + " Leave a group");
-        sender.sendMessage(ChatColor.AQUA + groupClaimUsage + ChatColor.GRAY + " Claim a plot for a group");
-        sender.sendMessage(ChatColor.AQUA + groupUnclaimUsage + ChatColor.GRAY + " Unclaim a plot for a group");
-        sender.sendMessage(ChatColor.AQUA + groupSurrenderUsage + ChatColor.GRAY + " Surrender a group");
-        sender.sendMessage(ChatColor.AQUA + groupDisbandUsage + ChatColor.GRAY + " Disband a group");
-        sender.sendMessage(ChatColor.AQUA + groupBannerUsage + ChatColor.GRAY + " Set a group's banner");
-        sender.sendMessage(ChatColor.AQUA + groupPromoteUsage + ChatColor.GRAY + " Promote a member to leader");
-        sender.sendMessage(ChatColor.AQUA + groupDemoteUsage + ChatColor.GRAY + " Demote a member from leader");
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Groups " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "2" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/group list" + ChatColor.WHITE + " View all groups");
+        sender.sendMessage(ChatColor.GOLD + "/group info" + ChatColor.WHITE + " Get info about a group");
+        sender.sendMessage(ChatColor.GOLD + "/group create" + ChatColor.WHITE + " Create a group");
+        sender.sendMessage(ChatColor.GOLD + "/group rename" + ChatColor.WHITE + " Rename a group");
+        sender.sendMessage(ChatColor.GOLD + "/group add" + ChatColor.WHITE + " Add a player to a group");
+        sender.sendMessage(ChatColor.GOLD + "/group kick" + ChatColor.WHITE + " Kick a player from a group");
+        sender.sendMessage(ChatColor.GOLD + "/group leave" + ChatColor.WHITE + " Leave a group");
+        sender.sendMessage(ChatColor.GOLD + "/group claim" + ChatColor.WHITE + " Claim a plot for a group");
+        sender.sendMessage(ChatColor.GOLD + "/group unclaim" + ChatColor.WHITE + " Unclaim a plot for a group");
+        sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/group 2 " + ChatColor.GOLD + "to read the next page.");
+    }
+
+    private void group2(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Groups " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "2" + ChatColor.GOLD + "/" + ChatColor.RED + "2" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/group surrender" + ChatColor.WHITE + " Surrender a group");
+        sender.sendMessage(ChatColor.GOLD + "/group disband" + ChatColor.WHITE + " Disband a group");
+        sender.sendMessage(ChatColor.GOLD + "/group banner" + ChatColor.WHITE + " Set a group's banner");
+        sender.sendMessage(ChatColor.GOLD + "/group promote" + ChatColor.WHITE + " Promote a member to leader");
+        sender.sendMessage(ChatColor.GOLD + "/group demote" + ChatColor.WHITE + " Demote a member from leader");
+
     }
 
     private void groupInfo(CommandSender sender, String strGroup) {

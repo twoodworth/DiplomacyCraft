@@ -306,12 +306,13 @@ public class Contest {
         Random r = new Random();
 
         int rt = r.nextInt(4) + 1;
-        Type type = Type.STAR;
+        Type type;
         switch (rt) {
             case 1 -> type = Type.BALL;
             case 2 -> type = Type.BALL_LARGE;
             case 3 -> type = Type.BURST;
             case 4 -> type = Type.CREEPER;
+            default -> type = Type.STAR;
         }
 
         int red = r.nextInt(256);
@@ -328,7 +329,7 @@ public class Contest {
 
         fireworkMeta.addEffect(effect);
 
-        int rp = r.nextInt(2) + 1;
+        int rp = r.nextInt(1) + 2;
         fireworkMeta.setPower(rp);
 
         firework.setFireworkMeta(fireworkMeta);

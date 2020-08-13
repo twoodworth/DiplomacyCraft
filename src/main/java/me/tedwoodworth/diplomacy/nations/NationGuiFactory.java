@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.text.DecimalFormat;
@@ -38,9 +37,9 @@ public class NationGuiFactory {
 
         var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Menu";
         String[] guiSetup = {
+                "   abc   ",
                 "         ",
-                " abcdefg ",
-                "        E",
+                "   efg  E",
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
         gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
@@ -74,17 +73,6 @@ public class NationGuiFactory {
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
-        ));
-        var map = new ItemStack(Material.FILLED_MAP);
-        var mapMeta = (MapMeta) map.getItemMeta();
-        mapMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        map.setItemMeta(mapMeta);
-
-        gui.addElement(new StaticGuiElement('d',
-                map,
-                click -> true,//TODO add
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "World Dynmap",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View world dynmap"
         ));
 
         if (playerNation != null) {
@@ -173,9 +161,9 @@ public class NationGuiFactory {
 
         var title = "" + color + ChatColor.BOLD + otherPlayer.getName();
         String[] guiSetup = {
-                "        g",
-                " abcdef  ",
-                "        h"
+                "   bac  g",
+                "         ",
+                "   def  h"
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);

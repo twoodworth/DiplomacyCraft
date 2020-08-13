@@ -47,8 +47,8 @@ public class Nation {
 
         nationSection.createSection("Members", membersMap);
         nationSection.set("Founder", founder.getUniqueId().toString());
-        var random = (int) (Math.random() * 16);
-        var banner = Material.WHITE_BANNER;
+        var random = (int) (Math.random() * 17);
+        Material banner;
         switch (random) {
             case 0 -> banner = Material.ORANGE_BANNER;
             case 1 -> banner = Material.MAGENTA_BANNER;
@@ -65,6 +65,7 @@ public class Nation {
             case 12 -> banner = Material.GREEN_BANNER;
             case 13 -> banner = Material.RED_BANNER;
             case 14 -> banner = Material.BLACK_BANNER;
+            default -> banner = Material.WHITE_BANNER;
         }
 
         var itemStack = new ItemStack(banner, 1);

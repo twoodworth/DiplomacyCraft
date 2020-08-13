@@ -10,6 +10,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -20,13 +21,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
-    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String plotUsage = "/plot";
     private static final String plotContestUsage = "/plot contest";
     private static final String plotSurrenderUsage = "/plot surrender <nation>";
     private static final String plotAbandonUsage = "/plot abandon";
     private static final String plotGroupUsage = "/plot group";
-    private static final String plotClearUsage = "/plot clear";
+    private static final String plotUnlockUsage = "/plot unlock";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -64,11 +65,11 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + plotGroupUsage);
             }
-        } else if (args[0].equalsIgnoreCase("clear")) {
+        } else if (args[0].equalsIgnoreCase("unlock")) {
             if (args.length == 1) {
-                plotClear(sender);
+                plotUnlock(sender);
             } else {
-                sender.sendMessage(incorrectUsage + plotClearUsage);
+                sender.sendMessage(incorrectUsage + plotUnlockUsage);
             }
         } else {
             sender.sendMessage(incorrectUsage + plotUsage);
@@ -82,7 +83,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return null;
         } else {
             if (args.length == 1) {
-                return Arrays.asList("contest", "surrender", "group", "clear", "abandon");
+                return Arrays.asList("contest", "surrender", "group", "unlock", "abandon");
             } else if (args[0].equalsIgnoreCase("contest")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("surrender")) {
@@ -90,7 +91,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                 for (var nation : Nations.getInstance().getNations())
                     nations.add(nation.getName());
                 return nations;
-            } else if (args[0].equalsIgnoreCase("clear")) {
+            } else if (args[0].equalsIgnoreCase("unlock")) {
                 return null;
             } else {
                 return null;
@@ -99,13 +100,102 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
     }
 
     private void plot(CommandSender sender) {
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage plots:");
-        sender.sendMessage(ChatColor.AQUA + plotContestUsage + ChatColor.GRAY + " Contest a plot");
-        sender.sendMessage(ChatColor.AQUA + plotSurrenderUsage + ChatColor.GRAY + " Surrender a plot to another nation");
-        sender.sendMessage(ChatColor.AQUA + plotAbandonUsage + ChatColor.GRAY + " Abandon a plot");
-        sender.sendMessage(ChatColor.AQUA + plotGroupUsage + ChatColor.GRAY + " Get the group that controls a plot");
-        sender.sendMessage(ChatColor.AQUA + plotClearUsage + ChatColor.GRAY + " Remove [private] signs from a plot");
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Plots " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "1" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/plot contest" + ChatColor.WHITE + " Contest a plot");
+        sender.sendMessage(ChatColor.GOLD + "/plot surrender" + ChatColor.WHITE + " Surrender a plot to another nation");
+        sender.sendMessage(ChatColor.GOLD + "/plot abandon" + ChatColor.WHITE + " Abandon a plot");
+        sender.sendMessage(ChatColor.GOLD + "/plot group" + ChatColor.WHITE + " Get the group that controls a plot");
+        sender.sendMessage(ChatColor.GOLD + "/plot unlock" + ChatColor.WHITE + " Destroy all signs in a plot");
     }
+
+    private void plotUnlock(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+        var chunk = player.getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to unlock this plot.");
+            return;
+        }
+
+        var memberClass = nation.getMemberClass(diplomacyPlayer);
+        var permissions = memberClass.getPermissions();
+        var canUnlock = permissions.get("CanUnlock");
+
+        if (!canUnlock) {
+            sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to unlock this plot.");
+            return;
+        }
+
+        var chunkNation = diplomacyChunk.getNation();
+
+        if (!Objects.equals(nation, chunkNation)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to unlock this plot.");
+            return;
+        }
+
+        var unlocked = unlockChunk(chunk);
+
+        if (unlocked) {
+            sender.sendMessage(ChatColor.AQUA + "Plot unlocked.");
+        } else {
+            sender.sendMessage((ChatColor.RED + "This plot does not contain any signs."));
+        }
+
+    }
+
+    private boolean unlockChunk(Chunk chunk) {
+
+        var unlocked = false;
+
+        final var minX = chunk.getX() * 16;
+        final var minZ = chunk.getZ() * 16;
+        final var maxY = chunk.getWorld().getMaxHeight();
+
+        var signs = new ArrayList<Material>();
+        signs.add(Material.SPRUCE_SIGN);
+        signs.add(Material.SPRUCE_WALL_SIGN);
+        signs.add(Material.ACACIA_SIGN);
+        signs.add(Material.ACACIA_WALL_SIGN);
+        signs.add(Material.BIRCH_SIGN);
+        signs.add(Material.BIRCH_WALL_SIGN);
+        signs.add(Material.CRIMSON_SIGN);
+        signs.add(Material.CRIMSON_WALL_SIGN);
+        signs.add(Material.DARK_OAK_SIGN);
+        signs.add(Material.DARK_OAK_WALL_SIGN);
+        signs.add(Material.JUNGLE_SIGN);
+        signs.add(Material.JUNGLE_WALL_SIGN);
+        signs.add(Material.OAK_SIGN);
+        signs.add(Material.OAK_WALL_SIGN);
+        signs.add(Material.WARPED_SIGN);
+        signs.add(Material.WARPED_WALL_SIGN);
+
+        for (int x = 0; x <= 15; ++x) {
+            for (int y = 0; y <= 255; ++y) {
+                for (int z = 0; z <= 15; ++z) {
+                    var block = chunk.getBlock(x, y, z);
+                    if (signs.contains(block.getType())) {
+                        unlocked = true;
+                        var drops = block.getDrops();
+                        block.setType(Material.AIR);
+                        for (var drop : drops) {
+                            block.getWorld().dropItem(block.getLocation(), drop);
+                        }
+                    }
+                }
+            }
+        }
+        return unlocked;
+    }
+
 
     private void plotContest(CommandSender sender) {
         if (!(sender instanceof Player)) {

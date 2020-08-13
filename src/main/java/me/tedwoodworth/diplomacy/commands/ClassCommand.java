@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ClassCommand implements CommandExecutor, TabCompleter {
-    private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
+    private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String classUsage = "/class";
     private static final String classRenameUsage = "/class rename <class> <new name>";
     private static final String classPrefixUsage = "/class prefix <class> <new prefix>";
@@ -141,11 +141,11 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
-        sender.sendMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Manage Classes:");
-        sender.sendMessage(ChatColor.AQUA + classRenameUsage + ChatColor.GRAY + " Rename a class");
-        sender.sendMessage(ChatColor.AQUA + classPrefixUsage + ChatColor.GRAY + " Change a class's prefix");
-        sender.sendMessage(ChatColor.AQUA + classClearPrefixUsage + ChatColor.GRAY + " Remove a class's prefix");
-        sender.sendMessage(ChatColor.AQUA + classTaxUsage + ChatColor.GRAY + " Set a class's tax");
+        sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Classes " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "1" + ChatColor.YELLOW + " ----");
+        sender.sendMessage(ChatColor.GOLD + "/class rename" + ChatColor.WHITE + " Rename a class");
+        sender.sendMessage(ChatColor.GOLD + "/class prefix" + ChatColor.WHITE + " Change a class's prefix");
+        sender.sendMessage(ChatColor.GOLD + "/class clearPrefix" + ChatColor.WHITE + " Remove a class's prefix");
+        sender.sendMessage(ChatColor.GOLD + "/class tax" + ChatColor.WHITE + " Set a class's tax");
     }
 
     private void classRename(CommandSender sender, String className, String newClassName) {
