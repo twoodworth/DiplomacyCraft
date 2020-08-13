@@ -37,6 +37,9 @@ public class SpawnManager {
 
     public Chunk getSpawnChunk() {
         var chunks = getSpawnChunks();
+        if (chunks.size() == 0) {
+            return Bukkit.getWorld("world").getSpawnLocation().getChunk();
+        }
         var index = (int) (Math.random() * chunks.size());
         return chunks.get(index);
     }
@@ -330,7 +333,9 @@ public class SpawnManager {
         @EventHandler(priority = EventPriority.MONITOR)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             var player = (Player) event.getPlayer();
-            if (player.getBedSpawnLocation() == null) {
+            if (player.getBedSpawnLocation() == null
+                    || (getNetherBiomes().contains(player.getLocation().getBlock().getBiome()) && !Objects.equals(player.getWorld(), player.getBedSpawnLocation().getWorld()))
+                    || (getNetherBiomes().contains(player.getBedSpawnLocation().getBlock().getBiome()) && !getNetherBiomes().contains(player.getLocation().getBlock().getBiome()))) {
                 event.setRespawnLocation(getRespawnLocation(player.getLocation()));
             }
         }
