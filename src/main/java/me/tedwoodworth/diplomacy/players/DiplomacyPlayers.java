@@ -10,12 +10,21 @@ import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -166,7 +175,7 @@ public class DiplomacyPlayers {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        @EventHandler(ignoreCancelled = true)
         private void onBlockPlaceEvent(BlockPlaceEvent event) {
             var chunk = event.getBlock().getLocation().getChunk();
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
@@ -201,7 +210,194 @@ public class DiplomacyPlayers {
             event.setCancelled(true);
         }
 
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        @EventHandler(ignoreCancelled = true)
+        private void onPlayerInteract(PlayerInteractEvent event) {
+            if (event.getClickedBlock() == null) {
+                return;
+            }
+
+            var block = event.getClickedBlock();
+            var chunk = event.getClickedBlock().getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            if (group != null) {
+                if (group.getMembers().contains(diplomacyPlayer)) {
+                    return;
+                }
+            }
+
+
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (canBuildAnywhere) {
+                    return;
+                }
+            }
+
+            ArrayList<Material> badItems = new ArrayList<>();
+            badItems.add(Material.BUCKET);
+            badItems.add(Material.COD_BUCKET);
+            badItems.add(Material.LAVA_BUCKET);
+            badItems.add(Material.PUFFERFISH_BUCKET);
+            badItems.add(Material.SALMON_BUCKET);
+            badItems.add(Material.TROPICAL_FISH_BUCKET);
+            badItems.add(Material.WATER_BUCKET);
+            badItems.add(Material.FLINT_AND_STEEL);
+            badItems.add(Material.FIRE_CHARGE);
+            badItems.add(Material.END_CRYSTAL);
+            badItems.add(Material.PAINTING);
+            badItems.add(Material.ITEM_FRAME);
+
+
+            if (event.getItem() != null && badItems.contains(event.getItem().getType())) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                event.setCancelled(true);
+            } else if (block != null) {
+
+                ArrayList<Material> beds = new ArrayList<>();
+                beds.add(Material.BLACK_BED);
+                beds.add(Material.BLUE_BED);
+                beds.add(Material.BROWN_BED);
+                beds.add(Material.BLUE_BED);
+                beds.add(Material.CYAN_BED);
+                beds.add(Material.GRAY_BED);
+                beds.add(Material.GREEN_BED);
+                beds.add(Material.LIGHT_BLUE_BED);
+                beds.add(Material.LIME_BED);
+                beds.add(Material.MAGENTA_BED);
+                beds.add(Material.ORANGE_BED);
+                beds.add(Material.PINK_BED);
+                beds.add(Material.PURPLE_BED);
+                beds.add(Material.RED_BED);
+                beds.add(Material.WHITE_BED);
+                beds.add(Material.YELLOW_BED);
+
+                if (block.getType().equals(Material.RESPAWN_ANCHOR) && !block.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                    event.setCancelled(true);
+                } else if (block.getType().equals(Material.ITEM_FRAME)) {
+                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                    event.setCancelled(true);
+                } else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                    event.setCancelled(true);
+                }
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+
+            var entity = event.getRightClicked();
+            var chunk = entity.getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            if (group != null) {
+                if (group.getMembers().contains(diplomacyPlayer)) {
+                    return;
+                }
+            }
+
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (canBuildAnywhere) {
+                    return;
+                }
+            }
+
+            if (event.getRightClicked() instanceof ItemFrame || event.getRightClicked() instanceof Painting) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onEntityDamageByEntity(HangingBreakByEntityEvent event) {
+            // Make sure it's a player/player's projectile damaging an item frame/painting
+            if (!(event.getEntity() instanceof ItemFrame || event.getEntity() instanceof Painting)) {
+                return;
+            }
+            if (!(event.getRemover() instanceof Player || event.getRemover() instanceof Projectile)) {
+                return;
+            }
+            if (event.getRemover() instanceof Projectile) {
+                if (!(((Projectile) event.getRemover()).getShooter() instanceof Player)) {
+                    return;
+                }
+            }
+
+            // Make sure the player isn't allowed to build/destroy at the event location.
+            var entity = event.getEntity();
+            var chunk = entity.getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+
+            if (nation == null) {
+                return;
+            }
+
+            Player player;
+
+            if (event.getRemover() instanceof Player) {
+                player = (Player) event.getRemover();
+            } else {
+                player = (Player) ((Projectile) event.getRemover()).getShooter();
+            }
+
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+
+            if (group != null) {
+                if (group.getMembers().contains(diplomacyPlayer)) {
+                    return;
+                }
+            }
+
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (canBuildAnywhere) {
+                    return;
+                }
+            }
+
+            // Cancel the event
+            if (event.getRemover() instanceof Projectile) {
+                event.getRemover().remove();
+            }
+            player.sendMessage(ChatColor.RED + "You don't have permission to break that here.");
+            event.setCancelled(true);
+
+        }
+
+
+        @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
             var chunk = event.getBlock().getLocation().getChunk();
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
