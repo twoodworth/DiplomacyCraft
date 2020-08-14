@@ -37,7 +37,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationDeclineUsage = "/nation decline [ally/neutral] <nation>";
     private static final String nationNeutralUsage = "/nation neutral <nation>";
     private static final String nationEnemyUsage = "/nation enemy <nation>";
-    private static final String nationRelationshipUsage = "/nation (ally/neutral/enemy) <nation>";
     private static final String nationListUsage = "/nation list";
     private static final String nationInviteUsage = "/nation invite <player>";
     private static final String nationJoinUsage = "/nation join <nation>";
@@ -47,15 +46,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationKickUsage = "/nation kick <player>";
     private static final String nationOpenUsage = "/nation open";
     private static final String nationCloseUsage = "/nation close";
-    private static final String nationBorderUsage = "/nation (open/close)";
     private static final String nationBannerUsage = "/nation banner";
-    private static final String nationOutlawUsage = "/nation outlaw (add/remove) <player>";
     private static final String nationOutlawAddUsage = "/nation outlaw add <player>";
+    private static final String nationOutlawUsage = "/nation outlaw (add/remove) <player>";
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
-    private static final String nationOutlawListUsage = "/nation outlaw list <page>";
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
-    private static final String nationDepositWithdrawUsage = "/nation (deposit/withdraw) <amount>";
     private static final String nationColorUsage = "/nation color <red> <green> <blue>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
@@ -254,14 +250,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 } else {
                     sender.sendMessage(incorrectUsage + nationOutlawRemoveUsage);
                 }
-            } else if (args[1].equalsIgnoreCase("list")) {
-                if (args.length == 2) {
-                    nationOutlawList(sender, "1");
-                } else if (args.length == 3) {
-                    nationOutlawList(sender, args[2]);
-                }
             } else {
-                sender.sendMessage(incorrectUsage + nationOutlawListUsage);
+                sender.sendMessage(incorrectUsage + nationOutlawUsage);
             }
         } else if (args[0].equalsIgnoreCase("deposit")) {
             if (args.length == 2) {
@@ -413,7 +403,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 return null;
             } else if (args[0].equalsIgnoreCase("outlaw")) {
                 if (args.length == 2) {
-                    return Arrays.asList("add", "remove", "list");
+                    return Arrays.asList("add", "remove");
                 } else if (args[1].equalsIgnoreCase("add")) {
                     var players = new ArrayList<String>();
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
@@ -598,7 +588,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().createNation(name, leader);
-        ScoreboardManager.getInstance().updateScoreboards();
         sender.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.GREEN + name + ChatColor.AQUA + " has been founded.");
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (!Objects.equals(uuid, onlinePlayer.getUniqueId())) {
@@ -646,7 +635,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().rename(nation, name);
-        ScoreboardManager.getInstance().updateScoreboards();
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
@@ -794,7 +782,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
-        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 
@@ -896,7 +883,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
-        ScoreboardManager.getInstance().updateScoreboards();
 
 
     }
@@ -1631,7 +1617,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.addMember(diplomacyPlayer);
-        ScoreboardManager.getInstance().updateScoreboards();
         sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
 
 
@@ -1745,7 +1730,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
         nation.removeMember(diplomacyPlayer);
-        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 
@@ -1794,7 +1778,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
             sender.sendMessage(ChatColor.AQUA + "Since another player has joined your nation, it will not disband.");
             nation.removeMember(diplomacyPlayer);
-            ScoreboardManager.getInstance().updateScoreboards();
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
@@ -1875,7 +1858,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         Nations.getInstance().removeNation(nation);
-        ScoreboardManager.getInstance().updateScoreboards();
 
     }
 
@@ -1932,7 +1914,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         senderNation.removeMember(otherDiplomacyPlayer);
-        ScoreboardManager.getInstance().updateScoreboards();
     }
 
 
@@ -2052,7 +2033,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.addOutlaw(outlaw);
-        ScoreboardManager.getInstance().updateScoreboards();
 
         if (outlaw.isOnline()) {
             outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You have been outlawed by " + color + nation.getName());
@@ -2118,7 +2098,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.removeOutlaw(outlaw);
-        ScoreboardManager.getInstance().updateScoreboards();
 
         if (outlaw.isOnline()) {
             outlaw.getPlayer().sendMessage(ChatColor.AQUA + "You are no longer outlawed by " + color + nation.getName());

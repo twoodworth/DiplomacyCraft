@@ -56,6 +56,7 @@ public class Nations {
         nationConfig.set("NextNationID", nextNationID);
         var initializedNationSection = Nation.initializeNation(nationSection, founder, name);
         var nation = new Nation(nationID, initializedNationSection);
+        ScoreboardManager.getInstance().updateScoreboards();
         Bukkit.getPluginManager().callEvent(new NationCreateEvent(nation));
         nations.add(nation);
         return nation;
@@ -173,6 +174,7 @@ public class Nations {
         nationConfig.set("Nations." + nation.getNationID(), null);
         var nationID = nation.getNationID();
         nations.remove(nation);
+        ScoreboardManager.getInstance().updateScoreboards();
         Bukkit.getPluginManager().callEvent(new NationDisbandEvent(nationID));
     }
 

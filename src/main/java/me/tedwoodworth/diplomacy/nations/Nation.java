@@ -119,22 +119,24 @@ public class Nation {
     }
 
     public void addMember(DiplomacyPlayer diplomacyPlayer) {
-        Bukkit.getPluginManager().callEvent(new NationJoinEvent(diplomacyPlayer, this));
         var id = diplomacyPlayer.getUUID().toString();
         var memberConfig = configSection.getConfigurationSection("Members");
         Validate.notNull(memberConfig);
         memberConfig.set(id, "0");
         configSection.set("Members", memberConfig);
-
+        ScoreboardManager.getInstance().updateScoreboards();
+        Bukkit.getPluginManager().callEvent(new NationJoinEvent(diplomacyPlayer, this));
     }
 
     public void removeMember(DiplomacyPlayer diplomacyPlayer) {
-        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(diplomacyPlayer, this));
         var id = diplomacyPlayer.getUUID().toString();
         var memberConfig = configSection.getConfigurationSection("Members");
-        Validate.notNull(memberConfig);
-        memberConfig.set(id, null);
+        if (memberConfig != null) {
+            memberConfig.set(id, null);
+        }
         configSection.set("Members", memberConfig);
+        ScoreboardManager.getInstance().updateScoreboards();
+        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(diplomacyPlayer, this));
     }
 
     public List<NationClass> getClasses() {
@@ -311,6 +313,7 @@ public class Nation {
     public void setName(String name) {
         var oldName = this.getName();
         this.name = name;
+        ScoreboardManager.getInstance().updateScoreboards();
         Bukkit.getPluginManager().callEvent(new NationRenameEvent(this, oldName, this.getName()));
     }
 
@@ -377,6 +380,7 @@ public class Nation {
         var list = configSection.getStringList("Outlaws");
         list.add(uuid.toString());
         configSection.set("Outlaws", list);
+        ScoreboardManager.getInstance().updateScoreboards();
     }
 
     public String getFounder() {
@@ -396,6 +400,7 @@ public class Nation {
         var list = configSection.getStringList("Outlaws");
         list.remove(uuid.toString());
         configSection.set("Outlaws", list);
+        ScoreboardManager.getInstance().updateScoreboards();
     }
 
     @Nullable

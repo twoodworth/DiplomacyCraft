@@ -35,6 +35,7 @@ public class ScoreboardManager {
         var outlawWildernessTeam = scoreboard.getTeam("Wilderness-O");
         outlawWildernessTeam.setDisplayName("Wilderness-O");
         outlawWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Wilderness" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] ");
+        outlawWildernessTeam.setColor(ChatColor.GRAY);
 
         for (var testNation : Nations.getInstance().getNations()) {
             scoreboard.registerNewTeam(String.valueOf(testNation.getNationID()));

@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.lives;
+package me.tedwoodworth.diplomacy.lives_and_tax;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -44,12 +44,22 @@ public class LivesManager {
         Duration duration = Duration.between(now, nextRun);
         long initalDelay = duration.getSeconds();
 
+        // Gives lives.
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new GiveLive(),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
+
+
+        // Does taxes.
+        ScheduledExecutorService taxScheduler = Executors.newScheduledThreadPool(1);
+        taxScheduler.scheduleAtFixedRate(new Tax(),
+                initalDelay,
+                TimeUnit.DAYS.toSeconds(1),
+                TimeUnit.SECONDS);
     }
+
 
     public String getStringTimeUntil() {
         var now = ZonedDateTime.now(ZoneId.of("UTC"));

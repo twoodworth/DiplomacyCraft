@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.lives;
+package me.tedwoodworth.diplomacy.lives_and_tax;
 
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
