@@ -2,10 +2,7 @@ package me.tedwoodworth.diplomacy.spawning;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -356,7 +353,9 @@ public class SpawnManager {
 
         @EventHandler(priority = EventPriority.MONITOR)
         private void onPlayerBedEnter(PlayerBedEnterEvent event) {
-            event.getPlayer().setBedSpawnLocation(event.getBed().getLocation());
+            var player = event.getPlayer();
+            player.setBedSpawnLocation(event.getBed().getLocation());
+            player.setStatistic(Statistic.TIME_SINCE_REST, 0);
             event.setCancelled(true);
         }
     }
