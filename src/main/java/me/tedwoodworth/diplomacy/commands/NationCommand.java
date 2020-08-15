@@ -385,8 +385,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("kick")) {
                 List<String> players = new ArrayList<>();
                 var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-                if (Nations.getInstance().get(diplomacyPlayer) != null) {
-                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                var nation = Nations.getInstance().get(diplomacyPlayer);
+                if (nation != null) {
                     for (var player : nation.getMembers()) {
                         var permissions = nation.getMemberClass(player).getPermissions();
                         if (permissions.get("CanBeKicked")) {
@@ -407,8 +407,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 } else if (args[1].equalsIgnoreCase("add")) {
                     var players = new ArrayList<String>();
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-                    if (Nations.getInstance().get(diplomacyPlayer) != null) {
-                        var nation = Nations.getInstance().get(diplomacyPlayer);
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    if (nation != null) {
                         for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
                             if (!nation.getOutlaws().contains(player.getUUID())) {
                                 players.add(player.getPlayer().getName());
@@ -420,8 +420,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 } else if (args[1].equalsIgnoreCase("remove")) {
                     var players = new ArrayList<String>();
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-                    if (Nations.getInstance().get(diplomacyPlayer) != null) {
-                        var nation = Nations.getInstance().get(diplomacyPlayer);
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    if (nation != null) {
                         for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
                             if (nation.getOutlaws().contains(player.getUUID())) {
                                 players.add(player.getPlayer().getName());

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PlayerCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
-    private static final String playerUsage = "/player <player>";
+    private static final String playerUsage = "/player";
 
     public static void register(PluginCommand pluginCommand) {
         var playerCommand = new PlayerCommand();
@@ -33,7 +33,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 0) {
+        if (args.length == 1) {
             var players = new ArrayList<String>();
             for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
                 players.add(player.getPlayer().getName());
