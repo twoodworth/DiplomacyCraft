@@ -49,11 +49,11 @@ public class Tax implements Runnable {
                             if (player != null) {
                                 player.sendMessage(ChatColor.GREEN + "You have been taxed \u00A4" + formatter.format(tax));
                                 player.sendMessage(ChatColor.RED + "You couldn't pay taxes and have been kicked from the nation.");
-                                for (var testMember : nation.getMembers()) {
-                                    var testPlayer = testMember.getPlayer().getPlayer();
-                                    if (testPlayer != null && !Objects.equals(testPlayer, player)) {
-                                        testPlayer.sendMessage(ChatColor.AQUA + player.getName() + " was kicked for not paying taxes.");
-                                    }
+                            }
+                            for (var testMember : nation.getMembers()) {
+                                var testPlayer = testMember.getPlayer().getPlayer();
+                                if (testPlayer != null && !Objects.equals(testPlayer, player)) {
+                                    testPlayer.sendMessage(ChatColor.AQUA + member.getPlayer().getName() + " was kicked for not paying taxes.");
                                 }
                             }
                             nation.removeMember(member);
@@ -67,14 +67,14 @@ public class Tax implements Runnable {
                         if (player != null) {
                             player.sendMessage(ChatColor.GREEN + "You have been taxed \u00A4" + formatter.format(tax));
                             player.sendMessage(ChatColor.RED + "You couldn't afford the tax and have been kicked from the nation.");
-                            for (var testMember : nation.getMembers()) {
-                                var testPlayer = testMember.getPlayer().getPlayer();
-                                if (testPlayer != null && !Objects.equals(testPlayer, player)) {
-                                    testPlayer.sendMessage(ChatColor.AQUA + player.getName() + " was kicked for not paying taxes.");
-                                }
-                            }
                         }
 
+                        for (var testMember : nation.getMembers()) {
+                            var testPlayer = testMember.getPlayer().getPlayer();
+                            if (testPlayer != null && !Objects.equals(testPlayer, player)) {
+                                testPlayer.sendMessage(ChatColor.AQUA + member.getPlayer().getName() + " was kicked for not paying taxes.");
+                            }
+                        }
                         nation.removeMember(member);
                     }
                 } else {

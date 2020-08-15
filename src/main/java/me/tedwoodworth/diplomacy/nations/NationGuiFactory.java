@@ -594,7 +594,7 @@ public class NationGuiFactory {
                         new ItemStack(Material.ZOMBIE_HEAD),
                         click -> true,
                         "" + ChatColor.YELLOW + ChatColor.BOLD + "Guards",//TODO add
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View guards"
+                        ChatColor.BLUE + "Coming soon:" + ChatColor.GRAY + "View guards"
                 ));
             }
             gui.addElement(new StaticGuiElement('t',

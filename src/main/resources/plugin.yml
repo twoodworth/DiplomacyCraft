@@ -126,4 +126,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  player:
+    description: View player info.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

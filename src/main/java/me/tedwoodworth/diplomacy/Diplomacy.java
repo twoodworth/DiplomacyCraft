@@ -48,6 +48,7 @@ public class Diplomacy extends JavaPlugin {
         CombatLogCommand.register(getCommand("tag"));
         CombatLogCommand.register(getCommand("untag"));
         MapCommand.register(getCommand("map"));
+        PlayerCommand.register(getCommand("player"));
         DiplomacyConfig.getInstance().registerEvents();
         SpawnManager.getInstance().registerEvents();
         LivesManager.getInstance().registerEvents();
