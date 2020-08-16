@@ -93,7 +93,7 @@ public class LivesManager {
     private class EventListener implements Listener {
 
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler
         private void onPlayerJoin(PlayerJoinEvent event) {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
@@ -123,7 +123,7 @@ public class LivesManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler
         private void onPlayerDeath(PlayerDeathEvent event) {
             var player = (Player) event.getEntity();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());

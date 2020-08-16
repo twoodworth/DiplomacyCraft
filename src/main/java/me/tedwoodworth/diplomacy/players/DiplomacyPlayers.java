@@ -12,16 +12,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -136,7 +135,7 @@ public class DiplomacyPlayers {
             save();
         }
 
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         private void onPlayerMove(PlayerMoveEvent event) {
             var fromChunk = event.getFrom().getChunk();
             var toChunk = event.getTo().getChunk();
@@ -436,6 +435,92 @@ public class DiplomacyPlayers {
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
             ScoreboardManager.getInstance().updateScoreboards();
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private void onEntityExplode(EntityExplodeEvent event) {
+            var entity = event.getEntity();
+            List<Block> keepBlocks = new ArrayList<>();
+            if (entity instanceof Player) {
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
+                var nation = Nations.getInstance().get(diplomacyPlayer);
+                for (var block : event.blockList()) {
+                    var chunk = block.getChunk();
+                    var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                    var blockNation = diplomacyChunk.getNation();
+                    if (blockNation == null) {
+                        continue;
+                    }
+                    if (!Objects.equals(blockNation, nation)) {
+                        keepBlocks.add(block);
+                    }
+                }
+                event.blockList().removeAll(keepBlocks);
+            } else if (entity instanceof Creeper || entity instanceof Wither || entity instanceof WitherSkull || entity instanceof DragonFireball || entity instanceof EnderCrystal) {
+                for (var block : event.blockList()) {
+                    var chunk = block.getChunk();
+                    var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                    var blockNation = diplomacyChunk.getNation();
+                    if (blockNation != null) {
+                        keepBlocks.add(block);
+                    }
+                }
+                event.blockList().removeAll(keepBlocks);
+            } else if (entity instanceof Projectile) {
+                var projectile = (Projectile) event.getEntity();
+                if (projectile.getShooter() instanceof Player) {
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    for (var block : event.blockList()) {
+                        var chunk = block.getChunk();
+                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                        var blockNation = diplomacyChunk.getNation();
+                        if (blockNation == null) {
+                            continue;
+                        }
+                        if (!Objects.equals(blockNation, nation)) {
+                            keepBlocks.add(block);
+                        }
+                    }
+                } else {
+                    for (var block : event.blockList()) {
+                        var chunk = block.getChunk();
+                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                        var blockNation = diplomacyChunk.getNation();
+                        if (blockNation != null) {
+                            keepBlocks.add(block);
+                        }
+                    }
+                }
+            } else if (entity instanceof TNTPrimed) {
+                var tnt = (TNTPrimed) event.getEntity();
+                var source = tnt.getSource();
+                if (source instanceof Player) {
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    for (var block : event.blockList()) {
+                        var chunk = block.getChunk();
+                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                        var blockNation = diplomacyChunk.getNation();
+                        if (blockNation == null) {
+                            continue;
+                        }
+                        if (!Objects.equals(blockNation, nation)) {
+                            keepBlocks.add(block);
+                        }
+                    }
+                } else {
+                    for (var block : event.blockList()) {
+                        var chunk = block.getChunk();
+                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                        var blockNation = diplomacyChunk.getNation();
+                        if (blockNation != null) {
+                            keepBlocks.add(block);
+                        }
+                    }
+                }
+            }
+            event.blockList().removeAll(keepBlocks);
         }
     }
 }

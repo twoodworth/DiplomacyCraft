@@ -4,7 +4,6 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.events.*;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
@@ -36,21 +35,21 @@ public class OurServerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationJoin(NationJoinEvent event) {
         if (kernel.isPlayersets()) {
             kernel.requestUpdatePlayerSet(event.getNation().getNationID());
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationLeave(NationLeaveEvent event) {
         if (kernel.isPlayersets()) {
             kernel.requestUpdatePlayerSet(event.getNation().getNationID());
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationCreate(NationCreateEvent event) {
         if (kernel.isPlayersets()) {
             kernel.requestUpdatePlayerSet(event.getNation().getNationID());
@@ -58,7 +57,7 @@ public class OurServerListener implements Listener {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationDisband(NationDisbandEvent event) {
         if (kernel.isPlayersets()) {
             kernel.requestUpdatePlayerSet(event.getNationID());
@@ -66,22 +65,22 @@ public class OurServerListener implements Listener {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationRename(NationRenameEvent event) {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationAddChunk(NationAddChunkEvent event) {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationRemoveChunk(NationRemoveChunkEvent event) {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onNationColor(NationColorEvent event) {
         kernel.requestUpdateDiplomacy();
     }

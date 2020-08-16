@@ -322,7 +322,7 @@ public class SpawnManager {
             save();
         }
 
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        @EventHandler(ignoreCancelled = true)
         private void onPlayerMove(PlayerMoveEvent event) {
             var chunk = event.getTo().getChunk();
 
@@ -343,7 +343,7 @@ public class SpawnManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler
         private void onPlayerLogin(PlayerLoginEvent event) {
             var player = event.getPlayer();
             if (!player.hasPlayedBefore()) {

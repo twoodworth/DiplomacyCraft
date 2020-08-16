@@ -7,11 +7,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,10 +52,9 @@ public class ChatManager {
         chatModes.remove(player);
     }
 
-    @Nullable
     public String getChatMode(Player player) {
         if (!chatModes.containsKey(player)) {
-            return null;
+            chatModes.put(player, GLOBAL);
         }
         return chatModes.get(player);
     }
@@ -77,7 +76,7 @@ public class ChatManager {
             removeChatMode(event.getPlayer());
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.HIGH)
         private void onPlayerChat(AsyncPlayerChatEvent event) {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
@@ -103,9 +102,11 @@ public class ChatManager {
                             } else {
                                 recipient.sendMessage("" + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                             }
+                        } else {
+                            recipient.sendMessage("" + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                         }
+                        event.setCancelled(true);
                     }
-                    event.setCancelled(true);
                 }
                 case ALLY -> {
                     for (var recipient : event.getRecipients()) {
