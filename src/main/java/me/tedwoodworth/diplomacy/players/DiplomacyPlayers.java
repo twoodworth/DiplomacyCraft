@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -133,6 +134,13 @@ public class DiplomacyPlayers {
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();
+        }
+
+        @EventHandler
+        void onPluginDisable(PluginDisableEvent event) {
+            if (event.getPlugin().equals(Diplomacy.getInstance())) {
+                save();
+            }
         }
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

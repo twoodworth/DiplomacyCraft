@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 
 import java.io.File;
@@ -320,6 +321,13 @@ public class SpawnManager {
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();
+        }
+
+        @EventHandler
+        void onPluginDisable(PluginDisableEvent event) {
+            if (event.getPlugin().equals(Diplomacy.getInstance())) {
+                save();
+            }
         }
 
         @EventHandler(ignoreCancelled = true)
