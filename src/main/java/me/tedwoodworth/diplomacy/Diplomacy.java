@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy;
 
 import me.tedwoodworth.diplomacy.chat.ChatCommand;
 import me.tedwoodworth.diplomacy.chat.ChatManager;
+import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
@@ -47,7 +48,8 @@ public class Diplomacy extends JavaPlugin {
         TeleportCommand.register(getCommand("ottDecline"));
         CombatLogCommand.register(getCommand("tag"));
         CombatLogCommand.register(getCommand("untag"));
-        MapCommand.register(getCommand("map"));
+        LinkCommand.register(getCommand("map"));
+        LinkCommand.register(getCommand("discord"));
         PlayerCommand.register(getCommand("player"));
         DiplomacyConfig.getInstance().registerEvents();
         SpawnManager.getInstance().registerEvents();
@@ -60,6 +62,8 @@ public class Diplomacy extends JavaPlugin {
         DiplomacyGroups.getInstance().registerEvents();
         DiplomacyDynmap.getInstance().load();
         LivesManager.getInstance().startScheduler();
+        ChatNotifications.getInstance().startScheduler();
+
 
         if (!setupEconomy()) {
             throw new RuntimeException("Unable to set up vault economy.");

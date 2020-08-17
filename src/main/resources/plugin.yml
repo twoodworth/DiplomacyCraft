@@ -121,6 +121,11 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  discord:
+    description: Get a link to the discord.
+    aliases: []
+    usage: "Usage: /<command>"
+
   addLife:
     description: Give a player 1 life.
     aliases: []

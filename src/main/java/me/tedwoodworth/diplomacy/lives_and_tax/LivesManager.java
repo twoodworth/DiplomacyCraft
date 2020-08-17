@@ -19,7 +19,6 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class LivesManager {
@@ -45,7 +44,7 @@ public class LivesManager {
         long initalDelay = duration.getSeconds();
 
         // Gives lives.
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        var scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new GiveLive(),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
@@ -53,7 +52,7 @@ public class LivesManager {
 
 
         // Does taxes.
-        ScheduledExecutorService taxScheduler = Executors.newScheduledThreadPool(1);
+        var taxScheduler = Executors.newScheduledThreadPool(1);
         taxScheduler.scheduleAtFixedRate(new Tax(),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),

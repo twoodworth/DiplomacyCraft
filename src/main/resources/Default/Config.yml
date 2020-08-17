@@ -1,3 +1,9 @@
 # Diplomacy configuration
 
-map-link: "http://localhost:8123/"
+map-link: "http://play.diplomacycraft.com:8123/"
+discord-link: "http://discord.gg/PZd9gdf"
+messages:
+  - "Join the discord with /discord"
+  - "Get more lives by voting with /vote"
+  - "The server is currently in alpha. Please report any bugs in the discord."
+message-interval: 120
