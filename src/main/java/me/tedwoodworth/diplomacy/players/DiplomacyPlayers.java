@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -443,6 +444,10 @@ public class DiplomacyPlayers {
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
             ScoreboardManager.getInstance().updateScoreboards();
+
+            if (!player.hasPlayedBefore()) {
+                player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 8));
+            }
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
