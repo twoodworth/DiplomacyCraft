@@ -12,6 +12,10 @@ repositories {
     maven { url = 'http://repo.mikeprimm.com/' }
     maven { url = 'https://repo.minebench.de/' }
     maven { url = 'https://jitpack.io' }
+    maven {
+        name "essentialsx"
+        url "https://ci.ender.zone/plugin/repository/everything/"
+    }
 }
 
 dependencies {
@@ -22,6 +26,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'us.dynmap:DynmapCoreAPI:3.0-SNAPSHOT'
     compile 'us.dynmap:dynmap-api:3.0-SNAPSHOT'
+    compileOnly 'net.ess3:EssentialsX:2.18.0'
 }
 
 compileJava   {

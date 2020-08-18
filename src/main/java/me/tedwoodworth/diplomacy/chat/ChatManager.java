@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.chat;
 
+import com.earth2me.essentials.Essentials;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -79,6 +80,11 @@ public class ChatManager {
         @EventHandler(priority = EventPriority.HIGH)
         private void onPlayerChat(AsyncPlayerChatEvent event) {
             var player = event.getPlayer();
+            Essentials essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
+            if (essentials != null && essentials.getUser(player.getUniqueId()).isMuted()) {
+                player.sendMessage(ChatColor.RED + "You cannot chat while muted.");
+                return;
+            }
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var nation = Nations.getInstance().get(diplomacyPlayer);
             if (getChatMode(player) == null) {

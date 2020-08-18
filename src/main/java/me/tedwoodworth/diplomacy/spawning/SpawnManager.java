@@ -57,15 +57,24 @@ public class SpawnManager {
         return chunks.get(index);
     }
 
-    public Chunk getRespawnChunk(Location location) {
+    public List<Chunk> getValidRespawnChunks(Location location) {
         var validChunks = new ArrayList<Chunk>();
         for (var chunk : getSpawnChunks()) {
             var chunkLocation = new Location(chunk.getWorld(), chunk.getX(), location.getY(), chunk.getZ());
-            if (Objects.equals(location.getWorld(), chunkLocation.getWorld()) && location.distanceSquared(chunkLocation) < 4000000) {
+            var locationEnvironment = location.getWorld().getEnvironment();
+            var chunkEnvironment = chunkLocation.getWorld().getEnvironment();
+            if (!locationEnvironment.equals(World.Environment.THE_END) && Objects.equals(locationEnvironment, chunkEnvironment)) {
+                if (Objects.equals(location.getWorld(), chunkLocation.getWorld()) && location.distanceSquared(chunkLocation) < 4000000) {
+                    validChunks.add(chunk);
+                }
+            } else if (locationEnvironment.equals(World.Environment.THE_END) && chunkEnvironment.equals(World.Environment.NORMAL)) {
                 validChunks.add(chunk);
             }
         }
+        return validChunks;
+    }
 
+    public Chunk getRespawnChunk(List<Chunk> validChunks) {
         var index = (int) (Math.random() * validChunks.size());
         return validChunks.get(index);
     }
@@ -202,29 +211,25 @@ public class SpawnManager {
         return location;
     }
 
-    public Location getRespawnLocation(Location deathLocation) {
-        var deathBiome = deathLocation.getBlock().getBiome();
-        if (getEndBiomes().contains(deathBiome)) {
-            return getSpawnLocation();
-        }
-
-        var chunk = getRespawnChunk(deathLocation);
+    public Location getValidLocation(List<Chunk> respawnChunks, Location deathLocation) {
+        var chunk = getRespawnChunk(respawnChunks);
         var x = Math.random() * 16;
         var z = Math.random() * 16;
         Location location;
+        var deathBiome = deathLocation.getBlock().getBiome();
 
-        if (getNetherBiomes().contains(deathBiome)) {
+        if (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
             var y = Math.random() * 89 + 32;
             location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, y, chunk.getZ() * 16 + z);
             var block = location.getBlock();
 
             if (block.isLiquid() || block.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                location = getRespawnLocation(deathLocation);
+                location = getValidLocation(respawnChunks, deathLocation);
             } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
                 var testLocation = decreaseYLocation(location);
                 var testBlock = testLocation.getBlock();
                 if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                    location = getRespawnLocation(deathLocation);
+                    location = getValidLocation(respawnChunks, deathLocation);
                 } else {
                     location = testLocation;
                 }
@@ -233,7 +238,8 @@ public class SpawnManager {
             location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
             var block = location.getBlock();
             if ((block.getType().equals(Material.LAVA) || block.getType().equals(Material.FIRE))) {
-                location = getRespawnLocation(deathLocation);
+                location = getValidLocation(respawnChunks, deathLocation);
+                ;
             } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
                 var testLocation = decreaseYLocation(location);
                 var testBlock = testLocation.getBlock();
@@ -249,7 +255,7 @@ public class SpawnManager {
             location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
             var block = location.getBlock();
             if ((block.isLiquid() || block.getType().equals(Material.FIRE))) {
-                location = getRespawnLocation(deathLocation);
+                location = getValidLocation(respawnChunks, deathLocation);
             } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
                 var testLocation = decreaseYLocation(location);
                 var testBlock = testLocation.getBlock();
@@ -266,12 +272,12 @@ public class SpawnManager {
             location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
             var block = location.getBlock();
             if (block.isLiquid() || block.getType().equals(Material.FIRE) || getBadBiomes().contains(block.getBiome())) {
-                location = getRespawnLocation(deathLocation);
+                location = getValidLocation(respawnChunks, deathLocation);
             } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
                 var testLocation = decreaseYLocation(location);
                 var testBlock = testLocation.getBlock();
                 if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE)) {
-                    location = getRespawnLocation(deathLocation);
+                    location = getValidLocation(respawnChunks, deathLocation);
                 } else {
                     location = testLocation;
                 }
@@ -280,6 +286,11 @@ public class SpawnManager {
             }
         }
         return location;
+    }
+
+    public Location getRespawnLocation(Location deathLocation) {
+        var respawnChunks = getValidRespawnChunks(deathLocation);
+        return getValidLocation(respawnChunks, deathLocation);
     }
 
     public Location increaseYLocation(Location location) {

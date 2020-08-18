@@ -22,10 +22,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -141,6 +138,14 @@ public class DiplomacyPlayers {
         void onPluginDisable(PluginDisableEvent event) {
             if (event.getPlugin().equals(Diplomacy.getInstance())) {
                 save();
+            }
+        }
+
+        @EventHandler
+        private void onPlayerPortal(PlayerChangedWorldEvent event) {
+            var player = event.getPlayer();
+            if (!event.getFrom().getEnvironment().equals(World.Environment.NETHER) && player.getLocation().getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "WARNING: If you die in the nether, you will respawn in the nether. Be careful!");
             }
         }
 
