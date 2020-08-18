@@ -281,47 +281,29 @@ public class ContestManager {
         }
 
         if (!isWilderness) {
-            switch (adjacentChunks) {
-                case 8:
-                    return 2.0 / 200.0;
-                case 7:
-                    return 2.0 / 300.0;
-                case 6:
-                    return 2.0 / 400.0;
-                case 5:
-                    return 2.0 / 500.0;
-                case 4:
-                    return 2.0 / 600.0;
-                case 3:
-                    return 2.0 / 800.0;
-                case 2:
-                    return 2.0 / 3000.0;
-                case 1:
-                    return 2.0 / 72000.0;
-                default:
-                    return 2.0 / 360000.0;
-            }
+            return switch (adjacentChunks) {
+                case 8 -> 1.0 / 1728000.0;
+                case 7 -> 1.0 / 345600.0;
+                case 6 -> 1.0 / 14400.0;
+                case 5 -> 1.0 / 3840.0;
+                case 4 -> 1.0 / 2880.0;
+                case 3 -> 1.0 / 2400.0;
+                case 2 -> 1.0 / 1920.0;
+                case 1 -> 1.0 / 1440.0;
+                default -> 1.0 / 960.0;
+            };
         } else {
-            switch (adjacentChunks) {
-                case 8:
-                    return 2.0 / 100.0;
-                case 7:
-                    return 2.0 / 150.0;
-                case 6:
-                    return 2.0 / 200.0;
-                case 5:
-                    return 2.0 / 250.0;
-                case 4:
-                    return 2.0 / 300.0;
-                case 3:
-                    return 2.0 / 400.0;
-                case 2:
-                    return 2.0 / 600.0;
-                case 1:
-                    return 2.0 / 3000.0;
-                default:
-                    return 2.0 / 12000.0;
-            }
+            return switch (adjacentChunks) {
+                case 8 -> 1.0 / 100.0;
+                case 7 -> 1.0 / 150.0;
+                case 6 -> 1.0 / 200.0;
+                case 5 -> 1.0 / 250.0;
+                case 4 -> 1.0 / 300.0;
+                case 3 -> 1.0 / 400.0;
+                case 2 -> 1.0 / 600.0;
+                case 1 -> 1.0 / 3000.0;
+                default -> 1.0 / 12000.0;
+            };
 
         }
     }

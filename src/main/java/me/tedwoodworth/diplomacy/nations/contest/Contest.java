@@ -10,15 +10,10 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
-import org.bukkit.FireworkEffect.Type;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.util.Objects;
-import java.util.Random;
 
 public class Contest {
 
@@ -282,57 +277,9 @@ public class Contest {
         for (var player : Bukkit.getOnlinePlayers()) {
             var playerChunk = player.getLocation().getChunk();
             if (chunk.equals(playerChunk)) {
-                sendPlayerFireworks(chunk, player);
+                player.playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1, 1);
             }
         }
-    }
-
-    private void sendPlayerFireworks(Chunk chunk, Player player) {
-        Random r = new Random();
-        int x = chunk.getX() * 16;
-        int z = chunk.getZ() * 16;
-        for (int i = 0; i < 3; i++) {
-            int rx = x + r.nextInt(15) + 1;
-            int rz = z + r.nextInt(15) + 1;
-            Location location = new Location(chunk.getWorld(), rx, player.getLocation().getBlockY(), rz);
-            generateFireworks(chunk, location);
-        }
-    }
-
-    private void generateFireworks(Chunk chunk, Location location) {
-        var firework = (Firework) chunk.getWorld().spawnEntity(location, EntityType.FIREWORK);
-        FireworkMeta fireworkMeta = firework.getFireworkMeta();
-
-        Random r = new Random();
-
-        int rt = r.nextInt(4) + 1;
-        Type type;
-        switch (rt) {
-            case 1 -> type = Type.BALL;
-            case 2 -> type = Type.BALL_LARGE;
-            case 3 -> type = Type.BURST;
-            case 4 -> type = Type.CREEPER;
-            default -> type = Type.STAR;
-        }
-
-        int red = r.nextInt(256);
-        int blue = r.nextInt(256);
-        int green = r.nextInt(256);
-        Color c1 = Color.fromRGB(red, green, blue);
-
-        int red2 = r.nextInt(256);
-        int blue2 = r.nextInt(256);
-        int green2 = r.nextInt(256);
-        Color c2 = Color.fromRGB(red2, green2, blue2);
-
-        FireworkEffect effect = FireworkEffect.builder().flicker(r.nextBoolean()).withColor(c1).withFade(c2).with(type).trail(r.nextBoolean()).build();
-
-        fireworkMeta.addEffect(effect);
-
-        int rp = r.nextInt(1) + 2;
-        fireworkMeta.setPower(rp);
-
-        firework.setFireworkMeta(fireworkMeta);
     }
 
     public double getProgress() {
