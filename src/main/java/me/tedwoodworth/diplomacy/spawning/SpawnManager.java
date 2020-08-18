@@ -27,11 +27,28 @@ public class SpawnManager {
     private static SpawnManager instance = null;
     private File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "spawnChunks.yml");
     private YamlConfiguration config;
-    private List<Biome> badBiomes = new ArrayList<>(0);
+    private List<Biome> badBiomes = new ArrayList<>();
+    private List<Chunk> spawnChunks;
 
     private SpawnManager() {
         config = YamlConfiguration.loadConfiguration(diplomacyPlayerConfigFile);
+        this.spawnChunks = createSpawnChunkList();
         save();
+    }
+
+    private List<Chunk> createSpawnChunkList() {
+        List<Chunk> chunks = new ArrayList<>();
+        var worlds = config.getKeys(false);
+        for (var worldKey : worlds) {
+            var world = Bukkit.getWorld(worldKey);
+            var chunkMaps = config.getMapList(worldKey);
+            for (var chunkMap : chunkMaps) {
+                var x = Integer.parseInt(chunkMap.get("x").toString());
+                var z = Integer.parseInt(chunkMap.get("z").toString());
+                chunks.add(world.getChunkAt(x, z));
+            }
+        }
+        return chunks;
     }
 
     public Chunk getSpawnChunk() {
@@ -54,18 +71,7 @@ public class SpawnManager {
     }
 
     public List<Chunk> getSpawnChunks() {
-        List<Chunk> chunks = new ArrayList<>(0);
-        var worlds = config.getKeys(false);
-        for (var worldKey : worlds) {
-            var world = Bukkit.getWorld(worldKey);
-            var chunkMaps = config.getMapList(worldKey);
-            for (var chunkMap : chunkMaps) {
-                var x = Integer.parseInt(chunkMap.get("x").toString());
-                var z = Integer.parseInt(chunkMap.get("z").toString());
-                chunks.add(world.getChunkAt(x, z));
-            }
-        }
-        return chunks;
+        return spawnChunks;
     }
 
     public void addSpawnChunk(Chunk chunk) {
@@ -81,6 +87,7 @@ public class SpawnManager {
         var worldChunks = config.getMapList(world);
         worldChunks.add(chunkMap);
         config.set(world, worldChunks);
+        spawnChunks.add(chunk);
     }
 
     public List<Biome> getBadBiomes() {
