@@ -97,12 +97,19 @@ public class ChatManager {
                 setChatMode(player, LOCAL);
                 player.sendMessage(ChatColor.RED + "You have been automatically moved from nation chat to local chat because you don't belong to a nation.");
             }
+
+
             switch (getChatMode(player)) {
                 case GLOBAL -> {
+                    System.out.println(player.getName() + ": " + event.getMessage());
                     for (var recipient : event.getRecipients()) {
                         if (nation != null) {
                             var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
-                            var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
+                            String prefix = "";
+                            var memberClass = nation.getMemberClass(diplomacyPlayer);
+                            if (memberClass != null) {
+                                prefix = memberClass.getPrefix();
+                            }
                             if ((Objects.equals(nation, testNation) || (testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
                                 recipient.sendMessage("" + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                             } else {
@@ -111,16 +118,21 @@ public class ChatManager {
                         } else {
                             recipient.sendMessage("" + ChatColor.GOLD + player.getName() + " " + ChatColor.WHITE + event.getMessage());
                         }
+
                         event.setCancelled(true);
                     }
                 }
                 case ALLY -> {
                     for (var recipient : event.getRecipients()) {
                         var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
-                        if (!(nation != null && (Objects.equals(nation, testNation) || nation.getAllyNationIDs().contains(testNation.getNationID())))) {
+                        if (!(nation != null && (Objects.equals(nation, testNation) || (testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))))) {
                             continue;
                         }
-                        var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
+                        String prefix = "";
+                        var memberClass = nation.getMemberClass(diplomacyPlayer);
+                        if (memberClass != null) {
+                            prefix = memberClass.getPrefix();
+                        }
                         if ((Objects.equals(nation, testNation) || (nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
                             recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.DARK_GREEN + ChatColor.BOLD + "A" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.DARK_GREEN + event.getMessage());
                         } else {
@@ -135,7 +147,11 @@ public class ChatManager {
                         if (!(nation != null && (Objects.equals(nation, testNation)))) {
                             continue;
                         }
-                        var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
+                        String prefix = "";
+                        var memberClass = nation.getMemberClass(diplomacyPlayer);
+                        if (memberClass != null) {
+                            prefix = memberClass.getPrefix();
+                        }
                         if (prefix != null) {
                             recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.GREEN + ChatColor.BOLD + "N" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.GREEN + event.getMessage());
                         } else {
@@ -153,7 +169,11 @@ public class ChatManager {
                         }
                         var testNation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(recipient.getUniqueId()));
                         if (nation != null) {
-                            var prefix = nation.getMemberClass(diplomacyPlayer).getPrefix();
+                            String prefix = "";
+                            var memberClass = nation.getMemberClass(diplomacyPlayer);
+                            if (memberClass != null) {
+                                prefix = memberClass.getPrefix();
+                            }
                             if ((Objects.equals(nation, testNation) || (testNation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))) && prefix != null) {
                                 recipient.sendMessage("" + ChatColor.DARK_GRAY + ChatColor.BOLD + "[" + ChatColor.LIGHT_PURPLE + ChatColor.BOLD + "L" + ChatColor.DARK_GRAY + ChatColor.BOLD + "] " + ChatColor.GOLD + ChatColor.BOLD + prefix + " " + ChatColor.GOLD + player.getName() + " " + ChatColor.LIGHT_PURPLE + event.getMessage());
                             } else {

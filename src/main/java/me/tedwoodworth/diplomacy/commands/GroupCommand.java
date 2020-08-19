@@ -671,6 +671,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        sender.sendMessage(ChatColor.GOLD + "Loading group list...");
         var nGui = NationGuiFactory.createAllGroups((Player) sender, "alphabet", 0);
         nGui.show((Player) sender);
     }

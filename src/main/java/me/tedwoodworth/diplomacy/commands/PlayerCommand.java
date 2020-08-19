@@ -96,6 +96,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        sender.sendMessage(ChatColor.GOLD + "Loading player list...");
         var nGui = NationGuiFactory.createPlayers((Player) sender, "alphabet", 0);
         nGui.show((Player) sender);
     }

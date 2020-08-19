@@ -71,6 +71,16 @@ public class SpawnManager {
                 validChunks.add(chunk);
             }
         }
+        if (validChunks.size() == 0) {
+            var world = location.getWorld();
+            var x = (int) (Math.random() * 125 - 63);
+            var z = (int) (Math.random() * 125 - 63);
+            if (world != null) {
+                validChunks.add(world.getChunkAt(x, z));
+            } else {
+                validChunks.add(location.getChunk());
+            }
+        }
         return validChunks;
     }
 

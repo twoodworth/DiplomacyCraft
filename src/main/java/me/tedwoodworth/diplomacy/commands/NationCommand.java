@@ -1452,6 +1452,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        sender.sendMessage(ChatColor.GOLD + "Loading nation list...");
         var nGui = NationGuiFactory.createNations((Player) sender, "alphabet", 0);
         nGui.show((Player) sender);
     }
