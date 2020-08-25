@@ -45,7 +45,9 @@ public class SpawnManager {
             for (var chunkMap : chunkMaps) {
                 var x = Integer.parseInt(chunkMap.get("x").toString());
                 var z = Integer.parseInt(chunkMap.get("z").toString());
-                chunks.add(world.getChunkAt(x, z));
+                if (world != null) {
+                    chunks.add(world.getChunkAt(x, z));
+                }
             }
         }
         return chunks;
@@ -342,7 +344,7 @@ public class SpawnManager {
     }
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new SpawnManager.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
     private class EventListener implements Listener {

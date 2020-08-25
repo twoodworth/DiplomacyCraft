@@ -3043,48 +3043,81 @@ public class NationGuiFactory {
                 ChatColor.GRAY + "Click to escape"
         ));
 
-        var players = DiplomacyPlayers.getInstance().getPlayers();
-
+        var allPlayers = DiplomacyPlayers.getInstance().getPlayers();
+        var players = new ArrayList<DiplomacyPlayer>();
+        for (var testPlayer : allPlayers) {
+            if (testPlayer.getPlayer().hasPlayedBefore()) {
+                players.add(testPlayer);
+            }
+        }
         var slotChar = new char[]{'a'};
 
-        if (sortType.equals("alphabet")) {
-            players.stream()
-                    .sorted((p1, p2) -> Objects.requireNonNull(Bukkit.getOfflinePlayer(p1.getUUID()).getName()).compareToIgnoreCase(Objects.requireNonNull(Bukkit.getOfflinePlayer(p2.getUUID()).getName())))
+        switch (sortType) {
+            case "alphabet" -> players.stream()
+                    .sorted((p1, p2) -> {
+                        var p1name = Bukkit.getOfflinePlayer(p1.getUUID()).getName();
+                        var p2name = Bukkit.getOfflinePlayer(p2.getUUID()).getName();
+                        if (p1name == null) {
+                            if (p2name == null) {
+                                return 0;
+                            }
+                            return 1;
+                        } else if (p2name == null) {
+                            return -1;
+                        }
+                        return p1name.compareToIgnoreCase(p2name);
+                    })
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("reverseAlphabet")) {
-            players.stream()
-                    .sorted((p1, p2) -> -Objects.requireNonNull(Bukkit.getOfflinePlayer(p1.getUUID()).getName()).compareToIgnoreCase(Objects.requireNonNull(Bukkit.getOfflinePlayer(p2.getUUID()).getName())))
+            case "reverseAlphabet" -> players.stream()
+                    .sorted((p1, p2) -> {
+                        var p1name = Bukkit.getOfflinePlayer(p1.getUUID()).getName();
+                        var p2name = Bukkit.getOfflinePlayer(p2.getUUID()).getName();
+                        if (p1name == null) {
+                            if (p2name == null) {
+                                return 0;
+                            }
+                            return -1;
+                        } else if (p2name == null) {
+                            return 1;
+                        }
+                        return -p1name.compareToIgnoreCase(p2name);
+                    })
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("balance")) {
-            players.stream()
+            case "balance" -> players.stream()
                     .sorted(comparingDouble(p -> -Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(p.getUUID()))))
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("reverseBalance")) {
-            players.stream()
+            case "reverseBalance" -> players.stream()
                     .sorted(comparingDouble(p -> Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(p.getUUID()))))
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("nation")) {
-            players.stream()
+            case "nation" -> players.stream()
                     .sorted((p1, p2) -> {
                         var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
                         var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
@@ -3101,11 +3134,12 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("reverseNation")) {
-            players.stream()
+            case "reverseNation" -> players.stream()
                     .sorted((p1, p2) -> {
                         var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
                         var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
@@ -3122,26 +3156,30 @@ public class NationGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("age")) {
-            players.stream()
+            case "age" -> players.stream()
                     .sorted((p1, p2) -> (int) -(p1.getAge() - p2.getAge()))
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
-        } else if (sortType.equals("reverseAge")) {
-            players.stream()
+            case "reverseAge" -> players.stream()
                     .sorted((p1, p2) -> (int) (p1.getAge() - p2.getAge()))
                     .skip(slot)
                     .limit(30)
                     .forEach(testPlayer -> {
-                        var element = createPlayerElement(testPlayer, player, slotChar[0]++);
-                        gui.addElement(element);
+                        if (testPlayer.getPlayer().hasPlayedBefore()) {
+                            var element = createPlayerElement(testPlayer, player, slotChar[0]++);
+                            gui.addElement(element);
+                        }
                     });
         }
         return gui;
@@ -3150,8 +3188,10 @@ public class NationGuiFactory {
     private static StaticGuiElement createPlayerElement(DiplomacyPlayer player, Player sender, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
-        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUUID()));
-        memberHead.setItemMeta(skullMeta);
+        if (skullMeta != null) {
+            skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUUID()));
+            memberHead.setItemMeta(skullMeta);
+        }
 
         var nation = Nations.getInstance().get(player);
         var offlinePlayer = Bukkit.getOfflinePlayer(player.getUUID());

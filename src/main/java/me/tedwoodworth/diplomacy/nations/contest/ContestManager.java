@@ -34,7 +34,7 @@ public class ContestManager {
     private int particleTaskID = -1;
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new ContestManager.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
     public void startContest(Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {

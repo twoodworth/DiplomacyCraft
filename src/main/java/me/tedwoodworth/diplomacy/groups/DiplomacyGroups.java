@@ -32,7 +32,7 @@ public class DiplomacyGroups {
     }
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new DiplomacyGroups.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
     public DiplomacyGroup createGroup(String name, DiplomacyPlayer founder, Nation nation) {

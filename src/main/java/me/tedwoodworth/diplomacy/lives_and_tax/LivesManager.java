@@ -75,7 +75,7 @@ public class LivesManager {
     }
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new LivesManager.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
     void giveLive(DiplomacyPlayer diplomacyPlayer) {

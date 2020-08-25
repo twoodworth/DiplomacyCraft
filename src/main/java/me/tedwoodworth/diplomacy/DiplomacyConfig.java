@@ -28,7 +28,7 @@ public class DiplomacyConfig {
     }
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new DiplomacyConfig.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
     private DiplomacyConfig() {
