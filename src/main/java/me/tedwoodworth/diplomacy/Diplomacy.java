@@ -51,6 +51,7 @@ public class Diplomacy extends JavaPlugin {
         LinkCommand.register(getCommand("map"));
         LinkCommand.register(getCommand("discord"));
         PlayerCommand.register(getCommand("player"));
+        GuideCommand.register(getCommand("guide"));
         DiplomacyConfig.getInstance().registerEvents();
         SpawnManager.getInstance().registerEvents();
         LivesManager.getInstance().registerEvents();

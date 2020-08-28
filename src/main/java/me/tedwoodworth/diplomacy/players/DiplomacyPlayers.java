@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,9 +23,12 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +43,7 @@ public class DiplomacyPlayers {
     private File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "diplomacyPlayers.yml");
     private Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
     private YamlConfiguration config;
+    private ItemStack guideBook;
 
     public static DiplomacyPlayers getInstance() {
         if (instance == null) {
@@ -129,113 +134,118 @@ public class DiplomacyPlayers {
         }
     }
 
+    public ItemStack getGuideBook() {
+        if (guideBook == null) {
+            createGuideBook();
+        }
+        return guideBook;
+    }
+
+    private void createGuideBook() {
+        var guideBook = new ItemStack(Material.WRITTEN_BOOK, 1);
+        var bookMeta = (BookMeta) guideBook.getItemMeta();
+        bookMeta.setTitle("" + ChatColor.GREEN + ChatColor.BOLD + "Server Guide");
+        bookMeta.setAuthor(ChatColor.BOLD + "Unknown");
+        bookMeta.setGeneration(BookMeta.Generation.TATTERED);
+        var pages = new ArrayList<String>();
+
+        pages.add(
+                ChatColor.BOLD + "Table of contents:\n\n" + ChatColor.RESET +
+                        "2 - Intro\n" +
+                        "3 - Server Genre\n" +
+                        "4 - Rules\n" +
+                        "5 - Respawning\n" +
+                        "6 - One-time Teleport\n" +
+                        "7 - Lives\n" +
+                        "8 - Combat\n" +
+                        "9 - Menu\n" +
+                        "10 - Nations\n" +
+                        "11 - Groups\n" +
+                        "12 - Economy\n" +
+                        "13 - World Map\n"
+        );
+
+        pages.add(
+                ChatColor.BOLD + "Intro\n\n" + ChatColor.RESET +
+                        "This guide is an overview of the most " +
+                        "important features a new player should be " +
+                        "aware of. " +
+                        "A more detailed guide can be found on the discord server (accessed via \"/discord\")"
+        );
+        pages.add(
+                ChatColor.BOLD + "Server Genre\n\n" + ChatColor.RESET +
+                        "DiplomacyCraft is a geopolitical strategy & anarchy server. " +
+                        "This means that there are minimal rules, and that nations compete " +
+                        "with other nations for power and stability. "
+        );
+        pages.add(
+                ChatColor.BOLD + "Rules\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " No hacking\n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " No cheating\n" +
+                        ChatColor.BOLD + "3)" + ChatColor.RESET + " No spamming\n" +
+                        ChatColor.BOLD + "4)" + ChatColor.RESET + " No racism\n" +
+                        ChatColor.BOLD + "5)" + ChatColor.RESET + " No sexism\n" +
+                        ChatColor.BOLD + "6)" + ChatColor.RESET + " No homophobia\n" +
+                        ChatColor.BOLD + "7)" + ChatColor.RESET + " No doxxing.\n" +
+                        ChatColor.BOLD + "8)" + ChatColor.RESET + " No real-life threats."
+        );
+        pages.add(
+                ChatColor.BOLD + "Respawning\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " If you die in the nether, you will respawn in the nether.\n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " If you don't have a bed/respawn anchor you will randomly respawn within 2000 blocks of where you died."
+        );
+        pages.add(
+                ChatColor.BOLD + "One-Time Teleport\n\n" + ChatColor.RESET +
+                        "Players are only able to teleport once with \"/ott\" (one-time teleport). Once used, it is impossible to teleport again."
+        );
+        pages.add(
+                ChatColor.BOLD + "Lives\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Every time you die, you lose a life. \n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " If you run out of lives, you will be banned until the next day begins.\n" +
+                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Players can gain 5 lives a day: one for joining, and four for voting with \"/vote\"."
+        );
+        pages.add(
+                ChatColor.BOLD + "Combat\n\n" + ChatColor.RESET +
+                        "The server will be using pre-1.9 style combat. This means that there will be no cooldown between swings."
+        );
+        pages.add(
+                ChatColor.BOLD + "Menu\n\n" + ChatColor.RESET +
+                        "The menu contains almost all the info you need to know when it comes to nation, group, and player stats. " +
+                        "The menu can be accessed by typing \"/menu\"."
+        );
+        pages.add(
+                ChatColor.BOLD + "Nations\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Nations are created in order to protect territory and builds from outsiders.\n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Create a nation with \"/nation create\"\n" +
+                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Expand territory with \"/plot contest\"\n" +
+                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Join a nation with \"/nation join\" or by accepting an invite."
+        );
+        pages.add(
+                ChatColor.BOLD + "Groups\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Groups are sub-sections of a nation.\n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Only a group's members can build in its plots.\n" +
+                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Players can join a foreign nation's groups.\n" +
+                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Groups are created with \"/group create\"."
+        );
+        pages.add(
+                ChatColor.BOLD + "Economy\n\n" + ChatColor.RESET +
+                        ChatColor.BOLD + "1)" + ChatColor.RESET + " The currency is diamond-based; 1 diamond = \u00A41,000.00.\n" +
+                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Turn diamonds into currency with \"/deposit\".\n" +
+                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Turn currency into diamonds with \"/withdraw\".\n" +
+                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Check your balance with \"/balance\"."
+        );
+        pages.add(
+                ChatColor.BOLD + "World Map\n\n" + ChatColor.RESET +
+                        "The world map displays all explored territory and nation borders. It is accessed via \"/map\"."
+        );
+
+        bookMeta.setPages(pages);
+        guideBook.setItemMeta(bookMeta);
+        guideBook.addUnsafeEnchantment(Enchantment.VANISHING_CURSE, 1);
+        this.guideBook = guideBook;
+    }
+
     private class EventListener implements Listener {
-
-        private ItemStack guideBook;
-
-        private void createGuideBook() {
-            var guideBook = new ItemStack(Material.WRITTEN_BOOK, 1);
-            var bookMeta = (BookMeta) guideBook.getItemMeta();
-            bookMeta.setTitle(ChatColor.BLUE + "Server Guide");
-            bookMeta.setAuthor("God");
-            var pages = new ArrayList<String>();
-
-            pages.add(
-                    "Table of contents:\n\n" +
-                            "2 - Intro\n" +
-                            "3 - Respawning\n" +
-                            "4 - One-time Teleport\n" +
-                            "5 - Lives\n" +
-                            "6 - Combat\n" +
-                            "7 - Menu\n" +
-                            "8 - Nations\n" +
-                            "9 - Groups\n" +
-                            "10 - Economy\n" +
-                            "11 - World Map\n"
-            );
-
-            pages.add(
-                    "Intro\n\n" +
-                            "This guide provides an overview of the most " +
-                            "important features a new player should be " +
-                            "aware of when they first join the server." +
-                            "A more detailed guide can be found on the discord server (accessed via \"/discord\")"
-            );
-            pages.add(
-                    "Respawning\n\n" +
-                            "1) If you die in the nether, you will respawn in the nether.\n" +
-                            "2) If you die in the overworld, you will respawn in the overworld.\n" +
-                            "3) If you don't have a bed (or it is in another dimension) you will randomly respawn within 2000 blocks of where you died."
-            );
-            pages.add(
-                    "One-Time Teleport\n\n" +
-                            "Each player is given a one-time teleport (which can be used with \"/ott\"). This will be the player’s only opportunity" +
-                            " to teleport somewhere on the server. Once it is used, the player cannot teleport ever again."
-            );
-            pages.add(
-                    "Lives\n\n" +
-                            "1) When you first join the server, you have 20 lives.\n" +
-                            "2) Every time you die, you lose a life. \n" +
-                            "3) If you run out of lives, you will be temporarily banned until the next day begins.\n" +
-                            "4) Everyday, a player can gain 5 lives: one for just logging in, and four for voting."
-            );
-            pages.add(
-                    "Combat\n\n" +
-                            "The server will be using pre-1.9 style combat. This means that there will be no cooldown between swings."
-            );
-            pages.add(
-                    "Menu\n\n" +
-                            "1) The menu contains almost all the info you need to know when it comes to nation, group, and player stats.\n" +
-                            "2) The menu can be accessed by typing \"/menu\", from which point you can navigate to any nation, group, or player section.\n"
-            );
-            pages.add(
-                    "Nations\n\n" +
-                            "1) To protect their territory, players can join or create nations. " +
-                            "2) Outsiders will not be able to build / destroy inside a nation’s borders.\n" +
-                            "3) Players can create a nation with /nation create.\n" +
-                            "4) Players can join a nation with /nation join or by accepting an invite from a nation."
-            );
-            pages.add(
-                    "Groups\n\n" +
-                            "1) Groups are sub-sections of a nation. " +
-                            "2) By default, players will only be able to build/destroy in the territory of the groups that they belong to.\n" +
-                            "3) Players can join any group, even if they aren't from the same nation that the group belongs to.\n" +
-                            "4) Groups can be created with /group create."
-            );
-            pages.add(
-                    "Groups\n\n" +
-                            "1) Groups are sub-sections of a nation. " +
-                            "2) By default, players will only be able to build/destroy in the territory of the groups that they belong to.\n" +
-                            "3) Players can join any group, even if they aren't from the same nation that the group belongs to.\n" +
-                            "4) Groups can be created with /group create."
-            );
-            pages.add(
-                    "Economy\n\n" +
-                            "1) The economy utilizes a diamond-based currency.\n" +
-                            "2) 1 diamond = ¤1,000.00\n" +
-                            "3) Turn diamonds into currency by with /deposit.\n" +
-                            "4) Turn currency back into diamonds with /withdraw.\n" +
-                            "5) Check your balance with /balance\n" +
-                            "6) Find the value of your inventory with /wallet. \n" +
-                            "7) Pay players with /pay\n" +
-                            "8) Trade players with /trade"
-            );
-            pages.add(
-                    "World Map\n\n" +
-                            "Players will be able to view a world map which displays all explored land and nation borders. It can be accessed using /map"
-            );
-
-            bookMeta.setPages(pages);
-            guideBook.setItemMeta(bookMeta);
-            this.guideBook = guideBook;
-        }
-
-        private ItemStack getGuideBook() {
-            if (guideBook == null) {
-                createGuideBook();
-            }
-            return guideBook;
-        }
 
 
         @EventHandler
@@ -415,6 +425,27 @@ public class DiplomacyPlayers {
                 } else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
+                }
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onInventoryClick(InventoryClickEvent event) {
+            if (event.getView().getTopInventory().getType().equals(InventoryType.MERCHANT)) {
+                var itemStack = event.getCurrentItem();
+                if (itemStack != null && itemStack.getItemMeta() instanceof BookMeta) {
+                    if (Objects.equals(((BookMeta) itemStack.getItemMeta()).getGeneration(), BookMeta.Generation.TATTERED)) {
+                        event.getWhoClicked().sendMessage(ChatColor.RED + "This item cannot be traded!");
+                        event.setCancelled(true);
+                    }
+                } else {
+                    var itemStack2 = event.getCursor();
+                    if (itemStack2 != null && itemStack2.getItemMeta() instanceof BookMeta) {
+                        if (Objects.equals(((BookMeta) itemStack2.getItemMeta()).getGeneration(), BookMeta.Generation.TATTERED)) {
+                            event.getWhoClicked().sendMessage(ChatColor.RED + "This item cannot be traded!");
+                            event.setCancelled(true);
+                        }
+                    }
                 }
             }
         }

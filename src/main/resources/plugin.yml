@@ -136,4 +136,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  guide:
+    description: Get a guide.
+    aliases: []
+    usage: "Usage: /<command>"
+
 
