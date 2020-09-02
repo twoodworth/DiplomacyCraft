@@ -15,6 +15,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BannerMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 0) {
             group(sender);
         } else if (args[0].equalsIgnoreCase("1")) {
@@ -153,7 +154,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length != 0) {
             if (args.length == 1) {
                 return Arrays.asList(
@@ -385,7 +386,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var gui = new GroupGuiFactory().create(group, player);
+        var gui = GroupGuiFactory.create(group, player);
         gui.show(player);
     }
 
