@@ -46,15 +46,7 @@ public class DiplomacyRecipes {
 
         woodenHammer.shape("MMM","MSM", " S ");
 
-        var planks = new ArrayList<Material>();
-        planks.add(Material.ACACIA_PLANKS);
-        planks.add(Material.BIRCH_PLANKS);
-        planks.add(Material.CRIMSON_PLANKS);
-        planks.add(Material.DARK_OAK_PLANKS);
-        planks.add(Material.JUNGLE_PLANKS);
-        planks.add(Material.OAK_PLANKS);
-        planks.add(Material.SPRUCE_PLANKS);
-        planks.add(Material.WARPED_PLANKS);
+        var planks = enchantingManager.getInstance().getPlanks();
         woodenHammer.setIngredient('M', new RecipeChoice.MaterialChoice(planks));
         woodenHammer.setIngredient('S', Material.STICK);
         Diplomacy.getInstance().getServer().addRecipe(woodenHammer);
