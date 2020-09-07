@@ -1,6 +1,6 @@
 package me.tedwoodworth.diplomacy;
 
-import me.tedwoodworth.diplomacy.enchanting.enchantingManager;
+import me.tedwoodworth.diplomacy.enchanting.EnchantingManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,7 +36,7 @@ public class DiplomacyRecipes {
             return;
         }
         var lore = new ArrayList<String>();
-        lore.add(enchantingManager.getInstance().getHammerLore());
+        lore.add(EnchantingManager.getInstance().getHammerLore());
         itemMeta.setLore(lore);
         itemMeta.setLocalizedName(ChatColor.WHITE + "Wooden Hammer");
         itemMeta.setDisplayName(ChatColor.WHITE + "Wooden Hammer");
@@ -46,7 +46,7 @@ public class DiplomacyRecipes {
 
         woodenHammer.shape("MMM","MSM", " S ");
 
-        var planks = enchantingManager.getInstance().getPlanks();
+        var planks = EnchantingManager.getInstance().getPlanks();
         woodenHammer.setIngredient('M', new RecipeChoice.MaterialChoice(planks));
         woodenHammer.setIngredient('S', Material.STICK);
         Diplomacy.getInstance().getServer().addRecipe(woodenHammer);
@@ -59,7 +59,7 @@ public class DiplomacyRecipes {
             return;
         }
         var lore = new ArrayList<String>();
-        lore.add(enchantingManager.getInstance().getHammerLore());
+        lore.add(EnchantingManager.getInstance().getHammerLore());
         itemMeta.setLore(lore);
         itemMeta.setLocalizedName(ChatColor.WHITE + "Stone Hammer");
         itemMeta.setDisplayName(ChatColor.WHITE + "Stone Hammer");
@@ -85,7 +85,7 @@ public class DiplomacyRecipes {
             return;
         }
         var lore = new ArrayList<String>();
-        lore.add(enchantingManager.getInstance().getHammerLore());
+        lore.add(EnchantingManager.getInstance().getHammerLore());
         itemMeta.setLore(lore);
         itemMeta.setLocalizedName(ChatColor.WHITE + "Golden Hammer");
         itemMeta.setDisplayName(ChatColor.WHITE + "Golden Hammer");
@@ -107,7 +107,7 @@ public class DiplomacyRecipes {
             return;
         }
         var lore = new ArrayList<String>();
-        lore.add(enchantingManager.getInstance().getHammerLore());
+        lore.add(EnchantingManager.getInstance().getHammerLore());
         itemMeta.setLore(lore);
         itemMeta.setLocalizedName(ChatColor.WHITE + "Iron Hammer");
         itemMeta.setDisplayName(ChatColor.WHITE + "Iron Hammer");
@@ -129,7 +129,7 @@ public class DiplomacyRecipes {
             return;
         }
         var lore = new ArrayList<String>();
-        lore.add(enchantingManager.getInstance().getHammerLore());
+        lore.add(EnchantingManager.getInstance().getHammerLore());
         itemMeta.setLore(lore);
         itemMeta.setLocalizedName(ChatColor.WHITE + "Diamond Hammer");
         itemMeta.setDisplayName(ChatColor.WHITE + "Diamond Hammer");

@@ -28,8 +28,8 @@ public class Nations {
 
     private static Nations instance = null;
     private final File nationConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "nations.yml");
-    private List<Nation> nations = new ArrayList<>();
-    private YamlConfiguration nationConfig;
+    private final List<Nation> nations = new ArrayList<>();
+    private final YamlConfiguration nationConfig;
 
     public List<Nation> getNations() {
         return nations;
@@ -39,7 +39,7 @@ public class Nations {
         Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
-    public Nation createNation(String name, DiplomacyPlayer leader) {
+    public void createNation(String name, DiplomacyPlayer leader) {
         var founder = getOfflinePlayer(leader.getUUID());
         var nextNationID = nationConfig.getString("NextNationID");
         if (nextNationID == null) {
@@ -60,8 +60,6 @@ public class Nations {
         nations.add(nation);
         ScoreboardManager.getInstance().updateScoreboards();
         Bukkit.getPluginManager().callEvent(new NationCreateEvent(nation));
-        return nation;
-
     }
 
     public static Nations getInstance() {

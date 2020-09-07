@@ -6,6 +6,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.VillagerAcquireTradeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -21,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class enchantingManager {
-    private static enchantingManager instance = null;
+public class EnchantingManager {
+    private static EnchantingManager instance = null;
     final String HAMMER_LORE = ChatColor.BLUE + "Hammer";
 
     private List<Material> netheriteTools;
@@ -192,9 +193,9 @@ public class enchantingManager {
         return woodenTools;
     }
 
-    public static enchantingManager getInstance() {
+    public static EnchantingManager getInstance() {
         if (instance == null) {
-            instance = new enchantingManager();
+            instance = new EnchantingManager();
         }
         return instance;
     }
@@ -527,7 +528,7 @@ public class enchantingManager {
     }
 
     public void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(new enchantingManager.EventListener(), Diplomacy.getInstance());
+        Bukkit.getPluginManager().registerEvents(new EnchantingManager.EventListener(), Diplomacy.getInstance());
     }
 
     private class EventListener implements Listener {
@@ -545,7 +546,7 @@ public class enchantingManager {
                     return;
                 }
                 var lore = new ArrayList<String>();
-                lore.add(enchantingManager.getInstance().HAMMER_LORE);
+                lore.add(EnchantingManager.getInstance().HAMMER_LORE);
                 itemMeta.setLore(lore);
                 itemMeta.setLocalizedName(ChatColor.WHITE + "Netherite Hammer");
                 itemMeta.setDisplayName(ChatColor.WHITE + "Netherite Hammer");
@@ -606,6 +607,11 @@ public class enchantingManager {
                 }
 
             }
+        }
+
+        @EventHandler
+        public void onPrepareItemEnchant(PrepareItemEnchantEvent event) {
+            var location = event.getEnchantBlock().getLocation();
         }
 
         @EventHandler
