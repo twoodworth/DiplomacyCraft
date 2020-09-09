@@ -601,7 +601,7 @@ public class DiplomacyPlayers {
             event.getPlayer().getInventory().addItem(getGuideBook());
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler(priority = EventPriority.HIGHEST)
         private void onEntityExplode(EntityExplodeEvent event) {
             var entity = event.getEntity();
             List<Block> keepBlocks = new ArrayList<>();

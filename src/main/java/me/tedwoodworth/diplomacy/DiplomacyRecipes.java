@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.enchanting.EnchantingManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
@@ -29,6 +30,9 @@ public class DiplomacyRecipes {
         enchantingTable();
     }
 
+    private void unknownEnchant() {
+    }
+
     private void woodenHammer() {
         var hammer = new ItemStack(Material.WOODEN_HOE);
         var itemMeta = hammer.getItemMeta();
@@ -43,6 +47,7 @@ public class DiplomacyRecipes {
         hammer.setItemMeta(itemMeta);
 
         ShapedRecipe woodenHammer = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "WoodenHammer"), hammer);
+
 
         woodenHammer.shape("MMM","MSM", " S ");
 

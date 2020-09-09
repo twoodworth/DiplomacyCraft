@@ -2,10 +2,6 @@ package me.tedwoodworth.diplomacy.enchanting;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.events.NationCreateEvent;
-import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +13,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -81,7 +79,6 @@ public class EnchantingTables {
         ConfigurationSection tableSection = YamlConfiguration.loadConfiguration(reader);
 
 
-
         var x = location.getX();
         var y = location.getY();
         var z = location.getZ();
@@ -95,20 +92,70 @@ public class EnchantingTables {
         );
 
         tableSection.createSection("Location", map);
-        tableSection.set("Tables." + tableID + ".Enchantments", new ArrayList<>());
+        tableSection.set("Enchantments", new ArrayList<>());
         tableConfig.set("NextTableID", nextTableID);
         var table = new EnchantingTable(tableID, tableSection);
         tables.add(table);
         return table;
     }
 
-    private EnchantingTable getTable(Location location) {
+    public EnchantingTable getTable(Location location) {
         for (var table : tables) {
             if (table.getLocation().equals(location)) {
                 return table;
             }
         }
         return createTable(location);
+    }
+
+    private boolean notEnoughShelves(EnchantingTable table) {
+        var location = table.getLocation();
+        var required = EnchantingTables.getInstance().getTable(location).getEnchantmentKeys().size() * (30.0 / 33.0);
+        var bookshelves = 0;
+
+        var x = (int) location.getX();
+        var y = (int) location.getY();
+        var z = (int) location.getZ();
+        var world = location.getWorld();
+        List<Material> air = new ArrayList<>();
+        air.add(Material.AIR);
+        air.add(Material.CAVE_AIR);
+        if (world != null) {
+            for (int j = y; j <= y + 1; j++) {
+                for (int i = z - 1; i <= z + 1; i++) {
+                    if (world.getBlockAt(x - 2, j, i).getType().equals(Material.BOOKSHELF)
+                            && air.contains(world.getBlockAt(x - 1, j, i).getType())) bookshelves++;
+                }
+
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if (world.getBlockAt(i, j, z + 2).getType().equals(Material.BOOKSHELF)
+                            && air.contains(world.getBlockAt(i, j, z + 1).getType())) bookshelves++;
+                }
+
+                for (int i = z - 1; i <= z + 1; i++) {
+                    if (world.getBlockAt(x + 2, j, i).getType().equals(Material.BOOKSHELF)
+                            && air.contains(world.getBlockAt(x + 1, j, i).getType())) bookshelves++;
+                }
+
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if (world.getBlockAt(i, j, z - 2).getType().equals(Material.BOOKSHELF)
+                            && air.contains(world.getBlockAt(i, j, z - 1).getType())) bookshelves++;
+                }
+                if (world.getBlockAt(x - 2, j, z - 2).getType().equals(Material.BOOKSHELF)
+                        && air.contains(world.getBlockAt(x - 1, j, z - 1).getType())) bookshelves++;
+
+                if (world.getBlockAt(x + 2, j, z - 2).getType().equals(Material.BOOKSHELF)
+                        && air.contains(world.getBlockAt(x + 1, j, z - 1).getType())) bookshelves++;
+
+                if (world.getBlockAt(x + 2, j, z + 2).getType().equals(Material.BOOKSHELF)
+                        && air.contains(world.getBlockAt(x + 1, j, z + 1).getType())) bookshelves++;
+
+                if (world.getBlockAt(x - 2, j, z + 2).getType().equals(Material.BOOKSHELF)
+                        && air.contains(world.getBlockAt(x - 1, j, z + 1).getType())) bookshelves++;
+            }
+            return bookshelves < required;
+        }
+        return true;
     }
 
     public void save() {
@@ -162,7 +209,6 @@ public class EnchantingTables {
                 EnchantingTables.getInstance().removeTable(table);
             }
         }
-
 
         @EventHandler
         void onPlayerInteract(PlayerInteractEvent event) {
@@ -218,6 +264,15 @@ public class EnchantingTables {
                 } else if (block != null && block.getType().equals(Material.OBSIDIAN)) {//TODO remove
                     for (var item : EnchantingTomes.getInstance().getAllTomes())
                         player.getWorld().dropItem(player.getLocation(), item);
+                }
+            } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                var block = event.getClickedBlock();
+                if (block != null && block.getType().equals(Material.ENCHANTING_TABLE)) {
+                    var table = EnchantingTables.getInstance().getTable(block.getLocation());
+                    if (notEnoughShelves(table)) {
+                        player.sendMessage(ChatColor.RED + "There are not enough bookshelves to use this enchanting table.");
+                        event.setCancelled(true);
+                    }
                 }
             }
         }
