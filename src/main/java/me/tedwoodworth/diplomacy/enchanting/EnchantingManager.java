@@ -541,6 +541,57 @@ public class EnchantingManager {
             return null;
         }
 
+        // Apply Level limits
+        if (resultEnchantments.containsKey(Enchantment.WATER_WORKER)
+                && resultEnchantments.get(Enchantment.WATER_WORKER) > 1)
+                resultEnchantments.replace(Enchantment.WATER_WORKER, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.CHANNELING)
+                && resultEnchantments.get(Enchantment.CHANNELING) > 1)
+                resultEnchantments.replace(Enchantment.CHANNELING, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.VANISHING_CURSE)
+                && resultEnchantments.get(Enchantment.VANISHING_CURSE) > 1)
+                resultEnchantments.replace(Enchantment.VANISHING_CURSE, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.BINDING_CURSE)
+                && resultEnchantments.get(Enchantment.BINDING_CURSE) > 1)
+                resultEnchantments.replace(Enchantment.BINDING_CURSE, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.DEPTH_STRIDER)
+                && resultEnchantments.get(Enchantment.DEPTH_STRIDER) > 3)
+                resultEnchantments.replace(Enchantment.DEPTH_STRIDER, 3);
+
+        if (resultEnchantments.containsKey(Enchantment.ARROW_FIRE)
+                && resultEnchantments.get(Enchantment.ARROW_FIRE) > 1)
+                resultEnchantments.replace(Enchantment.ARROW_FIRE, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.ARROW_INFINITE)
+                && resultEnchantments.get(Enchantment.ARROW_INFINITE) > 1)
+                resultEnchantments.replace(Enchantment.ARROW_INFINITE, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.MENDING)
+                && resultEnchantments.get(Enchantment.MENDING) > 1)
+                resultEnchantments.replace(Enchantment.MENDING, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.MULTISHOT)
+                && resultEnchantments.get(Enchantment.MULTISHOT) > 1)
+                resultEnchantments.replace(Enchantment.MULTISHOT, 1);
+
+        if (resultEnchantments.containsKey(Enchantment.QUICK_CHARGE)
+                && resultEnchantments.get(Enchantment.QUICK_CHARGE) > 5)
+                resultEnchantments.replace(Enchantment.QUICK_CHARGE, 5);
+
+        if (resultEnchantments.containsKey(Enchantment.SILK_TOUCH)
+                && resultEnchantments.get(Enchantment.SILK_TOUCH) > 1)
+                resultEnchantments.replace(Enchantment.SILK_TOUCH, 1);
+
+        for (var enchantment : new HashSet<>(resultEnchantments.keySet())) {
+            if (resultEnchantments.get(enchantment) > 10) {
+                resultEnchantments.replace(enchantment, 10);
+            }
+        }
+
         // Set to null if there is a pair of incompatible enchantments
         // Bane/Smite/Sharpness TODO Cleaving
         var count = 0;
@@ -1483,7 +1534,16 @@ public class EnchantingManager {
                     if (itemMeta == null) return;
                     if (!(itemMeta instanceof Damageable)) return;
                     var damage = ((Damageable) itemMeta).getDamage();
-                    damage += 5;
+                    if (itemMeta.hasEnchant(Enchantment.DURABILITY)) {
+                        var level = itemMeta.getEnchantLevel(Enchantment.DURABILITY);
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < 1.0 / (level + 1)) {
+                                damage++;
+                            }
+                        }
+                    } else {
+                        damage += 5;
+                    }
                     if (damage > item.getType().getMaxDurability()) {
                         player.getInventory().setItemInMainHand(null);
                         player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
@@ -1504,7 +1564,7 @@ public class EnchantingManager {
             try {
                 var offers = event.getOffers();
                 for (var offer : offers) {
-                    offer.setEnchantment(Enchantment.ARROW_FIRE);
+                    offer.setEnchantment(UnknownEnchantment.getInstance());
                     offer.setEnchantmentLevel(1);
                 }
             } catch (NullPointerException ignored) {
@@ -1587,11 +1647,11 @@ public class EnchantingManager {
             }
 
             for (var testEnchantment : enchantmentMap.keySet()) {
-                boolean isArmor = toolType.equals(HELMET) || toolType.equals(CHESTPLATE) || toolType.equals(LEGGINGS) || toolType.equals(BOOTS);
+                boolean isArmor = toolType.equals(HELMET) || toolType.equals(CHESTPLATE) || toolType.equals(LEGGINGS) || toolType.equals(BOOTS) || toolType.equals(BOOK);
                 if (table.hasEnchantment(testEnchantment)) {
                     var level = enchantmentMap.get(testEnchantment);
                     event.getEnchantsToAdd().put(testEnchantment, level);
-                    if (Math.random() > table.getEnchantmentKeys().size() / 33.0) {
+                    if (Math.random() < .20 * ((33.0 - table.getEnchantmentKeys().size()) / 33.0)) {
                         if (isArmor) {
                             if (Math.random() > .5) {
                                 event.getEnchantsToAdd().put(Enchantment.BINDING_CURSE, 1);
@@ -1670,7 +1730,7 @@ public class EnchantingManager {
                 }
                 for (var enchant : enchantments.keySet()) {
                     if (!enchant.equals(Enchantment.BINDING_CURSE) && !enchant.equals(Enchantment.VANISHING_CURSE)) {
-                        cost += Math.pow(2, result.getEnchantmentLevel(enchant) - 1);
+                        cost += Math.pow(2, enchantments.get(enchant) - 1);
                     }
                 }
                 var finalCost = 1 + cost;
