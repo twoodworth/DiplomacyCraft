@@ -1660,7 +1660,15 @@ public class EnchantingManager {
             // Calculate the cost
             if (result != null) {
                 var cost = 0;
-                for (var enchant : result.getEnchantments().keySet()) {
+                var enchantments = result.getEnchantments();
+                if (result.getType().equals(Material.ENCHANTED_BOOK)) {
+                    var meta = result.getItemMeta();
+                    var enchantMeta = (EnchantmentStorageMeta) meta;
+                    if (enchantMeta != null) {
+                        enchantments = enchantMeta.getStoredEnchants();
+                    }
+                }
+                for (var enchant : enchantments.keySet()) {
                     if (!enchant.equals(Enchantment.BINDING_CURSE) && !enchant.equals(Enchantment.VANISHING_CURSE)) {
                         cost += Math.pow(2, result.getEnchantmentLevel(enchant) - 1);
                     }
