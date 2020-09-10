@@ -188,7 +188,7 @@ public class EnchantingManager {
     }
 
     private List<Material> getStoneTools() {
-        if (Objects.equals(this.chainArmor, null)) {
+        if (Objects.equals(this.stoneTools, null)) {
             var stoneTools = new ArrayList<Material>();
             stoneTools.add(Material.STONE_SWORD);
             stoneTools.add(Material.STONE_PICKAXE);
@@ -211,6 +211,7 @@ public class EnchantingManager {
             woodenTools.add(Material.WOODEN_PICKAXE);
             woodenTools.add(Material.WOODEN_AXE);
             woodenTools.add(Material.WOODEN_SHOVEL);
+            woodenTools.add(Material.WOODEN_HOE);
             this.woodenTools = woodenTools;
         }
         return woodenTools;
@@ -389,6 +390,8 @@ public class EnchantingManager {
             return FISHING_ROD;
         } else if (item.equals(Material.BOOK)) {
             return BOOK;
+        }else if (item.equals(Material.BOW)) {
+            return BOW;
         } else {
             return OTHER;
         }
@@ -465,7 +468,7 @@ public class EnchantingManager {
                     return null;
                 }
             }
-            case OTHER, BOOK -> {
+            case OTHER, BOOK, FISHING_ROD, BOW -> {
                 if (!(item2.getType().equals(Material.ENCHANTED_BOOK))) {
                     return null;
                 }
@@ -671,729 +674,737 @@ public class EnchantingManager {
 
     private @Nullable Map<Enchantment, Integer> getEnchantment(String toolType, int tier) {
         // Hammer
-        if (toolType.equals(HAMMER)) {
+        switch (toolType) {
+            case HAMMER:
 
-            // Hammer Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(11)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.IMPALING, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 6 -> ImmutableMap.of(Enchantment.PIERCING, 1);
-                    case 7 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 8 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    case 9 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
-                    default -> null;
-                };
+                // Hammer Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(11)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.IMPALING, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.LURE, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 6 -> ImmutableMap.of(Enchantment.PIERCING, 1);
+                        case 7 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 8 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        case 9 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
+                        default -> null;
+                    };
 
-                // Hammer tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(20)) {
-                    case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.LUCK, 1);
-                    case 6 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    case 7 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 8 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
-                    case 9 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
-                    case 11 -> ImmutableMap.of(Enchantment.THORNS, 1);
-                    case 12 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
-                    case 13 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 14 -> ImmutableMap.of(Enchantment.IMPALING, 2);
-                    case 15 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 16 -> ImmutableMap.of(Enchantment.PIERCING, 2);
-                    case 17 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    case 18 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
-                    case 19 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
-                    default -> null;
-                };
+                    // Hammer tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(20)) {
+                        case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.LUCK, 1);
+                        case 6 -> ImmutableMap.of(Enchantment.LURE, 1);
+                        case 7 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 8 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
+                        case 9 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
+                        case 11 -> ImmutableMap.of(Enchantment.THORNS, 1);
+                        case 12 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
+                        case 13 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 14 -> ImmutableMap.of(Enchantment.IMPALING, 2);
+                        case 15 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 16 -> ImmutableMap.of(Enchantment.PIERCING, 2);
+                        case 17 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        case 18 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
+                        case 19 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
+                        default -> null;
+                    };
 
-                // Hammer tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(28)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
-                    case 6 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 7 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
-                    case 8 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 9 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 11 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
-                    case 12 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 13 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
-                    case 14 -> ImmutableMap.of(Enchantment.LUCK, 2);
-                    case 15 -> ImmutableMap.of(Enchantment.LURE, 2);
-                    case 16 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
-                    case 17 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
-                    case 18 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
-                    case 19 -> ImmutableMap.of(Enchantment.THORNS, 2);
-                    case 20 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
-                    case 21 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 22 -> ImmutableMap.of(Enchantment.IMPALING, 3);
-                    case 23 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 24 -> ImmutableMap.of(Enchantment.PIERCING, 3);
-                    case 25 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    case 26 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
-                    case 27 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
-                    default -> null;
-                };
+                    // Hammer tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(28)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
+                        case 6 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 7 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
+                        case 8 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 9 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 11 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
+                        case 12 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 13 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
+                        case 14 -> ImmutableMap.of(Enchantment.LUCK, 2);
+                        case 15 -> ImmutableMap.of(Enchantment.LURE, 2);
+                        case 16 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
+                        case 17 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
+                        case 18 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
+                        case 19 -> ImmutableMap.of(Enchantment.THORNS, 2);
+                        case 20 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
+                        case 21 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 22 -> ImmutableMap.of(Enchantment.IMPALING, 3);
+                        case 23 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 24 -> ImmutableMap.of(Enchantment.PIERCING, 3);
+                        case 25 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        case 26 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
+                        case 27 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(33)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
-                    case 6 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
-                    case 7 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
-                    case 8 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
-                    case 9 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
-                    case 11 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
-                    case 12 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
-                    case 13 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 14 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 15 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 16 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
-                    case 17 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 18 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
-                    case 19 -> ImmutableMap.of(Enchantment.LUCK, 3);
-                    case 20 -> ImmutableMap.of(Enchantment.LURE, 3);
-                    case 21 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
-                    case 22 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
-                    case 23 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
-                    case 24 -> ImmutableMap.of(Enchantment.THORNS, 3);
-                    case 25 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
-                    case 26 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 27 -> ImmutableMap.of(Enchantment.IMPALING, 4);
-                    case 28 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 29 -> ImmutableMap.of(Enchantment.PIERCING, 4);
-                    case 30 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    case 31 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
-                    case 32 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(BOOK)) {
-            // Book Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(22)) {
-                    case 0, 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
-                    case 2, 3, 4, 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.IMPALING, 1);
-                    case 11 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    case 12 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 13 -> ImmutableMap.of(Enchantment.PIERCING, 1);
-                    case 14 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 15, 16, 17, 18 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    case 19, 20 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
-                    case 21 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
-                    default -> null;
-                };
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(33)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
+                        case 6 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
+                        case 7 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
+                        case 8 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
+                        case 9 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
+                        case 11 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
+                        case 12 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
+                        case 13 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 14 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 15 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 16 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
+                        case 17 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 18 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
+                        case 19 -> ImmutableMap.of(Enchantment.LUCK, 3);
+                        case 20 -> ImmutableMap.of(Enchantment.LURE, 3);
+                        case 21 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
+                        case 22 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
+                        case 23 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
+                        case 24 -> ImmutableMap.of(Enchantment.THORNS, 3);
+                        case 25 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
+                        case 26 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 27 -> ImmutableMap.of(Enchantment.IMPALING, 4);
+                        case 28 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 29 -> ImmutableMap.of(Enchantment.PIERCING, 4);
+                        case 30 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        case 31 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
+                        case 32 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case BOOK:
+                // Book Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(22)) {
+                        case 0, 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
+                        case 2, 3, 4, 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.IMPALING, 1);
+                        case 11 -> ImmutableMap.of(Enchantment.LURE, 1);
+                        case 12 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 13 -> ImmutableMap.of(Enchantment.PIERCING, 1);
+                        case 14 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 15, 16, 17, 18 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        case 19, 20 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
+                        case 21 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
+                        default -> null;
+                    };
 
-                // Book tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(36)) {
-                    case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
-                    case 2, 3, 4, 5 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
-                    case 11 -> ImmutableMap.of(Enchantment.LUCK, 1);
-                    case 12 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    case 13 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 14 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
-                    case 15 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
-                    case 16 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
-                    case 17, 18, 19, 20 -> ImmutableMap.of(Enchantment.THORNS, 1);
-                    case 21, 22 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
-                    case 23, 24, 25, 26 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 27 -> ImmutableMap.of(Enchantment.IMPALING, 2);
-                    case 28 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 29 -> ImmutableMap.of(Enchantment.PIERCING, 2);
-                    case 30, 31, 32, 33 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    case 34, 35 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
-                    case 36 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
-                    default -> null;
-                };
+                    // Book tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(36)) {
+                        case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
+                        case 2, 3, 4, 5 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
+                        case 11 -> ImmutableMap.of(Enchantment.LUCK, 1);
+                        case 12 -> ImmutableMap.of(Enchantment.LURE, 1);
+                        case 13 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 14 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
+                        case 15 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
+                        case 16 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
+                        case 17, 18, 19, 20 -> ImmutableMap.of(Enchantment.THORNS, 1);
+                        case 21, 22 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
+                        case 23, 24, 25, 26 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 27 -> ImmutableMap.of(Enchantment.IMPALING, 2);
+                        case 28 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 29 -> ImmutableMap.of(Enchantment.PIERCING, 2);
+                        case 30, 31, 32, 33 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        case 34, 35 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
+                        case 36 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
+                        default -> null;
+                    };
 
-                // Book tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(61)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
-                    case 1, 2, 3, 4 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
-                    case 6 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
-                    case 7 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 8 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
-                    case 9 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 10 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
-                    case 11, 12, 13, 14 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 29 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 30 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
-                    case 31, 32, 33, 34 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 35 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
-                    case 36 -> ImmutableMap.of(Enchantment.LUCK, 2);
-                    case 37 -> ImmutableMap.of(Enchantment.LURE, 2);
-                    case 38 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
-                    case 39 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
-                    case 40 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
-                    case 41, 42, 43, 44 -> ImmutableMap.of(Enchantment.THORNS, 2);
-                    case 45, 46 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
-                    case 47, 48, 49, 50 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 51 -> ImmutableMap.of(Enchantment.IMPALING, 3);
-                    case 52 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 53 -> ImmutableMap.of(Enchantment.PIERCING, 3);
-                    case 54, 55, 56, 57 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    case 58, 59 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
-                    case 60 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
-                    default -> null;
-                };
+                    // Book tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(61)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
+                        case 1, 2, 3, 4 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
+                        case 6 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
+                        case 7 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 8 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
+                        case 9 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 10 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
+                        case 11, 12, 13, 14 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 29 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 30 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
+                        case 31, 32, 33, 34 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 35 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
+                        case 36 -> ImmutableMap.of(Enchantment.LUCK, 2);
+                        case 37 -> ImmutableMap.of(Enchantment.LURE, 2);
+                        case 38 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
+                        case 39 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
+                        case 40 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
+                        case 41, 42, 43, 44 -> ImmutableMap.of(Enchantment.THORNS, 2);
+                        case 45, 46 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
+                        case 47, 48, 49, 50 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 51 -> ImmutableMap.of(Enchantment.IMPALING, 3);
+                        case 52 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 53 -> ImmutableMap.of(Enchantment.PIERCING, 3);
+                        case 54, 55, 56, 57 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        case 58, 59 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
+                        case 60 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
+                        default -> null;
+                    };
 
-                // Book tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(73)) {
-                    case 0, 1, 2, 3 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
-                    case 5 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
-                    case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 10, 11 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
-                    case 12 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
-                    case 13, 14, 15, 16 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
-                    case 17 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
-                    case 18 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
-                    case 19 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 20 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
-                    case 21 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
-                    case 22 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
-                    case 23, 24, 25, 26 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 41 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 42 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
-                    case 43, 44, 45, 46 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 47 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
-                    case 48 -> ImmutableMap.of(Enchantment.LUCK, 3);
-                    case 49 -> ImmutableMap.of(Enchantment.LURE, 3);
-                    case 50 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
-                    case 51 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
-                    case 52 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
-                    case 53, 54, 55, 56 -> ImmutableMap.of(Enchantment.THORNS, 3);
-                    case 57, 58 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
-                    case 59, 60, 61, 62 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 63 -> ImmutableMap.of(Enchantment.IMPALING, 4);
-                    case 64 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 65 -> ImmutableMap.of(Enchantment.PIERCING, 4);
-                    case 66, 67, 68, 69 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    case 70, 71 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
-                    case 72 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
-                    default -> null;
-                };
-            }
-            // Sword
-        } else if (toolType.equals(SWORD)) {
+                    // Book tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(73)) {
+                        case 0, 1, 2, 3 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
+                        case 5 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
+                        case 6, 7, 8, 9 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 10, 11 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
+                        case 12 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
+                        case 13, 14, 15, 16 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
+                        case 17 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
+                        case 18 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
+                        case 19 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 20 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
+                        case 21 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
+                        case 22 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
+                        case 23, 24, 25, 26 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 41 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 42 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
+                        case 43, 44, 45, 46 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 47 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
+                        case 48 -> ImmutableMap.of(Enchantment.LUCK, 3);
+                        case 49 -> ImmutableMap.of(Enchantment.LURE, 3);
+                        case 50 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
+                        case 51 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
+                        case 52 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
+                        case 53, 54, 55, 56 -> ImmutableMap.of(Enchantment.THORNS, 3);
+                        case 57, 58 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
+                        case 59, 60, 61, 62 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 63 -> ImmutableMap.of(Enchantment.IMPALING, 4);
+                        case 64 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 65 -> ImmutableMap.of(Enchantment.PIERCING, 4);
+                        case 66, 67, 68, 69 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        case 70, 71 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
+                        case 72 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
+                        default -> null;
+                    };
+                }
+                // Sword
+                break;
+            case SWORD:
 
-            // Sword Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
-                    default -> null;
-                };
+                // Sword Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 1);
+                        default -> null;
+                    };
 
-                // Sword Tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(20)) {
-                    case 0 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
-                    default -> null;
-                };
+                    // Sword Tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(20)) {
+                        case 0 -> ImmutableMap.of(Enchantment.KNOCKBACK, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 2);
+                        default -> null;
+                    };
 
-                // Sword Tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(6)) {
-                    case 0 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
-                    default -> null;
-                };
+                    // Sword Tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(6)) {
+                        case 0 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.KNOCKBACK, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 3);
+                        default -> null;
+                    };
 
-                // Sword Tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(8)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
-                    case 6 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
-                    case 7 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
-                    default -> null;
-                };
-            }
-        } else if (toolType.equals(AXE)) {
+                    // Sword Tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(8)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_MOBS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.FIRE_ASPECT, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.KNOCKBACK, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
+                        case 6 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
+                        case 7 -> ImmutableMap.of(Enchantment.SWEEPING_EDGE, 4);
+                        default -> null;
+                    };
+                }
+                break;
+            case AXE:
 
-            // Axe Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
-                    default -> null;
-                };
+                // Axe Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 1);
+                        default -> null;
+                    };
 
-                // Axe tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
-                    default -> null;
-                };
+                    // Axe tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 2);
+                        default -> null;
+                    };
 
-                // Hammer tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
-                    default -> null;
-                };
+                    // Hammer tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 3);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(7)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 4 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 5 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
-                    case 6 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
-                    default -> null;
-                };
-            }
-        } else if (toolType.equals(PICK_SHOVEL_HOE)) {
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(7)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DAMAGE_ALL, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 4 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 5 -> ImmutableMap.of(Enchantment.DAMAGE_ARTHROPODS, 4);
+                        case 6 -> ImmutableMap.of(Enchantment.DAMAGE_UNDEAD, 4);
+                        default -> null;
+                    };
+                }
+                break;
+            case PICK_SHOVEL_HOE:
 
-            // Pick/Shovel/Hoe Tier 0 & 1
-            if (tier == 0 || tier == 1) {
-                return ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                // Pick/Shovel/Hoe Tier 0 & 1
+                if (tier == 0 || tier == 1) {
+                    return ImmutableMap.of(Enchantment.DIG_SPEED, 1);
 
-                // Pick/Shovel/Hoe tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    default -> null;
-                };
+                    // Pick/Shovel/Hoe tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DIG_SPEED, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        default -> null;
+                    };
 
-                // Pick/Shovel/Hoe tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(33)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(BOW)) {
+                    // Pick/Shovel/Hoe tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(33)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOOT_BONUS_BLOCKS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DIG_SPEED, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.SILK_TOUCH, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case BOW:
+                // Bow Tier 0
+                if (tier == 0) {
+                    return ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
+                        default -> null;
+                    };
 
-            // Bow Tier 0
-            if (tier == 0) {
-                return ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 1);
-                    default -> null;
-                };
+                    // Bow tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(4)) {
+                        case 0 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        default -> null;
+                    };
 
-                // Bow tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(4)) {
-                    case 0 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    default -> null;
-                };
+                    // Bow tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
+                        default -> null;
+                    };
+                }
+                break;
+            case FISHING_ROD:
 
-                // Bow tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.ARROW_INFINITE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.ARROW_FIRE, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.ARROW_DAMAGE, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.ARROW_KNOCKBACK, 3);
-                    default -> null;
-                };
-            }
-        } else if (toolType.equals(FISHING_ROD)) {
+                // Rod Tier 0
+                if (tier == 0) {
+                    return ImmutableMap.of(Enchantment.LURE, 1);
+                    // Rod tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LUCK, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.LURE, 1);
+                        default -> null;
+                    };
 
-            // Rod Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(0)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    default -> null;
-                };
+                    // Rod tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.LUCK, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.LURE, 2);
+                        default -> null;
+                    };
 
-                // Rod tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LUCK, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.LURE, 1);
-                    default -> null;
-                };
+                    // Rod tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 1 -> ImmutableMap.of(Enchantment.LUCK, 3);
+                        case 2 -> ImmutableMap.of(Enchantment.LURE, 3);
+                        default -> null;
+                    };
+                }
+                break;
+            case TRIDENT:
 
-                // Rod tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.LUCK, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.LURE, 2);
-                    default -> null;
-                };
+                // Trident Tier 0
+                if (tier == 0) {
+                    return ImmutableMap.of(Enchantment.IMPALING, 1);
 
-                // Rod tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 1 -> ImmutableMap.of(Enchantment.LUCK, 3);
-                    case 2 -> ImmutableMap.of(Enchantment.LURE, 3);
-                    default -> null;
-                };
-            }
-        } else if (toolType.equals(TRIDENT)) {
+                    // Trident tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.IMPALING, 2);
+                        default -> null;
+                    };
 
-            // Trident Tier 0
-            if (tier == 0) {
-                return ImmutableMap.of(Enchantment.IMPALING, 1);
+                    // Trident tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.IMPALING, 3);
+                        default -> null;
+                    };
 
-                // Trident tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.CHANNELING, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.IMPALING, 2);
-                    default -> null;
-                };
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
+                        case 1 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.IMPALING, 4);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case CROSSBOW:
 
-                // Trident tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOYALTY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.RIPTIDE, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.CHANNELING, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.IMPALING, 3);
-                    default -> null;
-                };
+                // Crossbow Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PIERCING, 1);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.LOYALTY, 2);
-                    case 1 -> ImmutableMap.of(Enchantment.RIPTIDE, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.CHANNELING, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.IMPALING, 4);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(CROSSBOW)) {
+                    // Crossbow tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.PIERCING, 2);
+                        default -> null;
+                    };
 
-            // Crossbow Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PIERCING, 1);
-                    default -> null;
-                };
+                    // Hammer tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(4)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PIERCING, 3);
+                        default -> null;
+                    };
 
-                // Crossbow tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.PIERCING, 2);
-                    default -> null;
-                };
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(33)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 1 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
+                        case 2 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PIERCING, 4);
+                        default -> null;
+                    };
+                }
+                // Helmet
+                break;
+            case HELMET:
 
-                // Hammer tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(4)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PIERCING, 3);
-                    default -> null;
-                };
+                // Helmet Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(33)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 1 -> ImmutableMap.of(Enchantment.QUICK_CHARGE, 3);
-                    case 2 -> ImmutableMap.of(Enchantment.MULTISHOT, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PIERCING, 4);
-                    default -> null;
-                };
-            }
-            // Helmet
-        } else if (toolType.equals(HELMET)) {
+                    // Helmet tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        default -> null;
+                    };
 
-            // Helmet Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    default -> null;
-                };
+                    // Hammer tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(6)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        default -> null;
+                    };
 
-                // Helmet tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.OXYGEN, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    default -> null;
-                };
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(7)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 6 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case CHESTPLATE:
 
-                // Hammer tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(6)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.OXYGEN, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    default -> null;
-                };
+                // Chestplate Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(7)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.WATER_WORKER, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.OXYGEN, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 6 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(CHESTPLATE)) {
+                    // Chestplate tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(4)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.THORNS, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        default -> null;
+                    };
 
-            // Chestplate Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    default -> null;
-                };
+                    // Chestplate tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.THORNS, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        default -> null;
+                    };
 
-                // Chestplate tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(4)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.THORNS, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    default -> null;
-                };
+                    // Hammer tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(6)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 3 -> ImmutableMap.of(Enchantment.THORNS, 3);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case LEGGINGS:
 
-                // Chestplate tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.THORNS, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    default -> null;
-                };
+                // Leggings Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        default -> null;
+                    };
 
-                // Hammer tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(6)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 3 -> ImmutableMap.of(Enchantment.THORNS, 3);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(LEGGINGS)) {
+                    // Leggings tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        default -> null;
+                    };
 
-            // Leggings Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    default -> null;
-                };
+                    // Leggings tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(4)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        default -> null;
+                    };
 
-                // Leggings tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    default -> null;
-                };
+                    // Leggings tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(5)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        default -> null;
+                    };
+                }
+                //Book
+                break;
+            case BOOTS:
 
-                // Leggings tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(4)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    default -> null;
-                };
+                // Boots Tier 0
+                if (tier == 0) {
+                    var random = new Random();
+                    return switch (random.nextInt(2)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
+                        default -> null;
+                    };
 
-                // Leggings tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(5)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    default -> null;
-                };
-            }
-            //Book
-        } else if (toolType.equals(BOOTS)) {
+                    // Boots tier 1
+                } else if (tier == 1) {
+                    var random = new Random();
+                    return switch (random.nextInt(3)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
+                        default -> null;
+                    };
 
-            // Boots Tier 0
-            if (tier == 0) {
-                var random = new Random();
-                return switch (random.nextInt(2)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 1);
-                    default -> null;
-                };
+                    // Boots tier 2
+                } else if (tier == 2) {
+                    var random = new Random();
+                    return switch (random.nextInt(6)) {
+                        case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
+                        case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
+                        case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
+                        default -> null;
+                    };
 
-                // Boots tier 1
-            } else if (tier == 1) {
-                var random = new Random();
-                return switch (random.nextInt(3)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 2);
-                    default -> null;
-                };
-
-                // Boots tier 2
-            } else if (tier == 2) {
-                var random = new Random();
-                return switch (random.nextInt(6)) {
-                    case 0 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 1);
-                    case 2 -> ImmutableMap.of(Enchantment.DURABILITY, 1);
-                    case 3 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 3);
-                    default -> null;
-                };
-
-                // Boots tier 3
-            } else if (tier == 3) {
-                var random = new Random();
-                return switch (random.nextInt(7)) {
-                    case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-                    case 1 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
-                    case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
-                    case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
-                    case 4 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
-                    case 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
-                    case 6 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
-                    default -> null;
-                };
-            }
+                    // Boots tier 3
+                } else if (tier == 3) {
+                    var random = new Random();
+                    return switch (random.nextInt(7)) {
+                        case 0 -> ImmutableMap.of(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+                        case 1 -> ImmutableMap.of(Enchantment.DEPTH_STRIDER, 2);
+                        case 2 -> ImmutableMap.of(Enchantment.PROTECTION_FALL, 2);
+                        case 3 -> ImmutableMap.of(Enchantment.DURABILITY, 2);
+                        case 4 -> ImmutableMap.of(Enchantment.PROTECTION_FIRE, 3);
+                        case 5 -> ImmutableMap.of(Enchantment.PROTECTION_EXPLOSIONS, 4);
+                        case 6 -> ImmutableMap.of(Enchantment.PROTECTION_PROJECTILE, 4);
+                        default -> null;
+                    };
+                }
+                break;
         }
         return null;
     }
@@ -1592,7 +1603,7 @@ public class EnchantingManager {
             var random = Math.random();
 
             switch (toolMaterial) {
-                case WOODEN, FISHING_ROD, NETHERITE -> {
+                case WOODEN, FISHING_ROD, BOW, NETHERITE -> {
                     if (random < .3) {
                         tier++;
                     }
@@ -1689,6 +1700,13 @@ public class EnchantingManager {
 
         @EventHandler(ignoreCancelled = true)
         public void onPrepareAnvil(PrepareAnvilEvent event) {
+            var view = event.getView();
+            var player = (Player) view.getBottomInventory().getHolder();
+            var heldItemSlot = player.getInventory().getHeldItemSlot();
+            if (!isHammer(view.getBottomInventory().getItem(heldItemSlot))) {
+                player.sendMessage(ChatColor.RED + "You do not have a hammer.");
+                event.setResult(null);
+            }
             var anvilInv = event.getInventory();
             var item1 = anvilInv.getItem(0);
             var item2 = anvilInv.getItem(1);
@@ -1697,7 +1715,6 @@ public class EnchantingManager {
             if (holder == null) return;
             if (!(holder instanceof Player)) return;
 
-            var player = (Player) holder;
             var hammer = player.getInventory().getItemInMainHand();
 
             if (!isHammer(hammer)) return;
