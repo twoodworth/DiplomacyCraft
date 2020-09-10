@@ -1,16 +1,24 @@
 package me.tedwoodworth.diplomacy.enchanting;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class EnchantingTomes {
     private static EnchantingTomes instance = null;
@@ -48,6 +56,7 @@ public class EnchantingTomes {
     private ItemStack multishot;
     private ItemStack piercing;
     private ItemStack unbreaking;
+    private List<EntityType> arthropods;
 
     private final String protectionTitle = "Tome of Protection";
     private final String featherFallingTitle = "Tome of Feather Falling";
@@ -90,6 +99,10 @@ public class EnchantingTomes {
             instance = new EnchantingTomes();
         }
         return instance;
+    }
+
+    public void registerEvents() {
+        Bukkit.getPluginManager().registerEvents(new EnchantingTomes.EventListener(), Diplomacy.getInstance());
     }
 
     // TODO remove
@@ -751,6 +764,19 @@ public class EnchantingTomes {
         return multishot;
     }
 
+    private List<EntityType> getArthropods() {
+        if (arthropods == null) {
+            var arthropods = new ArrayList<EntityType>();
+            arthropods.add(EntityType.SPIDER);
+            arthropods.add(EntityType.CAVE_SPIDER);
+            arthropods.add(EntityType.BEE);
+            arthropods.add(EntityType.SILVERFISH);
+            arthropods.add(EntityType.ENDERMITE);
+            this.arthropods = arthropods;
+        }
+        return arthropods;
+    }
+
     private ItemStack getUnbreaking() {
         if (this.unbreaking == null) {
             var book = new ItemStack(Material.WRITTEN_BOOK);
@@ -877,4 +903,194 @@ public class EnchantingTomes {
         };
     }
 
+    private class EventListener implements Listener {
+
+        @EventHandler
+        private void onCreatureSpawn(CreatureSpawnEvent event) {
+            var entity = event.getEntity();
+            if (entity.getType().equals(EntityType.WANDERING_TRADER)) {
+                var villager = (WanderingTrader) entity;
+                var recipes = new ArrayList<>(villager.getRecipes());
+                var random = (int) (Math.random() * 14);
+                ItemStack tome = switch(random) {
+                    case 0 -> getAquaAffinity();
+                    case 1 -> getDepthStrider();
+                    case 2 -> getFortune();
+                    case 3 -> getImpaling();
+                    case 4 -> getLuckOfTheSea();
+                    case 5 -> getRiptide();
+                    case 6 -> getSweepingEdge();
+                    default -> null;
+                };
+                if (tome == null) {
+                    return;
+                }
+
+                var knowledgeBookRecipe = new MerchantRecipe(tome, 1);
+                knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                recipes.add(knowledgeBookRecipe);
+                villager.setRecipes(recipes);
+            }
+        }
+
+        @EventHandler
+        public void onEntityDropItem(EntityDropItemEvent event) {
+            var entity = event.getEntity();
+            if (entity.getType().equals(EntityType.PIGLIN) && Math.random() < .004) {
+                event.getItemDrop().setItemStack(getFireAspect());
+            }
+        }
+
+        @EventHandler
+        public void onVillagerAcquireTrade(VillagerAcquireTradeEvent event) {
+            var villager = (Villager) event.getEntity();
+            var profession = villager.getProfession();
+            if (profession.equals(Villager.Profession.TOOLSMITH)) {
+                if (event.getRecipe().getResult().getType().equals(Material.DIAMOND_PICKAXE) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getEfficiency(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.CLERIC)) {
+                if (event.getRecipe().getResult().getType().equals(Material.EXPERIENCE_BOTTLE) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getLooting(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.FISHERMAN)) {
+                if (event.getRecipe().getIngredients().contains(new ItemStack(Material.PUFFERFISH, 4)) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getLure(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.FLETCHER)) {
+                if (event.getRecipe().getIngredients().contains(new ItemStack(Material.ARROW, 5)) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getMultishot(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.MASON)) {
+                if (event.getRecipe().getResult().getType().equals(Material.QUARTZ_PILLAR) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getSilkTouch(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.WEAPONSMITH)) {
+                if (event.getRecipe().getResult().getType().equals(Material.DIAMOND_SWORD) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getSmite(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            } else if (profession.equals(Villager.Profession.ARMORER)) {
+                if (event.getRecipe().getResult().getType().equals(Material.DIAMOND_CHESTPLATE) && Math.random() < (1.0 / 3.0)) {
+                    var recipes = new ArrayList<>(event.getEntity().getRecipes());
+                    var knowledgeBookRecipe = new MerchantRecipe(getUnbreaking(), 1);
+                    knowledgeBookRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 17 + 48)));
+                    recipes.add(knowledgeBookRecipe);
+                    event.getEntity().setRecipes(recipes);
+                }
+            }
+        }
+
+        @EventHandler
+        private void onEntityDeath(EntityDeathEvent event) {
+            var entity = event.getEntity();
+            if (entity.getKiller() == null) {
+                return;
+            }
+            var type = entity.getType();
+            if (getArthropods().contains(type)) {
+                if (Math.random() < .01) {
+                    event.getDrops().add(getBaneOfArthropods());
+                }
+            } else if (type.equals(EntityType.CREEPER)) {
+                var creeper = (Creeper) entity;
+                if (creeper.isPowered() && Math.random() < .1) {
+                    event.getDrops().add(getChanneling());
+                } else if (Math.random() < .01) {
+                    event.getDrops().add(getBlastProtection());
+                }
+            } else if (type.equals(EntityType.SLIME) || type.equals(EntityType.MAGMA_CUBE)) {
+                if (Math.random() < .002) {
+                    event.getDrops().add(getFeatherFalling());
+                }
+            } else if (type.equals(EntityType.ZOMBIFIED_PIGLIN)) {
+                if (Math.random() < .01) {
+                    event.getDrops().add(getFireProtection());
+                }
+            } else if (type.equals(EntityType.GHAST)) {
+                if (Math.random() < .05) {
+                    event.getDrops().add(getFlame());
+                }
+            }  else if (type.equals(EntityType.BLAZE)) {
+                if (Math.random() < .004) {
+                    event.getDrops().add(getFlame());
+                }
+            } else if (type.equals(EntityType.SKELETON) || type.equals(EntityType.STRAY)) {
+                if (Math.random() < .002) {
+                    event.getDrops().add(getInfinity());
+                }
+                if (type.equals(EntityType.SKELETON) && Math.random() < .005) {
+                    event.getDrops().add(getPower());
+                }
+                if (type.equals(EntityType.STRAY) && Math.random() < .01) {
+                    event.getDrops().add(getPunch());
+                }
+            } else if (type.equals(EntityType.ENDER_DRAGON)) {
+                event.getDrops().add(getKnockback());
+            } else if (type.equals(EntityType.DROWNED)) {
+                if (Math.random() < .01) {
+                    event.getDrops().add(getRespiration());
+                }
+                var equipment = entity.getEquipment();
+                if (equipment != null) {
+                    var held = equipment.getItemInMainHand();
+                    if (Objects.equals(held.getType(), Material.TRIDENT) && Math.random() < .1) {
+                        event.getDrops().add(getLoyalty());
+                    }
+                }
+            } else if (type.equals(EntityType.PILLAGER)) {
+                if (Math.random() < .01) {
+                    event.getDrops().add(getPiercing());
+                }
+            } else if (type.equals(EntityType.WITHER)) {
+                event.getDrops().add(getProjectileProtection());
+            } else if (type.equals(EntityType.SHULKER)) {
+                if (Math.random() < .025) {
+                    event.getDrops().add(getProtection());
+                }
+            } else if (type.equals(EntityType.PIGLIN)) {
+                var equipment = entity.getEquipment();
+                if (equipment != null) {
+                    if (Objects.equals(equipment.getItemInMainHand().getType(), Material.CROSSBOW) && Math.random() < .01) {
+                        event.getDrops().add(getQuickCharge());
+                    }
+                }
+            } else if (type.equals(EntityType.RAVAGER)) {
+                if (Math.random() < .1) {
+                    event.getDrops().add(getSharpness());
+                }
+            } else if (type.equals(EntityType.ELDER_GUARDIAN)) {
+                if (Math.random() < (2.0 / 3.0)) {
+                    event.getDrops().add(getThorns());
+                }
+            } else if (type.equals(EntityType.GUARDIAN)) {
+                if (Math.random() < .02) {
+                    event.getDrops().add(getThorns());
+                }
+            }
+        }
+    }
 }

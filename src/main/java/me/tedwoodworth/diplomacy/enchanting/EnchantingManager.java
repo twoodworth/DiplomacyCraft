@@ -544,47 +544,47 @@ public class EnchantingManager {
         // Apply Level limits
         if (resultEnchantments.containsKey(Enchantment.WATER_WORKER)
                 && resultEnchantments.get(Enchantment.WATER_WORKER) > 1)
-                resultEnchantments.replace(Enchantment.WATER_WORKER, 1);
+            resultEnchantments.replace(Enchantment.WATER_WORKER, 1);
 
         if (resultEnchantments.containsKey(Enchantment.CHANNELING)
                 && resultEnchantments.get(Enchantment.CHANNELING) > 1)
-                resultEnchantments.replace(Enchantment.CHANNELING, 1);
+            resultEnchantments.replace(Enchantment.CHANNELING, 1);
 
         if (resultEnchantments.containsKey(Enchantment.VANISHING_CURSE)
                 && resultEnchantments.get(Enchantment.VANISHING_CURSE) > 1)
-                resultEnchantments.replace(Enchantment.VANISHING_CURSE, 1);
+            resultEnchantments.replace(Enchantment.VANISHING_CURSE, 1);
 
         if (resultEnchantments.containsKey(Enchantment.BINDING_CURSE)
                 && resultEnchantments.get(Enchantment.BINDING_CURSE) > 1)
-                resultEnchantments.replace(Enchantment.BINDING_CURSE, 1);
+            resultEnchantments.replace(Enchantment.BINDING_CURSE, 1);
 
         if (resultEnchantments.containsKey(Enchantment.DEPTH_STRIDER)
                 && resultEnchantments.get(Enchantment.DEPTH_STRIDER) > 3)
-                resultEnchantments.replace(Enchantment.DEPTH_STRIDER, 3);
+            resultEnchantments.replace(Enchantment.DEPTH_STRIDER, 3);
 
         if (resultEnchantments.containsKey(Enchantment.ARROW_FIRE)
                 && resultEnchantments.get(Enchantment.ARROW_FIRE) > 1)
-                resultEnchantments.replace(Enchantment.ARROW_FIRE, 1);
+            resultEnchantments.replace(Enchantment.ARROW_FIRE, 1);
 
         if (resultEnchantments.containsKey(Enchantment.ARROW_INFINITE)
                 && resultEnchantments.get(Enchantment.ARROW_INFINITE) > 1)
-                resultEnchantments.replace(Enchantment.ARROW_INFINITE, 1);
+            resultEnchantments.replace(Enchantment.ARROW_INFINITE, 1);
 
         if (resultEnchantments.containsKey(Enchantment.MENDING)
                 && resultEnchantments.get(Enchantment.MENDING) > 1)
-                resultEnchantments.replace(Enchantment.MENDING, 1);
+            resultEnchantments.replace(Enchantment.MENDING, 1);
 
         if (resultEnchantments.containsKey(Enchantment.MULTISHOT)
                 && resultEnchantments.get(Enchantment.MULTISHOT) > 1)
-                resultEnchantments.replace(Enchantment.MULTISHOT, 1);
+            resultEnchantments.replace(Enchantment.MULTISHOT, 1);
 
         if (resultEnchantments.containsKey(Enchantment.QUICK_CHARGE)
                 && resultEnchantments.get(Enchantment.QUICK_CHARGE) > 5)
-                resultEnchantments.replace(Enchantment.QUICK_CHARGE, 5);
+            resultEnchantments.replace(Enchantment.QUICK_CHARGE, 5);
 
         if (resultEnchantments.containsKey(Enchantment.SILK_TOUCH)
                 && resultEnchantments.get(Enchantment.SILK_TOUCH) > 1)
-                resultEnchantments.replace(Enchantment.SILK_TOUCH, 1);
+            resultEnchantments.replace(Enchantment.SILK_TOUCH, 1);
 
         for (var enchantment : new HashSet<>(resultEnchantments.keySet())) {
             if (resultEnchantments.get(enchantment) > 10) {
@@ -1559,7 +1559,6 @@ public class EnchantingManager {
         }
 
         @EventHandler
-
         public void onPrepareItemEnchant(PrepareItemEnchantEvent event) {
             try {
                 var offers = event.getOffers();

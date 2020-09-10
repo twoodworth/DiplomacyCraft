@@ -430,27 +430,6 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler(ignoreCancelled = true)
-        public void onInventoryClick(InventoryClickEvent event) {
-            if (event.getView().getTopInventory().getType().equals(InventoryType.MERCHANT)) {
-                var itemStack = event.getCurrentItem();
-                if (itemStack != null && itemStack.getItemMeta() instanceof BookMeta) {
-                    if (Objects.equals(((BookMeta) itemStack.getItemMeta()).getGeneration(), BookMeta.Generation.TATTERED)) {
-                        event.getWhoClicked().sendMessage(ChatColor.RED + "This item cannot be traded!");
-                        event.setCancelled(true);
-                    }
-                } else {
-                    var itemStack2 = event.getCursor();
-                    if (itemStack2 != null && itemStack2.getItemMeta() instanceof BookMeta) {
-                        if (Objects.equals(((BookMeta) itemStack2.getItemMeta()).getGeneration(), BookMeta.Generation.TATTERED)) {
-                            event.getWhoClicked().sendMessage(ChatColor.RED + "This item cannot be traded!");
-                            event.setCancelled(true);
-                        }
-                    }
-                }
-            }
-        }
-
-        @EventHandler(ignoreCancelled = true)
         public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
 
             var entity = event.getRightClicked();

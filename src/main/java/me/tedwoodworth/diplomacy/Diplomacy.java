@@ -8,6 +8,7 @@ import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.enchanting.EnchantingTables;
 import me.tedwoodworth.diplomacy.enchanting.EnchantingManager;
+import me.tedwoodworth.diplomacy.enchanting.EnchantingTomes;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
@@ -55,6 +56,7 @@ public class Diplomacy extends JavaPlugin {
         PlayerCommand.register(getCommand("player"));
         GuideCommand.register(getCommand("guide"));
         EnchantingManager.getInstance().registerEvents();
+        EnchantingTomes.getInstance().registerEvents();
         EnchantingTables.getInstance().registerEvents();
         DiplomacyConfig.getInstance().registerEvents();
         SpawnManager.getInstance().registerEvents();

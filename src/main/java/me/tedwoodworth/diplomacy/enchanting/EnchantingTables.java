@@ -261,9 +261,6 @@ public class EnchantingTables {
                         event.setUseItemInHand(Event.Result.DENY);
                         event.setUseInteractedBlock(Event.Result.DENY);
                     }
-                } else if (block != null && block.getType().equals(Material.OBSIDIAN)) {//TODO remove
-                    for (var item : EnchantingTomes.getInstance().getAllTomes())
-                        player.getWorld().dropItem(player.getLocation(), item);
                 }
             } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 var block = event.getClickedBlock();
