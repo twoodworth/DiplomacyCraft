@@ -80,7 +80,11 @@ public class DiplomacyPlayers {
 
     public @Nullable DiplomacyPlayer get(String strPlayer) {
         for (var player : this.getPlayers()) {
-            if (player.getPlayer().getName().equalsIgnoreCase(strPlayer)) {
+            var name = player.getPlayer().getName();
+            if (name == null) {
+                continue;
+            }
+            if (name.equalsIgnoreCase(strPlayer)) {
                 return player;
             }
         }
