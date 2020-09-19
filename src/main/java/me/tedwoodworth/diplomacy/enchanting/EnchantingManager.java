@@ -5,6 +5,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -1513,7 +1514,7 @@ public class EnchantingManager {
                 return;
             }
             var type = block.getType();
-            if (type.equals(Material.ANVIL) || type.equals(Material.CHIPPED_ANVIL) || type.equals(Material.DAMAGED_ANVIL)) {
+            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && (type.equals(Material.ANVIL) || type.equals(Material.CHIPPED_ANVIL) || type.equals(Material.DAMAGED_ANVIL))) {
                 var mainHand = event.getPlayer().getInventory().getItemInMainHand();
                 var hasHammer = isHammer(mainHand);
                 if (!hasHammer) {
@@ -1525,6 +1526,8 @@ public class EnchantingManager {
                     || type.equals(Material.GRASS_PATH)
                     || type.equals(Material.COARSE_DIRT))) {
                 event.setCancelled(true);
+            } else if (event.getItem().getType().equals(Material.KNOWLEDGE_BOOK)) {
+                event.setUseItemInHand(Event.Result.DENY);
             }
         }
 

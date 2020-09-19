@@ -55,22 +55,38 @@ public class Diplomacy extends JavaPlugin {
         LinkCommand.register(getCommand("discord"));
         PlayerCommand.register(getCommand("player"));
         GuideCommand.register(getCommand("guide"));
+        System.out.println("[Diplomacy]: Loaded commands");
         EnchantingManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded enchanting manager events");
         EnchantingTomes.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded enchanting tome events");
         EnchantingTables.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded enchanting table events");
         DiplomacyConfig.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded config events");
         SpawnManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded spawning events");
         LivesManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded life events");
         OurServerListener.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded dynmap events");
         Nations.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded nation events");
         ChatManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded chat events");
         DiplomacyPlayers.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded player events");
         ContestManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded contest events");
         DiplomacyGroups.getInstance().registerEvents();
+        System.out.println("[Diplomacy]: Loaded group events");
         DiplomacyDynmap.getInstance().load();
+        System.out.println("[Diplomacy]: Loaded Diplomacy-dynmap");
         LivesManager.getInstance().startScheduler();
         ChatNotifications.getInstance().startScheduler();
+        System.out.println("[Diplomacy]: Loaded schedulers");
         DiplomacyRecipes.getInstance().loadRecipes();
+        System.out.println("[Diplomacy]: Loaded recipes");
 
 
         if (!setupEconomy()) {

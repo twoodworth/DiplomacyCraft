@@ -9,10 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 
@@ -369,7 +366,7 @@ public class SpawnManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler(priority = EventPriority.HIGH)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             var player = (Player) event.getPlayer();
             if (player.getBedSpawnLocation() == null
@@ -382,18 +379,25 @@ public class SpawnManager {
         }
 
         @EventHandler
-        private void onPlayerLogin(PlayerLoginEvent event) {
+        private void onPlayerJoin(PlayerJoinEvent event) {
             var player = event.getPlayer();
             if (!player.hasPlayedBefore()) {
                 player.teleport(getSpawnLocation());
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @EventHandler(priority = EventPriority.HIGH)
         private void onPlayerBedEnter(PlayerBedEnterEvent event) {
             var player = event.getPlayer();
+            var bedSpawnLocation = player.getBedSpawnLocation();
+            if (Objects.equals(bedSpawnLocation, event.getBed().getLocation())) {
+                player.sendMessage("Respawn point is already set to here");
+            }
             player.setBedSpawnLocation(event.getBed().getLocation());
-            player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+            if (!event.getBed().getType().equals(Material.RESPAWN_ANCHOR)) {
+                player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+                player.sendMessage("Phantom timer has been reset");
+            }
             event.setCancelled(true);
         }
     }
