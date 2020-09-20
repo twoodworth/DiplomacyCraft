@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
+import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;

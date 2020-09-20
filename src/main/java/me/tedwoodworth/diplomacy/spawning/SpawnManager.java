@@ -1,9 +1,11 @@
 package me.tedwoodworth.diplomacy.spawning;
 
 import com.google.common.collect.ImmutableMap;
+import io.papermc.lib.features.bedspawnlocation.BedSpawnLocation;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,145 +14,62 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class SpawnManager {
 
     private static SpawnManager instance = null;
-    private File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "spawnChunks.yml");
-    private YamlConfiguration config;
-    private List<Biome> badBiomes = new ArrayList<>();
-    private List<Chunk> spawnChunks;
+    private final List<Biome> badBiomes;
+    private final List<Biome> oceanBiomes;
+    private final List<Biome> endBiomes;
+    private final List<Biome> netherBiomes;
 
     private SpawnManager() {
-        config = YamlConfiguration.loadConfiguration(diplomacyPlayerConfigFile);
-        this.spawnChunks = createSpawnChunkList();
-        save();
-    }
+        this.badBiomes = new ArrayList<>();
+        badBiomes.add(Biome.BASALT_DELTAS);
+        badBiomes.add(Biome.COLD_OCEAN);
+        badBiomes.add(Biome.CRIMSON_FOREST);
+        badBiomes.add(Biome.DEEP_COLD_OCEAN);
+        badBiomes.add(Biome.DEEP_FROZEN_OCEAN);
+        badBiomes.add(Biome.DEEP_LUKEWARM_OCEAN);
+        badBiomes.add(Biome.DEEP_OCEAN);
+        badBiomes.add(Biome.DEEP_WARM_OCEAN);
+        badBiomes.add(Biome.BADLANDS);
+        badBiomes.add(Biome.BADLANDS_PLATEAU);
+        badBiomes.add(Biome.DESERT);
+        badBiomes.add(Biome.DESERT_HILLS);
+        badBiomes.add(Biome.DESERT_LAKES);
+        badBiomes.add(Biome.END_BARRENS);
+        badBiomes.add(Biome.END_HIGHLANDS);
+        badBiomes.add(Biome.END_MIDLANDS);
+        badBiomes.add(Biome.ERODED_BADLANDS);
+        badBiomes.add(Biome.FROZEN_OCEAN);
+        badBiomes.add(Biome.FROZEN_RIVER);
+        badBiomes.add(Biome.ICE_SPIKES);
+        badBiomes.add(Biome.LUKEWARM_OCEAN);
+        badBiomes.add(Biome.MODIFIED_BADLANDS_PLATEAU);
+        badBiomes.add(Biome.MUSHROOM_FIELD_SHORE);
+        badBiomes.add(Biome.MUSHROOM_FIELDS);
+        badBiomes.add(Biome.NETHER_WASTES);
+        badBiomes.add(Biome.OCEAN);
+        badBiomes.add(Biome.RIVER);
+        badBiomes.add(Biome.SMALL_END_ISLANDS);
+        badBiomes.add(Biome.SNOWY_BEACH);
+        badBiomes.add(Biome.SNOWY_TUNDRA);
+        badBiomes.add(Biome.SOUL_SAND_VALLEY);
+        badBiomes.add(Biome.THE_END);
+        badBiomes.add(Biome.THE_VOID);
+        badBiomes.add(Biome.WARM_OCEAN);
+        badBiomes.add(Biome.WARPED_FOREST);
 
-    private List<Chunk> createSpawnChunkList() {
-        List<Chunk> chunks = new ArrayList<>();
-        var worlds = config.getKeys(false);
-        for (var worldKey : worlds) {
-            var world = Bukkit.getWorld(worldKey);
-            var chunkMaps = config.getMapList(worldKey);
-            for (var chunkMap : chunkMaps) {
-                var x = Integer.parseInt(chunkMap.get("x").toString());
-                var z = Integer.parseInt(chunkMap.get("z").toString());
-                if (world != null) {
-                    chunks.add(world.getChunkAt(x, z));
-                }
-            }
-        }
-        return chunks;
-    }
-
-    public Chunk getSpawnChunk() {
-        var chunks = getSpawnChunks();
-        var index = (int) (Math.random() * chunks.size());
-        return chunks.get(index);
-    }
-
-    public List<Chunk> getValidRespawnChunks(Location location) {
-        var validChunks = new ArrayList<Chunk>();
-        for (var chunk : getSpawnChunks()) {
-            var chunkLocation = new Location(chunk.getWorld(), chunk.getX(), location.getY(), chunk.getZ());
-            var locationEnvironment = location.getWorld().getEnvironment();
-            var chunkEnvironment = chunkLocation.getWorld().getEnvironment();
-            if (!locationEnvironment.equals(World.Environment.THE_END) && Objects.equals(locationEnvironment, chunkEnvironment)) {
-                if (Objects.equals(location.getWorld(), chunkLocation.getWorld()) && location.distanceSquared(chunkLocation) < 4000000) {
-                    validChunks.add(chunk);
-                }
-            } else if (locationEnvironment.equals(World.Environment.THE_END) && chunkEnvironment.equals(World.Environment.NORMAL)) {
-                validChunks.add(chunk);
-            }
-        }
-        if (validChunks.size() == 0) {
-            var world = location.getWorld();
-            var x = (int) (Math.random() * 125 - 63);
-            var z = (int) (Math.random() * 125 - 63);
-            if (world != null) {
-                validChunks.add(world.getChunkAt(x, z));
-            } else {
-                validChunks.add(location.getChunk());
-            }
-        }
-        return validChunks;
-    }
-
-    public Chunk getRespawnChunk(List<Chunk> validChunks) {
-        var index = (int) (Math.random() * validChunks.size());
-        return validChunks.get(index);
-    }
-
-    public List<Chunk> getSpawnChunks() {
-        return spawnChunks;
-    }
-
-    public void addSpawnChunk(Chunk chunk) {
-        var world = chunk.getWorld().getName();
-        var x = chunk.getX();
-        var z = chunk.getZ();
-
-        var chunkMap = ImmutableMap.of(
-                "x", x,
-                "z", z
-        );
-
-        var worldChunks = config.getMapList(world);
-        worldChunks.add(chunkMap);
-        config.set(world, worldChunks);
-        spawnChunks.add(chunk);
-    }
-
-    public List<Biome> getBadBiomes() {
-        if (badBiomes.size() == 0) {
-            badBiomes.add(Biome.BASALT_DELTAS);
-            badBiomes.add(Biome.COLD_OCEAN);
-            badBiomes.add(Biome.CRIMSON_FOREST);
-            badBiomes.add(Biome.DEEP_COLD_OCEAN);
-            badBiomes.add(Biome.DEEP_FROZEN_OCEAN);
-            badBiomes.add(Biome.DEEP_LUKEWARM_OCEAN);
-            badBiomes.add(Biome.DEEP_OCEAN);
-            badBiomes.add(Biome.DEEP_WARM_OCEAN);
-            badBiomes.add(Biome.BADLANDS);
-            badBiomes.add(Biome.BADLANDS_PLATEAU);
-            badBiomes.add(Biome.DESERT);
-            badBiomes.add(Biome.DESERT_HILLS);
-            badBiomes.add(Biome.DESERT_LAKES);
-            badBiomes.add(Biome.END_BARRENS);
-            badBiomes.add(Biome.END_HIGHLANDS);
-            badBiomes.add(Biome.END_MIDLANDS);
-            badBiomes.add(Biome.ERODED_BADLANDS);
-            badBiomes.add(Biome.FROZEN_OCEAN);
-            badBiomes.add(Biome.FROZEN_RIVER);
-            badBiomes.add(Biome.ICE_SPIKES);
-            badBiomes.add(Biome.LUKEWARM_OCEAN);
-            badBiomes.add(Biome.MODIFIED_BADLANDS_PLATEAU);
-            badBiomes.add(Biome.MUSHROOM_FIELD_SHORE);
-            badBiomes.add(Biome.MUSHROOM_FIELDS);
-            badBiomes.add(Biome.NETHER_WASTES);
-            badBiomes.add(Biome.OCEAN);
-            badBiomes.add(Biome.RIVER);
-            badBiomes.add(Biome.SMALL_END_ISLANDS);
-            badBiomes.add(Biome.SNOWY_BEACH);
-            badBiomes.add(Biome.SNOWY_TUNDRA);
-            badBiomes.add(Biome.SOUL_SAND_VALLEY);
-            badBiomes.add(Biome.THE_END);
-            badBiomes.add(Biome.THE_VOID);
-            badBiomes.add(Biome.WARM_OCEAN);
-            badBiomes.add(Biome.WARPED_FOREST);
-        }
-        return badBiomes;
-    }
-
-    public List<Biome> getOceanBiomes() {
-        var oceanBiomes = new ArrayList<Biome>(0);
+        this.oceanBiomes = new ArrayList<>();
         oceanBiomes.add(Biome.COLD_OCEAN);
         oceanBiomes.add(Biome.DEEP_COLD_OCEAN);
         oceanBiomes.add(Biome.DEEP_FROZEN_OCEAN);
@@ -160,156 +79,114 @@ public class SpawnManager {
         oceanBiomes.add(Biome.LUKEWARM_OCEAN);
         oceanBiomes.add(Biome.OCEAN);
         oceanBiomes.add(Biome.WARM_OCEAN);
-        return oceanBiomes;
-    }
 
-    public List<Biome> getEndBiomes() {
-        var endBiomes = new ArrayList<Biome>(0);
+        this.endBiomes = new ArrayList<>();
         endBiomes.add(Biome.END_BARRENS);
         endBiomes.add(Biome.END_HIGHLANDS);
         endBiomes.add(Biome.END_MIDLANDS);
         endBiomes.add(Biome.SMALL_END_ISLANDS);
         endBiomes.add(Biome.THE_END);
-        return endBiomes;
-    }
 
-    public List<Biome> getNetherBiomes() {
-        var netherBiomes = new ArrayList<Biome>(0);
+        this.netherBiomes = new ArrayList<>();
         netherBiomes.add(Biome.BASALT_DELTAS);
         netherBiomes.add(Biome.CRIMSON_FOREST);
         netherBiomes.add(Biome.NETHER_WASTES);
         netherBiomes.add(Biome.SOUL_SAND_VALLEY);
         netherBiomes.add(Biome.WARPED_FOREST);
-        return netherBiomes;
     }
 
-    public Location getSpawnLocation() {
-
-        var chunks = getSpawnChunks();
-        if (chunks.size() == 0) {
-            return Bukkit.getWorld("world").getSpawnLocation();
+    public @Nullable Location getRespawnLocation(Location deathLocation, boolean death) {
+        var world = deathLocation.getWorld();
+        if (world.getEnvironment().equals(World.Environment.THE_END)) {
+            death = false;
+            world = Bukkit.getWorld("world");
+            deathLocation = world.getSpawnLocation();
         }
+        var chunk = deathLocation.getChunk();
+        if (world != null) {
+            var border = world.getWorldBorder();
+            var center = border.getCenter();
+            var size = border.getSize();
+            var maxX = center.getX() + size / 2.0 - 8;
+            var minX = center.getX() - size / 2.0 + 8;
+            var maxZ = center.getZ() + size / 2.0 - 8;
+            var minZ = center.getZ() - size / 2.0 + 8;
 
-        var x = Math.random() * 16;
-        var z = Math.random() * 16;
-        var chunk = getSpawnChunk();
-        var location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63.0, chunk.getZ() * 16 + z);
-        var block = location.getBlock();
-        var biome = block.getBiome();
-        var isBadBiome = false;
-        for (var badBiome : this.getBadBiomes()) {
-            if (Objects.equals(biome, badBiome)) {
-                isBadBiome = true;
-                break;
+            if (death) {
+                maxX = Math.min(maxX, deathLocation.getX() + 1000);
+                minX = Math.max(minX, deathLocation.getX() - 1000);
+                maxZ = Math.min(maxZ, deathLocation.getZ() + 1000);
+                minZ = Math.max(minZ, deathLocation.getZ() - 1000);
             }
-        }
 
-        if (block.isLiquid() || block.getType().equals(Material.FIRE) || isBadBiome) {
-            location = getSpawnLocation();
-        } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-            var testLocation = decreaseYLocation(location);
-            var testBlock = testLocation.getBlock();
-            if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE)) {
-                location = getSpawnLocation();
-            } else {
-                location = testLocation;
-            }
-        } else {
-            location = increaseYLocation(location);
-        }
-        return location;
-    }
+            var deathBiome = deathLocation.getBlock().getBiome();
 
-    public Location getValidLocation(List<Chunk> respawnChunks, Location deathLocation) {
-        var chunk = getRespawnChunk(respawnChunks);
-        var x = Math.random() * 16;
-        var z = Math.random() * 16;
-        Location location;
-        var deathBiome = deathLocation.getBlock().getBiome();
+            var x = Math.random() * (Math.abs(maxX) + Math.abs(minX)) - Math.abs(minX);
+            double y;
+            var z = Math.random() * (Math.abs(maxZ) + Math.abs(minZ)) - Math.abs(minZ);
 
-        if (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
-            var y = Math.random() * 89 + 32;
-            location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, y, chunk.getZ() * 16 + z);
-            var block = location.getBlock();
+            Location location;
+            if (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+                y = Math.random() * 89 + 32;
+                location = new Location(world, x, y, z);
+                var block = location.getBlock();
 
-            if (block.isLiquid() || block.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                location = getValidLocation(respawnChunks, deathLocation);
-            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                var testLocation = decreaseYLocation(location);
-                var testBlock = testLocation.getBlock();
-                if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                    location = getValidLocation(respawnChunks, deathLocation);
-                } else {
-                    location = testLocation;
+                if (block.isLiquid() || block.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
+                    return getRespawnLocation(deathLocation, death);
+                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                    var testLocation = decreaseYLocation(location);
+                    var testBlock = testLocation.getBlock();
+                    if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
+                        return getRespawnLocation(deathLocation, death);
+                    } else {
+                        return testLocation;
+                    }
                 }
-            }
-        } else if (getOceanBiomes().contains(deathBiome)) {
-            location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
-            var block = location.getBlock();
-            if ((block.getType().equals(Material.LAVA) || block.getType().equals(Material.FIRE))) {
-                location = getValidLocation(respawnChunks, deathLocation);
-                ;
-            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                var testLocation = decreaseYLocation(location);
-                var testBlock = testLocation.getBlock();
-                if (testBlock.getType().equals(Material.LAVA) || testBlock.getType().equals(Material.FIRE)) {
-                    location = getSpawnLocation();
-                } else {
-                    location = testLocation;
+            } else if (oceanBiomes.contains(deathBiome)) {
+                y = world.getHighestBlockYAt((int) x, (int) z);
+                location = new Location(world, x, y + 1, z);
+                var block = location.getBlock();
+                if ((block.getType().equals(Material.LAVA) || block.getType().equals(Material.FIRE))) {
+                    return getRespawnLocation(deathLocation, death);
+                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                    var testLocation = decreaseYLocation(location);
+                    var testBlock = testLocation.getBlock();
+                    if (!testBlock.getType().equals(Material.LAVA) && !testBlock.getType().equals(Material.FIRE)) {
+                        return location;
+                    }
                 }
-            } else {
-                location = increaseYLocation(location);
-            }
-        } else if (getBadBiomes().contains(deathBiome) && !getOceanBiomes().contains(deathBiome) && !getEndBiomes().contains(deathBiome) && !getNetherBiomes().contains(deathBiome)) {
-            location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
-            var block = location.getBlock();
-            if ((block.isLiquid() || block.getType().equals(Material.FIRE))) {
-                location = getValidLocation(respawnChunks, deathLocation);
-            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                var testLocation = decreaseYLocation(location);
-                var testBlock = testLocation.getBlock();
-                if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE)) {
-                    location = getSpawnLocation();
-                } else {
-                    location = testLocation;
+                return getRespawnLocation(deathLocation, death);
+            } else if (badBiomes.contains(deathBiome) && !oceanBiomes.contains(deathBiome) && world.getEnvironment().equals(World.Environment.NORMAL)) {
+                    y = world.getHighestBlockYAt((int) x, (int) z);
+                location = new Location(world, x, y + 1, z);
+                var block = location.getBlock();
+                if ((block.isLiquid() || block.getType().equals(Material.FIRE))) {
+                    return getRespawnLocation(deathLocation, death);
+                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                    var testLocation = decreaseYLocation(location);
+                    var testBlock = testLocation.getBlock();
+                    if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
+                        return location;
+                    }
+                    return getRespawnLocation(deathLocation, death);
                 }
             } else {
-                location = increaseYLocation(location);
-                return location;
-            }
-        } else {
-            location = new Location(chunk.getWorld(), chunk.getX() * 16 + x, 63, chunk.getZ() * 16 + z);
-            var block = location.getBlock();
-            if (block.isLiquid() || block.getType().equals(Material.FIRE) || getBadBiomes().contains(block.getBiome())) {
-                location = getValidLocation(respawnChunks, deathLocation);
-            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                var testLocation = decreaseYLocation(location);
-                var testBlock = testLocation.getBlock();
-                if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE)) {
-                    location = getValidLocation(respawnChunks, deathLocation);
-                } else {
-                    location = testLocation;
+                    y = world.getHighestBlockYAt((int) x, (int) z);
+                location = new Location(world, x, y + 1, z);
+                var block = location.getBlock();
+                if (block.isLiquid() || block.getType().equals(Material.FIRE) || badBiomes.contains(block.getBiome())) {
+                    return getRespawnLocation(deathLocation, death);
+                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                    var testLocation = decreaseYLocation(location);
+                    var testBlock = testLocation.getBlock();
+                    if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
+                        return location;
+                    }
+                    return getRespawnLocation(deathLocation, death);
                 }
-            } else {
-                location = increaseYLocation(location);
             }
         }
-        return location;
-    }
-
-    public Location getRespawnLocation(Location deathLocation) {
-        var respawnChunks = getValidRespawnChunks(deathLocation);
-        return getValidLocation(respawnChunks, deathLocation);
-    }
-
-    public Location increaseYLocation(Location location) {
-        var nLocation = new Location(location.getWorld(), location.getX(), location.getY() + 1, location.getZ());
-        var block = nLocation.getBlock();
-        if (block.getType().equals(Material.AIR) || block.isPassable()) {
-            return nLocation;
-        } else {
-            return increaseYLocation(nLocation);
-        }
+        return getRespawnLocation(deathLocation, death);
     }
 
     public Location decreaseYLocation(Location location) {
@@ -325,14 +202,6 @@ public class SpawnManager {
         return nLocation;
     }
 
-    public void save() {
-        try {
-            config.save(diplomacyPlayerConfigFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static SpawnManager getInstance() {
         if (instance == null) {
             instance = new SpawnManager();
@@ -345,34 +214,21 @@ public class SpawnManager {
     }
 
     private class EventListener implements Listener {
-        @EventHandler
-        void onWorldSave(WorldSaveEvent event) {
-            save();
-        }
-
-        @EventHandler
-        void onPluginDisable(PluginDisableEvent event) {
-            if (event.getPlugin().equals(Diplomacy.getInstance())) {
-                save();
-            }
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        private void onPlayerMove(PlayerMoveEvent event) {
-            var chunk = event.getTo().getChunk();
-
-            if (!getSpawnChunks().contains(chunk)) {
-                addSpawnChunk(chunk);
-            }
-        }
 
         @EventHandler(priority = EventPriority.HIGH)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             var player = (Player) event.getPlayer();
-            if (player.getBedSpawnLocation() == null
-                    || (getNetherBiomes().contains(player.getLocation().getBlock().getBiome()) && !Objects.equals(player.getWorld(), player.getBedSpawnLocation().getWorld()))
-                    || (getNetherBiomes().contains(player.getBedSpawnLocation().getBlock().getBiome()) && !getNetherBiomes().contains(player.getLocation().getBlock().getBiome()))) {
-                event.setRespawnLocation(getRespawnLocation(player.getLocation()));
+            player.sendMessage("Respawning...");
+            var deathLocation = player.getLocation();
+            var bedSpawnLocation = player.getBedSpawnLocation();
+            if (bedSpawnLocation == null
+                    || (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER) && !Objects.equals(deathLocation.getWorld(), bedSpawnLocation.getWorld())
+                    || (bedSpawnLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) && !player.getWorld().getEnvironment().equals(World.Environment.NETHER))) {
+                var location = getRespawnLocation(player.getLocation(), true);
+                if (location == null) {
+                    return;
+                }
+                event.setRespawnLocation(location);
             } else {
                 event.setRespawnLocation(player.getBedSpawnLocation());
             }
@@ -380,9 +236,17 @@ public class SpawnManager {
 
         @EventHandler
         private void onPlayerJoin(PlayerJoinEvent event) {
-            var player = event.getPlayer();
+            var player = (Player) event.getPlayer();
             if (!player.hasPlayedBefore()) {
-                player.teleport(getSpawnLocation());
+                var world = Bukkit.getWorld("world");
+                if (world == null) {
+                    return;
+                }
+                var location = getRespawnLocation(world.getSpawnLocation(), false);
+                if (location == null) {
+                    return;
+                }
+                player.teleport(location);
             }
         }
 
@@ -390,13 +254,10 @@ public class SpawnManager {
         private void onPlayerBedEnter(PlayerBedEnterEvent event) {
             var player = event.getPlayer();
             var bedSpawnLocation = player.getBedSpawnLocation();
-            if (Objects.equals(bedSpawnLocation, event.getBed().getLocation())) {
-                player.sendMessage("Respawn point is already set to here");
-            }
             player.setBedSpawnLocation(event.getBed().getLocation());
             if (!event.getBed().getType().equals(Material.RESPAWN_ANCHOR)) {
                 player.setStatistic(Statistic.TIME_SINCE_REST, 0);
-                player.sendMessage("Phantom timer has been reset");
+                player.sendMessage("Your sleep timer has been reset");
             }
             event.setCancelled(true);
         }

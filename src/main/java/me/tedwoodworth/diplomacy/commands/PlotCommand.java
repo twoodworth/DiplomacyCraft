@@ -367,7 +367,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var playerChunk = player.getLocation().getChunk();
-            if (chunk.equals(playerChunk)) {
+            if (diplomacyChunk.getChunk().equals(playerChunk)) {
                 testPlayer.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
             }
         }

@@ -8,6 +8,7 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
+import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,6 +20,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -270,6 +272,12 @@ public class DiplomacyPlayers {
             if (!event.getFrom().getEnvironment().equals(World.Environment.NETHER) && player.getLocation().getWorld().getEnvironment().equals(World.Environment.NETHER)) {
                 player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "WARNING: If you die in the nether, you will respawn in the nether. Be careful!");
             }
+            if (event.getFrom().getEnvironment().equals(World.Environment.THE_END) && !player.getWorld().getEnvironment().equals(World.Environment.THE_END)) {
+                var location = SpawnManager.getInstance().getRespawnLocation(player.getLocation(), false);
+                if (location != null) {
+                    player.teleport(location);
+                }
+            }
         }
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -426,7 +434,13 @@ public class DiplomacyPlayers {
                 } else if (block.getType().equals(Material.ITEM_FRAME)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
-                } else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                }  else if (block.getType().equals(Material.COMPOSTER)) {
+                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                    event.setCancelled(true);
+                }   else if (event.getAction().equals(Action.PHYSICAL) && block.getType().equals(Material.FARMLAND)) {
+                    player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
+                    event.setCancelled(true);
+                }  else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
                 }

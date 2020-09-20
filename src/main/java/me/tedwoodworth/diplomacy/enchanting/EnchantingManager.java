@@ -1507,8 +1507,11 @@ public class EnchantingManager {
             }
         }
 
-        @EventHandler(ignoreCancelled = true)
+        @EventHandler
         public void onPlayerInteract(PlayerInteractEvent event) {
+            if (event.getItem() != null && event.getItem().getType().equals(Material.KNOWLEDGE_BOOK)) {
+                event.setUseItemInHand(Event.Result.DENY);
+            }
             var block = event.getClickedBlock();
             if (block == null) {
                 return;
@@ -1526,8 +1529,6 @@ public class EnchantingManager {
                     || type.equals(Material.GRASS_PATH)
                     || type.equals(Material.COARSE_DIRT))) {
                 event.setCancelled(true);
-            } else if (event.getItem().getType().equals(Material.KNOWLEDGE_BOOK)) {
-                event.setUseItemInHand(Event.Result.DENY);
             }
         }
 
