@@ -495,7 +495,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var gui = new NationGuiFactory().create(nation, player);
+        var gui = Guis.getInstance().getNationMenu(nation, player);
         gui.show(player);
     }
 

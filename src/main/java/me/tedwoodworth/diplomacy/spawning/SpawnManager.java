@@ -8,6 +8,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -95,7 +96,7 @@ public class SpawnManager {
         netherBiomes.add(Biome.WARPED_FOREST);
     }
 
-    public @Nullable Location getRespawnLocation(Location deathLocation, boolean death) {
+    public Location getRespawnLocation(Location deathLocation, boolean death) {
         var world = deathLocation.getWorld();
         if (world.getEnvironment().equals(World.Environment.THE_END)) {
             death = false;
@@ -221,16 +222,11 @@ public class SpawnManager {
             player.sendMessage("Respawning...");
             var deathLocation = player.getLocation();
             var bedSpawnLocation = player.getBedSpawnLocation();
-            if (bedSpawnLocation == null
-                    || (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER) && !Objects.equals(deathLocation.getWorld(), bedSpawnLocation.getWorld())
-                    || (bedSpawnLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) && !player.getWorld().getEnvironment().equals(World.Environment.NETHER))) {
+            if (bedSpawnLocation == null || bedSpawnLocation.getWorld() != deathLocation.getWorld()) {
                 var location = getRespawnLocation(player.getLocation(), true);
-                if (location == null) {
-                    return;
-                }
                 event.setRespawnLocation(location);
             } else {
-                event.setRespawnLocation(player.getBedSpawnLocation());
+                event.setRespawnLocation(bedSpawnLocation);
             }
         }
 
@@ -254,12 +250,23 @@ public class SpawnManager {
         private void onPlayerBedEnter(PlayerBedEnterEvent event) {
             var player = event.getPlayer();
             var bedSpawnLocation = player.getBedSpawnLocation();
-            player.setBedSpawnLocation(event.getBed().getLocation());
-            if (!event.getBed().getType().equals(Material.RESPAWN_ANCHOR)) {
-                player.setStatistic(Statistic.TIME_SINCE_REST, 0);
-                player.sendMessage("Your sleep timer has been reset");
+            Location oldBedSpawnLocation = null;
+
+            if (bedSpawnLocation != null) {
+                oldBedSpawnLocation = new Location(bedSpawnLocation.getWorld(), bedSpawnLocation.getX(), bedSpawnLocation.getY(), bedSpawnLocation.getZ());
             }
-            event.setCancelled(true);
+            if (event.getBed().getType().equals(Material.RESPAWN_ANCHOR) && event.getBed().getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+                player.setBedSpawnLocation(event.getBed().getLocation(), true);
+                player.sendMessage("Respawn point set");
+                event.setUseBed(Event.Result.DENY);
+            } else if (!event.getBed().getType().equals(Material.RESPAWN_ANCHOR) && event.getBed().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+                player.setBedSpawnLocation(event.getBed().getLocation(), true);
+                player.sendMessage("Respawn point set");
+                player.sendMessage("Your sleep timer has been reset");
+                event.setUseBed(Event.Result.DENY);
+            }
+
         }
     }
 }

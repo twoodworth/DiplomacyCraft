@@ -463,8 +463,9 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('k',
                 banner,
                 click -> {
-                    var nGui = NationGuiFactory.create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",

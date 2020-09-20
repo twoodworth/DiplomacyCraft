@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.groups;
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -125,14 +126,17 @@ public class GroupGuiFactory {
 
         var banner = group.getNation().getBanner();
         var itemMeta = banner.getItemMeta();
-        itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        if (itemMeta != null) {
+            itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        }
         banner.setItemMeta(itemMeta);
 
         gui.addElement(new StaticGuiElement('d',
                 banner,
                 click -> {
-                    var nGui = NationGuiFactory.create(group.getNation(), player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(group.getNation(), (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation",

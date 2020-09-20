@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
-import de.themoep.inventorygui.InventoryGui;
-import de.themoep.inventorygui.StaticGuiElement;
+import de.themoep.inventorygui.*;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -18,18 +17,13 @@ import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.Comparator.comparingInt;
 
 public class NationGuiFactory {
-
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
-
 
     public static InventoryGui createMenu(Player player) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
@@ -78,16 +72,21 @@ public class NationGuiFactory {
         if (playerNation != null) {
             var banner = playerNation.getBanner();
             var bannerMeta = (BannerMeta) banner.getItemMeta();
-            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+            if (bannerMeta != null) {
+                bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+            }
             banner.setItemMeta(bannerMeta);
             gui.addElement(new StaticGuiElement('e',
                     banner,
                     click -> {
-                        var nGui = create(playerNation, player);
-                        nGui.show(player);
+                        var clicker = click.getEvent().getWhoClicked();
+                        var diplomacyClicker = DiplomacyPlayers.getInstance().get(clicker.getUniqueId());
+                        var clickerNation = Nations.getInstance().get(diplomacyClicker);
+                        var nGui = Guis.getInstance().getNationMenu(clickerNation, (Player) clicker);
+                        nGui.show(clicker);
                         return true;
                     },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Your Nation (" + playerNation.getName() + ")",
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Your Nation",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View your nation"
             ));
         } else {
@@ -100,8 +99,10 @@ public class NationGuiFactory {
         }
         var head = new ItemStack(Material.PLAYER_HEAD);
         var meta = (SkullMeta) head.getItemMeta();
-        meta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
-        head.setItemMeta(meta);
+        if (meta != null) {
+            meta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
+            head.setItemMeta(meta);
+        }
 
         gui.addElement(new StaticGuiElement('f',
                 head,
@@ -110,8 +111,8 @@ public class NationGuiFactory {
                     nGui.show(player);
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + player.getName() + " (You)",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "You",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View your player info"
         ));
 
         gui.addElement(new StaticGuiElement('g',
@@ -184,7 +185,9 @@ public class NationGuiFactory {
 
             var banner = otherPlayerNation.getBanner();
             var bannerMeta = (BannerMeta) banner.getItemMeta();
-            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+            if (bannerMeta != null) {
+                bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+            }
             banner.setItemMeta(bannerMeta);
             gui.addElement(new StaticGuiElement('b',
                     banner,
@@ -299,16 +302,8 @@ public class NationGuiFactory {
 
     public static InventoryGui create(Nation nation, Player player) {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-        var playerNation = Nations.getInstance().get(diplomacyPlayer);
-        var color = ChatColor.BLUE;
-        if (playerNation != null) {
-            if (nation.getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(nation, playerNation)) {
-                color = ChatColor.DARK_GREEN;
-            } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
-                color = ChatColor.RED;
-            }
-        }
-        var title = "" + color + ChatColor.BOLD + nation.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Main";
+
+        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + nation.getName() + " Main";
         String[] guiSetup = {
                 "        z",
                 "   bai  p",
@@ -318,493 +313,263 @@ public class NationGuiFactory {
                 "        t"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
-        var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
-        if (playerNation != null) {
-            if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
-            } else if (nation.getEnemyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-            }
-        }
 
-        gui.setFiller(glass);
+        gui.setFiller(new ItemStack(Material.YELLOW_STAINED_GLASS_PANE));
 
-        if (Objects.equals(nation, playerNation)) {
-            var nationClass = nation.getMemberClass(diplomacyPlayer);
-            var permissions = nationClass.getPermissions();
+        gui.addElement(new StaticGuiElement('a',
+                new ItemStack(Material.NAME_TAG),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
+                ChatColor.GRAY + nation.getName(),
+                " ",
+                ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/nation rename <name>"
 
+        ));
 
-            if (permissions.get("CanRenameNation")) {
-                gui.addElement(new StaticGuiElement('a',
-                        new ItemStack(Material.NAME_TAG),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
-                        ChatColor.GRAY + nation.getName(),
-                        " ",
-                        ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/nation rename <name>"
+        gui.addElement(new StaticGuiElement('b',
+                nation.getBanner(),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:",
+                " ",
+                ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/nation banner"
+        ));
 
-                ));
-            } else {
-                gui.addElement(new StaticGuiElement('a',
-                        new ItemStack(Material.NAME_TAG),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
-                        ChatColor.GRAY + nation.getName()
-                ));
-            }
-            if (permissions.get("CanChangeBanner")) {
-                gui.addElement(new StaticGuiElement('b',
-                        nation.getBanner(),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:",
-                        " ",
-                        ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/nation banner"
-                ));
-            } else {
-                gui.addElement(new StaticGuiElement('b',
-                        nation.getBanner(),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:"
-                ));
-            }
+        gui.addElement(new StaticGuiElement('c',
+                new ItemStack(Material.PLAYER_HEAD),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createMembers(nation, (Player) clicker, "alphabet", 0);//TODO change to getMembers
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
+        ));
 
-            gui.addElement(new StaticGuiElement('c',
-                    new ItemStack(Material.PLAYER_HEAD),
-                    click -> {
-                        var nGui = createMembers(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
-            ));
+        gui.addElement(new StaticGuiElement('d',
+                new ItemStack(Material.SKELETON_SKULL),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createOutlaws(nation, (Player) clicker, "alphabet", 0);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view outlaws"
+        ));
 
-            gui.addElement(new StaticGuiElement('d',
-                    new ItemStack(Material.SKELETON_SKULL),
-                    click -> {
-                        var nGui = createOutlaws(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view outlaws"
-            ));
+        gui.addElement(new StaticGuiElement('z',
+                new ItemStack(Material.PAINTING),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createMenu((Player) clicker);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
+        ));
 
-            gui.addElement(new StaticGuiElement('z',
-                    new ItemStack(Material.PAINTING),
-                    click -> {
-                        var nGui = createMenu(player);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
-            ));
+        var nationWealth = nation.getBalance();
+        var strNationWealth = "\u00A4" + formatter.format(nationWealth);
+        gui.addElement(new StaticGuiElement('e',
+                new ItemStack(Material.DIAMOND),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
+                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
+                " ",
+                ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
+                ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
 
-            var nationWealth = nation.getBalance();
+        ));
 
-            var strNationWealth = "\u00A4" + formatter.format(nationWealth);
-            if (permissions.get("CanDeposit")) {
-                if (permissions.get("CanWithdraw")) {
-                    gui.addElement(new StaticGuiElement('e',
-                            new ItemStack(Material.DIAMOND),
-                            click -> true,
-                            "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                            ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                            " ",
-                            ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
-                            ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
+        gui.addElement(new StaticGuiElement('f',
+                new ItemStack(Material.SHIELD),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createGroups(nation, (Player) clicker, "alphabet", 0);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
+        ));
 
-                    ));
-                } else {
-                    gui.addElement(new StaticGuiElement('e',
-                            new ItemStack(Material.DIAMOND),
-                            click -> true,
-                            "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                            ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                            " ",
-                            ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>"
+        gui.addElement(new StaticGuiElement('g',
+                new ItemStack(Material.NETHER_STAR),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = ClassGuiFactory.create(nation, (Player) clicker);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
+        ));
 
-                    ));
-                }
-            } else {
-                gui.addElement(new StaticGuiElement('e',
-                        new ItemStack(Material.DIAMOND),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                        ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth
-                ));
-            }
-            gui.addElement(new StaticGuiElement('f',
-                    new ItemStack(Material.SHIELD),
-                    click -> {
-                        var nGui = createGroups(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
-            ));
-            gui.addElement(new StaticGuiElement('g',
-                    new ItemStack(Material.NETHER_STAR),
-                    click -> {
-                        var nGui = ClassGuiFactory.create(nation, player);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
-            ));
+        var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
+        var skullMeta = (SkullMeta) (founderItem.getItemMeta());
+        var founder = Bukkit.getOfflinePlayer(UUID.fromString(nation.getFounder()));
+        Objects.requireNonNull(skullMeta).setOwningPlayer(founder);
+        founderItem.setItemMeta(skullMeta);
 
-            var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
-            var skullMeta = (SkullMeta) (founderItem.getItemMeta());
-            var founder = Bukkit.getOfflinePlayer(UUID.fromString(nation.getFounder()));
-            Objects.requireNonNull(skullMeta).setOwningPlayer(founder);
-            founderItem.setItemMeta(skullMeta);
+        gui.addElement(new StaticGuiElement('h',
+                founderItem,
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createPlayer((Player) clicker, founder);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
+                ChatColor.GRAY + founder.getName(),
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
+        ));
 
-            gui.addElement(new StaticGuiElement('h',
-                    founderItem,
-                    click -> {
-                        var nGui = createPlayer(player, founder);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName(),
-                    " ",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
-            ));
-            gui.addElement(new StaticGuiElement('i',
-                    new ItemStack(Material.CLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Founded:",
-                    ChatColor.GRAY + nation.getDateCreated()
-            ));
-            String status;
-            if (nation.getIsOpen()) {
-                status = "Open";
-            } else {
-                status = "Closed";
-            }
-            if (permissions.get("CanToggleBorder")) {
-                gui.addElement(new StaticGuiElement('k',
-                        new ItemStack(Material.OAK_FENCE),
-                        click -> {
-                            if ((nation.getIsOpen() && status.equals("Open")) || (!nation.getIsOpen() && status.equals("Closed"))) {
-                                nation.guiSetIsOpen(!nation.getIsOpen(), player);
-                            }
-                            var nGui = create(nation, player);
-                            nGui.show(player);
-                            return true;
-                        },
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Border Status:",
-                        ChatColor.GRAY + status,
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Toggle Status"
-                ));
-            } else {
-                gui.addElement(new StaticGuiElement('k',
-                        new ItemStack(Material.OAK_FENCE),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Border Status:",
-                        ChatColor.GRAY + status
-                ));
-            }
+        gui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.CLOCK),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Founded:",
+                ChatColor.GRAY + nation.getDateCreated()
+        ));
 
-            var plots = nation.getChunks().size();
-            var label = " plots";
-            if (plots == 1) {
-                label = " plot";
-            }
-            gui.addElement(new StaticGuiElement('l',
-                    new ItemStack(Material.GRASS_BLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Territory Size",
-                    ChatColor.GRAY + String.valueOf(plots) + label
-            ));
-            gui.addElement(new StaticGuiElement('m',
-                    new ItemStack(Material.LIME_BANNER),
-                    click -> {
-                        var nGui = createAllyNations(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View ally nations"
-            ));
-            gui.addElement(new StaticGuiElement('n',
-                    new ItemStack(Material.RED_BANNER),
-                    click -> {
-                        var nGui = createEnemyNations(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View enemy nations"
-            ));
-            gui.addElement(new StaticGuiElement('o',
-                    new ItemStack(Material.GOLD_BLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",
-                    ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
-                    ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
-                    ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
-                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "#" + Nations.getInstance().getBalanceRank(nation),
-                    ChatColor.BLUE + "Age: " + ChatColor.GRAY + "#" + Nations.getInstance().getAgeRank(nation)
-            ));
-            gui.addElement(new StaticGuiElement('p',
-                    new ItemStack(Material.BLUE_BANNER),
-                    click -> {
-                        var nGui = createNations(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all nations"
-            ));
-            gui.addElement(new StaticGuiElement('q',
-                    new ItemStack(Material.PLAYER_HEAD),
-                    click -> {
-                        var nGui = createPlayers(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
-            ));
-
-            gui.addElement(new StaticGuiElement('r',
-                    new ItemStack(Material.SHIELD),
-                    click -> {
-                        var nGui = createAllGroups(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
-            ));
-            gui.addElement(new StaticGuiElement('u',
-                    new ItemStack(Material.EMERALD),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",
-                    ChatColor.GRAY + formatter.format(100 * nation.getPower()) + "%"
-            ));
-            if (permissions.get("CanManageGuards")) {
-                gui.addElement(new StaticGuiElement('s',
-                        new ItemStack(Material.ZOMBIE_HEAD),
-                        click -> true,
-                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Guards",//TODO add
-                        ChatColor.BLUE + "Coming soon:" + ChatColor.GRAY + "View guards"
-                ));
-            }
-            gui.addElement(new StaticGuiElement('t',
-                    new ItemStack(Material.BARRIER),
-                    click -> {
-                        gui.close();
-                        return true;
-                    },
-                    "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                    ChatColor.GRAY + "Click to escape"
-            ));
+        String status;
+        if (nation.getIsOpen()) {
+            status = "Open";
         } else {
-            gui.addElement(new StaticGuiElement('z',
-                    new ItemStack(Material.PAINTING),
-                    click -> {
-                        var nGui = createMenu(player);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
-            ));
-            gui.addElement(new StaticGuiElement('a',
-                    new ItemStack(Material.NAME_TAG),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Name:",
-                    ChatColor.GRAY + nation.getName()
-            ));
-            gui.addElement(new StaticGuiElement('b',
-                    nation.getBanner(),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Banner:"
-            ));
-            gui.addElement(new StaticGuiElement('c',
-                    new ItemStack(Material.PLAYER_HEAD),
-                    click -> {
-                        var nGui = createMembers(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View members"
-            ));
-            gui.addElement(new StaticGuiElement('d',
-                    new ItemStack(Material.SKELETON_SKULL),
-                    click -> {
-                        var nGui = createOutlaws(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Outlaws",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View outlaws"
-            ));
-
-            var nationWealth = nation.getBalance();
-
-            var strNationWealth = "\u00A4" + formatter.format(nationWealth);
-
-            gui.addElement(new StaticGuiElement('e',
-                    new ItemStack(Material.DIAMOND),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth
-
-            ));
-            gui.addElement(new StaticGuiElement('f',
-                    new ItemStack(Material.SHIELD),
-                    click -> {
-                        var nGui = createGroups(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Groups",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View groups"
-            ));
-            gui.addElement(new StaticGuiElement('g',
-                    new ItemStack(Material.NETHER_STAR),
-                    click -> {
-                        var nGui = ClassGuiFactory.create(nation, player);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Classes",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View classes"
-            ));
-
-            var founderItem = new ItemStack(Material.PLAYER_HEAD, 1);
-            var skullMeta = (SkullMeta) (founderItem.getItemMeta());
-            var founder = Bukkit.getOfflinePlayer(UUID.fromString(nation.getFounder()));
-            skullMeta.setOwningPlayer(founder);
-            founderItem.setItemMeta(skullMeta);
-
-            gui.addElement(new StaticGuiElement('h',
-                    founderItem,
-                    click -> {
-                        var nGui = createPlayer(player, founder);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
-                    ChatColor.GRAY + founder.getName(),
-                    " ",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View player info"
-            ));
-            gui.addElement(new StaticGuiElement('i',
-                    new ItemStack(Material.CLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Date Founded:",
-                    ChatColor.GRAY + nation.getDateCreated()
-            ));
-            String status;
-            if (nation.getIsOpen()) {
-                status = "Open";
-            } else {
-                status = "Closed";
-            }
-            gui.addElement(new StaticGuiElement('k',
-                    new ItemStack(Material.OAK_FENCE),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Border Status:",
-                    ChatColor.GRAY + status
-            ));
-
-            var plots = nation.getChunks().size();
-            var label = " plots";
-            if (plots == 1) {
-                label = " plot";
-            }
-            gui.addElement(new StaticGuiElement('l',
-                    new ItemStack(Material.GRASS_BLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Territory Size",
-                    ChatColor.GRAY + String.valueOf(plots) + label
-            ));
-            gui.addElement(new StaticGuiElement('m',
-                    new ItemStack(Material.LIME_BANNER),
-                    click -> {
-                        var nGui = createAllyNations(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View ally nations"
-            ));
-            gui.addElement(new StaticGuiElement('n',
-                    new ItemStack(Material.RED_BANNER),
-                    click -> {
-                        var nGui = createEnemyNations(nation, player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View enemy nations"
-            ));
-            gui.addElement(new StaticGuiElement('o',
-                    new ItemStack(Material.GOLD_BLOCK),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",
-                    ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation),
-                    ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
-                    ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
-                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "#" + Nations.getInstance().getBalanceRank(nation),
-                    ChatColor.BLUE + "Age: " + ChatColor.GRAY + "#" + Nations.getInstance().getAgeRank(nation)
-            ));
-            gui.addElement(new StaticGuiElement('p',
-                    new ItemStack(Material.BLUE_BANNER),
-                    click -> {
-                        var nGui = createNations(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all nations"
-            ));
-            gui.addElement(new StaticGuiElement('q',
-                    new ItemStack(Material.PLAYER_HEAD),
-                    click -> {
-                        var nGui = createPlayers(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
-            ));
-            gui.addElement(new StaticGuiElement('u',
-                    new ItemStack(Material.EMERALD),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",
-                    ChatColor.GRAY + formatter.format(100 * nation.getPower()) + "%"
-            ));
-            gui.addElement(new StaticGuiElement('r',
-                    new ItemStack(Material.SHIELD),
-                    click -> {
-                        var nGui = createAllGroups(player, "alphabet", 0);
-                        nGui.show(player);
-                        return true;
-                    },
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
-                    ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
-            ));
-            gui.addElement(new StaticGuiElement('t',
-                    new ItemStack(Material.BARRIER),
-                    click -> {
-                        gui.close();
-                        return true;
-                    },
-                    "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                    ChatColor.GRAY + "Click to escape"
-            ));
+            status = "Closed";
         }
+
+        gui.addElement(new StaticGuiElement('k',
+                new ItemStack(Material.OAK_FENCE),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Border Status:",
+                ChatColor.GRAY + status,
+                " ",
+                ChatColor.BLUE + "Open Borders: " + ChatColor.GRAY + "/nation open",
+                ChatColor.BLUE + "Close Borders: " + ChatColor.GRAY + "/nation close"
+        ));
+
+        var plots = nation.getChunks().size();
+        var label = " plots";
+        if (plots == 1) {
+            label = " plot";
+        }
+        gui.addElement(new StaticGuiElement('l',
+                new ItemStack(Material.GRASS_BLOCK),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Territory Size",
+                ChatColor.GRAY + String.valueOf(plots) + label
+        ));
+
+        gui.addElement(new StaticGuiElement('m',
+                new ItemStack(Material.LIME_BANNER),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createAllyNations(nation, (Player) clicker, "alphabet", 0); //TODO get instead of create
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Ally Nations",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View ally nations"
+        ));
+
+        gui.addElement(new StaticGuiElement('n',
+                new ItemStack(Material.RED_BANNER),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createEnemyNations(nation, (Player) clicker, "alphabet", 0); //TODO get instead of create
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Enemy Nations",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View enemy nations"
+        ));
+
+        gui.addElement(new StaticGuiElement('o',
+                new ItemStack(Material.GOLD_BLOCK),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Rankings",
+                ChatColor.BLUE + "Power: " + ChatColor.GRAY + "#" + Nations.getInstance().getPowerRank(nation), //TODO make these update
+                ChatColor.BLUE + "Population: " + ChatColor.GRAY + "#" + Nations.getInstance().getPopulationRank(nation),
+                ChatColor.BLUE + "Territory Size: " + ChatColor.GRAY + "#" + Nations.getInstance().getTerritoryRank(nation),
+                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "#" + Nations.getInstance().getBalanceRank(nation),
+                ChatColor.BLUE + "Age: " + ChatColor.GRAY + "#" + Nations.getInstance().getAgeRank(nation)
+        ));
+
+        gui.addElement(new StaticGuiElement('p',
+                new ItemStack(Material.BLUE_BANNER),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createNations((Player) clicker, "alphabet", 0); //TODO get instead of create
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all nations"
+        ));
+
+        gui.addElement(new StaticGuiElement('q',
+                new ItemStack(Material.PLAYER_HEAD),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createPlayers((Player) clicker, "alphabet", 0); //TODO get instead of create
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
+        ));
+
+        gui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.SHIELD),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createAllGroups((Player) clicker, "alphabet", 0); //TODO get instead of create
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
+        ));
+
+        gui.addElement(new StaticGuiElement('u',
+                new ItemStack(Material.EMERALD),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Power",
+                ChatColor.GRAY + formatter.format(100 * nation.getPower()) + "%"
+        ));
+        gui.addElement(new StaticGuiElement('s',
+                new ItemStack(Material.ZOMBIE_HEAD),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var diplomacyClicker = DiplomacyPlayers.getInstance().get(clicker.getUniqueId());
+                    var clickerNation = Nations.getInstance().get(diplomacyClicker);
+                    if (!(Objects.equals(nation, clickerNation))) {
+                        clicker.sendMessage(ChatColor.RED + "You do not have permission.");
+                        return true;
+                    }
+                    var memberClass = nation.getMemberClass(diplomacyClicker);
+                    if (memberClass == null || !memberClass.getPermissions().get("CanManageGuards")) {
+                        clicker.sendMessage(ChatColor.RED + "You do not have permission.");
+                        return true;
+                    }
+                    clicker.sendMessage(ChatColor.RED + "Feature coming soon."); //TODO add
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Guards",
+                ChatColor.BLUE + "Coming soon: " + ChatColor.GRAY + "View guards"
+        ));
+        gui.addElement(new StaticGuiElement('t',
+                new ItemStack(Material.BARRIER),
+                click -> {
+                    gui.close();
+                    return true;
+                },
+                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
+                ChatColor.GRAY + "Click to escape"
+        ));
         return gui;
     }
 
@@ -995,8 +760,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -1294,8 +1060,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -1661,14 +1428,17 @@ public class NationGuiFactory {
 
         var banner = nation.getBanner();
         var bannerMeta = (BannerMeta) banner.getItemMeta();
-        bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        if (bannerMeta != null) {
+            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        }
         banner.setItemMeta(bannerMeta);
 
         gui.addElement(new StaticGuiElement('N',
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -2007,8 +1777,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -2364,8 +2135,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -2847,8 +2619,9 @@ public class NationGuiFactory {
         return new StaticGuiElement(slot,
                 banner,
                 click -> {
-                    var nGui = create(nation, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + nation.getName(),
