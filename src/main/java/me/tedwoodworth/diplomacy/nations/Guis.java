@@ -23,6 +23,7 @@ public class Guis {
 private static Guis instance = null;
 
 private final Map<Nation, InventoryGui> nationMenus;
+private final Map<Nation, InventoryGui> viewNationMenus;
 
     public static Guis getInstance() {
         if (instance == null) {
@@ -33,6 +34,7 @@ private final Map<Nation, InventoryGui> nationMenus;
 
     public Guis() {
         nationMenus = new HashMap<>();
+        viewNationMenus = new HashMap<>();
     }
 
     public InventoryGui getNationMenu(Nation nation, Player player) {

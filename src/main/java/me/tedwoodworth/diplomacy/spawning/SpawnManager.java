@@ -216,7 +216,7 @@ public class SpawnManager {
 
     private class EventListener implements Listener {
 
-        @EventHandler(priority = EventPriority.HIGH)
+        @EventHandler(priority = EventPriority.MONITOR)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             var player = (Player) event.getPlayer();
             player.sendMessage("Respawning...");
@@ -250,11 +250,6 @@ public class SpawnManager {
         private void onPlayerBedEnter(PlayerBedEnterEvent event) {
             var player = event.getPlayer();
             var bedSpawnLocation = player.getBedSpawnLocation();
-            Location oldBedSpawnLocation = null;
-
-            if (bedSpawnLocation != null) {
-                oldBedSpawnLocation = new Location(bedSpawnLocation.getWorld(), bedSpawnLocation.getX(), bedSpawnLocation.getY(), bedSpawnLocation.getZ());
-            }
             if (event.getBed().getType().equals(Material.RESPAWN_ANCHOR) && event.getBed().getWorld().getEnvironment().equals(World.Environment.NETHER)) {
                 player.setBedSpawnLocation(event.getBed().getLocation(), true);
                 player.sendMessage("Respawn point set");

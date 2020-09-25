@@ -5,9 +5,12 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
@@ -60,7 +63,7 @@ public class ContestManager {
         }
 
         if (contestTaskID == -1) {
-            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 2L);
+            contestTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onContestTask, 0L, 10L);
             particleTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::onParticleTask, 0L, 30L);
             config.set("ContestTaskRunning", "true");
         }
@@ -171,6 +174,36 @@ public class ContestManager {
         }
     }
 
+    private boolean defenderIsVisible(HashSet<DiplomacyPlayer> attackers, DiplomacyPlayer diplomacyDefender) {
+        //D to A
+        var defender = diplomacyDefender.getPlayer().getPlayer();
+        if (defender == null) {
+            return false;
+        }
+        var dLocation = defender.getEyeLocation();
+        for (var diplomacyAttacker : attackers) {
+            var attacker = diplomacyAttacker.getPlayer().getPlayer();
+            if (attacker == null) {
+                continue;
+            }
+            var aLocation = attacker.getEyeLocation();
+            var vector = aLocation.toVector().subtract(dLocation.toVector());
+            var j = Math.floor(vector.length());
+            vector.multiply(1 / vector.length());
+            for (var i = 0; i <= j; i++) {
+                vector = aLocation.toVector().subtract(dLocation.toVector());
+                vector.multiply(1 / vector.length());
+                var world = defender.getWorld();
+                var block = world.getBlockAt((dLocation.toVector().add(vector.multiply(i))).toLocation(defender.getWorld()));
+                if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
+                    System.out.println("False");
+                    return false;
+                }
+            }
+        }
+        System.out.println("True");
+        return true;
+    }
 
     public void updateProgress(Contest contest) {
 
@@ -179,40 +212,67 @@ public class ContestManager {
         var attackingNation = contest.getAttackingNation();
         var defendingNation = diplomacyChunk.getNation();
         Validate.notNull(defendingNation);
-        var attackingPlayers = 0;
-        var defendingPlayers = 0;
+        var attackingPlayers = new HashSet<DiplomacyPlayer>();
+        var defendingPlayers = new HashSet<DiplomacyPlayer>();
         for (var player : Bukkit.getOnlinePlayers()) {
+            var pChunk = player.getLocation().getChunk();
+            var pX = pChunk.getX();
+            var x = chunk.getX();
+            if (pX != x) continue;
+
+
+            var z = chunk.getZ();
+            var pZ = pChunk.getZ();
+            if (pZ != z) continue;
+
+            var pWorld = pChunk.getWorld();
+            var world = chunk.getWorld();
+            if (!world.equals(pWorld)) continue;
+
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var nation = Nations.getInstance().get(diplomacyPlayer);
-            if (player.getLocation().getChunk().equals(chunk) && nation != null) {
+            if (nation == null) continue;
 
-                var nationID = nation.getNationID();
-                var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
-                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
-                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
-                var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
-                if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-                    attackingPlayers++;
-                } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-                    defendingPlayers++;
-                }
+            var nationID = nation.getNationID();
+            var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
+            var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
+            var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+            var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
+            if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
+                attackingPlayers.add(diplomacyPlayer);
+            } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                defendingPlayers.add(diplomacyPlayer);
             }
         }
+
+        var attackingPlayerCount = attackingPlayers.size();
+        int defendingPlayerCount;
+        if (attackingPlayerCount == 0) {
+           defendingPlayerCount = defendingPlayers.size();
+        } else {
+            defendingPlayerCount = 0;
+        }
+
+        for (var defendingPlayer : defendingPlayers) {
+            if (defenderIsVisible(attackingPlayers, defendingPlayer)) {
+                defendingPlayerCount++;
+            }
+        }
+
         //TODO defendingPlayers++ for every defending nation guard within the chunk
-        //TODO only defendingPlayers++ if there is an unobstructed line of view between the defender and the attackers (meaning the defenders can be attacked)
 
         var attackingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, attackingNation, false);
         var defendingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, defendingNation, false);
 
-        if (attackingPlayers > defendingPlayers) {
-            contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayers - defendingPlayers)) * attackingAdjacentCoefficient);
-        } else if (attackingPlayers < defendingPlayers) {
-            contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingPlayers - attackingPlayers)) * defendingAdjacentCoefficient);
-        } else if (attackingPlayers == 0 && contest.getVacantTimer() == 600) {
+        if (attackingPlayerCount > defendingPlayerCount) {
+            contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayerCount - defendingPlayerCount)) * attackingAdjacentCoefficient);
+        } else if (attackingPlayerCount < defendingPlayerCount) {
+            contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingPlayerCount - attackingPlayerCount)) * defendingAdjacentCoefficient);
+        } else if (attackingPlayerCount == 0 && contest.getVacantTimer() == 600) {
             contest.setProgress(contest.getProgress() - Math.pow(2.0, (0.5)) * defendingAdjacentCoefficient);
         }
 
-        if (attackingPlayers == 0 && defendingPlayers == 0) {
+        if (attackingPlayerCount == 0 && defendingPlayerCount == 0) {
             if (contest.getVacantTimer() < 600) {
                 contest.setVacantTimer(contest.getVacantTimer() + 1);
             }
@@ -243,9 +303,9 @@ public class ContestManager {
             if (contest.getVacantTimer() != 0) {
                 contest.setVacantTimer(0);
             }
-        } else if (contest.getVacantTimer() < 600) {
+        } else if (contest.getVacantTimer() < 120) {
             contest.setVacantTimer(contest.getVacantTimer() + 1);
-        } else if (contest.getVacantTimer() == 600) {
+        } else if (contest.getVacantTimer() == 120) {
             contest.setProgress(-.01);
         }
     }
@@ -282,27 +342,27 @@ public class ContestManager {
 
         if (!isWilderness) {
             return switch (adjacentChunks) {
-                default -> 1.0 / 1728000.0;
-                case 1 -> 1.0 / 345600.0;
-                case 2 -> 1.0 / 14400.0;
-                case 3 -> 1.0 / 3840.0;
-                case 4 -> 1.0 / 2880.0;
-                case 5 -> 1.0 / 2400.0;
-                case 6 -> 1.0 / 1920.0;
-                case 7 -> 1.0 / 1440.0;
-                case 8 -> 1.0 / 960.0;
+                default -> 5.0 / 1728000.0;
+                case 1 -> 5.0 / 345600.0;
+                case 2 -> 5.0 / 14400.0;
+                case 3 -> 5.0 / 3840.0;
+                case 4 -> 5.0 / 2880.0;
+                case 5 -> 5.0 / 2400.0;
+                case 6 -> 5.0 / 1920.0;
+                case 7 -> 5.0 / 1440.0;
+                case 8 -> 5.0 / 960.0;
             };
         } else {
             return switch (adjacentChunks) {
-                case 8 -> 1.0 / 100.0;
-                case 7 -> 1.0 / 150.0;
-                case 6 -> 1.0 / 200.0;
-                case 5 -> 1.0 / 250.0;
-                case 4 -> 1.0 / 300.0;
-                case 3 -> 1.0 / 400.0;
-                case 2 -> 1.0 / 600.0;
-                case 1 -> 1.0 / 3000.0;
-                default -> 1.0 / 12000.0;
+                case 8 -> 5.0 / 100.0;
+                case 7 -> 5.0 / 150.0;
+                case 6 -> 5.0 / 200.0;
+                case 5 -> 5.0 / 250.0;
+                case 4 -> 5.0 / 300.0;
+                case 3 -> 5.0 / 400.0;
+                case 2 -> 5.0 / 600.0;
+                case 1 -> 5.0 / 3000.0;
+                default -> 5.0 / 12000.0;
             };
 
         }
