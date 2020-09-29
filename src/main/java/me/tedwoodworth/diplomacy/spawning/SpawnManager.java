@@ -98,93 +98,75 @@ public class SpawnManager {
 
     public Location getRespawnLocation(Location deathLocation, boolean death) {
         var world = deathLocation.getWorld();
-        if (world.getEnvironment().equals(World.Environment.THE_END)) {
+        if (!world.getEnvironment().equals(World.Environment.NORMAL)) {
             death = false;
             world = Bukkit.getWorld("world");
             deathLocation = world.getSpawnLocation();
         }
         var chunk = deathLocation.getChunk();
-        if (world != null) {
-            var border = world.getWorldBorder();
-            var center = border.getCenter();
-            var size = border.getSize();
-            var maxX = center.getX() + size / 2.0 - 8;
-            var minX = center.getX() - size / 2.0 + 8;
-            var maxZ = center.getZ() + size / 2.0 - 8;
-            var minZ = center.getZ() - size / 2.0 + 8;
+        var border = world.getWorldBorder();
+        var center = border.getCenter();
+        var size = border.getSize();
+        var maxX = center.getX() + size / 2.0 - 8;
+        var minX = center.getX() - size / 2.0 + 8;
+        var maxZ = center.getZ() + size / 2.0 - 8;
+        var minZ = center.getZ() - size / 2.0 + 8;
 
-            if (death) {
-                maxX = Math.min(maxX, deathLocation.getX() + 1000);
-                minX = Math.max(minX, deathLocation.getX() - 1000);
-                maxZ = Math.min(maxZ, deathLocation.getZ() + 1000);
-                minZ = Math.max(minZ, deathLocation.getZ() - 1000);
-            }
+        if (death) {
+            maxX = Math.min(maxX, deathLocation.getX() + 1000);
+            minX = Math.max(minX, deathLocation.getX() - 1000);
+            maxZ = Math.min(maxZ, deathLocation.getZ() + 1000);
+            minZ = Math.max(minZ, deathLocation.getZ() - 1000);
+        }
 
-            var deathBiome = deathLocation.getBlock().getBiome();
+        var deathBiome = deathLocation.getBlock().getBiome();
 
-            var x = Math.random() * (Math.abs(maxX) + Math.abs(minX)) - Math.abs(minX);
-            double y;
-            var z = Math.random() * (Math.abs(maxZ) + Math.abs(minZ)) - Math.abs(minZ);
+        var x = Math.random() * (Math.abs(maxX) + Math.abs(minX)) - Math.abs(minX);
+        double y;
+        var z = Math.random() * (Math.abs(maxZ) + Math.abs(minZ)) - Math.abs(minZ);
 
-            Location location;
-            if (deathLocation.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
-                y = Math.random() * 89 + 32;
-                location = new Location(world, x, y, z);
-                var block = location.getBlock();
-
-                if (block.isLiquid() || block.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                    return getRespawnLocation(deathLocation, death);
-                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                    var testLocation = decreaseYLocation(location);
-                    var testBlock = testLocation.getBlock();
-                    if (testBlock.isLiquid() || testBlock.getType().equals(Material.FIRE) || block.getType().equals(Material.MAGMA_BLOCK)) {
-                        return getRespawnLocation(deathLocation, death);
-                    } else {
-                        return testLocation;
-                    }
+        Location location;
+        if (oceanBiomes.contains(deathBiome)) {
+            y = world.getHighestBlockYAt((int) x, (int) z);
+            location = new Location(world, x, y + 1, z);
+            var block = location.getBlock();
+            if ((block.getType().equals(Material.LAVA) || block.getType().equals(Material.FIRE))) {
+                return getRespawnLocation(deathLocation, death);
+            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                var testLocation = decreaseYLocation(location);
+                var testBlock = testLocation.getBlock();
+                if (!testBlock.getType().equals(Material.LAVA) && !testBlock.getType().equals(Material.FIRE)) {
+                    return location;
                 }
-            } else if (oceanBiomes.contains(deathBiome)) {
+            }
+            return getRespawnLocation(deathLocation, death);
+        } else if (badBiomes.contains(deathBiome) && !oceanBiomes.contains(deathBiome) && world.getEnvironment().equals(World.Environment.NORMAL)) {
                 y = world.getHighestBlockYAt((int) x, (int) z);
-                location = new Location(world, x, y + 1, z);
-                var block = location.getBlock();
-                if ((block.getType().equals(Material.LAVA) || block.getType().equals(Material.FIRE))) {
-                    return getRespawnLocation(deathLocation, death);
-                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                    var testLocation = decreaseYLocation(location);
-                    var testBlock = testLocation.getBlock();
-                    if (!testBlock.getType().equals(Material.LAVA) && !testBlock.getType().equals(Material.FIRE)) {
-                        return location;
-                    }
+            location = new Location(world, x, y + 1, z);
+            var block = location.getBlock();
+            if ((block.isLiquid() || block.getType().equals(Material.FIRE))) {
+                return getRespawnLocation(deathLocation, death);
+            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                var testLocation = decreaseYLocation(location);
+                var testBlock = testLocation.getBlock();
+                if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
+                    return location;
                 }
                 return getRespawnLocation(deathLocation, death);
-            } else if (badBiomes.contains(deathBiome) && !oceanBiomes.contains(deathBiome) && world.getEnvironment().equals(World.Environment.NORMAL)) {
-                    y = world.getHighestBlockYAt((int) x, (int) z);
-                location = new Location(world, x, y + 1, z);
-                var block = location.getBlock();
-                if ((block.isLiquid() || block.getType().equals(Material.FIRE))) {
-                    return getRespawnLocation(deathLocation, death);
-                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                    var testLocation = decreaseYLocation(location);
-                    var testBlock = testLocation.getBlock();
-                    if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
-                        return location;
-                    }
-                    return getRespawnLocation(deathLocation, death);
+            }
+        } else {
+                y = world.getHighestBlockYAt((int) x, (int) z);
+            location = new Location(world, x, y + 1, z);
+            var block = location.getBlock();
+            if (block.isLiquid() || block.getType().equals(Material.FIRE) || badBiomes.contains(block.getBiome())) {
+                return getRespawnLocation(deathLocation, death);
+            } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
+                var testLocation = decreaseYLocation(location);
+                var testBlock = testLocation.getBlock();
+                if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
+                    return location;
                 }
-            } else {
-                    y = world.getHighestBlockYAt((int) x, (int) z);
-                location = new Location(world, x, y + 1, z);
-                var block = location.getBlock();
-                if (block.isLiquid() || block.getType().equals(Material.FIRE) || badBiomes.contains(block.getBiome())) {
-                    return getRespawnLocation(deathLocation, death);
-                } else if (block.getType().equals(Material.AIR) || block.isPassable()) {
-                    var testLocation = decreaseYLocation(location);
-                    var testBlock = testLocation.getBlock();
-                    if (!testBlock.isLiquid() && !testBlock.getType().equals(Material.FIRE)) {
-                        return location;
-                    }
-                    return getRespawnLocation(deathLocation, death);
-                }
+                return getRespawnLocation(deathLocation, death);
             }
         }
         return getRespawnLocation(deathLocation, death);
@@ -222,7 +204,7 @@ public class SpawnManager {
             player.sendMessage("Respawning...");
             var deathLocation = player.getLocation();
             var bedSpawnLocation = player.getBedSpawnLocation();
-            if (bedSpawnLocation == null || bedSpawnLocation.getWorld() != deathLocation.getWorld()) {
+            if (bedSpawnLocation == null) {
                 var location = getRespawnLocation(player.getLocation(), true);
                 event.setRespawnLocation(location);
             } else {

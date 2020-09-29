@@ -267,15 +267,14 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
-        private void onPlayerPortal(PlayerChangedWorldEvent event) {
+        private void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
             var player = event.getPlayer();
-            if (!event.getFrom().getEnvironment().equals(World.Environment.NETHER) && player.getLocation().getWorld().getEnvironment().equals(World.Environment.NETHER)) {
-                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "WARNING: If you die in the nether, you will respawn in the nether. Be careful!");
-            }
             if (event.getFrom().getEnvironment().equals(World.Environment.THE_END) && !player.getWorld().getEnvironment().equals(World.Environment.THE_END)) {
-                var location = SpawnManager.getInstance().getRespawnLocation(player.getLocation(), false);
-                if (location != null) {
-                    player.teleport(location);
+                if (player.getBedSpawnLocation() == null) {
+                    var location = SpawnManager.getInstance().getRespawnLocation(player.getLocation(), false);
+                    if (location != null) {
+                        player.teleport(location);
+                    }
                 }
             }
         }
