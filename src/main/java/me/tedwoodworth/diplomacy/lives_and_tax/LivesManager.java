@@ -11,6 +11,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.time.Duration;
@@ -93,7 +95,7 @@ public class LivesManager {
 
 
         @EventHandler
-        private void onPlayerJoin(PlayerJoinEvent event) {
+        private void onPlayerLogin(PlayerLoginEvent event) {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             if (!diplomacyPlayer.getJoinedToday()) {
@@ -102,13 +104,14 @@ public class LivesManager {
 
             var lives = diplomacyPlayer.getLives();
             if (lives == 0) {
-                player.kickPlayer(
-                        "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
-                                net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
-                );
+
+                var message = "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
+                        net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
+                        net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
+                        net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
+                        net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf";
+
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, message);
             }
         }
 
@@ -130,17 +133,18 @@ public class LivesManager {
 
             if (diplomacyPlayer.getLives() == 0) {
                 var name = player.getName();
-                player.kickPlayer(
-                        "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
-                                net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
-                                net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
-                );
-
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                        player.kickPlayer(
+                                "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
+                                        net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
+                        ), 1);
                 for (var testPlayer : Bukkit.getOnlinePlayers()) {
                     testPlayer.sendMessage("" + ChatColor.RED + ChatColor.BOLD + name + " ran out of lives.");
                 }
+                return;
             }
             var label = " lives ";
             if (diplomacyPlayer.getLives() == 1) {
