@@ -495,7 +495,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var gui = Guis.getInstance().getNationMenu(nation, player);
+        var gui = Guis.getInstance().getNationMenu(nation);
         gui.show(player);
     }
 
@@ -719,19 +719,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
             var testNation = testDiplomacyChunk.getNation();
             if (Objects.equals(testNation, nation)) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testPlayerNation == null) {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getEnemyNationIDs().contains(testPlayerNation.getNationID())) {
-                    player.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getAllyNationIDs().contains(testPlayerNation.getNationID()) || otherNation.equals(testPlayerNation)) {
-                    player.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
                 } else {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 }
             }
         }
@@ -1453,7 +1453,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(ChatColor.GOLD + "Loading nation list...");
-        var nGui = NationGuiFactory.createNations((Player) sender, "alphabet", 0);
+        var nGui = NationGuiFactory.createNations("alphabet", 0);
         nGui.show((Player) sender);
     }
 

@@ -83,7 +83,11 @@ public class LivesManager {
     void giveLive(DiplomacyPlayer diplomacyPlayer) {
         diplomacyPlayer.setLives(diplomacyPlayer.getLives() + 1);
         diplomacyPlayer.setJoinedToday(true);
-        diplomacyPlayer.getPlayer().getPlayer().sendMessage(ChatColor.AQUA + "You have gained 1 life for logging on today.");
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+            if (diplomacyPlayer.getPlayer().getPlayer() != null) {
+                diplomacyPlayer.getPlayer().getPlayer().sendMessage(ChatColor.AQUA + "You have gained 1 life for logging on today.");
+            }
+        }, 100);
     }
 
 
@@ -98,12 +102,8 @@ public class LivesManager {
         private void onPlayerLogin(PlayerLoginEvent event) {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            if (!diplomacyPlayer.getJoinedToday()) {
-                giveLive(diplomacyPlayer);
-            }
-
             var lives = diplomacyPlayer.getLives();
-            if (lives == 0) {
+            if (lives == 0 && diplomacyPlayer.getJoinedToday()) {
 
                 var message = "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
                         net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
@@ -112,6 +112,15 @@ public class LivesManager {
                         net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf";
 
                 event.disallow(PlayerLoginEvent.Result.KICK_OTHER, message);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerJoin(PlayerJoinEvent event) {
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            if (!diplomacyPlayer.getJoinedToday()) {
+                giveLive(diplomacyPlayer);
             }
         }
 

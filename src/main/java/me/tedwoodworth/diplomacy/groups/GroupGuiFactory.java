@@ -30,18 +30,9 @@ import static java.util.Comparator.comparingInt;
 public class GroupGuiFactory {
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
 
-    public static InventoryGui create(DiplomacyGroup group, Player player) {
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+    public static InventoryGui create(DiplomacyGroup group) {
         var groupNation = group.getNation();
-        var color = ChatColor.BLUE;
-        if (playerNation != null) {
-            if ((groupNation.getAllyNationIDs() != null && groupNation.getAllyNationIDs().contains(playerNation.getNationID())) || Objects.equals(groupNation, playerNation)) {
-                color = ChatColor.DARK_GREEN;
-            } else if (groupNation.getEnemyNationIDs() != null && groupNation.getEnemyNationIDs().contains(playerNation.getNationID())) {
-                color = ChatColor.RED;
-            }
-        }
+        var color = ChatColor.GREEN;
         var title = "" + color + ChatColor.BOLD + group.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Main";
         String[] guiSetup = {
                 "        l",
@@ -51,38 +42,21 @@ public class GroupGuiFactory {
                 "    f    ",
                 "        k"
         };
-        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
-        var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
-        if (playerNation != null) {
-            if (Objects.equals(groupNation, playerNation) || groupNation.getAllyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
-            } else if (groupNation.getEnemyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-            }
-        }
-
-        gui.setFiller(glass);
-
-        var isLeader = diplomacyPlayer.getGroupsLed().contains(group);
-        var isSameNation = Objects.equals(playerNation, groupNation);
-        var leadsAllGroups = false;
-        if (playerNation != null) {
-            var permissions = playerNation.getMemberClass(diplomacyPlayer).getPermissions();
-            leadsAllGroups = isSameNation && permissions.get("CanLeadAllGroups");
-        }
+        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setFiller(new ItemStack(Material.GREEN_STAINED_GLASS_PANE));
 
         gui.addElement(new StaticGuiElement('l',
                 new ItemStack(Material.PAINTING),
                 click -> {
-                    var nGui = NationGuiFactory.createMenu(player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createMenu((Player) clicker);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
         ));
 
-        if (isLeader || leadsAllGroups) {
             gui.addElement(new StaticGuiElement('a',
                     new ItemStack(Material.NAME_TAG),
                     click -> true,
@@ -91,33 +65,20 @@ public class GroupGuiFactory {
                     " ",
                     ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/group rename " + group.getName() + " <name>"
             ));
-        } else {
-            gui.addElement(new StaticGuiElement('a',
-                    new ItemStack(Material.NAME_TAG),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Name:",
-                    ChatColor.GRAY + group.getName()
-            ));
-        }
-        if (isLeader || leadsAllGroups) {
+
             gui.addElement(new StaticGuiElement('b',
                     group.getShield(),
                     click -> true,
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",
                     ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/group banner " + group.getName()
             ));
-        } else {
-            gui.addElement(new StaticGuiElement('b',
-                    group.getShield(),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:"
-            ));
-        }
+
         gui.addElement(new StaticGuiElement('c',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var nGui = createMembers(group, player, "alphabet", 0);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = createMembers(group, "alphabet", 0);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
@@ -135,7 +96,7 @@ public class GroupGuiFactory {
                 banner,
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getNationMenu(group.getNation(), (Player) clicker);
+                    var nGui = Guis.getInstance().getNationMenu(group.getNation());
                     nGui.show(clicker);
                     return true;
                 },
@@ -166,8 +127,9 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('f',
                 founderItem,
                 click -> {
-                    var nGui = NationGuiFactory.createPlayer(player, founder);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createPlayer(founder);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Founder",
@@ -183,8 +145,9 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('h',
                 new ItemStack(Material.BLUE_BANNER),
                 click -> {
-                    var nGui = NationGuiFactory.createNations(player, "alphabet", 0);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createNations("alphabet", 0);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
@@ -193,8 +156,9 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('i',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var nGui = NationGuiFactory.createPlayers(player, "alphabet", 0);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createPlayers("alphabet", 0);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
@@ -203,8 +167,9 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('j',
                 new ItemStack(Material.SHIELD),
                 click -> {
-                    var nGui = NationGuiFactory.createAllGroups(player, "alphabet", 0);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createAllGroups("alphabet", 0);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
@@ -222,17 +187,9 @@ public class GroupGuiFactory {
         return gui;
     }
 
-    public static InventoryGui createMembers(DiplomacyGroup group, Player player, String sortType, int slot) {
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-        var playerNation = Nations.getInstance().get(diplomacyPlayer);
-        var color = ChatColor.BLUE;
-        if (playerNation != null) {
-            if (group.getNation().getAllyNationIDs().contains(playerNation.getNationID()) || Objects.equals(group.getNation(), playerNation)) {
-                color = ChatColor.DARK_GREEN;
-            } else if (group.getNation().getEnemyNationIDs().contains(playerNation.getNationID())) {
-                color = ChatColor.RED;
-            }
-        }
+    public static InventoryGui createMembers(DiplomacyGroup group, String sortType, int slot) {
+        var color = ChatColor.GREEN;
+
         var title = "" + color + ChatColor.BOLD + group.getName() + ChatColor.DARK_GRAY + ChatColor.BOLD + " Members";
         String[] guiSetup = {
                 "A abcde N",
@@ -242,17 +199,8 @@ public class GroupGuiFactory {
                 "G uvwxy  ",
                 "  z{|}~ E"
         };
-        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
-        var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
-        if (playerNation != null) {
-            if (Objects.equals(group.getNation(), playerNation) || group.getNation().getAllyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
-            } else if (group.getNation().getEnemyNationIDs().contains(playerNation.getNationID())) {
-                glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-            }
-        }
-
-        gui.setFiller(glass);
+        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setFiller(new ItemStack(Material.GREEN_STAINED_GLASS_PANE));
 
         var alphabetical = new ItemStack(Material.WHITE_BANNER);
         var alphabeticalMeta = (BannerMeta) (alphabetical.getItemMeta());
@@ -267,12 +215,13 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('A',
                 alphabetical,
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group, player, "alphabet", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group,"alphabet", slot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createMembers(group, player, "reverseAlphabet", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "reverseAlphabet", slot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -283,12 +232,13 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('B',
                 new ItemStack(Material.DIAMOND),
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group, player, "balance", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "balance", slot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createMembers(group, player, "reverseBalance", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "reverseBalance", slot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -299,12 +249,13 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('R',
                 new ItemStack(Material.NETHER_STAR),
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group, player, "role", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "role", slot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createMembers(group, player, "reverseRole", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "reverseRole", slot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -315,12 +266,13 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('C',
                 new ItemStack(Material.BLUE_BANNER),
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group, player, "nation", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "nation", slot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createMembers(group, player, "reverseNation", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "reverseNation", slot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -331,12 +283,13 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('G',
                 new ItemStack(Material.CLOCK),
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group, player, "age", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "age", slot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createMembers(group, player, "reverseAge", slot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, "reverseAge", slot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -357,20 +310,21 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('U',
                 scrollUp,
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
                         var nSlot = slot - 5;
                         if (nSlot < 0) {
                             nSlot = 0;
                         }
-                        var nGui = createMembers(group, player, sortType, nSlot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, sortType, nSlot);
+                        nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
                         var nSlot = slot - 30;
                         if (nSlot < 0) {
                             nSlot = 0;
                         }
-                        var nGui = createMembers(group, player, sortType, nSlot);
-                        nGui.show(player);
+                        var nGui = createMembers(group, sortType, nSlot);
+                        nGui.show(clicker);
                     }
                     return true;
                 },
@@ -391,14 +345,15 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('D',
                 scrollDown,
                 click -> {
+                    var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
                         var nSlot = slot + 5;
                         if (nSlot > group.getMembers().size() + (5 - group.getMembers().size() % 5) - 30) {
                             nSlot = group.getMembers().size() + (5 - group.getMembers().size() % 5) - 30;
                         }
                         if (group.getMembers().size() > 30) {
-                            var nGui = createMembers(group, player, sortType, nSlot);
-                            nGui.show(player);
+                            var nGui = createMembers(group, sortType, nSlot);
+                            nGui.show(clicker);
                         }
                     } else if (click.getType().isRightClick()) {
                         var nSlot = slot + 30;
@@ -406,8 +361,8 @@ public class GroupGuiFactory {
                             nSlot = group.getMembers().size() + (5 - group.getMembers().size() % 5) - 30;
                         }
                         if (group.getMembers().size() > 30) {
-                            var nGui = createMembers(group, player, sortType, nSlot);
-                            nGui.show(player);
+                            var nGui = createMembers(group, sortType, nSlot);
+                            nGui.show(clicker);
                         }
                     }
                     return true;
@@ -420,8 +375,9 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('N',
                 group.getShield(),
                 click -> {
-                    var nGui = create(group, player);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = create(group);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
@@ -448,7 +404,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAlphabet")) {
@@ -457,7 +413,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("balance")) {
@@ -466,7 +422,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseBalance")) {
@@ -475,7 +431,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("role")) {
@@ -484,7 +440,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseRole")) {
@@ -493,7 +449,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("nation")) {
@@ -514,7 +470,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseNation")) {
@@ -535,7 +491,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("age")) {
@@ -544,7 +500,7 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         } else if (sortType.equals("reverseAge")) {
@@ -553,14 +509,14 @@ public class GroupGuiFactory {
                     .skip(slot)
                     .limit(30)
                     .forEach(member -> {
-                        var element = createMemberElement(group, player, member, slotChar[0]++);
+                        var element = createMemberElement(group, member, slotChar[0]++);
                         gui.addElement(element);
                     });
         }
         return gui;
     }
 
-    private static StaticGuiElement createMemberElement(DiplomacyGroup group, Player player, DiplomacyPlayer member, char slot) {
+    private static StaticGuiElement createMemberElement(DiplomacyGroup group, DiplomacyPlayer member, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);
         var skullMeta = (SkullMeta) (memberHead.getItemMeta());
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(member.getUUID()));
@@ -588,8 +544,9 @@ public class GroupGuiFactory {
         return new StaticGuiElement(slot,
                 memberHead,
                 click -> {
-                    var nGui = NationGuiFactory.createPlayer(player, Bukkit.getOfflinePlayer(member.getUUID()));
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createPlayer(Bukkit.getOfflinePlayer(member.getUUID()));
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + offlinePlayer.getName(),

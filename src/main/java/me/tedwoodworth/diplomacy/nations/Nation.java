@@ -533,5 +533,7 @@ public class Nation {
                 }
             }
         }
+        var event = new NationToggleBorderEvent(this, !isOpen, isOpen);
+        Bukkit.getPluginManager().callEvent(event);
     }
 }

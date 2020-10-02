@@ -308,18 +308,18 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.AQUA + "Plot surrendered to '" + color + otherNation.getName() + ChatColor.AQUA + "'.");
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var playerChunk = player.getLocation().getChunk();
+            var playerChunk = testPlayer.getLocation().getChunk();
             if (chunk.equals(playerChunk)) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testNation == null) {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getEnemyNationIDs().contains(testNation.getNationID())) {
-                    player.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.RED + otherNation.getName(), null, 5, 40, 10);
                 } else if (otherNation.getAllyNationIDs().contains(testNation.getNationID()) || otherNation.equals(nation)) {
-                    player.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.GREEN + otherNation.getName(), null, 5, 40, 10);
                 } else {
-                    player.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
+                    testPlayer.sendTitle(ChatColor.BLUE + otherNation.getName(), null, 5, 40, 10);
                 }
             }
         }
@@ -366,7 +366,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.AQUA + "Plot abandoned.");
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var playerChunk = player.getLocation().getChunk();
+            var playerChunk = testPlayer.getLocation().getChunk();//TODO check
             if (diplomacyChunk.getChunk().equals(playerChunk)) {
                 testPlayer.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
             }

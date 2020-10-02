@@ -86,7 +86,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
 
 
-        var gui = NationGuiFactory.createPlayer((Player) sender, player.getPlayer());
+        var gui = NationGuiFactory.createPlayer(player.getPlayer());
         gui.show((Player) sender);
     }
 
@@ -97,7 +97,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(ChatColor.GOLD + "Loading player list...");
-        var nGui = NationGuiFactory.createPlayers((Player) sender, "alphabet", 0);
+        var nGui = NationGuiFactory.createPlayers("alphabet", 0);
         nGui.show((Player) sender);
     }
 }

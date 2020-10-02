@@ -464,7 +464,7 @@ public class ClassGuiFactory {
                 banner,
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getNationMenu(nation, (Player) clicker);
+                    var nGui = Guis.getInstance().getNationMenu(nation);
                     nGui.show(clicker);
                     return true;
                 },
@@ -3559,8 +3559,9 @@ public class ClassGuiFactory {
         gui.addElement(new StaticGuiElement('E',
                 playerHead,
                 click -> {
-                    var nGui = NationGuiFactory.createPlayer(player, otherPlayer);
-                    nGui.show(player);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = NationGuiFactory.createPlayer(otherPlayer);
+                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + otherPlayer.getName(),
