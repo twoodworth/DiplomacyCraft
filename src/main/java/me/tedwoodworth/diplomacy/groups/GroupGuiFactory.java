@@ -146,8 +146,8 @@ public class GroupGuiFactory {
                 new ItemStack(Material.BLUE_BANNER),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = NationGuiFactory.createNations("alphabet", 0);
-                    nGui.show(clicker);
+                    var nGui = Guis.getInstance().getNations("alphabetically");
+                    Objects.requireNonNull(nGui).show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",

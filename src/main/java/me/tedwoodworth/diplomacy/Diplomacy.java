@@ -83,6 +83,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded group events");
         Guis.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded Gui events");
+        Guis.getInstance().loadNationMenus();
+        System.out.println("[Diplomacy] Loaded nation menus");
         DiplomacyDynmap.getInstance().load();
         System.out.println("[Diplomacy] Loaded Diplomacy-dynmap");
         LivesManager.getInstance().startScheduler();

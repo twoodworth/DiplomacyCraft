@@ -1005,6 +1005,17 @@ public class EnchantingTomes {
         }
 
         @EventHandler
+        private void onEntityDamage(EntityDamageEvent event) {
+            if (event.getEntity().getType().equals(EntityType.ENDER_DRAGON)) {
+                var damage = event.getDamage();
+                var health = ((Damageable) event.getEntity()).getHealth();
+                if (damage >= health) {
+                    event.getEntity().getWorld().dropItem(event.getEntity().getLocation(), getKnockback());
+                }
+            }
+        }
+
+        @EventHandler
         private void onEntityDeath(EntityDeathEvent event) {
             var entity = event.getEntity();
             if (entity.getKiller() == null) {
@@ -1048,9 +1059,7 @@ public class EnchantingTomes {
                 if (type.equals(EntityType.STRAY) && Math.random() < .01) {
                     event.getDrops().add(getPunch());
                 }
-            } else if (type.equals(EntityType.ENDER_DRAGON)) {
-                event.getDrops().add(getKnockback());
-            } else if (type.equals(EntityType.DROWNED)) {
+            }  else if (type.equals(EntityType.DROWNED)) {
                 if (Math.random() < .01) {
                     event.getDrops().add(getRespiration());
                 }

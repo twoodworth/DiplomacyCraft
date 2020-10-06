@@ -259,54 +259,6 @@ public class Nation {
         return null;
     }
 
-    public double getPower() {
-        var totalPower = 0.0;
-        for (var nation : Nations.getInstance().getNations()) {
-            totalPower += nation.getUnscaledPower();
-        }
-        if (totalPower == 0.0) {
-            totalPower = 1.0;
-        }
-        return this.getUnscaledPower() / totalPower;
-    }
-
-    public double getUnscaledPower() {
-        var totalPopulation = 0.0;
-        var totalTerritory = 0.0;
-        var totalBalance = 0.0;
-
-        for (var testNation : Nations.getInstance().getNations()) {
-            totalPopulation += testNation.getMembers().size();
-            totalTerritory += testNation.getChunks().size();
-            totalBalance += testNation.getBalance();
-        }
-
-        if (totalPopulation == 0.0) {
-            totalPopulation = 1.0;
-        }
-        if (totalTerritory == 0.0) {
-            totalTerritory = 1.0;
-        }
-        if (totalBalance == 0.0) {
-            totalBalance = 1.0;
-        }
-
-        var nationPopulation = this.getMembers().size();
-        var nationTerritory = this.getChunks().size();
-        var nationBalance = this.getBalance();
-
-        var scaledPopulation = nationPopulation / totalPopulation;
-        var scaledTerritory = nationTerritory / totalTerritory;
-        var scaledBalance = nationBalance / totalBalance;
-
-        var squaredPopulation = Math.pow(scaledPopulation, 2);
-        var squaredTerritory = Math.pow(scaledTerritory, 2);
-        var squaredBalance = Math.pow(scaledBalance, 2);
-
-        var squaredPower = squaredPopulation + squaredTerritory + squaredBalance;
-        return Math.sqrt(squaredPower);
-    }
-
     public String getName() {
         return name;
     }
@@ -319,9 +271,12 @@ public class Nation {
     }
 
     public void setBanner(ItemStack banner) {
+        var oldBanner = this.getBanner();
         var bannerCopy = banner.clone();
         bannerCopy.setAmount(1);
         configSection.set("Banner", bannerCopy);
+        Bukkit.getPluginManager().callEvent(new NationChangeBannerEvent(this, oldBanner, bannerCopy));
+
     }
 
     public ItemStack getBanner() {
@@ -419,7 +374,9 @@ public class Nation {
     }
 
     public void setBalance(double balance) {
+        var oldBal = this.getBalance();
         configSection.set("Balance", balance);
+        Bukkit.getPluginManager().callEvent(new NationChangeBalanceEvent(this, balance, oldBal));
     }
 
     public List<String> getAllyNationIDs() {
