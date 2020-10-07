@@ -110,10 +110,10 @@ public class DiplomacyDynmap {
 
         playersets = false;
 
-        updatePeriod = 6000;
+        updatePeriod = 3000L;
         stop = false;
 
-        scheduleSyncDelayedTask(new DiplomacyUpdate(this), 40);
+        scheduleSyncDelayedTask(new DiplomacyUpdate(this), 3000L);
         Bukkit.getServer().getPluginManager().registerEvents(new OurServerListener(), diplomacy);
     }
 
@@ -393,7 +393,7 @@ public class DiplomacyDynmap {
     public void requestUpdateDiplomacy() {
         final DiplomacyUpdate diplomacyUpdate = new DiplomacyUpdate(this);
         diplomacyUpdate.setRunOnce(true);
-        scheduleSyncDelayedTask(diplomacyUpdate, 20L);
+        scheduleSyncDelayedTask(diplomacyUpdate, 3000L);
     }
 
     public boolean isPlayersets() {
@@ -406,7 +406,7 @@ public class DiplomacyDynmap {
 
     public void requestUpdatePlayerSet(final String nationID) {
         if (playersets) {
-            scheduleSyncDelayedTask(new PlayerSetUpdate(this, nationID), 40L);
+            scheduleSyncDelayedTask(new PlayerSetUpdate(this, nationID), 3000L);
         }
     }
 

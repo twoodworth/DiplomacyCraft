@@ -409,10 +409,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     if (nation != null) {
-                        for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                            if (!nation.getOutlaws().contains(player.getUUID())) {
-                                players.add(player.getPlayer().getName());
-                            }
+                        for (var player : Bukkit.getOnlinePlayers()) {
+                            players.add(player.getName());
                         }
                         return players;
                     }
@@ -422,10 +420,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     if (nation != null) {
-                        for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                            if (nation.getOutlaws().contains(player.getUUID())) {
-                                players.add(player.getPlayer().getName());
-                            }
+                        for (var player : Bukkit.getOnlinePlayers()) {
+                            players.add(player.getName());
                         }
                         return players;
                     }

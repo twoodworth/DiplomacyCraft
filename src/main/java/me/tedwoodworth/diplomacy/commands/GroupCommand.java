@@ -238,8 +238,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("add")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                        players.add(player.getPlayer().getName());
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -267,8 +267,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("kick")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                        players.add(player.getPlayer().getName());
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -297,8 +297,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("promote")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                        players.add(player.getPlayer().getName());
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -317,8 +317,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("demote")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
-                    for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                        players.add(player.getPlayer().getName());
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
