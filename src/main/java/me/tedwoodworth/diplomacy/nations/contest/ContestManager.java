@@ -196,12 +196,10 @@ public class ContestManager {
                 var world = defender.getWorld();
                 var block = world.getBlockAt((dLocation.toVector().add(vector.multiply(i))).toLocation(defender.getWorld()));
                 if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
-                    System.out.println("False");
                     return false;
                 }
             }
         }
-        System.out.println("True");
         return true;
     }
 

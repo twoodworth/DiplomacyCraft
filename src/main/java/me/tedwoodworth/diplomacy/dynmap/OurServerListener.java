@@ -11,7 +11,7 @@ import org.bukkit.plugin.Plugin;
 public class OurServerListener implements Listener {
 
     private static OurServerListener instance = null;
-    private DiplomacyDynmap kernel = DiplomacyDynmap.getInstance();
+    private final DiplomacyDynmap kernel = DiplomacyDynmap.getInstance();
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new OurServerListener(), Diplomacy.getInstance());
@@ -22,6 +22,10 @@ public class OurServerListener implements Listener {
             instance = new OurServerListener();
         }
         return instance;
+    }
+
+    public void requestUpdate() {
+        kernel.requestUpdateDiplomacy();
     }
 
     @EventHandler
@@ -70,15 +74,15 @@ public class OurServerListener implements Listener {
         kernel.requestUpdateDiplomacy();
     }
 
-    @EventHandler
-    public void onNationAddChunk(NationAddChunkEvent event) {
-        kernel.requestUpdateDiplomacy();
-    }
-
-    @EventHandler
-    public void onNationRemoveChunk(NationRemoveChunkEvent event) {
-        kernel.requestUpdateDiplomacy();
-    }
+//    @EventHandler
+//    public void onNationAddChunk(NationAddChunkEvent event) {
+//        kernel.requestUpdateDiplomacy();
+//    }
+//
+//    @EventHandler
+//    public void onNationRemoveChunk(NationRemoveChunkEvent event) {
+//        kernel.requestUpdateDiplomacy();
+//    }
 
     @EventHandler
     public void onNationColor(NationColorEvent event) {

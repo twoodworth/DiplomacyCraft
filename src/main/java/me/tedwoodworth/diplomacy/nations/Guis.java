@@ -4,6 +4,7 @@ import de.themoep.inventorygui.GuiElementGroup;
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
@@ -18,10 +19,8 @@ import org.bukkit.inventory.meta.BannerMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class Guis {
     private static Guis instance = null;
@@ -35,6 +34,9 @@ public class Guis {
     private final List<String> population;
     private final List<String> age;
     private StaticGuiElement timeElement;
+
+    private final List<String> updateTerritoryList = new ArrayList<>();
+    private final List<String> updatePopulationList = new ArrayList<>();
 
     private final GuiElementGroup alpGroup = new GuiElementGroup('g');
     private final GuiElementGroup balGroup = new GuiElementGroup('g');
@@ -142,7 +144,7 @@ public class Guis {
         loadNationElements();
 
         if (updateTaskID == -1) {
-            updateTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::updateNationOrder, 1L, 6000L);
+            updateTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::updateNations, 1L, 3000L);
         }
 
     }
@@ -266,7 +268,28 @@ public class Guis {
         );
     }
 
-    public void updateNationOrder() {
+    public void updateNations() {
+        OurServerListener.getInstance().requestUpdate();
+
+        System.out.println("Updating nations...");//TODO remove
+        // Update individual nation Chunks
+        for (var id : new ArrayList<>(updateTerritoryList)) {
+            var nation = Nations.getInstance().get(id);
+            if (nation != null) {
+                updateNation(nation, "territory");
+            }
+            updateTerritoryList.remove(id);
+        }
+
+        // Update individual nation population
+        for (var id : new ArrayList<>(updatePopulationList)) {
+            var nation = Nations.getInstance().get(id);
+            if (nation != null) {
+                updateNation(nation, "population");
+            }
+            updatePopulationList.remove(id);
+        }
+
         updateTimeElement();
         alpGroup.clearElements();
         for (var id : alphabetically) {
@@ -569,12 +592,14 @@ public class Guis {
 
         @EventHandler
         private void onNationAddChunk(NationAddChunkEvent event) {
-            updateNation(event.getNation(), "territory");
+            var nationID = event.getNation().getNationID();
+            if(!updateTerritoryList.contains(nationID)) updateTerritoryList.add(nationID);
         }
 
         @EventHandler
         private void onNationRemoveChunk(NationRemoveChunkEvent event) {
-            updateNation(event.getNation(), "territory");
+            var nationID = event.getNation().getNationID();
+            if(!updateTerritoryList.contains(nationID)) updateTerritoryList.add(nationID);
         }
 
         @EventHandler
@@ -584,12 +609,14 @@ public class Guis {
 
         @EventHandler
         private void onNationJoin(NationJoinEvent event) {
-            updateNation(event.getNation(), "population");
+            var nationID = event.getNation().getNationID();
+            if(!updatePopulationList.contains(nationID)) updatePopulationList.add(nationID);
         }
 
         @EventHandler
         private void onNationLeave(NationLeaveEvent event) {
-            updateNation(event.getNation(), "population");
+            var nationID = event.getNation().getNationID();
+            if(!updatePopulationList.contains(nationID)) updatePopulationList.add(nationID);
         }
 
         @EventHandler
