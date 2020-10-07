@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,10 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.VillagerAcquireTradeEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.PrepareAnvilEvent;
-import org.bukkit.event.inventory.PrepareSmithingEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.EnchantingInventory;
@@ -32,6 +31,7 @@ public class EnchantingManager {
     private static EnchantingManager instance = null;
     final String HAMMER_LORE = ChatColor.BLUE + "Hammer";
 
+    private String NERFED = ChatColor.BLACK + ".";
     private List<Material> netheriteTools;
     private List<Material> diamondTools;
     private List<Material> ironTools;
@@ -391,7 +391,7 @@ public class EnchantingManager {
             return FISHING_ROD;
         } else if (item.equals(Material.BOOK)) {
             return BOOK;
-        }else if (item.equals(Material.BOW)) {
+        } else if (item.equals(Material.BOW)) {
             return BOW;
         } else {
             return OTHER;
@@ -1692,6 +1692,68 @@ public class EnchantingManager {
         }
 
         @EventHandler
+        public void onInventoryOpen(InventoryOpenEvent event) {
+            if (event.getInventory().getType().equals(InventoryType.MERCHANT)) {
+                var villager = (Villager) (event.getInventory().getHolder());
+                if (villager != null) {
+                    var changed = false;
+                    var recipes = villager.getRecipes();
+                    var nRecipes = new ArrayList<>(recipes);
+                    for (var recipe : recipes) {
+                        if (recipe.getResult().getType().equals(Material.ENCHANTED_BOOK)) {
+                            var item = recipe.getResult();
+                            var meta = item.getItemMeta();
+                            assert meta != null;
+                            if (meta.getLore() == null || !Objects.requireNonNull(meta.getLore()).contains(NERFED)) {
+
+                                int tier;
+                                switch ((int) (Math.random() * 85)) {
+                                    default -> tier = 0;
+                                    case 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 -> tier = 1;
+                                    case 17, 18, 19, 20 -> tier = 2;
+                                    case 21 -> tier = 3;
+                                }
+
+                                var enchantmentMap = getEnchantment(BOOK, tier);
+                                if (enchantmentMap == null) {
+                                    event.setCancelled(true);
+                                    return;
+                                }
+
+                                var nItem = new ItemStack(Material.ENCHANTED_BOOK);
+                                var enchMeta = (EnchantmentStorageMeta) nItem.getItemMeta();
+
+                                for (var testEnchantment : enchantmentMap.keySet()) {
+                                    assert enchMeta != null;
+                                    enchMeta.addStoredEnchant(testEnchantment, enchantmentMap.get(testEnchantment), true);
+                                }
+                                nItem.setItemMeta(enchMeta);
+
+
+                                var lore = new ArrayList<String>();
+                                lore.add(NERFED);
+                                var nMeta = nItem.getItemMeta();
+                                assert nMeta != null;
+                                nMeta.setLore(lore);
+                                nItem.setItemMeta(nMeta);
+                                var nRecipe = new MerchantRecipe(nItem, 1);
+                                nRecipe.addIngredient(new ItemStack(Material.BOOK));
+                                nRecipe.addIngredient(new ItemStack(Material.EMERALD, (int) (Math.random() * 16 + 1 + 16 * tier)));
+                                var index = nRecipes.indexOf(recipe);
+                                nRecipes.remove(index);
+                                nRecipes.add(index, nRecipe);
+                                changed = true;
+                            }
+                        }
+                        //TODO mark new villager trades with a certain lore. if the item does not have the lore, regenerate the book
+                    }
+                    if (changed) villager.setRecipes(nRecipes);
+                }
+            }
+
+        }
+
+        @EventHandler
         public void onVillagerAcquireTrade(VillagerAcquireTradeEvent event) {
             if (event.getRecipe().getResult().equals(new ItemStack(Material.NAME_TAG))) {
                 var recipes = new ArrayList<>(event.getEntity().getRecipes());
@@ -1700,6 +1762,96 @@ public class EnchantingManager {
                 recipes.add(knowledgeBookRecipe);
                 event.getEntity().setRecipes(recipes);
             }
+
+            if (event.getRecipe().getResult().getType().equals(Material.ENCHANTED_BOOK)) {
+                int tier;
+                switch ((int) (Math.random() * 85)) {
+                    default -> tier = 0;
+                    case 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 -> tier = 1;
+                    case 17, 18, 19, 20 -> tier = 2;
+                    case 21 -> tier = 3;
+                    case 22, 23 -> tier = 4;
+                }
+                Map<Enchantment, Integer> enchantmentMap;
+                if (tier != 4) {
+                    enchantmentMap = getEnchantment(BOOK, tier);
+                } else {
+                    tier -= 2;
+                    enchantmentMap = new HashMap<>();
+                    enchantmentMap.put(Enchantment.FROST_WALKER, 1);
+                }
+                if (enchantmentMap == null) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                var item = new ItemStack(Material.ENCHANTED_BOOK);
+                var enchMeta = (EnchantmentStorageMeta) item.getItemMeta();
+
+                for (var testEnchantment : enchantmentMap.keySet()) {
+                    assert enchMeta != null;
+                    enchMeta.addStoredEnchant(testEnchantment, enchantmentMap.get(testEnchantment), true);
+                }
+                item.setItemMeta(enchMeta);
+
+
+                var meta = item.getItemMeta();
+                assert meta != null;
+                var lore = new ArrayList<String>();
+                lore.add(NERFED);
+                meta.setLore(lore);
+                item.setItemMeta(meta);
+
+                var recipe = new MerchantRecipe(item, 1);
+                var ingredients = new ArrayList<ItemStack>();
+                ingredients.add(new ItemStack(Material.BOOK));
+                ingredients.add(new ItemStack(Material.EMERALD, (int) (Math.random() * 16 + 1 + 16 * tier)));
+                recipe.setIngredients(ingredients);
+                event.setRecipe(recipe);
+            } else if (event.getRecipe().getResult().getEnchantments().size() > 0) {
+                int tier;
+                switch ((int) (Math.random() * 85)) {
+                    default -> tier = 0;
+                    case 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 -> tier = 1;
+                    case 17, 18, 19, 20 -> tier = 2;
+                    case 21 -> tier = 3;
+                    case 22, 23 -> tier = 4;
+                }
+                Map<Enchantment, Integer> enchantmentMap;
+                if (tier == 4 && getToolType(event.getRecipe().getResult().getType()).equals(BOOTS)) {
+                    tier -= 2;
+                    enchantmentMap = new HashMap<>();
+                    enchantmentMap.put(Enchantment.FROST_WALKER, 1);
+                } else {
+                    enchantmentMap = getEnchantment(getToolType(event.getRecipe().getResult().getType()), tier);
+                }
+                if (enchantmentMap == null) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                var item = new ItemStack(event.getRecipe().getResult().getType(), 1);
+
+                for (var testEnchantment : enchantmentMap.keySet()) {
+                    item.addUnsafeEnchantment(testEnchantment, enchantmentMap.get(testEnchantment));
+                }
+
+
+                var meta = item.getItemMeta();
+                assert meta != null;
+                var lore = new ArrayList<String>();
+                lore.add(NERFED);
+                meta.setLore(lore);
+                item.setItemMeta(meta);
+
+                var recipe = new MerchantRecipe(item, 1);
+                var ingredients = new ArrayList<ItemStack>();
+                ingredients.add(new ItemStack(Material.EMERALD, Math.max(event.getRecipe().getIngredients().get(1).getAmount(), (int) (Math.random() * 16 + 1 + 16 * tier))));
+                recipe.setIngredients(ingredients);
+                event.setRecipe(recipe);
+            }
+
+
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -1762,3 +1914,4 @@ public class EnchantingManager {
         }
     }
 }
+

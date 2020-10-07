@@ -41,9 +41,9 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         } else if (command.getName().equalsIgnoreCase("addLife")) {
             if (args.length == 1) {
                 addLife(sender, args[0]);
+            } else {
+                sender.sendMessage(incorrectUsage + addLifeUsage);
             }
-        } else {
-            sender.sendMessage(incorrectUsage + addLifeUsage);
         }
         return true;
     }
@@ -80,9 +80,9 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
 
         diplomacyPlayer.setLives(diplomacyPlayer.getLives() + 1);
 
-        var player = diplomacyPlayer.getPlayer();
-        if (player.isOnline()) {
-            player.getPlayer().sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
+        var player = diplomacyPlayer.getPlayer().getPlayer();
+        if (player != null) {
+            player.sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
         }
     }
 

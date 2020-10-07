@@ -279,6 +279,13 @@ public class DiplomacyPlayers {
             }
         }
 
+        @EventHandler
+        private void onPlayerItemMend(PlayerItemMendEvent event) {
+            var item = event.getItem();
+            item.removeEnchantment(Enchantment.MENDING);
+            event.setCancelled(true);
+        }
+
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         private void onPlayerMove(PlayerMoveEvent event) {
             var fromChunk = event.getFrom().getChunk();
