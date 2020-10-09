@@ -4,8 +4,11 @@ import com.google.common.base.Objects;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -67,6 +70,15 @@ public class DiplomacyPlayer {
         var list = this.getGroupsLed();
         list.remove(group.getGroupID());
         configSection.set("GroupsLed", list);
+    }
+
+    public ItemStack getHead() {
+        var head = new ItemStack(Material.PLAYER_HEAD);
+        var meta = (SkullMeta) head.getItemMeta();
+        assert meta != null;
+        meta.setOwningPlayer(this.getPlayer());
+        head.setItemMeta(meta);
+        return head;
     }
 
     public int getLives() {

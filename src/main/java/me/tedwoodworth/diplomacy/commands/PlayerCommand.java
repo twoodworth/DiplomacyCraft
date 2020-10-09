@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
@@ -97,7 +98,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(ChatColor.GOLD + "Loading player list...");
-        var nGui = NationGuiFactory.createPlayers("alphabet", 0);
+        var nGui = Guis.getInstance().getPlayers("alphabetically");
         nGui.show((Player) sender);
     }
 }

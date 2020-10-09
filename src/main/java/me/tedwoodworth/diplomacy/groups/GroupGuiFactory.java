@@ -157,7 +157,7 @@ public class GroupGuiFactory {
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = NationGuiFactory.createPlayers("alphabet", 0);
+                    var nGui = Guis.getInstance().getPlayers("alphabetically");
                     nGui.show(clicker);
                     return true;
                 },

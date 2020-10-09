@@ -1,6 +1,8 @@
 package me.tedwoodworth.diplomacy.nations;
 
-import de.themoep.inventorygui.*;
+import de.themoep.inventorygui.GuiPageElement;
+import de.themoep.inventorygui.InventoryGui;
+import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -16,11 +18,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.sql.Time;
 import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.Comparator.comparingInt;
@@ -56,7 +58,7 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('b',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var nGui = createPlayers("alphabet", 0);
+                    var nGui = Guis.getInstance().getPlayers("alphabetically");
                     InventoryGui.clearHistory(player);
                     nGui.show(player, true);
                     return true;
@@ -162,6 +164,7 @@ public class NationGuiFactory {
 
         var head = new ItemStack(Material.PLAYER_HEAD);
         var headMeta = (SkullMeta) head.getItemMeta();
+        assert headMeta != null;
         headMeta.setOwningPlayer(player);
         head.setItemMeta(headMeta);
 
@@ -254,7 +257,7 @@ public class NationGuiFactory {
                         return true;
                     },
                     "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation Class",
-                    ChatColor.GRAY + nation.getMemberClass(diplomacyPlayer).getName(),
+                    ChatColor.GRAY + Objects.requireNonNull(nation.getMemberClass(diplomacyPlayer)).getName(),
                     " ",
                     ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View permissions"
             ));
@@ -277,7 +280,7 @@ public class NationGuiFactory {
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = createPlayers("alphabet", 0);
+                    var nGui = Guis.getInstance().getPlayers("alphabetically");
                     InventoryGui.clearHistory(clicker);
                     nGui.show(clicker, true);
                     return true;
@@ -484,9 +487,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('q',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-//                    var clicker = click.getEvent().getWhoClicked();
-//                    var nGui = createPlayers("alphabet", 0); //TODO get instead of create
-//                    nGui.show(clicker, true);
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getPlayers("alphabetically");
+                    nGui.show(clicker, true);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
@@ -578,6 +581,7 @@ public class NationGuiFactory {
 
         var alphabetical = new ItemStack(Material.WHITE_BANNER);
         var alphabeticalMeta = (BannerMeta) (alphabetical.getItemMeta());
+        assert alphabeticalMeta != null;
         alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_TOP));
         alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
         alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
@@ -661,6 +665,7 @@ public class NationGuiFactory {
 
         var scrollUp = new ItemStack(Material.WHITE_BANNER);
         var scrollUpMeta = (BannerMeta) (scrollUp.getItemMeta());
+        assert scrollUpMeta != null;
         scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
         scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
         scrollUpMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.STRIPE_TOP));
@@ -737,6 +742,7 @@ public class NationGuiFactory {
 
         var banner = nation.getBanner();
         var bannerMeta = (BannerMeta) banner.getItemMeta();
+        assert bannerMeta != null;
         bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         banner.setItemMeta(bannerMeta);
 
@@ -2433,16 +2439,16 @@ public class NationGuiFactory {
         return gui;
     }
 
-    public static InventoryGui createPlayers(String sortType, int slot) {
+    public static InventoryGui createPlayers(String sortType) {
 
         var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Players";
         String[] guiSetup = {
-                "A abcde N",
-                "B fghij  ",
-                "C klmno U",
-                "G pqrst D",
-                "  uvwxy  ",
-                "  z{|}~ E"
+                "X ggggg N",
+                "A ggggg  ",
+                "B ggggg U",
+                "C ggggg D",
+                "G ggggg  ",
+                "  ggggg E"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
         gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
@@ -2457,16 +2463,19 @@ public class NationGuiFactory {
         alphabeticalMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         alphabetical.setItemMeta(alphabeticalMeta);
 
+        // X
+        gui.addElement(Guis.getInstance().getTimeElement());
+
         gui.addElement(new StaticGuiElement('A',
                 alphabetical,
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createPlayers("alphabet", slot);
+                        var nGui = Guis.getInstance().getPlayers("alphabetically");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createPlayers("reverseAlphabet", slot);
+                        var nGui = Guis.getInstance().getPlayers("reverseAlphabetically");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     }
@@ -2481,11 +2490,11 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createPlayers("balance", slot);
+                        var nGui = Guis.getInstance().getPlayers("balance");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createPlayers("reverseBalance", slot);
+                        var nGui = Guis.getInstance().getPlayers("reverseBalance");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     }
@@ -2500,11 +2509,11 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createPlayers("nation", slot);
+                        var nGui = Guis.getInstance().getPlayers("nation");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createPlayers("reverseNation", slot);
+                        var nGui = Guis.getInstance().getPlayers("reverseNation");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     }
@@ -2519,11 +2528,11 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createPlayers("age", slot);
+                        var nGui = Guis.getInstance().getPlayers("age");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     } else if (click.getType().isRightClick()) {
-                        var nGui = createPlayers("reverseAge", slot);
+                        var nGui = Guis.getInstance().getPlayers("reverseAge");
                         InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                     }
@@ -2543,32 +2552,11 @@ public class NationGuiFactory {
         scrollUpMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         scrollUp.setItemMeta(scrollUpMeta);
 
-        gui.addElement(new StaticGuiElement('U',
+        gui.addElement(new GuiPageElement('U',
                 scrollUp,
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nSlot = slot - 5;
-                        if (nSlot < 0) {
-                            nSlot = 0;
-                        }
-                        var nGui = createPlayers(sortType, nSlot);
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    } else if (click.getType().isRightClick()) {
-                        var nSlot = slot - 30;
-                        if (nSlot < 0) {
-                            nSlot = 0;
-                        }
-                        var nGui = createPlayers(sortType, nSlot);
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Scroll Up",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Scroll up one line",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Scroll up six lines"
+                GuiPageElement.PageAction.PREVIOUS,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Previous page",
+                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
         ));
 
         var scrollDown = new ItemStack(Material.WHITE_BANNER);
@@ -2580,36 +2568,11 @@ public class NationGuiFactory {
         scrollDownMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         scrollDown.setItemMeta(scrollDownMeta);
 
-        gui.addElement(new StaticGuiElement('D',
+        gui.addElement(new GuiPageElement('D',
                 scrollDown,
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nSlot = slot + 5;
-                        if (nSlot > DiplomacyPlayers.getInstance().getPlayers().size() + (5 - DiplomacyPlayers.getInstance().getPlayers().size() % 5) - 30) {
-                            nSlot = DiplomacyPlayers.getInstance().getPlayers().size() + (5 - DiplomacyPlayers.getInstance().getPlayers().size() % 5) - 30;
-                        }
-                        if (DiplomacyPlayers.getInstance().getPlayers().size() > 30) {
-                            var nGui = createPlayers(sortType, nSlot);
-                            InventoryGui.clearHistory(clicker);
-                            nGui.show(clicker, true);
-                        }
-                    } else if (click.getType().isRightClick()) {
-                        var nSlot = slot + 30;
-                        if (nSlot > DiplomacyPlayers.getInstance().getPlayers().size() + (5 - DiplomacyPlayers.getInstance().getPlayers().size() % 5) - 30) {
-                            nSlot = DiplomacyPlayers.getInstance().getPlayers().size() + (5 - DiplomacyPlayers.getInstance().getPlayers().size() % 5) - 30;
-                        }
-                        if (DiplomacyPlayers.getInstance().getPlayers().size() > 30) {
-                            var nGui = createPlayers(sortType, nSlot);
-                            InventoryGui.clearHistory(clicker);
-                            nGui.show(clicker, true);
-                        }
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Scroll Down",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Scroll down one line",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Scroll down six lines"
+                GuiPageElement.PageAction.NEXT,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Next page",
+                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
         ));
 
         gui.addElement(new StaticGuiElement('N',
@@ -2634,7 +2597,6 @@ public class NationGuiFactory {
                 "" + ChatColor.RED + ChatColor.BOLD + "Escape",
                 ChatColor.GRAY + "Click to escape"
         ));
-
         var allPlayers = DiplomacyPlayers.getInstance().getPlayers();
         var players = new ArrayList<DiplomacyPlayer>();
         for (var testPlayer : allPlayers) {
@@ -2642,138 +2604,8 @@ public class NationGuiFactory {
                 players.add(testPlayer);
             }
         }
-        var slotChar = new char[]{'a'};
 
-        switch (sortType) {
-            case "alphabet" -> players.stream()
-                    .sorted((p1, p2) -> {
-                        var p1name = Bukkit.getOfflinePlayer(p1.getUUID()).getName();
-                        var p2name = Bukkit.getOfflinePlayer(p2.getUUID()).getName();
-                        if (p1name == null) {
-                            if (p2name == null) {
-                                return 0;
-                            }
-                            return 1;
-                        } else if (p2name == null) {
-                            return -1;
-                        }
-                        return p1name.compareToIgnoreCase(p2name);
-                    })
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "reverseAlphabet" -> players.stream()
-                    .sorted((p1, p2) -> {
-                        var p1name = Bukkit.getOfflinePlayer(p1.getUUID()).getName();
-                        var p2name = Bukkit.getOfflinePlayer(p2.getUUID()).getName();
-                        if (p1name == null) {
-                            if (p2name == null) {
-                                return 0;
-                            }
-                            return -1;
-                        } else if (p2name == null) {
-                            return 1;
-                        }
-                        return -p1name.compareToIgnoreCase(p2name);
-                    })
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "balance" -> players.stream()
-                    .sorted(comparingDouble(p -> -Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(p.getUUID()))))
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "reverseBalance" -> players.stream()
-                    .sorted(comparingDouble(p -> Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(p.getUUID()))))
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "nation" -> players.stream()
-                    .sorted((p1, p2) -> {
-                        var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
-                        var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
-                        if (p1value == null) {
-                            if (p2value == null) {
-                                return 0;
-                            }
-                            return 1;
-                        } else if (p2value == null) {
-                            return -1;
-                        }
-                        return p1value.getName().compareToIgnoreCase(p2value.getName());
-                    })
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "reverseNation" -> players.stream()
-                    .sorted((p1, p2) -> {
-                        var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p1.getUUID()));
-                        var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(p2.getUUID()));
-                        if (p1value == null) {
-                            if (p2value == null) {
-                                return 0;
-                            }
-                            return -1;
-                        } else if (p2value == null) {
-                            return 1;
-                        }
-                        return -p1value.getName().compareToIgnoreCase(p2value.getName());
-                    })
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "age" -> players.stream()
-                    .sorted((p1, p2) -> (int) -(p1.getAge() - p2.getAge()))
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-            case "reverseAge" -> players.stream()
-                    .sorted((p1, p2) -> (int) (p1.getAge() - p2.getAge()))
-                    .skip(slot)
-                    .limit(30)
-                    .forEach(testPlayer -> {
-                        if (testPlayer.getPlayer().hasPlayedBefore()) {
-                            var element = createPlayerElement(testPlayer, slotChar[0]++);
-                            gui.addElement(element);
-                        }
-                    });
-        }
+        gui.addElement(Guis.getInstance().getPlayersGroup(sortType));
         return gui;
     }
 

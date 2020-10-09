@@ -3,8 +3,8 @@ package me.tedwoodworth.diplomacy.dynmap;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.dynmap.area.AreaCommon;
 import me.tedwoodworth.diplomacy.dynmap.area.AreaStyle;
-import me.tedwoodworth.diplomacy.dynmap.blocks.NationBlock;
-import me.tedwoodworth.diplomacy.dynmap.blocks.NationBlocks;
+import me.tedwoodworth.diplomacy.dynmap.blocks.NationChunk;
+import me.tedwoodworth.diplomacy.dynmap.blocks.NationChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import org.bukkit.Bukkit;
@@ -117,44 +117,44 @@ public class DiplomacyDynmap {
         Bukkit.getServer().getPluginManager().registerEvents(new OurServerListener(), diplomacy);
     }
 
-    public void updateClaimedChunk() {
+    public void updateClaimedChunk() {//TODO optimize
         Map<String, AreaMarker> newmap = new HashMap<>();
         Map<String, Marker> newmark = new HashMap<>();
 
-        Map<String, NationBlocks> blocks_by_nation = new HashMap<>();
+        Map<String, NationChunks> chunks_by_nation = new HashMap<>();
 
         var nations = Nations.getInstance().getNations();
         for (var nation : nations) {
             var diplomacyChunks = nation.getChunks();
             var nationID = nation.getNationID();
-            var nationBlocks = blocks_by_nation.get(nationID);
-            if (nationBlocks == null) {
-                nationBlocks = new NationBlocks();
+            var nationChunks = chunks_by_nation.get(nationID);
+            if (nationChunks == null) {
+                nationChunks = new NationChunks();
             }
-            blocks_by_nation.put(nationID, nationBlocks);
+            chunks_by_nation.put(nationID, nationChunks);
 
             for (final var diplomacyChunk : diplomacyChunks) {
                 final var chunk = diplomacyChunk.getChunk();
                 final var world = chunk.getWorld().getName();
 
-                var blocks = nationBlocks.getBlocks().computeIfAbsent(world, k -> new LinkedList<>());
+                var blocks = nationChunks.getChunks().computeIfAbsent(world, k -> new LinkedList<>());
 
-                blocks.add(new NationBlock(chunk.getX(), chunk.getZ()));
+                blocks.add(new NationChunk(chunk.getX(), chunk.getZ()));
             }
         }
 
         for (final var nation : nations) {
             final String nationName = nation.getName();
             final String nationID = nation.getNationID();
-            final NationBlocks nationBlocks = blocks_by_nation.get(nationID);
-            if (nationBlocks == null) continue;
+            final NationChunks nationChunks = chunks_by_nation.get(nationID);
+            if (nationChunks == null) continue;
 
-            for (var worldBlocks : nationBlocks.getBlocks().entrySet()) {
-                handleNationOnWorld(nationName, nation, worldBlocks.getKey(), worldBlocks.getValue(), newmap, newmark);
+            for (var worldChunks : nationChunks.getChunks().entrySet()) {
+                handleNationOnWorld(nationName, nation, worldChunks.getKey(), worldChunks.getValue(), newmap, newmark);
             }
-            nationBlocks.clear();
+            nationChunks.clear();
         }
-        blocks_by_nation.clear();
+        chunks_by_nation.clear();
 
         /* Now, review old map - anything left is gone */
         for (final AreaMarker oldm : resareas.values()) {
@@ -169,43 +169,43 @@ public class DiplomacyDynmap {
         resmark = newmark;
     }
 
-    private void handleNationOnWorld(String nationName, Nation nation, String world, LinkedList<NationBlock> blocks, Map<String, AreaMarker> newmap, Map<String, Marker> newmark) {
+    private void handleNationOnWorld(String nationName, Nation nation, String world, LinkedList<NationChunk> chunks, Map<String, AreaMarker> newmap, Map<String, Marker> newmark) {
         var poly_index = 0;
 
         final var desc = AreaCommon.formatInfoWindow(infoWindow, nation);
 
         if (isVisible(nation.getNationID(), world)) {
-            if (blocks.isEmpty()) {
+            if (chunks.isEmpty()) {
                 return;
             }
-            var nodeVals = new LinkedList<NationBlock>();
-            var curblks = new TileFlags();
+            var nodeVals = new LinkedList<NationChunk>();
+            var curChunks = new TileFlags();
 
-            for (final var block : blocks) {
-                curblks.setFlag(block.getX(), block.getZ(), true);
-                nodeVals.addLast(block);
+            for (final var chunk : chunks) {
+                curChunks.setFlag(chunk.getX(), chunk.getZ(), true);
+                nodeVals.addLast(chunk);
             }
 
             while (nodeVals != null) {
-                LinkedList<NationBlock> ournodes = null;
-                LinkedList<NationBlock> newlist = null;
-                TileFlags ourblks = null;
+                LinkedList<NationChunk> ournodes = null;
+                LinkedList<NationChunk> newlist = null;
+                TileFlags ourChunks = null;
                 int minx = Integer.MAX_VALUE;
                 int minz = Integer.MAX_VALUE;
                 for (var node : nodeVals) {
                     final int nodeX = node.getX();
                     final int nodeZ = node.getZ();
                     /* If we need to start shape, and this block is not part of one yet */
-                    if ((ourblks == null) && curblks.getFlag(nodeX, nodeZ)) {
-                        ourblks = new TileFlags();  /* Create map for shape */
+                    if ((ourChunks == null) && curChunks.getFlag(nodeX, nodeZ)) {
+                        ourChunks = new TileFlags();  /* Create map for shape */
                         ournodes = new LinkedList<>();
-                        floodFillTarget(curblks, ourblks, nodeX, nodeZ);   /* Copy shape */
+                        floodFillTarget(curChunks, ourChunks, nodeX, nodeZ);   /* Copy shape */
                         ournodes.add(node); /* Add it to our node list */
                         minx = nodeX;
                         minz = nodeZ;
                     }
                     /* If shape found, and we're in it, add to our node list */
-                    else if ((ourblks != null) && ourblks.getFlag(nodeX, nodeZ)) {
+                    else if ((ourChunks != null) && ourChunks.getFlag(nodeX, nodeZ)) {
                         ournodes.add(node);
                         if (nodeX < minx) {
                             minx = nodeX;
@@ -219,22 +219,20 @@ public class DiplomacyDynmap {
                     }
                 }
                 nodeVals = newlist; /* Replace list (null if no more to process) */
-                if (ourblks != null) {
+                if (ourChunks != null) {
                     /* Trace outline of blocks - start from minx, minz going to x+ */
-                    int init_x = minx;
-                    int init_z = minz;
                     int cur_x = minx;
                     int cur_z = minz;
                     Direction dir = Direction.XPLUS;
                     ArrayList<int[]> linelist = new ArrayList<>();
-                    linelist.add(new int[]{init_x, init_z}); // Add start point
-                    while ((cur_x != init_x) || (cur_z != init_z) || (dir != Direction.ZMINUS)) {
+                    linelist.add(new int[]{minx, minz}); // Add start point
+                    while ((cur_x != minx) || (cur_z != minz) || (dir != Direction.ZMINUS)) {
                         switch (dir) {
                             case XPLUS: /* Segment in X+ Direction */
-                                if (!ourblks.getFlag(cur_x + 1, cur_z)) { /* Right turn? */
+                                if (!ourChunks.getFlag(cur_x + 1, cur_z)) { /* Right turn? */
                                     linelist.add(new int[]{cur_x + 1, cur_z}); /* Finish line */
                                     dir = Direction.ZPLUS;  /* Change Direction */
-                                } else if (!ourblks.getFlag(cur_x + 1, cur_z - 1)) {  /* Straight? */
+                                } else if (!ourChunks.getFlag(cur_x + 1, cur_z - 1)) {  /* Straight? */
                                     cur_x++;
                                 } else {  /* Left turn */
                                     linelist.add(new int[]{cur_x + 1, cur_z}); /* Finish line */
@@ -244,10 +242,10 @@ public class DiplomacyDynmap {
                                 }
                                 break;
                             case ZPLUS: /* Segment in Z+ Direction */
-                                if (!ourblks.getFlag(cur_x, cur_z + 1)) { /* Right turn? */
+                                if (!ourChunks.getFlag(cur_x, cur_z + 1)) { /* Right turn? */
                                     linelist.add(new int[]{cur_x + 1, cur_z + 1}); /* Finish line */
                                     dir = Direction.XMINUS;  /* Change Direction */
-                                } else if (!ourblks.getFlag(cur_x + 1, cur_z + 1)) {  /* Straight? */
+                                } else if (!ourChunks.getFlag(cur_x + 1, cur_z + 1)) {  /* Straight? */
                                     cur_z++;
                                 } else {  /* Left turn */
                                     linelist.add(new int[]{cur_x + 1, cur_z + 1}); /* Finish line */
@@ -257,10 +255,10 @@ public class DiplomacyDynmap {
                                 }
                                 break;
                             case XMINUS: /* Segment in X- Direction */
-                                if (!ourblks.getFlag(cur_x - 1, cur_z)) { /* Right turn? */
+                                if (!ourChunks.getFlag(cur_x - 1, cur_z)) { /* Right turn? */
                                     linelist.add(new int[]{cur_x, cur_z + 1}); /* Finish line */
                                     dir = Direction.ZMINUS;  /* Change Direction */
-                                } else if (!ourblks.getFlag(cur_x - 1, cur_z + 1)) {  /* Straight? */
+                                } else if (!ourChunks.getFlag(cur_x - 1, cur_z + 1)) {  /* Straight? */
                                     cur_x--;
                                 } else {  /* Left turn */
                                     linelist.add(new int[]{cur_x, cur_z + 1}); /* Finish line */
@@ -270,10 +268,10 @@ public class DiplomacyDynmap {
                                 }
                                 break;
                             case ZMINUS: /* Segment in Z- Direction */
-                                if (!ourblks.getFlag(cur_x, cur_z - 1)) { /* Right turn? */
+                                if (!ourChunks.getFlag(cur_x, cur_z - 1)) { /* Right turn? */
                                     linelist.add(new int[]{cur_x, cur_z}); /* Finish line */
                                     dir = Direction.XPLUS;  /* Change Direction */
-                                } else if (!ourblks.getFlag(cur_x - 1, cur_z - 1)) {  /* Straight? */
+                                } else if (!ourChunks.getFlag(cur_x - 1, cur_z - 1)) {  /* Straight? */
                                     cur_z--;
                                 } else {  /* Left turn */
                                     linelist.add(new int[]{cur_x, cur_z}); /* Finish line */
