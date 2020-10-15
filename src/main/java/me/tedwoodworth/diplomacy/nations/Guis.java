@@ -81,10 +81,10 @@ public class Guis {
     private InventoryGui nationPlayers = null;
     private InventoryGui rNationPlayers = null;
 
-    private final List<String> alphabeticallyP;
-    private final List<String> balanceP;
-    private final List<String> ageP;
-    private final List<String> nationP;
+//    private final List<String> alphabeticallyP; TODO fix playerMenu
+//    private final List<String> balanceP;
+//    private final List<String> ageP;
+//    private final List<String> nationP;
 
 
     public static Guis getInstance() {
@@ -170,106 +170,106 @@ public class Guis {
         // Create nation elements
         loadNationElements();
 
-        // Player sorting lists
-        alphabeticallyP = new ArrayList<>() {
-            public boolean add(String strUUID) {
-                if (!Bukkit.getOfflinePlayer(UUID.fromString(strUUID)).hasPlayedBefore()) return false;
-                if (super.size() == 0) {
-                    super.add(strUUID);
-                    return true;
-                }
-                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> Objects.requireNonNull(Bukkit.getOfflinePlayer(UUID.fromString(p1)).getName()).compareToIgnoreCase(Objects.requireNonNull(Bukkit.getOfflinePlayer(UUID.fromString(p2)).getName())));
-                if (index < 0) index = ~index;
-                super.add(index, strUUID);
-                return true;
-            }
-        };
-        balanceP = new ArrayList<>() {
-            public boolean add(String strUUID) {
-                if (!Bukkit.getOfflinePlayer(UUID.fromString(strUUID)).hasPlayedBefore()) return false;
-                if (super.size() == 0) {
-                    super.add(strUUID);
-                    return true;
-                }
-                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> {
-                    double bal1;
-                    double bal2;
-                    try {
-                        bal1 = Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(UUID.fromString(p1)));
-                    } catch (NullPointerException e) {
-                        bal1 = 0.0;
-                    }
-                    try {
-                        bal2 = Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(UUID.fromString(p2)));
-                    } catch (NullPointerException e) {
-                        bal2 = 0.0;
-                    }
-
-                    var difference = bal2 - bal1;
-                    if (difference == 0.0) {
-                        return 0;
-                    } else if (difference > 1) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                });
-                if (index < 0) index = ~index;
-                super.add(index, strUUID);
-                return true;
-            }
-        };
-        ageP = new ArrayList<>() {
-            public boolean add(String strUUID) {
-                var player = Bukkit.getOfflinePlayer(UUID.fromString(strUUID));
-                if (!player.hasPlayedBefore()) return false;
-                if (super.size() == 0) {
-                    super.add(strUUID);
-                    return true;
-                }
-                int index = Collections.binarySearch(this, strUUID, Comparator.comparingLong((p) -> DiplomacyPlayers.getInstance().get(UUID.fromString(strUUID)).getAge()));
-                if (index < 0) index = ~index;
-                super.add(index, strUUID);
-                return true;
-            }
-        };
-        nationP = new ArrayList<>() {
-            public boolean add(String strUUID) {
-                var player = Bukkit.getOfflinePlayer(UUID.fromString(strUUID));
-                if (!player.hasPlayedBefore()) return false;
-                if (super.size() == 0) {
-                    super.add(strUUID);
-                    return true;
-                }
-                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> {
-                    var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(UUID.fromString(p1)));
-                    var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(UUID.fromString(p2)));
-                    if (p1value == null) {
-                        if (p2value == null) {
-                            return 0;
-                        }
-                        return 1;
-                    } else if (p2value == null) {
-                        return -1;
-                    }
-                    return p1value.getName().compareToIgnoreCase(p2value.getName());
-                });
-                if (index < 0) index = ~index;
-                super.add(index, strUUID);
-                return true;
-            }
-        };
-
-        for (var diplomacyPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
-            var strUUID = diplomacyPlayer.getUUID().toString();
-            alphabeticallyP.add(strUUID);
-            balanceP.add(strUUID);
-            ageP.add(strUUID);
-            nationP.add(strUUID);
-        }
-
-        // Create player elements
-        loadPlayerElements();
+        // Player sorting lists TODO fix playerMenu
+//        alphabeticallyP = new ArrayList<>() {
+//            public boolean add(String strUUID) {
+//                if (!Bukkit.getOfflinePlayer(UUID.fromString(strUUID)).hasPlayedBefore()) return false;
+//                if (super.size() == 0) {
+//                    super.add(strUUID);
+//                    return true;
+//                }
+//                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> Objects.requireNonNull(Bukkit.getOfflinePlayer(UUID.fromString(p1)).getName()).compareToIgnoreCase(Objects.requireNonNull(Bukkit.getOfflinePlayer(UUID.fromString(p2)).getName())));
+//                if (index < 0) index = ~index;
+//                super.add(index, strUUID);
+//                return true;
+//            }
+//        };
+//        balanceP = new ArrayList<>() {
+//            public boolean add(String strUUID) {
+//                if (!Bukkit.getOfflinePlayer(UUID.fromString(strUUID)).hasPlayedBefore()) return false;
+//                if (super.size() == 0) {
+//                    super.add(strUUID);
+//                    return true;
+//                }
+//                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> {
+//                    double bal1;
+//                    double bal2;
+//                    try {
+//                        bal1 = Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(UUID.fromString(p1)));
+//                    } catch (NullPointerException e) {
+//                        bal1 = 0.0;
+//                    }
+//                    try {
+//                        bal2 = Diplomacy.getEconomy().getBalance(Bukkit.getOfflinePlayer(UUID.fromString(p2)));
+//                    } catch (NullPointerException e) {
+//                        bal2 = 0.0;
+//                    }
+//
+//                    var difference = bal2 - bal1;
+//                    if (difference == 0.0) {
+//                        return 0;
+//                    } else if (difference > 1) {
+//                        return 1;
+//                    } else {
+//                        return -1;
+//                    }
+//                });
+//                if (index < 0) index = ~index;
+//                super.add(index, strUUID);
+//                return true;
+//            }
+//        };
+//        ageP = new ArrayList<>() {
+//            public boolean add(String strUUID) {
+//                var player = Bukkit.getOfflinePlayer(UUID.fromString(strUUID));
+//                if (!player.hasPlayedBefore()) return false;
+//                if (super.size() == 0) {
+//                    super.add(strUUID);
+//                    return true;
+//                }
+//                int index = Collections.binarySearch(this, strUUID, Comparator.comparingLong((p) -> DiplomacyPlayers.getInstance().get(UUID.fromString(strUUID)).getAge()));
+//                if (index < 0) index = ~index;
+//                super.add(index, strUUID);
+//                return true;
+//            }
+//        };
+//        nationP = new ArrayList<>() {
+//            public boolean add(String strUUID) {
+//                var player = Bukkit.getOfflinePlayer(UUID.fromString(strUUID));
+//                if (!player.hasPlayedBefore()) return false;
+//                if (super.size() == 0) {
+//                    super.add(strUUID);
+//                    return true;
+//                }
+//                int index = Collections.binarySearch(this, strUUID, (p1, p2) -> {
+//                    var p1value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(UUID.fromString(p1)));
+//                    var p2value = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(UUID.fromString(p2)));
+//                    if (p1value == null) {
+//                        if (p2value == null) {
+//                            return 0;
+//                        }
+//                        return 1;
+//                    } else if (p2value == null) {
+//                        return -1;
+//                    }
+//                    return p1value.getName().compareToIgnoreCase(p2value.getName());
+//                });
+//                if (index < 0) index = ~index;
+//                super.add(index, strUUID);
+//                return true;
+//            }
+//        };
+//
+//        for (var diplomacyPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
+//            var strUUID = diplomacyPlayer.getUUID().toString();
+//            alphabeticallyP.add(strUUID);
+//            balanceP.add(strUUID);
+//            ageP.add(strUUID);
+//            nationP.add(strUUID);
+//        }
+//
+//        // Create player elements
+//        loadPlayerElements();
 
 
         // Start update task
@@ -292,12 +292,12 @@ public class Guis {
         }
     }
 
-    public void loadPlayerElements() {
-        playerElements = new HashMap<>();
-        for (var diplomacyPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
-            playerElements.put(diplomacyPlayer.getUUID().toString(), getPlayerElement(diplomacyPlayer));
-        }
-    }
+//    public void loadPlayerElements() {
+//        playerElements = new HashMap<>();
+//        for (var diplomacyPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
+//            playerElements.put(diplomacyPlayer.getUUID().toString(), getPlayerElement(diplomacyPlayer));
+//        }
+//    } TODO fix playerMenu
 
     public @Nullable GuiElementGroup getNationsGroup(String type) {
         return switch (type) {
@@ -314,20 +314,20 @@ public class Guis {
             default -> null;
         };
     }
-
-    public @Nullable GuiElementGroup getPlayersGroup(String type) {
-        return switch (type) {
-            case "alphabetically" -> alpGroupP;
-            case "balance" -> balGroupP;
-            case "age" -> ageGroupP;
-            case "nation" -> nationGroupP;
-            case "reverseAlphabetically" -> rAlpGroupP;
-            case "reverseBalance" -> rBalGroupP;
-            case "reverseAge" -> rAgeGroupP;
-            case "reverseNation" -> rNationGroupP;
-            default -> null;
-        };
-    }
+//
+//    public @Nullable GuiElementGroup getPlayersGroup(String type) { TODO fix playerMenu
+//        return switch (type) {
+//            case "alphabetically" -> alpGroupP;
+//            case "balance" -> balGroupP;
+//            case "age" -> ageGroupP;
+//            case "nation" -> nationGroupP;
+//            case "reverseAlphabetically" -> rAlpGroupP;
+//            case "reverseBalance" -> rBalGroupP;
+//            case "reverseAge" -> rAgeGroupP;
+//            case "reverseNation" -> rNationGroupP;
+//            default -> null;
+//        };
+//    }
 
     public InventoryGui getNations(String type) {
         switch (type) {
@@ -394,58 +394,58 @@ public class Guis {
         }
     }
 
-    public InventoryGui getPlayers(String type) {
-        switch (type) {
-            case "reverseAlphabetically" -> {
-                if (rAlpPlayers == null) {
-                    rAlpPlayers = NationGuiFactory.createPlayers("reverseAlphabetically");
-                }
-                return rAlpPlayers;
-            }
-            case "balance" -> {
-                if (balPlayers == null) {
-                    balPlayers = NationGuiFactory.createPlayers("balance");
-                }
-                return balPlayers;
-            }
-            case "reverseBalance" -> {
-                if (rBalPlayers == null) {
-                    rBalPlayers = NationGuiFactory.createPlayers("reverseBalance");
-                }
-                return rBalPlayers;
-            }
-            case "age" -> {
-                if (agePlayers == null) {
-                    agePlayers = NationGuiFactory.createPlayers("age");
-                }
-                return agePlayers;
-            }
-            case "reverseAge" -> {
-                if (rAgePlayers == null) {
-                    rAgePlayers = NationGuiFactory.createPlayers("reverseAge");
-                }
-                return rAgePlayers;
-            }
-            case "nation" -> {
-                if (nationPlayers == null) {
-                    nationPlayers = NationGuiFactory.createPlayers("nation");
-                }
-                return nationPlayers;
-            }
-            case "reverseNation" -> {
-                if (rNationPlayers == null) {
-                    rNationPlayers = NationGuiFactory.createPlayers("reverseNation");
-                }
-                return rNationPlayers;
-            }
-            default -> { // Includes "alphabetically"
-                if (alpPlayers == null) {
-                    alpPlayers = NationGuiFactory.createPlayers("alphabetically");
-                }
-                return alpPlayers;
-            }
-        }
-    }
+//    public InventoryGui getPlayers(String type) { todo fix playerMenu
+//        switch (type) {
+//            case "reverseAlphabetically" -> {
+//                if (rAlpPlayers == null) {
+//                    rAlpPlayers = NationGuiFactory.createPlayers("reverseAlphabetically");
+//                }
+//                return rAlpPlayers;
+//            }
+//            case "balance" -> {
+//                if (balPlayers == null) {
+//                    balPlayers = NationGuiFactory.createPlayers("balance");
+//                }
+//                return balPlayers;
+//            }
+//            case "reverseBalance" -> {
+//                if (rBalPlayers == null) {
+//                    rBalPlayers = NationGuiFactory.createPlayers("reverseBalance");
+//                }
+//                return rBalPlayers;
+//            }
+//            case "age" -> {
+//                if (agePlayers == null) {
+//                    agePlayers = NationGuiFactory.createPlayers("age");
+//                }
+//                return agePlayers;
+//            }
+//            case "reverseAge" -> {
+//                if (rAgePlayers == null) {
+//                    rAgePlayers = NationGuiFactory.createPlayers("reverseAge");
+//                }
+//                return rAgePlayers;
+//            }
+//            case "nation" -> {
+//                if (nationPlayers == null) {
+//                    nationPlayers = NationGuiFactory.createPlayers("nation");
+//                }
+//                return nationPlayers;
+//            }
+//            case "reverseNation" -> {
+//                if (rNationPlayers == null) {
+//                    rNationPlayers = NationGuiFactory.createPlayers("reverseNation");
+//                }
+//                return rNationPlayers;
+//            }
+//            default -> { // Includes "alphabetically"
+//                if (alpPlayers == null) {
+//                    alpPlayers = NationGuiFactory.createPlayers("alphabetically");
+//                }
+//                return alpPlayers;
+//            }
+//        }
+//    }
 
     public StaticGuiElement getTimeElement() {
         if (timeElement == null) {
@@ -559,62 +559,62 @@ public class Guis {
         getNations("reverseAge").addElement(getTimeElement());
 
 
-        System.out.println("Updating players...");
-        // alphabetically
-        alpGroupP.clearElements();
-        for (var id : alphabeticallyP) {
-            alpGroupP.addElement(playerElements.get(id));
-        }
-        getPlayers("alphabetically").addElement(getTimeElement());
-
-        // reverse alphabetically
-        rAlpGroupP.clearElements();
-        for (int i = alphabeticallyP.size() - 1; i >= 0; i--) {
-            rAlpGroupP.addElement(playerElements.get(alphabeticallyP.get(i)));
-        }
-        getPlayers("reverseAlphabetically").addElement(getTimeElement());
-
-        // balance
-        balGroupP.clearElements();
-        for (var id : balanceP) {
-            balGroupP.addElement(playerElements.get(id));
-        }
-        getPlayers("balance").addElement(getTimeElement());
-
-        // reverse balance
-        rBalGroupP.clearElements();
-        for (int i = balanceP.size() - 1; i >= 0; i--) {
-            rBalGroupP.addElement(playerElements.get(balanceP.get(i)));
-        }
-        getPlayers("reverseBalance").addElement(getTimeElement());
-
-        // age
-        ageGroupP.clearElements();
-        for (var id : ageP) {
-            ageGroupP.addElement(playerElements.get(id));
-        }
-        getPlayers("age").addElement(getTimeElement());
-
-        // reverse age
-        rAgeGroupP.clearElements();
-        for (int i = ageP.size() - 1; i >= 0; i--) {
-            rAgeGroupP.addElement(playerElements.get(ageP.get(i)));
-        }
-        getPlayers("reverseAge").addElement(getTimeElement());
-
-        // nation
-        nationGroupP.clearElements();
-        for (var id : nationP) {
-            nationGroupP.addElement(playerElements.get(id));
-        }
-        getPlayers("nation").addElement(getTimeElement());
-
-        // reverse nation
-        rNationGroupP.clearElements();
-        for (int i = nationP.size() - 1; i >= 0; i--) {
-            rNationGroupP.addElement(playerElements.get(nationP.get(i)));
-        }
-        getPlayers("reverseAge").addElement(getTimeElement());
+//        System.out.println("Updating players..."); todo fix playerMenus
+//        // alphabetically
+//        alpGroupP.clearElements();
+//        for (var id : alphabeticallyP) {
+//            alpGroupP.addElement(playerElements.get(id));
+//        }
+//        getPlayers("alphabetically").addElement(getTimeElement());
+//
+//        // reverse alphabetically
+//        rAlpGroupP.clearElements();
+//        for (int i = alphabeticallyP.size() - 1; i >= 0; i--) {
+//            rAlpGroupP.addElement(playerElements.get(alphabeticallyP.get(i)));
+//        }
+//        getPlayers("reverseAlphabetically").addElement(getTimeElement());
+//
+//        // balance
+//        balGroupP.clearElements();
+//        for (var id : balanceP) {
+//            balGroupP.addElement(playerElements.get(id));
+//        }
+//        getPlayers("balance").addElement(getTimeElement());
+//
+//        // reverse balance
+//        rBalGroupP.clearElements();
+//        for (int i = balanceP.size() - 1; i >= 0; i--) {
+//            rBalGroupP.addElement(playerElements.get(balanceP.get(i)));
+//        }
+//        getPlayers("reverseBalance").addElement(getTimeElement());
+//
+//        // age
+//        ageGroupP.clearElements();
+//        for (var id : ageP) {
+//            ageGroupP.addElement(playerElements.get(id));
+//        }
+//        getPlayers("age").addElement(getTimeElement());
+//
+//        // reverse age
+//        rAgeGroupP.clearElements();
+//        for (int i = ageP.size() - 1; i >= 0; i--) {
+//            rAgeGroupP.addElement(playerElements.get(ageP.get(i)));
+//        }
+//        getPlayers("reverseAge").addElement(getTimeElement());
+//
+//        // nation
+//        nationGroupP.clearElements();
+//        for (var id : nationP) {
+//            nationGroupP.addElement(playerElements.get(id));
+//        }
+//        getPlayers("nation").addElement(getTimeElement());
+//
+//        // reverse nation
+//        rNationGroupP.clearElements();
+//        for (int i = nationP.size() - 1; i >= 0; i--) {
+//            rNationGroupP.addElement(playerElements.get(nationP.get(i)));
+//        }
+//        getPlayers("reverseAge").addElement(getTimeElement());
     }
 
     public StaticGuiElement getNationElement(Nation nation) {
@@ -654,36 +654,36 @@ public class Guis {
         );
     }
 
-    public StaticGuiElement getPlayerElement(DiplomacyPlayer diplomacyPlayer) {
-        var head = diplomacyPlayer.getHead();
-        var nation = Nations.getInstance().get(diplomacyPlayer);
-        var player = Bukkit.getOfflinePlayer(diplomacyPlayer.getUUID());
-
-        var strNation = "None";
-        if (nation != null) {
-            strNation = nation.getName();
-        }
-        double balance;
-        try {
-            balance = Diplomacy.getEconomy().getBalance(player);
-        } catch (NullPointerException e) {
-            balance = 0.0;
-        }
-        return new StaticGuiElement('g',
-                head,
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = NationGuiFactory.createPlayer(diplomacyPlayer.getPlayer()); //TODO add getPlayerMenu
-                    InventoryGui.clearHistory(clicker);
-                    nGui.show(clicker, true);
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + player.getName(),
-                ChatColor.BLUE + "Nation: " + ChatColor.GRAY + strNation,
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + NationGuiFactory.formatter.format(balance),
-                ChatColor.BLUE + "First Joined: " + ChatColor.GRAY + diplomacyPlayer.getDateJoined()
-        );
-    }
+//    public StaticGuiElement getPlayerElement(DiplomacyPlayer diplomacyPlayer) { todo fix playerMenu
+//        var head = diplomacyPlayer.getHead();
+//        var nation = Nations.getInstance().get(diplomacyPlayer);
+//        var player = Bukkit.getOfflinePlayer(diplomacyPlayer.getUUID());
+//
+//        var strNation = "None";
+//        if (nation != null) {
+//            strNation = nation.getName();
+//        }
+//        double balance;
+//        try {
+//            balance = Diplomacy.getEconomy().getBalance(player);
+//        } catch (NullPointerException e) {
+//            balance = 0.0;
+//        }
+//        return new StaticGuiElement('g',
+//                head,
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    var nGui = NationGuiFactory.createPlayer(diplomacyPlayer.getPlayer()); //TODO add getPlayerMenu
+//                    InventoryGui.clearHistory(clicker);
+//                    nGui.show(clicker, true);
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + player.getName(),
+//                ChatColor.BLUE + "Nation: " + ChatColor.GRAY + strNation,
+//                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + "\u00A4" + NationGuiFactory.formatter.format(balance),
+//                ChatColor.BLUE + "First Joined: " + ChatColor.GRAY + diplomacyPlayer.getDateJoined()
+//        );
+//    }
 
     public InventoryGui getNationMenu(Nation nation) {
         if (!nationMenus.containsKey(nation.getNationID())) {

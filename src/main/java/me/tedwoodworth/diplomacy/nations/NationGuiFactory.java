@@ -58,13 +58,14 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('b',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var nGui = Guis.getInstance().getPlayers("alphabetically");
-                    InventoryGui.clearHistory(player);
-                    nGui.show(player, true);
+//                    var nGui = Guis.getInstance().getPlayers("alphabetically"); TODO fix playerMenus
+//                    InventoryGui.clearHistory(player);
+//                    nGui.show(player, true);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players",
+                ChatColor.RED + "Currently under maintenance" //todo remove
         ));
         gui.addElement(new StaticGuiElement('c',
                 new ItemStack(Material.SHIELD),
@@ -279,14 +280,15 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('g',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getPlayers("alphabetically");
-                    InventoryGui.clearHistory(clicker);
-                    nGui.show(clicker, true);
+//                    var clicker = click.getEvent().getWhoClicked(); //todo fix playerMenus
+//                    var nGui = Guis.getInstance().getPlayers("alphabetically");
+//                    InventoryGui.clearHistory(clicker);
+//                    nGui.show(clicker, true);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players",
+                ChatColor.RED + "Currently under maintenance"
         ));
 
         gui.addElement(new StaticGuiElement('h',
@@ -487,9 +489,9 @@ public class NationGuiFactory {
         gui.addElement(new StaticGuiElement('q',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getPlayers("alphabetically");
-                    nGui.show(clicker, true);
+//                    var clicker = click.getEvent().getWhoClicked(); todo fix playerMenus
+//                    var nGui = Guis.getInstance().getPlayers("alphabetically");
+//                    nGui.show(clicker, true);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
@@ -2439,175 +2441,175 @@ public class NationGuiFactory {
         return gui;
     }
 
-    public static InventoryGui createPlayers(String sortType) {
-
-        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Players";
-        String[] guiSetup = {
-                "X ggggg N",
-                "A ggggg  ",
-                "B ggggg U",
-                "C ggggg D",
-                "G ggggg  ",
-                "  ggggg E"
-        };
-        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
-
-        var alphabetical = new ItemStack(Material.WHITE_BANNER);
-        var alphabeticalMeta = (BannerMeta) (alphabetical.getItemMeta());
-        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_TOP));
-        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
-        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
-        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE));
-        alphabeticalMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.BORDER));
-        alphabeticalMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        alphabetical.setItemMeta(alphabeticalMeta);
-
-        // X
-        gui.addElement(Guis.getInstance().getTimeElement());
-
-        gui.addElement(new StaticGuiElement('A',
-                alphabetical,
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nGui = Guis.getInstance().getPlayers("alphabetically");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    } else if (click.getType().isRightClick()) {
-                        var nGui = Guis.getInstance().getPlayers("reverseAlphabetically");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort Alphabetically",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
-        ));
-        gui.addElement(new StaticGuiElement('B',
-                new ItemStack(Material.DIAMOND),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nGui = Guis.getInstance().getPlayers("balance");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    } else if (click.getType().isRightClick()) {
-                        var nGui = Guis.getInstance().getPlayers("reverseBalance");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Balance",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Largest first",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Smallest first"
-        ));
-        gui.addElement(new StaticGuiElement('C',
-                new ItemStack(Material.BLUE_BANNER),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nGui = Guis.getInstance().getPlayers("nation");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    } else if (click.getType().isRightClick()) {
-                        var nGui = Guis.getInstance().getPlayers("reverseNation");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Nation Name",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
-        ));
-        gui.addElement(new StaticGuiElement('G',
-                new ItemStack(Material.CLOCK),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    if (click.getType().isLeftClick()) {
-                        var nGui = Guis.getInstance().getPlayers("age");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    } else if (click.getType().isRightClick()) {
-                        var nGui = Guis.getInstance().getPlayers("reverseAge");
-                        InventoryGui.clearHistory(clicker);
-                        nGui.show(clicker, true);
-                    }
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Age",
-                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Oldest First",
-                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Youngest First"
-        ));
-
-        var scrollUp = new ItemStack(Material.WHITE_BANNER);
-        var scrollUpMeta = (BannerMeta) (scrollUp.getItemMeta());
-        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
-        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
-        scrollUpMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.STRIPE_TOP));
-        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.CURLY_BORDER));
-        scrollUpMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        scrollUp.setItemMeta(scrollUpMeta);
-
-        gui.addElement(new GuiPageElement('U',
-                scrollUp,
-                GuiPageElement.PageAction.PREVIOUS,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Previous page",
-                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
-        ));
-
-        var scrollDown = new ItemStack(Material.WHITE_BANNER);
-        var scrollDownMeta = (BannerMeta) (scrollDown.getItemMeta());
-        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
-        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
-        scrollDownMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.STRIPE_BOTTOM));
-        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.CURLY_BORDER));
-        scrollDownMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        scrollDown.setItemMeta(scrollDownMeta);
-
-        gui.addElement(new GuiPageElement('D',
-                scrollDown,
-                GuiPageElement.PageAction.NEXT,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Next page",
-                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
-        ));
-
-        gui.addElement(new StaticGuiElement('N',
-                new ItemStack(Material.PAINTING),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = createMenu((Player) clicker);
-                    InventoryGui.clearHistory(clicker);
-                    nGui.show(clicker, true);
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
-                ChatColor.GRAY + "Go to menu"
-        ));
-
-        gui.addElement(new StaticGuiElement('E',
-                new ItemStack(Material.BARRIER),
-                click -> {
-                    gui.close();
-                    return true;
-                },
-                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                ChatColor.GRAY + "Click to escape"
-        ));
-        var allPlayers = DiplomacyPlayers.getInstance().getPlayers();
-        var players = new ArrayList<DiplomacyPlayer>();
-        for (var testPlayer : allPlayers) {
-            if (testPlayer.getPlayer().hasPlayedBefore()) {
-                players.add(testPlayer);
-            }
-        }
-
-        gui.addElement(Guis.getInstance().getPlayersGroup(sortType));
-        return gui;
-    }
+//    public static InventoryGui createPlayers(String sortType) {
+//
+//        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Players"; todo fix playerMenus
+//        String[] guiSetup = {
+//                "X ggggg N",
+//                "A ggggg  ",
+//                "B ggggg U",
+//                "C ggggg D",
+//                "G ggggg  ",
+//                "  ggggg E"
+//        };
+//        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+//        gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+//
+//        var alphabetical = new ItemStack(Material.WHITE_BANNER);
+//        var alphabeticalMeta = (BannerMeta) (alphabetical.getItemMeta());
+//        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_TOP));
+//        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
+//        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
+//        alphabeticalMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE));
+//        alphabeticalMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.BORDER));
+//        alphabeticalMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+//        alphabetical.setItemMeta(alphabeticalMeta);
+//
+//        // X
+//        gui.addElement(Guis.getInstance().getTimeElement());
+//
+//        gui.addElement(new StaticGuiElement('A',
+//                alphabetical,
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    if (click.getType().isLeftClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("alphabetically");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    } else if (click.getType().isRightClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("reverseAlphabetically");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    }
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort Alphabetically",
+//                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
+//                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
+//        ));
+//        gui.addElement(new StaticGuiElement('B',
+//                new ItemStack(Material.DIAMOND),
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    if (click.getType().isLeftClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("balance");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    } else if (click.getType().isRightClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("reverseBalance");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    }
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Balance",
+//                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Largest first",
+//                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Smallest first"
+//        ));
+//        gui.addElement(new StaticGuiElement('C',
+//                new ItemStack(Material.BLUE_BANNER),
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    if (click.getType().isLeftClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("nation");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    } else if (click.getType().isRightClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("reverseNation");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    }
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Nation Name",
+//                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "A-Z",
+//                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Z-A"
+//        ));
+//        gui.addElement(new StaticGuiElement('G',
+//                new ItemStack(Material.CLOCK),
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    if (click.getType().isLeftClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("age");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    } else if (click.getType().isRightClick()) {
+//                        var nGui = Guis.getInstance().getPlayers("reverseAge");
+//                        InventoryGui.clearHistory(clicker);
+//                        nGui.show(clicker, true);
+//                    }
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Sort By Age",
+//                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "Oldest First",
+//                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "Youngest First"
+//        ));
+//
+//        var scrollUp = new ItemStack(Material.WHITE_BANNER);
+//        var scrollUpMeta = (BannerMeta) (scrollUp.getItemMeta());
+//        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
+//        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
+//        scrollUpMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.STRIPE_TOP));
+//        scrollUpMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.CURLY_BORDER));
+//        scrollUpMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+//        scrollUp.setItemMeta(scrollUpMeta);
+//
+//        gui.addElement(new GuiPageElement('U',
+//                scrollUp,
+//                GuiPageElement.PageAction.PREVIOUS,
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Previous page",
+//                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
+//        ));
+//
+//        var scrollDown = new ItemStack(Material.WHITE_BANNER);
+//        var scrollDownMeta = (BannerMeta) (scrollDown.getItemMeta());
+//        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_LEFT));
+//        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_RIGHT));
+//        scrollDownMeta.addPattern(new Pattern(DyeColor.WHITE, PatternType.STRIPE_BOTTOM));
+//        scrollDownMeta.addPattern(new Pattern(DyeColor.BLACK, PatternType.CURLY_BORDER));
+//        scrollDownMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+//        scrollDown.setItemMeta(scrollDownMeta);
+//
+//        gui.addElement(new GuiPageElement('D',
+//                scrollDown,
+//                GuiPageElement.PageAction.NEXT,
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Next page",
+//                ChatColor.BLUE + "Current: " + ChatColor.GRAY + "%page%"
+//        ));
+//
+//        gui.addElement(new StaticGuiElement('N',
+//                new ItemStack(Material.PAINTING),
+//                click -> {
+//                    var clicker = click.getEvent().getWhoClicked();
+//                    var nGui = createMenu((Player) clicker);
+//                    InventoryGui.clearHistory(clicker);
+//                    nGui.show(clicker, true);
+//                    return true;
+//                },
+//                "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
+//                ChatColor.GRAY + "Go to menu"
+//        ));
+//
+//        gui.addElement(new StaticGuiElement('E',
+//                new ItemStack(Material.BARRIER),
+//                click -> {
+//                    gui.close();
+//                    return true;
+//                },
+//                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
+//                ChatColor.GRAY + "Click to escape"
+//        ));
+//        var allPlayers = DiplomacyPlayers.getInstance().getPlayers();
+//        var players = new ArrayList<DiplomacyPlayer>();
+//        for (var testPlayer : allPlayers) {
+//            if (testPlayer.getPlayer().hasPlayedBefore()) {
+//                players.add(testPlayer);
+//            }
+//        }
+//
+//        gui.addElement(Guis.getInstance().getPlayersGroup(sortType));
+//        return gui;
+//    }
 
     private static StaticGuiElement createPlayerElement(DiplomacyPlayer player, char slot) {
         var memberHead = new ItemStack(Material.PLAYER_HEAD, 1);

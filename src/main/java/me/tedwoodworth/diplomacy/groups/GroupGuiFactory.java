@@ -156,13 +156,14 @@ public class GroupGuiFactory {
         gui.addElement(new StaticGuiElement('i',
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getPlayers("alphabetically");
-                    nGui.show(clicker);
+//                    var clicker = click.getEvent().getWhoClicked(); todo fix playerMenus
+//                    var nGui = Guis.getInstance().getPlayers("alphabetically");
+//                    nGui.show(clicker);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players"
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players",
+                ChatColor.RED + "Currently under maintenance"
         ));
         gui.addElement(new StaticGuiElement('j',
                 new ItemStack(Material.SHIELD),

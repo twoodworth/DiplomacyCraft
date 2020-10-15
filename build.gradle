@@ -47,5 +47,5 @@ shadowJar {
     }
 
     def libPackage = "me.tedwoodworth.diplomacy.lib"
-    relocate("de.themoep.inventorygui", "${libPackage}.de.themoep.inventorygui")
+//    relocate("de.themoep.inventorygui", "${libPackage}.de.themoep.inventorygui") TODO add back
 }

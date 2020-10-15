@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.base.Objects;
+import com.google.gson.internal.$Gson$Preconditions;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -73,12 +74,12 @@ public class DiplomacyPlayer {
     }
 
     public ItemStack getHead() {
-        var head = new ItemStack(Material.PLAYER_HEAD);
-        var meta = (SkullMeta) head.getItemMeta();
-        assert meta != null;
-        meta.setOwningPlayer(this.getPlayer());
-        head.setItemMeta(meta);
-        return head;
+        var playerHead = new ItemStack(Material.PLAYER_HEAD, 1);
+        var skullMeta = (SkullMeta) (playerHead.getItemMeta());
+        if (skullMeta == null) return playerHead;
+        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(this.getUUID()));
+        playerHead.setItemMeta(skullMeta);
+        return playerHead;
     }
 
     public int getLives() {

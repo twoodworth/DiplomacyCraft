@@ -92,13 +92,15 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
     }
 
     private void playerList(CommandSender sender) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        sender.sendMessage(ChatColor.GOLD + "Loading player list...");
-        var nGui = Guis.getInstance().getPlayers("alphabetically");
-        nGui.show((Player) sender);
+        sender.sendMessage(ChatColor.RED + "Command is currently disabled for maintenance."); //TODO fix
+//        if (!(sender instanceof Player)) {
+//            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+//            return;
+//        }
+//
+//        sender.sendMessage(ChatColor.GOLD + "Loading player list...");
+//
+//        var nGui = Guis.getInstance().getPlayers("alphabetically");
+//        nGui.show((Player) sender);
     }
 }

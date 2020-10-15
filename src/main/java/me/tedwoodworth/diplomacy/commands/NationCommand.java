@@ -52,7 +52,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
-    private static final String nationColorUsage = "/nation color <Red (0-255)> <Green (0-255)> <Blue (0-255)>";
+    private static final String nationColorUsage = "/nation color <0-255 (Red)> <0-255 (Green)> <0-255 (Blue)>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
     private Map<String, Long> requests = new HashMap<>();
@@ -495,7 +495,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         gui.show(player);
     }
 
-    private void nationColor(CommandSender sender, String strRed, String strBlue, String strGreen) {
+    private void nationColor(CommandSender sender, String strRed, String strGreen, String strBlue) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
