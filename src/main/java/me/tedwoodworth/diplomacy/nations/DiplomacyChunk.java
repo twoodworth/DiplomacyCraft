@@ -19,19 +19,6 @@ public class DiplomacyChunk {
         return chunk;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DiplomacyChunk that = (DiplomacyChunk) o;
-        return Objects.equals(chunk, that.chunk);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(chunk);
-    }
-
     @Nullable
     public Nation getNation() {
         for (var nation : Nations.getInstance().getNations()) {
@@ -50,5 +37,18 @@ public class DiplomacyChunk {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiplomacyChunk that = (DiplomacyChunk) o;
+        return Objects.equals(chunk, that.chunk);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chunk);
     }
 }

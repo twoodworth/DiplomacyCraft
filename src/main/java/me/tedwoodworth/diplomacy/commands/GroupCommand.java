@@ -561,9 +561,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
-            var testNation = testDiplomacyChunk.getNation();
-            if (Objects.equals(testNation, nation)) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
+            var testGroup = testDiplomacyChunk.getGroup();
+            if (Objects.equals(testGroup, group)) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testPlayerNation == null) {
@@ -973,9 +973,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
-            var testNation = testDiplomacyChunk.getNation();
-            if (Objects.equals(testNation, nation)) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
+            if (Objects.equals(testDiplomacyChunk, diplomacyChunk)) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testPlayerNation == null) {
@@ -1056,9 +1055,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(player.getLocation().getChunk());
-            var testNation = testDiplomacyChunk.getNation();
-            if (Objects.equals(testNation, nation)) {
+            var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
+            if (Objects.equals(testDiplomacyChunk, diplomacyChunk)) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 Nation testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
                 if (testPlayerNation == null) {

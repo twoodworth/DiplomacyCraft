@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
@@ -58,6 +59,12 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + playerSetMainUsage);
             }
+        } else if (args[0].equalsIgnoreCase("exclude")) {
+            if (args.length == 2) {
+                playerExclude(sender, args[1]);
+            } else {
+                sender.sendMessage(incorrectUsage + playerUsage);
+            }
         } else {
             sender.sendMessage(incorrectUsage + playerUsage);
         }
@@ -66,28 +73,28 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("info")) {
+        if (args.length != 0) {
+            if (args.length == 1) {
+                return Arrays.asList("info", "list", "setMain", "accounts");
+            } else if (args[0].equalsIgnoreCase("info")) {
                 var players = new ArrayList<String>();
-                for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                    players.add(player.getPlayer().getName());
+                for (var player : Bukkit.getOnlinePlayers()) {
+                    players.add(player.getName());
                 }
                 return players;
             } else if (args[0].equalsIgnoreCase("accounts")) {
                 var players = new ArrayList<String>();
-                for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                    players.add(player.getPlayer().getName());
+                for (var player : Bukkit.getOnlinePlayers()) {
+                    players.add(player.getName());
                 }
                 return players;
             } else if (args[0].equalsIgnoreCase("setMain")) {
                 var players = new ArrayList<String>();
-                for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                    players.add(player.getPlayer().getName());
+                for (var player : Bukkit.getOnlinePlayers()) {
+                    players.add(player.getName());
                 }
                 return players;
             }
-        } else if (args.length == 1) {
-            return Arrays.asList("info", "list", "setMain", "accounts");
         }
         return null;
     }
@@ -149,12 +156,6 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
 
         var account = AccountManager.getInstance().getAccount(player.getUUID());
-
-        if (account == null) {
-            sender.sendMessage(ChatColor.RED + "Error: Account is null. Please report this bug to an admin if you see this.");
-            return;
-        }
-
         var mainUUID = account.getMain();
         var main = Bukkit.getOfflinePlayer(mainUUID).getName();
 
@@ -166,9 +167,14 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.DARK_GREEN + "Main:\n" + ChatColor.GREEN + main);
     }
 
-    private void playerSetMain(CommandSender sender, String strPlayer) {
+    private void playerExclude(CommandSender sender, String strPlayer) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
             return;
         }
 
@@ -179,12 +185,32 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var account = AccountManager.getInstance().getAccount(player.getUUID());
-
-        if (account == null) {
-            sender.sendMessage(ChatColor.RED + "Error: Account is null. Please report this bug to an admin if you see this.");
+        var uuid = player.getUUID();
+        var account = AccountManager.getInstance().getAccount(uuid);
+        if (account.getPlayerIDs().size() == 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "This player is not linked to any other accounts.");
             return;
         }
+
+        var excluded = AccountManager.getInstance().getExcluded();
+        if (excluded.contains(uuid)) {
+            sender.sendMessage(ChatColor.DARK_RED + "Player is already excluded.");
+            return;
+        }
+
+        AccountManager.getInstance().createExcludeAccount(uuid);
+        sender.sendMessage(ChatColor.GREEN + "Player successfully excluded.");
+    }
+
+    private void playerSetMain(CommandSender sender, String strPlayer) {
+        var player = DiplomacyPlayers.getInstance().get(strPlayer);
+
+        if (player == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
+            return;
+        }
+
+        var account = AccountManager.getInstance().getAccount(player.getUUID());
 
         var main = account.getMain();
         var newMain = player.getUUID();

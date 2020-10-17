@@ -15,6 +15,7 @@ import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
+import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import net.milkbowl.vault.economy.Economy;
@@ -77,6 +78,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded chat events");
         DiplomacyPlayers.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded player events");
+        AccountManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded account events");
         ContestManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded contest events");
         DiplomacyGroups.getInstance().registerEvents();

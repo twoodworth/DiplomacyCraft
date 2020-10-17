@@ -377,21 +377,15 @@ public class DiplomacyPlayers {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 
-            if (group != null) {
-                if (group.getMembers().contains(diplomacyPlayer)) {
-                    return;
-                }
-            }
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
-
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (canBuildAnywhere) {
-                    return;
-                }
+            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                return;
             }
 
             ArrayList<Material> badItems = new ArrayList<>();
@@ -467,20 +461,15 @@ public class DiplomacyPlayers {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 
-            if (group != null) {
-                if (group.getMembers().contains(diplomacyPlayer)) {
-                    return;
-                }
-            }
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (canBuildAnywhere) {
-                    return;
-                }
+            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                return;
             }
 
             if (event.getRightClicked() instanceof ItemFrame || event.getRightClicked() instanceof Painting) {
@@ -525,20 +514,15 @@ public class DiplomacyPlayers {
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
 
-            if (group != null) {
-                if (group.getMembers().contains(diplomacyPlayer)) {
-                    return;
-                }
-            }
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (canBuildAnywhere) {
-                    return;
-                }
+            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                return;
             }
 
             // Cancel the event
@@ -557,29 +541,21 @@ public class DiplomacyPlayers {
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
             var nation = diplomacyChunk.getNation();
 
-            if (nation == null) {
-                return;
-            }
+            if (nation == null) return;
 
             var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 
-            if (group != null) {
-                if (group.getMembers().contains(diplomacyPlayer)) {
-                    return;
-                }
-            }
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
-
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (canBuildAnywhere) {
-                    return;
-                }
+            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                return;
             }
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");
@@ -590,12 +566,10 @@ public class DiplomacyPlayers {
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
             var account = AccountManager.getInstance().getAccount(player.getUniqueId());
-            if (account != null) {
-                var main = account.getMain();
-                if (!main.equals(player.getUniqueId())) {
-                    var name = Bukkit.getOfflinePlayer(main).getName();
-                    event.setJoinMessage(event.getJoinMessage() + " (alt of " + name + ")");
-                }
+            var main = account.getMain();
+            if (!main.equals(player.getUniqueId())) {
+                var name = Bukkit.getOfflinePlayer(main).getName();
+                event.setJoinMessage(event.getJoinMessage() + " (alt of " + name + ")");
             }
             ScoreboardManager.getInstance().updateScoreboards();
             if (!player.hasPlayedBefore()) {
@@ -609,7 +583,6 @@ public class DiplomacyPlayers {
             if (event.getPlayer().isBanned()) {
                 var uuid = event.getPlayer().getUniqueId();
                 var account = AccountManager.getInstance().getAccount(uuid);
-                if (account == null) return;
                 for (var testUUID : account.getPlayerIDs()) {
                     if (uuid.equals(testUUID)) continue;
                     var testPlayer = Bukkit.getPlayer(testUUID);
@@ -626,15 +599,16 @@ public class DiplomacyPlayers {
             var uuid = event.getPlayer().getUniqueId();
             var instance = AccountManager.getInstance();
             var account = instance.getAccount(uuid, ip);
-            for (var testUUID : account.getPlayerIDs()) {
-                if (testUUID.equals(uuid)) continue;
-                var offlinePlayer = Bukkit.getOfflinePlayer(testUUID);
-                if (offlinePlayer.isBanned()) {
-                    event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "You cannot join because " +
-                            "one of your alts is banned.");
+            if (!instance.getExcluded().contains(uuid)) {
+                for (var testUUID : account.getPlayerIDs()) {
+                    if (testUUID.equals(uuid)) continue;
+                    var offlinePlayer = Bukkit.getOfflinePlayer(testUUID);
+                    if (offlinePlayer.isBanned()) {
+                        event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "You cannot join because " +
+                                "one of your alts is banned.");
+                    }
                 }
             }
-
         }
 
         @EventHandler
@@ -701,6 +675,7 @@ public class DiplomacyPlayers {
                 var tnt = (TNTPrimed) event.getEntity();
                 var source = tnt.getSource();
                 if (source instanceof Player) {
+
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     for (var block : event.blockList()) {

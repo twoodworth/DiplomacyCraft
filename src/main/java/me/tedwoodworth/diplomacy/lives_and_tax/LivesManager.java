@@ -84,7 +84,6 @@ public class LivesManager {
     void giveLive(DiplomacyPlayer diplomacyPlayer) {
         var uuid = diplomacyPlayer.getUUID();
         var account = AccountManager.getInstance().getAccount(uuid);
-        if (account == null) return;
         account.setLives(account.getLives() + 1);
         for (var testUUID : account.getPlayerIDs()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
@@ -148,7 +147,6 @@ public class LivesManager {
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var uuid = diplomacyPlayer.getUUID();
             var account = AccountManager.getInstance().getAccount(uuid);
-            if (account == null) return;
             for (var testUUID : account.getPlayerIDs()) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
                 testDiplomacyPlayer.setLives(testDiplomacyPlayer.getLives() - 1);

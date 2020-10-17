@@ -39,12 +39,12 @@ public class ScoreboardManager {
         scoreboard.registerNewTeam("Wilderness-A");
         var altWildernessTeam = scoreboard.getTeam("Wilderness-A");
         altWildernessTeam.setDisplayName("Wilderness-A");
-        altWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "]");
+        altWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "] ");
 
         scoreboard.registerNewTeam("Wilderness-OA");
         var outlawAltWildernessTeam = scoreboard.getTeam("Wilderness-OA");
         outlawAltWildernessTeam.setDisplayName("Wilderness-OA");
-        outlawAltWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "]");
+        outlawAltWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "] ");
 
 
         for (var testNation : Nations.getInstance().getNations()) {
@@ -91,7 +91,7 @@ public class ScoreboardManager {
             var account = AccountManager.getInstance().getAccount(uuid);
 
             // Not an alt
-            if (account != null && uuid.equals(account.getMain())) {
+            if (uuid.equals(account.getMain())) {
                 if (testNation == null) {
                     if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
                         outlawWildernessTeam.addEntry(testOnlinePlayer.getName());

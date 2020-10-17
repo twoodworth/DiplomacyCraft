@@ -81,7 +81,6 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
 
         var uuid = diplomacyPlayer.getUUID();
         var account = AccountManager.getInstance().getAccount(uuid);
-        if (account == null) return;
         account.setLives(account.getLives() + 1);
 
         for (var testUUID : account.getPlayerIDs()) {
@@ -148,10 +147,7 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
 
         var uuid = player.getUniqueId();
         var account = AccountManager.getInstance().getAccount(uuid);
-        if (account == null) {
-            sender.sendMessage(ChatColor.RED + "Error: Account is null. Please tell an admin if you see this error.");
-            return;
-        }
+
         if (account.getPlayerIDs().contains(recipient.getUUID())) {
             sender.sendMessage(ChatColor.RED + "You cannot give lives to a linked alt account.");
             return;
