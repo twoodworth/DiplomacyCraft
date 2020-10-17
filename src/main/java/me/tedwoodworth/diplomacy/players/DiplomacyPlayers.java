@@ -337,19 +337,15 @@ public class DiplomacyPlayers {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
 
-            if (group != null) {
-                if (group.getMembers().contains(diplomacyPlayer)) {
-                    return;
-                }
-            }
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
-
+            // if there isn't a group and the player can build anywhere, and its the player's nation
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-
             if (Objects.equals(nation, playerNation)) {
                 var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
                 var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (canBuildAnywhere) {
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
                     return;
                 }
             }
@@ -381,11 +377,13 @@ public class DiplomacyPlayers {
             if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
             // if there isn't a group and the player can build anywhere, and its the player's nation
-            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                return;
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
             }
 
             ArrayList<Material> badItems = new ArrayList<>();
@@ -465,11 +463,13 @@ public class DiplomacyPlayers {
             if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
             // if there isn't a group and the player can build anywhere, and its the player's nation
-            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                return;
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
             }
 
             if (event.getRightClicked() instanceof ItemFrame || event.getRightClicked() instanceof Painting) {
@@ -518,11 +518,13 @@ public class DiplomacyPlayers {
             if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
             // if there isn't a group and the player can build anywhere, and its the player's nation
-            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                return;
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
             }
 
             // Cancel the event
@@ -551,11 +553,13 @@ public class DiplomacyPlayers {
             if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
 
             // if there isn't a group and the player can build anywhere, and its the player's nation
-            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
             var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                return;
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
             }
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");

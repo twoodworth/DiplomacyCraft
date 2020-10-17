@@ -23,6 +23,14 @@ public class Account {
         return configSection;
     }
 
+    public boolean getJoinedToday() {
+        for (var uuid : getPlayerIDs()) {
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+            return diplomacyPlayer.getJoinedToday();
+        }
+        return false;
+    }
+
     public UUID getMain() {
         var strUUID = configSection.getString("Main");
         assert strUUID != null;

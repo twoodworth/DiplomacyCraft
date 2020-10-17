@@ -168,6 +168,9 @@ public class AccountManager {
             playerAccount.addAddress(ip);
             return playerAccount;
         } else if (playerAccount == null && ipAccount != null) {
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+            diplomacyPlayer.setLives(ipAccount.getLives());
+            diplomacyPlayer.setJoinedToday(ipAccount.getJoinedToday());
             ipAccount.addPlayerID(uuid);
             return ipAccount;
         } else if (playerAccount != null && ipAccount != null && !playerAccount.equals(ipAccount)) {
