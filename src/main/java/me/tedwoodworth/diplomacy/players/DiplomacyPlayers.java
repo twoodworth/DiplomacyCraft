@@ -25,12 +25,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.Nullable;
@@ -42,9 +39,9 @@ import java.util.*;
 public class DiplomacyPlayers {
 
     private static DiplomacyPlayers instance = null;
-    private File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "diplomacyPlayers.yml");
-    private Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
-    private YamlConfiguration config;
+    private final File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "diplomacyPlayers.yml");
+    private final Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
+    private final YamlConfiguration config;
     private ItemStack guideBook;
 
     public static DiplomacyPlayers getInstance() {
@@ -257,6 +254,7 @@ public class DiplomacyPlayers {
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();
+            AccountManager.getInstance().save();
         }
 
         @EventHandler
@@ -440,13 +438,13 @@ public class DiplomacyPlayers {
                 } else if (block.getType().equals(Material.ITEM_FRAME)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
-                }  else if (block.getType().equals(Material.COMPOSTER)) {
+                } else if (block.getType().equals(Material.COMPOSTER)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
-                }   else if (event.getAction().equals(Action.PHYSICAL) && block.getType().equals(Material.FARMLAND)) {
+                } else if (event.getAction().equals(Action.PHYSICAL) && block.getType().equals(Material.FARMLAND)) {
                     player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
                     event.setCancelled(true);
-                }  else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                } else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                     player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                     event.setCancelled(true);
                 }
@@ -591,12 +589,52 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
+            var account = AccountManager.getInstance().getAccount(player.getUniqueId());
+            if (account != null) {
+                var main = account.getMain();
+                if (!main.equals(player.getUniqueId())) {
+                    var name = Bukkit.getOfflinePlayer(main).getName();
+                    event.setJoinMessage(event.getJoinMessage() + " (alt of " + name + ")");
+                }
+            }
             ScoreboardManager.getInstance().updateScoreboards();
-
             if (!player.hasPlayedBefore()) {
                 player.getInventory().addItem(getGuideBook());
                 player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 8));
             }
+        }
+
+        @EventHandler
+        private void onPlayerQuit(PlayerQuitEvent event) {
+            if (event.getPlayer().isBanned()) {
+                var uuid = event.getPlayer().getUniqueId();
+                var account = AccountManager.getInstance().getAccount(uuid);
+                if (account == null) return;
+                for (var testUUID : account.getPlayerIDs()) {
+                    if (uuid.equals(testUUID)) continue;
+                    var testPlayer = Bukkit.getPlayer(testUUID);
+                    if (testPlayer != null) {
+                        testPlayer.kickPlayer("You have been kicked because one of your other accounts has been banned.");
+                    }
+                }
+            }
+        }
+
+        @EventHandler
+        private void onPlayerLogin(PlayerLoginEvent event) {
+            var ip = event.getAddress();
+            var uuid = event.getPlayer().getUniqueId();
+            var instance = AccountManager.getInstance();
+            var account = instance.getAccount(uuid, ip);
+            for (var testUUID : account.getPlayerIDs()) {
+                if (testUUID.equals(uuid)) continue;
+                var offlinePlayer = Bukkit.getOfflinePlayer(testUUID);
+                if (offlinePlayer.isBanned()) {
+                    event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "You cannot join because " +
+                            "one of your alts is banned.");
+                }
+            }
+
         }
 
         @EventHandler

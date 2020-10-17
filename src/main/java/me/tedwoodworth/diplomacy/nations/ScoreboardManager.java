@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
+import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -35,6 +36,17 @@ public class ScoreboardManager {
         outlawWildernessTeam.setDisplayName("Wilderness-O");
         outlawWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] ");
 
+        scoreboard.registerNewTeam("Wilderness-A");
+        var altWildernessTeam = scoreboard.getTeam("Wilderness-A");
+        altWildernessTeam.setDisplayName("Wilderness-A");
+        altWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "]");
+
+        scoreboard.registerNewTeam("Wilderness-OA");
+        var outlawAltWildernessTeam = scoreboard.getTeam("Wilderness-OA");
+        outlawAltWildernessTeam.setDisplayName("Wilderness-OA");
+        outlawAltWildernessTeam.setPrefix(ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "]");
+
+
         for (var testNation : Nations.getInstance().getNations()) {
             scoreboard.registerNewTeam(String.valueOf(testNation.getNationID()));
             var team = scoreboard.getTeam(String.valueOf(testNation.getNationID()));
@@ -55,6 +67,17 @@ public class ScoreboardManager {
             outlawTeam.setDisplayName(testNation.getNationID() + "-O");
             team.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] ");
             outlawTeam.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] ");
+
+            scoreboard.registerNewTeam(testNation.getNationID() + "-A");
+            var altTeam = scoreboard.getTeam(testNation.getNationID() + "-A");
+            altTeam.setDisplayName(testNation.getNationID() + "-A");
+            altTeam.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "] ");
+
+
+            scoreboard.registerNewTeam(testNation.getNationID() + "-OA");
+            var outlawAltTeam = scoreboard.getTeam(testNation.getNationID() + "-OA");
+            outlawAltTeam.setDisplayName(testNation.getNationID() + "-OA");
+            outlawAltTeam.setPrefix(ChatColor.GRAY + "[" + color + testNation.getName() + ChatColor.GRAY + "] [" + ChatColor.DARK_RED + "O" + ChatColor.GRAY + "] [" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "] ");
         }
 
         for (var testPlayer : DiplomacyPlayers.getInstance().getPlayers()) {
@@ -64,23 +87,37 @@ public class ScoreboardManager {
                 continue;
             }
             var testNation = Nations.getInstance().get(testPlayer);
+            var uuid = testOnlinePlayer.getUniqueId();
+            var account = AccountManager.getInstance().getAccount(uuid);
 
-            if (testNation == null) {
-                if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
-                    outlawWildernessTeam.addEntry(testOnlinePlayer.getName());
+            // Not an alt
+            if (account != null && uuid.equals(account.getMain())) {
+                if (testNation == null) {
+                    if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                        outlawWildernessTeam.addEntry(testOnlinePlayer.getName());
+                    } else {
+                        wildernessTeam.addEntry(testOnlinePlayer.getName());
+                    }
+                } else if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                    scoreboard.getTeam(testNation.getNationID() + "-O").addEntry(testOnlinePlayer.getName());
                 } else {
-                    wildernessTeam.addEntry(testOnlinePlayer.getName());
+                    scoreboard.getTeam(String.valueOf(testNation.getNationID())).addEntry(testOnlinePlayer.getName());
                 }
-            } else if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
-                scoreboard.getTeam(testNation.getNationID() + "-O").addEntry(testOnlinePlayer.getName());
             } else {
-                scoreboard.getTeam(String.valueOf(testNation.getNationID())).addEntry(testOnlinePlayer.getName());
+                // Is an alt
+                if (testNation == null) {
+                    if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                        outlawAltWildernessTeam.addEntry(testOnlinePlayer.getName());
+                    } else {
+                        altWildernessTeam.addEntry(testOnlinePlayer.getName());
+                    }
+                } else if (nation != null && nation.getOutlaws().contains(testPlayer.getUUID())) {
+                    scoreboard.getTeam(testNation.getNationID() + "-OA").addEntry(testOnlinePlayer.getName());
+                } else {
+                    scoreboard.getTeam(testNation.getNationID() + "-A").addEntry(testOnlinePlayer.getName());
+                }
             }
         }
-        {
-
-
-        }//TODO fix bug where everyone sees the same team
 
         player.setScoreboard(scoreboard);
     }

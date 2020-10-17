@@ -17,7 +17,7 @@ public class GiveLive implements Runnable {
     public void run() {
         for (var diplomacyPlayer : players) {
             diplomacyPlayer.setJoinedToday(false);
-            if (diplomacyPlayer.getPlayer().isOnline()) {
+            if (diplomacyPlayer.getPlayer().isOnline() && !diplomacyPlayer.getJoinedToday()) {
                 LivesManager.getInstance().giveLive(diplomacyPlayer);
             }
         }

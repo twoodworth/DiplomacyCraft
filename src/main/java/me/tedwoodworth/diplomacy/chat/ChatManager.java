@@ -98,7 +98,6 @@ public class ChatManager {
                 player.sendMessage(ChatColor.RED + "You have been automatically moved from nation chat to local chat because you don't belong to a nation.");
             }
 
-
             switch (getChatMode(player)) {
                 case GLOBAL -> {
                     System.out.println(player.getName() + ": " + event.getMessage());

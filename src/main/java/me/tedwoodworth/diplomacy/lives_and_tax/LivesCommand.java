@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.lives_and_tax;
 
+import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -78,11 +79,18 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        diplomacyPlayer.setLives(diplomacyPlayer.getLives() + 1);
+        var uuid = diplomacyPlayer.getUUID();
+        var account = AccountManager.getInstance().getAccount(uuid);
+        if (account == null) return;
+        account.setLives(account.getLives() + 1);
 
-        var player = diplomacyPlayer.getPlayer().getPlayer();
-        if (player != null) {
-            player.sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
+        for (var testUUID : account.getPlayerIDs()) {
+            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
+            testDiplomacyPlayer.setLives(account.getLives());
+            var player = testDiplomacyPlayer.getPlayer().getPlayer();
+            if (player != null) {
+                player.sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
+            }
         }
     }
 
@@ -135,6 +143,17 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
 
         if (Objects.equals(diplomacyPlayer, recipient)) {
             sender.sendMessage(ChatColor.DARK_RED + "You cannot give yourself lives.");
+            return;
+        }
+
+        var uuid = player.getUniqueId();
+        var account = AccountManager.getInstance().getAccount(uuid);
+        if (account == null) {
+            sender.sendMessage(ChatColor.RED + "Error: Account is null. Please tell an admin if you see this error.");
+            return;
+        }
+        if (account.getPlayerIDs().contains(recipient.getUUID())) {
+            sender.sendMessage(ChatColor.RED + "You cannot give lives to a linked alt account.");
             return;
         }
 
