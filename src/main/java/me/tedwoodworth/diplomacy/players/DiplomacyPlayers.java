@@ -9,10 +9,7 @@ import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -22,6 +19,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -282,6 +280,56 @@ public class DiplomacyPlayers {
             var item = event.getItem();
             item.removeEnchantment(Enchantment.MENDING);
             event.setCancelled(true);
+        }
+
+        @EventHandler
+        private void onBlockFromTo(BlockFromToEvent event) {
+            if (event.getBlock().getType().equals(Material.DRAGON_EGG)) return;
+            var to = event.getToBlock().getLocation();
+            var toChunk = to.getChunk();
+
+            var adj = new Location(to.getWorld(), to.getX() + 1, to.getY(), to.getZ());
+            var adjChunk = adj.getChunk();
+            if (!toChunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(to.getWorld(), to.getX() - 1, to.getY(), to.getZ());
+            adjChunk = adj.getChunk();
+            if (!toChunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(to.getWorld(), to.getX(), to.getY(), to.getZ() + 1);
+            adjChunk = adj.getChunk();
+            if (!toChunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(to.getWorld(), to.getX(), to.getY(), to.getZ() - 1);
+            adjChunk = adj.getChunk();
+            if (!toChunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                }
+            }
         }
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
