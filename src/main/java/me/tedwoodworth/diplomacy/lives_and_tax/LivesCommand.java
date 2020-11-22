@@ -54,13 +54,13 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("giveLives") && args.length == 1) {
             List<String> players = new ArrayList<>();
             for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                players.add(player.getPlayer().getName());
+                players.add(player.getOfflinePlayer().getName());
             }
             return players;
         } else if (command.getName().equalsIgnoreCase("addLife") && args.length == 1) {
             List<String> players = new ArrayList<>();
             for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                players.add(player.getPlayer().getName());
+                players.add(player.getOfflinePlayer().getName());
             }
             return players;
         }
@@ -86,7 +86,7 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         for (var testUUID : account.getPlayerIDs()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
             testDiplomacyPlayer.setLives(account.getLives());
-            var player = testDiplomacyPlayer.getPlayer().getPlayer();
+            var player = testDiplomacyPlayer.getOfflinePlayer().getPlayer();
             if (player != null) {
                 player.sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
             }
@@ -171,10 +171,10 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
             label = " life.";
         }
 
-        sender.sendMessage(ChatColor.AQUA + "You have given " + recipient.getPlayer().getName() + " " + amount + label);
+        sender.sendMessage(ChatColor.AQUA + "You have given " + recipient.getOfflinePlayer().getName() + " " + amount + label);
 
-        if (recipient.getPlayer().isOnline()) {
-            recipient.getPlayer().getPlayer().sendMessage(ChatColor.AQUA + player.getName() + " has given you " + amount + label);
+        if (recipient.getOfflinePlayer().isOnline()) {
+            recipient.getOfflinePlayer().getPlayer().sendMessage(ChatColor.AQUA + player.getName() + " has given you " + amount + label);
         }
     }
 }

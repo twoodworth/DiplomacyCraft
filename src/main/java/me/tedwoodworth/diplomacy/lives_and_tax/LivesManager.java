@@ -12,7 +12,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -90,8 +89,8 @@ public class LivesManager {
             testDiplomacyPlayer.setLives(account.getLives());
             testDiplomacyPlayer.setJoinedToday(true);
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
-                if (testDiplomacyPlayer.getPlayer().getPlayer() != null) {
-                    testDiplomacyPlayer.getPlayer().getPlayer().sendMessage(ChatColor.AQUA + "You have gained 1 life for logging on today.");
+                if (testDiplomacyPlayer.getOfflinePlayer().getPlayer() != null) {
+                    testDiplomacyPlayer.getOfflinePlayer().getPlayer().sendMessage(ChatColor.AQUA + "You have gained 1 life for logging on today.");
                 }
             }, 100);
         }

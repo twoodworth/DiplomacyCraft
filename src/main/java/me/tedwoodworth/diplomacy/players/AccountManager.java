@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.players;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -87,8 +86,8 @@ public class AccountManager {
         }
         var player = DiplomacyPlayers.getInstance().get(uuid);
         player.setLives(20);
-        if (player.getPlayer().getPlayer() != null) {
-            player.getPlayer().getPlayer().sendMessage(ChatColor.AQUA + "Your account has been unlinked, you now have 20 lives.");
+        if (player.getOfflinePlayer().getPlayer() != null) {
+            player.getOfflinePlayer().getPlayer().sendMessage(ChatColor.AQUA + "Your account has been unlinked, you now have 20 lives.");
         }
         var nAccount = createAccount(uuid, null);
         accounts.add(nAccount);
@@ -198,7 +197,7 @@ public class AccountManager {
         for (var uuid : playerAccount.getPlayerIDs()) {
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
             diplomacyPlayer.setLives(playerAccount.getLives());
-            var player = diplomacyPlayer.getPlayer().getPlayer();
+            var player = diplomacyPlayer.getOfflinePlayer().getPlayer();
             if (player != null) {
                 player.sendMessage(ChatColor.BLUE + "Account has been merged with " + Bukkit.getOfflinePlayer(ipAccount.getMain()).getName() + ", you now have " + ipAccount.getLives() + " lives.");
             }

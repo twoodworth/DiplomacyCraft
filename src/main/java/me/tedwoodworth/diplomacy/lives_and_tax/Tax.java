@@ -26,16 +26,16 @@ public class Tax implements Runnable {
                     memberClassID = memberClass.getClassID();
                     tax = memberClass.getTax();
                 }
-                var offlinePlayer = member.getPlayer();
+                var offlinePlayer = member.getOfflinePlayer();
                 var player = offlinePlayer.getPlayer();
 
                 var economy = Diplomacy.getEconomy();
 
 
-                var memberBalance = economy.getBalance(member.getPlayer());
+                var memberBalance = economy.getBalance(member.getOfflinePlayer());
 
                 if (tax > memberBalance) {
-                    economy.withdrawPlayer(member.getPlayer(), memberBalance);
+                    economy.withdrawPlayer(member.getOfflinePlayer(), memberBalance);
                     nation.setBalance(nation.getBalance() + memberBalance);
 
                     if (memberClassID.equals("8")) {
@@ -51,9 +51,9 @@ public class Tax implements Runnable {
                                 player.sendMessage(ChatColor.RED + "You couldn't pay taxes and have been kicked from the nation.");
                             }
                             for (var testMember : nation.getMembers()) {
-                                var testPlayer = testMember.getPlayer().getPlayer();
+                                var testPlayer = testMember.getOfflinePlayer().getPlayer();
                                 if (testPlayer != null && !Objects.equals(testPlayer, player)) {
-                                    testPlayer.sendMessage(ChatColor.AQUA + member.getPlayer().getName() + " was kicked for not paying taxes.");
+                                    testPlayer.sendMessage(ChatColor.AQUA + member.getOfflinePlayer().getName() + " was kicked for not paying taxes.");
                                 }
                             }
                             nation.removeMember(member);
@@ -70,15 +70,15 @@ public class Tax implements Runnable {
                         }
 
                         for (var testMember : nation.getMembers()) {
-                            var testPlayer = testMember.getPlayer().getPlayer();
+                            var testPlayer = testMember.getOfflinePlayer().getPlayer();
                             if (testPlayer != null && !Objects.equals(testPlayer, player)) {
-                                testPlayer.sendMessage(ChatColor.AQUA + member.getPlayer().getName() + " was kicked for not paying taxes.");
+                                testPlayer.sendMessage(ChatColor.AQUA + member.getOfflinePlayer().getName() + " was kicked for not paying taxes.");
                             }
                         }
                         nation.removeMember(member);
                     }
                 } else {
-                    economy.withdrawPlayer(member.getPlayer(), tax);
+                    economy.withdrawPlayer(member.getOfflinePlayer(), tax);
                     nation.setBalance(nation.getBalance() + tax);
                     if (player != null) {
                         player.sendMessage(ChatColor.GREEN + "You have been taxed \u00A4" + formatter.format(tax));

@@ -34,6 +34,20 @@ public class DiplomacyPlayer {
         return Instant.now().getEpochSecond() - Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
     }
 
+    public String getRank() {
+        var rank = configSection.getString("Rank");
+        if (rank == null) {
+            configSection.set("Rank", "None");
+            return "None";
+        } else {
+            return rank;
+        }
+    }
+
+    public void setRank(String rank) {
+        configSection.set("Rank", rank);
+    }
+
     public String getDateJoined() {
         var joined = Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
         var time = new java.util.Date(joined);
@@ -124,7 +138,7 @@ public class DiplomacyPlayer {
         return Objects.hashCode(uuid);
     }
 
-    public OfflinePlayer getPlayer() {
+    public OfflinePlayer getOfflinePlayer() {
         var player = Bukkit.getOfflinePlayer(uuid);
         Validate.notNull(player);
         return player;

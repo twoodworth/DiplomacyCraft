@@ -32,7 +32,7 @@ public class AreaCommon {
             if (strLeaders.length() > 0) {
                 strLeaders.append(", ");
             }
-            strLeaders.append(leader.getPlayer().getName());
+            strLeaders.append(leader.getOfflinePlayer().getName());
         }
         return strLeaders.toString();
     }
@@ -43,7 +43,7 @@ public class AreaCommon {
             if (strMembers.length() > 0) {
                 strMembers.append(", ");
             }
-            strMembers.append(member.getPlayer().getName());
+            strMembers.append(member.getOfflinePlayer().getName());
         }
         return strMembers.toString();
     }

@@ -390,7 +390,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     for (var player : nation.getMembers()) {
                         var permissions = nation.getMemberClass(player).getPermissions();
                         if (permissions.get("CanBeKicked")) {
-                            players.add(player.getPlayer().getName());
+                            players.add(player.getOfflinePlayer().getName());
                         }
                     }
                 } else {
@@ -550,9 +550,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 .create();
 
         for (var member : nation.getMembers()) {
-            if (member.getPlayer().isOnline()) {
+            if (member.getOfflinePlayer().isOnline()) {
 
-                member.getPlayer().getPlayer().spigot().sendMessage(message);
+                member.getOfflinePlayer().getPlayer().spigot().sendMessage(message);
             }
         }
 
@@ -1882,7 +1882,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         var otherNation = Nations.getInstance().get(otherDiplomacyPlayer);
-        var otherPlayer = otherDiplomacyPlayer.getPlayer();
+        var otherPlayer = otherDiplomacyPlayer.getOfflinePlayer();
 
         if (!Objects.equals(otherNation, senderNation)) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is not a member of your nation.");
@@ -2009,7 +2009,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var outlaw = diplomacyOutlaw.getPlayer();
+        var outlaw = diplomacyOutlaw.getOfflinePlayer();
 
         if (nation.getOutlaws().contains(outlaw.getUniqueId())) {
             sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is already outlawed.");
@@ -2074,7 +2074,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
         }
 
-        var outlaw = diplomacyOutlaw.getPlayer();
+        var outlaw = diplomacyOutlaw.getOfflinePlayer();
 
         if (!nation.getOutlaws().contains(Objects.requireNonNull(outlaw).getUniqueId())) {
             sender.sendMessage(ChatColor.DARK_RED + outlaw.getName() + " is not outlawed.");

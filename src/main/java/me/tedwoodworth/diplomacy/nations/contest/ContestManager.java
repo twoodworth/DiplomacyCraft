@@ -9,7 +9,6 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -176,13 +175,13 @@ public class ContestManager {
 
     private boolean defenderIsVisible(HashSet<DiplomacyPlayer> attackers, DiplomacyPlayer diplomacyDefender) {
         //D to A
-        var defender = diplomacyDefender.getPlayer().getPlayer();
+        var defender = diplomacyDefender.getOfflinePlayer().getPlayer();
         if (defender == null) {
             return false;
         }
         var dLocation = defender.getEyeLocation();
         for (var diplomacyAttacker : attackers) {
-            var attacker = diplomacyAttacker.getPlayer().getPlayer();
+            var attacker = diplomacyAttacker.getOfflinePlayer().getPlayer();
             if (attacker == null) {
                 continue;
             }

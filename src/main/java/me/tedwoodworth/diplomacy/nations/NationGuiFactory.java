@@ -776,7 +776,7 @@ public class NationGuiFactory {
         List<OfflinePlayer> members = new ArrayList<>();
 
         for (var member : membersStr) {
-            members.add(member.getPlayer());
+            members.add(member.getOfflinePlayer());
         }
 
 
@@ -2631,7 +2631,7 @@ public class NationGuiFactory {
                 memberHead,
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = createPlayer(player.getPlayer());
+                    var nGui = createPlayer(player.getOfflinePlayer());
                     nGui.show(clicker);
                     return true;
                 },

@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.nations;
 
 import com.google.common.collect.ImmutableMap;
-import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -238,12 +237,12 @@ public class Nation {
         var classID = nationClass.getClassID();
         configSection.set("Members." + uuid.toString(), classID);
         for (var otherDiplomacyPlayer : this.getMembers()) {
-            var player = otherDiplomacyPlayer.getPlayer();
+            var player = otherDiplomacyPlayer.getOfflinePlayer();
             if (player.isOnline()) {
                 if (Objects.equals(otherDiplomacyPlayer, diplomacyPlayer)) {
                     player.getPlayer().sendMessage(ChatColor.AQUA + "Your class has been set to " + nationClass.getName() + ".");
                 } else {
-                    player.getPlayer().sendMessage(ChatColor.GREEN + diplomacyPlayer.getPlayer().getName() + ChatColor.AQUA + " had their class set to " + nationClass.getName() + ".");
+                    player.getPlayer().sendMessage(ChatColor.GREEN + diplomacyPlayer.getOfflinePlayer().getName() + ChatColor.AQUA + " had their class set to " + nationClass.getName() + ".");
                 }
             }
         }

@@ -1,6 +1,5 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import me.tedwoodworth.diplomacy.players.AccountManager;
@@ -14,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class PlayerCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
@@ -65,7 +63,14 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + playerUsage);
             }
-        } else {
+        } else if (args[0].equalsIgnoreCase("setRank")) {
+            if (args.length == 3) {
+                playerSetRank(sender, args[1], args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + playerUsage);
+            }
+        }
+        else {
             sender.sendMessage(incorrectUsage + playerUsage);
         }
         return true;
@@ -125,7 +130,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
 
 
-        var gui = NationGuiFactory.createPlayer(player.getPlayer());
+        var gui = NationGuiFactory.createPlayer(player.getOfflinePlayer());
         gui.show((Player) sender);
     }
 
@@ -232,5 +237,48 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             testPlayer.sendMessage(ChatColor.DARK_GREEN + "Main account has been set to " + Bukkit.getOfflinePlayer(newMain).getName());
         }
         ScoreboardManager.getInstance().updateScoreboards();
+    }
+    
+    private void playerSetRank(CommandSender sender, String strPlayer, String rank) {
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
+            return;
+        }
+        
+        var player = DiplomacyPlayers.getInstance().get(strPlayer);
+        if (player == null) {
+            sender.sendMessage(ChatColor.RED + "Player not found.");
+            return;
+        }
+
+        if (player.getRank().equalsIgnoreCase(rank)) {
+            sender.sendMessage(ChatColor.RED + "Rank already set to this.");
+            return;
+        }
+        if (rank.equalsIgnoreCase("Owner")) player.setRank("Owner");
+        else if (rank.equalsIgnoreCase("Dev")) player.setRank("Dev");
+        else if (rank.equalsIgnoreCase("Admin")) player.setRank("Admin");
+        else if (rank.equalsIgnoreCase("Mod")) player.setRank("Mod");
+        else if (rank.equalsIgnoreCase("None")) player.setRank("None");
+        else if (rank.equalsIgnoreCase("TrialMod")) player.setRank("TrialMod");
+        else {
+            sender.sendMessage(ChatColor.RED + "Unknown Rank");
+            return;
+        }
+        var offlinePlayer = player.getOfflinePlayer();
+        String name;
+        if (offlinePlayer != null) {
+            name = offlinePlayer.getName();
+        } else {
+            name = strPlayer;
+        }
+
+        sender.sendMessage(ChatColor.AQUA + name + "'s rank has been set to " + player.getRank());
+        ScoreboardManager.getInstance().updateScoreboards();
+        String r;
+        if (player.getRank().equalsIgnoreCase("None")) r = "default";
+        else r = rank;
+
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + strPlayer + " parent set " + r);
     }
 }

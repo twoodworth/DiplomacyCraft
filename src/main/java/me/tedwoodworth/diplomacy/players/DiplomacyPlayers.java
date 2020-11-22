@@ -77,7 +77,7 @@ public class DiplomacyPlayers {
 
     public @Nullable DiplomacyPlayer get(String strPlayer) {
         for (var player : this.getPlayers()) {
-            var name = player.getPlayer().getName();
+            var name = player.getOfflinePlayer().getName();
             if (name == null) {
                 continue;
             }
@@ -666,6 +666,11 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             event.getPlayer().getInventory().addItem(getGuideBook());
+        }
+
+        @EventHandler
+        private void onPlayerCommandSend(PlayerCommandPreprocessEvent event) {
+
         }
 
         @EventHandler(priority = EventPriority.HIGHEST)

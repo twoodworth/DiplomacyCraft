@@ -717,7 +717,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             otherCanLeadAllGroups = otherNation.getMemberClass(otherDiplomacyPlayer).getPermissions().get("CanLeadAllGroups");
         }
 
-        var otherPlayer = otherDiplomacyPlayer.getPlayer();
+        var otherPlayer = otherDiplomacyPlayer.getOfflinePlayer();
 
         if (sameNation && otherCanLeadAllGroups) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " is already a leader of all " + group.getNation().getName() + " groups.");
@@ -848,7 +848,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             otherCanLeadAllGroups = otherNation.getMemberClass(otherDiplomacyPlayer).getPermissions().get("CanLeadAllGroups");
         }
 
-        var otherPlayer = otherDiplomacyPlayer.getPlayer();
+        var otherPlayer = otherDiplomacyPlayer.getOfflinePlayer();
 
         if (sameNation && otherCanLeadAllGroups) {
             sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getName() + " cannot be kicked from that group.");
