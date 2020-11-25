@@ -21,8 +21,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -402,6 +406,36 @@ public class DiplomacyPlayers {
             event.setCancelled(true);
         }
 
+        @EventHandler
+        private void onEntityDeath(EntityDeathEvent event) {
+            event.setDroppedExp(0);
+        }
+
+        @EventHandler
+        private void onFurnaceExtract(FurnaceExtractEvent event) {
+            event.setExpToDrop(0);
+        }
+
+        @EventHandler
+        private void onEntityBreed(EntityBreedEvent event) {
+            event.setExperience(0);
+        }
+
+        private void onPlayerFish(PlayerFishEvent event) {
+            event.setExpToDrop(0);
+        }
+
+        @EventHandler
+        private void onPlayerExpChange(PlayerExpChangeEvent event) {
+            event.setAmount(0);
+            event.getPlayer().setExp(0);
+        }
+
+        @EventHandler
+        private void onExpBottle(ExpBottleEvent event) {
+            event.setExperience(0);
+        }
+
         @EventHandler(ignoreCancelled = true)
         private void onPlayerInteract(PlayerInteractEvent event) {
             if (event.getClickedBlock() == null) {
@@ -409,6 +443,14 @@ public class DiplomacyPlayers {
             }
 
             var block = event.getClickedBlock();
+
+
+            // Disable using enchanting tables
+            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.ENCHANTING_TABLE)) {
+                event.setCancelled(true);
+                return;
+            }
+
             var chunk = event.getClickedBlock().getLocation().getChunk();
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
             var nation = diplomacyChunk.getNation();
@@ -499,6 +541,12 @@ public class DiplomacyPlayers {
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
             var nation = diplomacyChunk.getNation();
 
+            // Disable villager trades/interaction
+            if (entity instanceof Villager) {
+                event.setCancelled(true);
+                return;
+            }
+
             if (nation == null) {
                 return;
             }
@@ -587,10 +635,12 @@ public class DiplomacyPlayers {
 
         @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
+            // Cancel xp drop
+            event.setExpToDrop(0);
+
             var chunk = event.getBlock().getLocation().getChunk();
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
             var nation = diplomacyChunk.getNation();
-
             if (nation == null) return;
 
             var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
@@ -617,6 +667,8 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
+            if (player.getExp() != 0) player.setExp(0);
+
             var account = AccountManager.getInstance().getAccount(player.getUniqueId());
             var main = account.getMain();
             if (!main.equals(player.getUniqueId())) {
