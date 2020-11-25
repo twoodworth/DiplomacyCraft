@@ -447,6 +447,7 @@ public class DiplomacyPlayers {
 
             // Disable using enchanting tables
             if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.ENCHANTING_TABLE)) {
+                event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (view #enchanting-guide in /discord)");
                 event.setCancelled(true);
                 return;
             }
@@ -543,6 +544,7 @@ public class DiplomacyPlayers {
 
             // Disable villager trades/interaction
             if (entity instanceof Villager) {
+                event.getPlayer().sendMessage(ChatColor.RED + "Villager trading is currently disabled.");
                 event.setCancelled(true);
                 return;
             }
@@ -667,7 +669,8 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
-            if (player.getExp() != 0) player.setExp(0);
+            player.setTotalExperience(0);
+            player.setLevel(0);
 
             var account = AccountManager.getInstance().getAccount(player.getUniqueId());
             var main = account.getMain();
