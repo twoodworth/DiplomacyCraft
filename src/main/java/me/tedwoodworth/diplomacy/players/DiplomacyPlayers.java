@@ -27,6 +27,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -372,6 +373,16 @@ public class DiplomacyPlayers {
                         }
                     }
                 }
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        private void onInventoryClick(InventoryClickEvent event) {
+            var item = event.getCurrentItem();
+            if (item != null && item.getType().equals(Material.ENCHANTED_BOOK)) {
+                event.setCancelled(true);
+                event.setCurrentItem(new ItemStack(Material.AIR));
+                event.getWhoClicked().sendMessage(ChatColor.RED + "Enchanted books are disabled, and have been removed from your inventory.");
             }
         }
 
