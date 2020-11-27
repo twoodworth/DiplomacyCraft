@@ -71,6 +71,48 @@ public class Tools {
 
     }
 
+    public ItemStack[] dragSplitStackPurities(ItemStack itemStack, int slots) {
+        var meta = itemStack.getItemMeta();
+        var amount = itemStack.getAmount();
+        var splitSize = amount / slots;
+        var leftover = amount % slots;
+        var purities = getPurity(itemStack);
+
+        var stacks = new ItemStack[slots + 1];
+        int h = 0;
+        for (int i = 0; i < slots; i++) {
+            var stack = new ItemStack(itemStack.getType(), splitSize);
+            var stackPurities = new float[splitSize];
+
+            if (splitSize >= 0) System.arraycopy(purities, h, stackPurities, 0, splitSize);
+            h += splitSize;
+
+            setPurity(stack, stackPurities);
+            var stackMeta = stack.getItemMeta();
+            stackMeta.setDisplayName(meta.getDisplayName());
+            stackMeta.setLocalizedName(meta.getLocalizedName());
+            stackMeta.setLore(generatePurityLure(stackPurities));
+            stack.setItemMeta(stackMeta);
+            stacks[i] = stack;
+        }
+
+        if (leftover == 0) {
+            stacks[slots] = new ItemStack(Material.AIR);
+        } else {
+            var stack = new ItemStack(itemStack.getType(), leftover);
+            var stackPurities = new float[leftover];
+            if (purities.length - h >= 0) System.arraycopy(purities, h, stackPurities, 0, purities.length - h);
+            setPurity(stack, stackPurities);
+            var stackMeta = stack.getItemMeta();
+            stackMeta.setDisplayName(meta.getDisplayName());
+            stackMeta.setLocalizedName(meta.getLocalizedName());
+            stackMeta.setLore(generatePurityLure(stackPurities));
+            stack.setItemMeta(stackMeta);
+            stacks[slots] = stack;
+        }
+        return stacks;
+    }
+
     public ItemStack[] splitStackPurities(ItemStack itemStack) {
         var meta = itemStack.getItemMeta();
         var container = meta.getPersistentDataContainer();
@@ -348,19 +390,20 @@ public class Tools {
         return meta.getLore() != null && meta.getLore().get(0).equals(purityLore);
     }
 
-    private double[] getPurity(ItemStack item) {
-        if (!hasPurity(item)) {
-            throw new NullPointerException("Item has no purity.");
-        }
+    private void setPurity(ItemStack item, float[] purities) {
+        if (!isMetal(item)) throw new IllegalArgumentException("Item is not a metal.");
+        var meta = item.getItemMeta();
+        var container = Objects.requireNonNull(meta).getPersistentDataContainer();
+        container.set(purityKey, FloatArrayPersistentDataType.instance, purities);
+        item.setItemMeta(meta);
+    }
+
+    private float[] getPurity(ItemStack item) {
+        if (!isMetal(item)) throw new IllegalArgumentException("Item is not a metal.");
+        if (!hasPurity(item)) generatePurity(item, 1.0);
 
         var container = Objects.requireNonNull(item.getItemMeta()).getPersistentDataContainer();
-        var data = Objects.requireNonNull(container.get(purityKey, PersistentDataType.STRING));
-        var strPurities = data.split("\\|");
-        var purities = new double[strPurities.length];
-        for (int i = 0; i < strPurities.length; i++) {
-            purities[i] = Double.parseDouble(strPurities[i]);
-        }
-        return purities;
+        return Objects.requireNonNull(container.get(purityKey, FloatArrayPersistentDataType.instance));
     }
 
     private boolean isHammer(ItemStack item) {
@@ -454,8 +497,11 @@ public class Tools {
                         }
                     }
                     if (item != null && item.getType().equals(Material.CHAINMAIL_HELMET)) {
-                        var meta = result.getItemMeta();
-                        ((Damageable) meta).setDamage(((Damageable) item).getDamage());
+                        if (result != null && result.getType() == Material.CHAINMAIL_HELMET) {
+                            var meta = result.getItemMeta();
+                            ((Damageable) meta).setDamage(((Damageable) item.getItemMeta()).getDamage());
+                            result.setItemMeta(meta);
+                        }
                     }
                 }
             }
@@ -673,7 +719,7 @@ public class Tools {
 
             // magnet
             if (item.getAmount() == 1 && hasPurity(item)) {
-                if (getPurity(item)[0] <= 0.00003511) {
+                if (getPurity(item)[0] <= 0.00003511f) {
                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.hasBlock() && event.getClickedBlock().getType().equals(Material.LODESTONE)) {
                         if (item.getType().equals(Material.IRON_INGOT) || item.getType().equals(Material.NETHERITE_INGOT)) {
                             var meta = item.getItemMeta();
@@ -710,6 +756,71 @@ public class Tools {
         }
 
         @EventHandler
+        private void onInventoryDrag(InventoryDragEvent event) {
+            var type = event.getType();
+            if (type == DragType.EVEN) {
+                var slots = event.getRawSlots();
+                var items = event.getOldCursor();
+                if (!isMetal(items)) return;
+                var player = event.getWhoClicked();
+                event.setCancelled(true);
+                var newStacks = dragSplitStackPurities(items, slots.size());
+                var cursor = newStacks[slots.size()];
+                int i = 0;
+                for (var num : slots) {
+                    var view = event.getView();
+                    var slotItem = view.getItem(num);
+
+                    if (slotItem != null && slotItem.getType() != Material.AIR) {
+                        var combined = getCombinedPurity(slotItem, newStacks[i]);
+                        view.setItem(num, combined[0]);
+
+                        if (combined.length > 1) {
+                            if (cursor.getType() == Material.AIR) {
+                                cursor = combined[1];
+                            } else {
+                                cursor = getCombinedPurity(combined[1], cursor)[0];
+                            }
+                        }
+                    } else {
+                        view.setItem(num, newStacks[i]);
+                    }
+                    i++;
+                }
+                var item = new ItemStack(cursor);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.setItemOnCursor(item), 1L);
+            } else if (type == DragType.SINGLE) {
+                var cursorItem = event.getOldCursor();
+                if (!isMetal(cursorItem)) return;
+                var slots = event.getRawSlots();
+                var view = event.getView();
+                var player = event.getWhoClicked();
+                event.setCancelled(true);
+                for (var num : slots) {
+                    var item = view.getItem(num);
+                    if (!(item != null && item.getAmount() == 64)) {
+                        ItemStack[] dropped;
+                        if (cursorItem.getAmount() > 1) {
+                            dropped = dropItemFromPurity(cursorItem);
+                        } else {
+                            dropped = new ItemStack[2];
+                            dropped[0] = new ItemStack(Material.AIR);
+                            dropped[1] = new ItemStack(cursorItem);
+                        }
+                        if (item == null || item.getType() == Material.AIR) {
+                            view.setItem(num, dropped[1]);
+                        } else {
+                            view.setItem(num, getCombinedPurity(item, dropped[1])[0]);
+                        }
+                        cursorItem = dropped[0];
+                    }
+                }
+                var item = new ItemStack(cursorItem);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.setItemOnCursor(item), 1L);
+            }
+        }
+
+        @EventHandler
         private void onInventoryClick(InventoryClickEvent event) {
             var currentItem = event.getCurrentItem();
             if (currentItem != null && isMetal(currentItem) && !hasPurity(currentItem))
@@ -723,19 +834,20 @@ public class Tools {
             switch (click) {
                 case DOUBLE_CLICK -> {
                     if (cursorItem != null && isMetal(cursorItem)) {
-                        for (var content : event.getInventory().getContents()) {
-                            if (cursorItem.getType() == content.getType() && isMetal(content)) {
-                                if (!hasPurity(content)) generatePurity(content, 1.0);
-                                var nStack = getCombinedPurity(cursorItem, content);
+                        var view = event.getView();
+                        var slots = view.countSlots();
+                        for (int i = 0; i < slots; i++) {
+                            var item = view.getItem(i);
+                            if (item != null && item.getType() == cursorItem.getType() && isMetal(item)) {
+                                var nStack = getCombinedPurity(cursorItem, item);
                                 cursorItem.setAmount(nStack[0].getAmount());
                                 cursorItem.setItemMeta(nStack[0].getItemMeta());
 
                                 if (nStack.length > 1) {
-                                    content.setAmount(nStack[1].getAmount());
-                                    content.setItemMeta(nStack[1].getItemMeta());
+                                    view.setItem(i, nStack[1]);
                                     break;
                                 } else {
-                                    content.setType(Material.AIR);
+                                    view.setItem(i, new ItemStack(Material.AIR));
                                 }
                             }
                         }
@@ -803,10 +915,37 @@ public class Tools {
                 }
                 case SHIFT_LEFT, SHIFT_RIGHT -> {
                     if (currentItem != null && isMetal(currentItem)) {
-                        //TODO
+                        var nCurrentItem = new ItemStack(currentItem);
+                        event.setCurrentItem(new ItemStack(Material.AIR));
+                        var view = event.getView();
+                        var size = view.countSlots();
+                        for (int i = 0; i < size; i++) {
+                            var slotItem = view.getItem(i);
+                            if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem)) {
+                                var combined = getCombinedPurity(slotItem, nCurrentItem);
+                                view.setItem(i, combined[0]);
+                                if (combined.length > 1) {
+                                    nCurrentItem = combined[1];
+                                } else {
+                                    event.setCancelled(true);
+                                    return;
+                                }
+                            }
+                        }
+                        for (int i = 0; i < size; i++) {
+                            var slotItem = view.getItem(i);
+                            if (slotItem == null || slotItem.getType() == Material.AIR) {
+                                view.setItem(i, nCurrentItem);
+                                event.setCancelled(true);
+                                return;
+                            }
+                        }
+                        event.setCancelled(true);
+                        return;
                     }
                 }
             }
+
             var inventory = event.getInventory();
             if (inventory instanceof FurnaceInventory) {
                 var cursor = event.getCursor();
