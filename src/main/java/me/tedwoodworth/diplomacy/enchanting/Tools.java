@@ -250,16 +250,16 @@ public class Tools {
                 loreBuilder = new StringBuilder();
             } else if (i != 0) loreBuilder.append(" ");
 
-            if (purities[i] < 0.00000043f) loreBuilder.append(p10);
-            else if (purities[i] < 0.00000187f) loreBuilder.append(p9);
-            else if (purities[i] < 0.00000811f) loreBuilder.append(p8);
-            else if (purities[i] < 0.00003511f) loreBuilder.append(p7);
-            else if (purities[i] < 0.00015199f) loreBuilder.append(p6);
-            else if (purities[i] < 0.00065793f) loreBuilder.append(p5);
-            else if (purities[i] < 0.00284804f) loreBuilder.append(p4);
-            else if (purities[i] < 0.01232847f) loreBuilder.append(p3);
-            else if (purities[i] < 0.05336699f) loreBuilder.append(p2);
-            else if (purities[i] < 0.23101297f) loreBuilder.append(p1);
+            if (purities[i] < 0.000001f) loreBuilder.append(p10);
+            else if (purities[i] < 0.00000398f) loreBuilder.append(p9);
+            else if (purities[i] < 0.00001585f) loreBuilder.append(p8);
+            else if (purities[i] < 0.00006310f) loreBuilder.append(p7);
+            else if (purities[i] < 0.00025119f) loreBuilder.append(p6);
+            else if (purities[i] < 0.00100000f) loreBuilder.append(p5);
+            else if (purities[i] < 0.00398107f) loreBuilder.append(p4);
+            else if (purities[i] < 0.01584893f) loreBuilder.append(p3);
+            else if (purities[i] < 0.06309573f) loreBuilder.append(p2);
+            else if (purities[i] < 0.25118864f) loreBuilder.append(p1);
             else loreBuilder.append(p0);
 
             if (i == purities.length - 1) lore.add(loreBuilder.toString());
