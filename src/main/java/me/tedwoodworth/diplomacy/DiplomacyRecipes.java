@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.enchanting.Tools;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.*;
 
 import java.util.ArrayList;
@@ -11,10 +12,16 @@ import java.util.Arrays;
 
 public class DiplomacyRecipes {
     private static DiplomacyRecipes instance = null;
-    public static String NEW_LORE = "New";
-    public static String CHISEL_LORE = ChatColor.BLUE + "Chisel";
-    public static String KNIFE_LORE = ChatColor.BLUE + "Hunting Knife";
-    public static String SAW_LORE = ChatColor.BLUE + "Saw";
+    public String NEW_LORE = "New";
+    public String CHISEL_LORE = ChatColor.BLUE + "Chisel";
+    public String KNIFE_LORE = ChatColor.BLUE + "Hunting Knife";
+    public String SAW_LORE = ChatColor.BLUE + "Saw";
+    public String IRON_DUST_LORE = ChatColor.BLUE + "Iron Dust";
+    public String GOLD_DUST_LORE = ChatColor.BLUE + "Gold Dust";
+    public String NETHERITE_DUST_LORE = ChatColor.BLUE + "Ancient Dust";
+    public String NETHERITE_NUGGET_LORE = ChatColor.BLUE + "Ancient Nugget";
+    public String SIFTER_LORE = ChatColor.BLUE + "Sifter";
+    public String MAGNET_LORE = ChatColor.BLUE + "Magnet";
 
     public static DiplomacyRecipes getInstance() {
         if (instance == null) {
@@ -270,6 +277,108 @@ public class DiplomacyRecipes {
         chainBootsR.shape("N N", "N N");
         chainBootsR.setIngredient('N', Material.IRON_NUGGET);
         Diplomacy.getInstance().getServer().addRecipe(chainBootsR);
+
+
+        // Metal Dust
+        FurnaceRecipe ironNugget = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "iron_nugget"),
+                new ItemStack(Material.IRON_NUGGET),
+                Material.SUGAR, 0, 200);
+        Diplomacy.getInstance().getServer().addRecipe(ironNugget);
+
+        FurnaceRecipe goldNugget = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "gold_nugget"),
+                new ItemStack(Material.GOLD_NUGGET),
+                Material.GLOWSTONE_DUST, 0, 200);
+        Diplomacy.getInstance().getServer().addRecipe(goldNugget);
+
+        var ancientNugget = new ItemStack(Material.FERMENTED_SPIDER_EYE);
+        lore = new ArrayList<>();
+        lore.add(NETHERITE_NUGGET_LORE);
+        meta = ancientNugget.getItemMeta();
+        meta.setDisplayName(ChatColor.RESET + "Ancient Nugget");
+        meta.setLocalizedName("Ancient Nugget");
+        meta.setLore(lore);
+        ancientNugget.setItemMeta(meta);
+
+        FurnaceRecipe ancientNuggetR = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "ancient_nugget"),
+                ancientNugget,
+                Material.REDSTONE, 0, 200);
+        Diplomacy.getInstance().getServer().addRecipe(ancientNuggetR);
+
+        var netheriteScrap = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_scrap"), new ItemStack(Material.NETHERITE_SCRAP));
+        netheriteScrap.shape("NNN", "NNN", "NNN");
+        netheriteScrap.setIngredient('N', Material.FERMENTED_SPIDER_EYE);
+        Diplomacy.getInstance().getServer().addRecipe(netheriteScrap);
+
+
+        ancientNugget.setAmount(9);
+        var ancientNugget2 = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "ancient_nugget2"), ancientNugget);
+        ancientNugget2.shape("N");
+        ancientNugget2.setIngredient('N', Material.NETHERITE_SCRAP);
+        Diplomacy.getInstance().getServer().addRecipe(ancientNugget2);
+
+
+        // Sifter
+        var sifterLore = new ArrayList<String>();
+        sifterLore.add(SIFTER_LORE);
+        var sifter = new ItemStack(Material.CHAINMAIL_HELMET);
+        meta = sifter.getItemMeta();
+        meta.setDisplayName(ChatColor.RESET + "Wooden Sifter");
+        meta.setLocalizedName("Wooden Sifter");
+        meta.setLore(sifterLore);
+        sifter.setItemMeta(meta);
+        sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 1);
+
+        var woodenSifter = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "wooden_sifter"), sifter);
+        woodenSifter.shape("NNN", "NNN", "NNN");
+        woodenSifter.setIngredient('N', Material.STICK);
+        Diplomacy.getInstance().getServer().addRecipe(woodenSifter);
+
+        meta.setDisplayName(ChatColor.RESET + "String Sifter");
+        meta.setLocalizedName("String Sifter");
+        sifter.setItemMeta(meta);
+        sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 2);
+        var stringSifter = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "string_sifter"), sifter);
+        stringSifter.shape("NSN", "NSN", "NSN");
+        stringSifter.setIngredient('N', Material.STICK);
+        stringSifter.setIngredient('S', Material.STRING);
+        Diplomacy.getInstance().getServer().addRecipe(stringSifter);
+
+        meta.setDisplayName(ChatColor.RESET + "Chain Sifter");
+        meta.setLocalizedName("Chain Sifter");
+        sifter.setItemMeta(meta);
+        sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 3);
+        sifter.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        var chainSifter = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "chain_sifter"), sifter);
+        chainSifter.shape("NNN", "NSN", "NNN");
+        chainSifter.setIngredient('N', Material.IRON_NUGGET);
+        chainSifter.setIngredient('S', Material.IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(chainSifter);
+
+        meta.setDisplayName(ChatColor.RESET + "Redstone Sifter");
+        meta.setLocalizedName("Redstone Sifter");
+        sifter.setItemMeta(meta);
+        sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 4);
+        sifter.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        var redstoneSifter = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "redstone_sifter"), sifter);
+        redstoneSifter.shape(" R ", "RSR", " R ");
+        redstoneSifter.setIngredient('R', Material.REDSTONE);
+        redstoneSifter.setIngredient('S', Material.CHAINMAIL_HELMET);
+        Diplomacy.getInstance().getServer().addRecipe(redstoneSifter);
+
+
+        meta.setDisplayName(ChatColor.RESET + "Netherite Sifter");
+        meta.setLocalizedName("Netherite Sifter");
+        sifter.setItemMeta(meta);
+        sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 7);
+        sifter.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+        var netheriteSifter = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_sifter"), sifter);
+        netheriteSifter.shape("NNN", "NSN", "NNN");
+        netheriteSifter.setIngredient('N', Material.IRON_NUGGET);
+        netheriteSifter.setIngredient('S', Material.NETHERITE_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(netheriteSifter);
+
+
+
 
 
     }
