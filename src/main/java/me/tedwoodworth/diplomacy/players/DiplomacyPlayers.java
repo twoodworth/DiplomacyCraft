@@ -455,6 +455,12 @@ public class DiplomacyPlayers {
 
             var block = event.getClickedBlock();
 
+            // Disable using beacons
+            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.BEACON)) {
+                event.getPlayer().sendMessage(ChatColor.RED + "Beacons are currently disabled.");
+                event.setCancelled(true);
+                return;
+            }
 
             // Disable using enchanting tables
             if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.ENCHANTING_TABLE)) {
@@ -556,6 +562,13 @@ public class DiplomacyPlayers {
             // Disable villager trades/interaction
             if (entity instanceof Villager) {
                 event.getPlayer().sendMessage(ChatColor.RED + "Villager trading is currently disabled.");
+                event.setCancelled(true);
+                return;
+            }
+
+            // Disable adding chests to horses/donkeys/etc.
+            if (entity instanceof ChestedHorse && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.CHEST)) {
+                event.getPlayer().sendMessage(ChatColor.RED + "Equipping chests to donkeys/mules is disabled.");
                 event.setCancelled(true);
                 return;
             }

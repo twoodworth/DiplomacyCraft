@@ -5,7 +5,9 @@ import me.tedwoodworth.diplomacy.DiplomacyRecipes;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import org.bukkit.*;
 import org.bukkit.block.Furnace;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,9 +16,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -57,6 +57,8 @@ public class Tools {
     }
 
     public boolean isMetal(ItemStack itemStack) {
+        if (itemStack == null) return false;
+
         var type = itemStack.getType();
         return type == Material.GOLD_NUGGET ||
                 type == Material.GOLD_BLOCK ||
@@ -395,6 +397,7 @@ public class Tools {
         var meta = item.getItemMeta();
         var container = Objects.requireNonNull(meta).getPersistentDataContainer();
         container.set(purityKey, FloatArrayPersistentDataType.instance, purities);
+        meta.setLore(generatePurityLure(purities));
         item.setItemMeta(meta);
     }
 
@@ -465,7 +468,7 @@ public class Tools {
                 if (unbreaking > 0) result.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
             }
 
-            if (isNew(result)) {
+            if (isNew(result) && !isMetal(result)) {
                 var meta = result.getItemMeta();
                 if (meta != null && meta.getLore() != null) {
                     var lore = meta.getLore();
@@ -504,6 +507,28 @@ public class Tools {
                         }
                     }
                 }
+            }
+
+            // Metal / purities
+            if (isMetal(result)) {
+                var total = 0.0f;
+                var count = 0;
+
+                for (var item : inventory.getMatrix()) {
+                    if (isMetal(item)) {
+                        count++;
+                        total += getPurity(item)[0];
+                    }
+                }
+
+                var purity = total / count;
+
+                var purities = new float[result.getAmount()];
+                for (int i = 0; i < purities.length; i++) {
+                    purities[i] = purity;
+                }
+                setPurity(result, purities);
+                event.getInventory().setResult(result);
             }
         }
 
@@ -822,6 +847,7 @@ public class Tools {
 
         @EventHandler
         private void onInventoryClick(InventoryClickEvent event) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "broadcast " + event.getRawSlot());  // TODO remove
             var currentItem = event.getCurrentItem();
             if (currentItem != null && isMetal(currentItem) && !hasPurity(currentItem))
                 generatePurity(currentItem, 1.0);
@@ -829,14 +855,77 @@ public class Tools {
             var cursorItem = event.getCursor();
             if (cursorItem != null && isMetal(cursorItem) && !hasPurity(cursorItem)) generatePurity(cursorItem, 1.0);
 
+            var view = event.getView();
+            if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT &&
+                    view.getItem(0) != null &&
+                    view.getItem(0).getType() != Material.AIR &&
+                    (view.getTopInventory().getType() == InventoryType.WORKBENCH ||
+                            view.getTopInventory().getType() == InventoryType.CRAFTING ||
+                            view.getTopInventory().getType() == InventoryType.ANVIL)) {
+                var usesMetal = false;
+                var slots = view.countSlots() - 5;
+                var min = 64;
+                for (int i = 0; i < slots; i++) {
+                    var item = view.getItem(i);
+                    if (view.getSlotType(i) == InventoryType.SlotType.CRAFTING
+                            && item != null && isMetal(item)) {
+                        usesMetal = true;
+                    }
+                    if (item != null)
+                        min = Math.min(min, item.getAmount());
+                }
+                if (!usesMetal) return;
+                if (cursorItem != null && cursorItem.getType() != Material.AIR && !event.isShiftClick()) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                for (int i = 0; i < slots; i++) {
+                    if (view.getSlotType(i) == InventoryType.SlotType.CRAFTING) {
+                        var item = view.getItem(i);
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        if (isMetal(item)) {
+                            if (view.getBottomInventory().firstEmpty() == -1
+                                    && event.isShiftClick()) {
+                                event.setCancelled(true);
+                                return;
+                            }
+                            if (item.getAmount() > min) {
+                                int num = i;
+                                if (item.getType() != Material.AIR)
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                            () -> view.setItem(num, dropItemFromPurity(item)[0]), 1L);
+                            } else {
+                                int num = i;
+                                if (item.getType() != Material.AIR)
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                            () -> view.setItem(num, new ItemStack(Material.AIR)), 1L);
+                            }
+                        } else {
+                            if (item.getAmount() > min) {
+                                int num = i;
+                                if (item.getType() != Material.AIR)
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                            () -> view.setItem(num, dropItemFromPurity(item)[0]), 1L);
+                            } else {
+                                int num = i;
+                                if (item.getType() != Material.AIR)
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                            () -> view.setItem(num, new ItemStack(Material.AIR)), 1L);
+                            }
+                        }
+                    }
+                }
+            }
+
             var click = event.getClick();
             var action = event.getAction();
             switch (click) {
                 case DOUBLE_CLICK -> {
                     if (cursorItem != null && isMetal(cursorItem)) {
-                        var view = event.getView();
-                        var slots = view.countSlots();
+                        var slots = view.countSlots() - 5;
                         for (int i = 0; i < slots; i++) {
+                            if (view.getSlotType(i).equals(InventoryType.SlotType.RESULT)) continue;
                             var item = view.getItem(i);
                             if (item != null && item.getType() == cursorItem.getType() && isMetal(item)) {
                                 var nStack = getCombinedPurity(cursorItem, item);
@@ -915,15 +1004,130 @@ public class Tools {
                 }
                 case SHIFT_LEFT, SHIFT_RIGHT -> {
                     if (currentItem != null && isMetal(currentItem)) {
+                        var currentSlot = event.getRawSlot();
                         var nCurrentItem = new ItemStack(currentItem);
                         event.setCurrentItem(new ItemStack(Material.AIR));
-                        var view = event.getView();
-                        var size = view.countSlots();
+                        var size = view.countSlots() - 5;
+                        var currentInventory = view.getInventory(event.getRawSlot());
+
+                        // If regular inventory, furnace, or horse/mule inventory
+                        if (view.getTopInventory().getType() == InventoryType.CRAFTING ||
+                                view.getTopInventory().getType() == InventoryType.FURNACE ||
+                                view.getTopInventory().getType() == InventoryType.BLAST_FURNACE ||
+                                view.getTopInventory().getType() == InventoryType.SMOKER ||
+                                view.getTopInventory().getType() == InventoryType.CARTOGRAPHY ||
+                                (view.getTopInventory().getHolder() instanceof Entity &&
+                                        (((Entity) view.getTopInventory().getHolder()).getType() == EntityType.DONKEY
+                                                || ((Entity) view.getTopInventory().getHolder()).getType() == EntityType.MULE
+                                                || ((Entity) view.getTopInventory().getHolder()).getType() == EntityType.HORSE
+                                                || ((Entity) view.getTopInventory().getHolder()).getType() == EntityType.ZOMBIE_HORSE
+                                                || ((Entity) view.getTopInventory().getHolder()).getType() == EntityType.SKELETON_HORSE))) {
+                            int inv;
+
+                            if (view.getTopInventory().getType() != InventoryType.CRAFTING) {
+                                if (view.getTopInventory().getHolder() instanceof Entity)
+                                    inv = 2;
+                                else inv = 3;
+                            } else {
+                                inv = 9;
+                            }
+
+                            if (currentSlot >= inv + 27 ||
+                                    view.getSlotType(currentSlot) == InventoryType.SlotType.CRAFTING) {
+                                for (int i = inv; i < (inv + 27); i++) {
+                                    var slotItem = view.getItem(i);
+                                    if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem)) {
+                                        var combined = getCombinedPurity(slotItem, nCurrentItem);
+                                        view.setItem(i, combined[0]);
+                                        if (combined.length > 1) {
+                                            nCurrentItem = combined[1];
+                                        } else {
+                                            event.setCancelled(true);
+                                            return;
+                                        }
+                                    }
+                                }
+
+                                for (int i = inv; i < inv + 27; i++) {
+                                    var slotItem = view.getItem(i);
+                                    if (slotItem == null || slotItem.getType() == Material.AIR) {
+                                        view.setItem(i, nCurrentItem);
+                                        event.setCancelled(true);
+                                        return;
+                                    }
+                                }
+                            } else {
+                                var k = false;
+                                for (int i = inv + 27; i < inv + 36; i++) {
+                                    int j = i;
+                                    if (view.getSlotType(currentSlot) == InventoryType.SlotType.RESULT &&
+                                            (view.getTopInventory().getType() == InventoryType.WORKBENCH ||
+                                                    view.getTopInventory().getType() == InventoryType.CRAFTING)) {
+                                        if (!k) {
+                                            k = true;
+                                            i -= 27;
+                                        }
+                                        j = inv + 45 - i - 1;
+                                    }
+                                    var slotItem = view.getItem(j);
+                                    if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem)) {
+                                        var combined = getCombinedPurity(slotItem, nCurrentItem);
+                                        view.setItem(j, combined[0]);
+                                        if (combined.length > 1) {
+                                            nCurrentItem = combined[1];
+                                        } else {
+                                            event.setCancelled(true);
+                                            return;
+                                        }
+                                    }
+                                }
+                                k = false;
+                                for (int i = inv + 27; i < inv + 36; i++) {
+                                    int j = i;
+                                    if (view.getSlotType(currentSlot) == InventoryType.SlotType.RESULT &&
+                                            (view.getTopInventory().getType() == InventoryType.WORKBENCH ||
+                                                    view.getTopInventory().getType() == InventoryType.CRAFTING)) {
+                                        if (!k) {
+                                            k = true;
+                                            i -= 27;
+                                        }
+                                        j = inv + 45 - i - 1;
+                                    }
+
+                                    var slotItem = view.getItem(j);
+                                    if (slotItem == null || slotItem.getType() == Material.AIR) {
+                                        view.setItem(j, nCurrentItem);
+                                        event.setCancelled(true);
+                                        return;
+                                    }
+                                }
+                            }
+                            currentInventory.setItem(currentSlot, nCurrentItem);
+                            event.setCancelled(true);
+                            return;
+                        }
+
+                        // Not regular inventory or horse/mule/donkey
                         for (int i = 0; i < size; i++) {
-                            var slotItem = view.getItem(i);
+                            int j = i;
+                            if (Objects.equals(view.getInventory(currentSlot), view.getTopInventory())) {
+                                switch (view.getTopInventory().getType()) {
+                                    case HOPPER, DROPPER, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
+                                }
+                            }
+                            if (Objects.equals(view.getInventory(j), currentInventory)) continue;
+                            switch (view.getSlotType(j)) {
+                                case ARMOR, FUEL, OUTSIDE, RESULT:
+                                    continue;
+                            }
+                            if (j < 3 && view.getType() == InventoryType.CARTOGRAPHY) continue;
+                            if (j < 2 && (view.getInventory(j).getHolder() instanceof ChestedHorse)) continue;
+
+
+                            var slotItem = view.getItem(j);
                             if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem)) {
                                 var combined = getCombinedPurity(slotItem, nCurrentItem);
-                                view.setItem(i, combined[0]);
+                                view.setItem(j, combined[0]);
                                 if (combined.length > 1) {
                                     nCurrentItem = combined[1];
                                 } else {
@@ -932,14 +1136,29 @@ public class Tools {
                                 }
                             }
                         }
+
                         for (int i = 0; i < size; i++) {
-                            var slotItem = view.getItem(i);
+                            int j = i;
+                            if (Objects.equals(view.getInventory(currentSlot), view.getTopInventory())) {
+                                switch (view.getTopInventory().getType()) {
+                                    case HOPPER, DROPPER, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
+                                }
+                            }
+                            if (Objects.equals(view.getInventory(j), currentInventory)) continue;
+                            switch (view.getSlotType(j)) {
+                                case ARMOR, FUEL, OUTSIDE, RESULT:
+                                    continue;
+                            }
+                            if (j < 3 && view.getType() == InventoryType.CARTOGRAPHY) continue;
+
+                            var slotItem = view.getItem(j);
                             if (slotItem == null || slotItem.getType() == Material.AIR) {
-                                view.setItem(i, nCurrentItem);
+                                view.setItem(j, nCurrentItem);
                                 event.setCancelled(true);
                                 return;
                             }
                         }
+                        view.setItem(currentSlot, nCurrentItem);
                         event.setCancelled(true);
                         return;
                     }
@@ -1003,27 +1222,29 @@ public class Tools {
                 }
                 var result = inventory.getResult();
 
-                if (result != null) {
-                    result.setAmount(result.getAmount() + 1);
-                } else {
-                    Material material = switch (type) {
-                        case SUGAR -> Material.IRON_NUGGET;
-                        case REDSTONE -> Material.FERMENTED_SPIDER_EYE;
-                        case GLOWSTONE_DUST -> Material.GOLD_NUGGET;
-                        default -> null;
-                    };
-                    var item = new ItemStack(material);
+                Material material = switch (type) {
+                    case SUGAR -> Material.IRON_NUGGET;
+                    case REDSTONE -> Material.FERMENTED_SPIDER_EYE;
+                    case GLOWSTONE_DUST -> Material.GOLD_NUGGET;
+                    default -> null;
+                };
+                var item = new ItemStack(material);
 
-                    if (material == Material.FERMENTED_SPIDER_EYE) {
-                        var meta = item.getItemMeta();
-                        var lore = new ArrayList<String>();
-                        lore.add(DiplomacyRecipes.getInstance().NETHERITE_NUGGET_LORE);
-                        meta.setLore(lore);
-                        meta.setDisplayName(ChatColor.RESET + "Ancient Nugget");
-                        meta.setDisplayName("Ancient Nugget");
-                        item.setItemMeta(meta);
-                    }
-                    inventory.setResult(generatePurity(item, 0.01));
+                if (material == Material.FERMENTED_SPIDER_EYE) {
+                    var meta = item.getItemMeta();
+                    var lore = new ArrayList<String>();
+                    lore.add(DiplomacyRecipes.getInstance().NETHERITE_NUGGET_LORE);
+                    meta.setLore(lore);
+                    meta.setDisplayName(ChatColor.RESET + "Ancient Nugget");
+                    meta.setDisplayName("Ancient Nugget");
+                    item.setItemMeta(meta);
+                }
+                var newResult = generatePurity(item, 0.01);
+
+                if (result != null) {
+                    inventory.setResult(getCombinedPurity(newResult, result)[0]);
+                } else {
+                    inventory.setResult(newResult);
                 }
 
                 if (smelting.getAmount() == 1) {
