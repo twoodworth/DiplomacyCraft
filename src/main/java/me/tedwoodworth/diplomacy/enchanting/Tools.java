@@ -4,8 +4,10 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyRecipes;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import org.bukkit.*;
+import org.bukkit.block.Container;
+import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
 import org.bukkit.block.Furnace;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -13,7 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDropItemEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.*;
@@ -21,7 +23,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -59,20 +60,28 @@ public class Tools {
         return instance;
     }
 
+    public boolean isClassItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
+
+        var meta = itemStack.getItemMeta();
+        return meta != null
+                && meta.getLore() != null
+                && meta.getLore().get(0).contains("Prefix:");
+    }
+
     public boolean isMetal(ItemStack itemStack) {
         if (itemStack == null) return false;
 
         var type = itemStack.getType();
         return type == Material.GOLD_NUGGET ||
-                type == Material.GOLD_BLOCK ||
+                (type == Material.GOLD_BLOCK && !isClassItem(itemStack)) ||
                 type == Material.GOLD_INGOT ||
                 (type == Material.IRON_INGOT && !isMagnet(itemStack)) ||
                 type == Material.IRON_NUGGET ||
-                type == Material.IRON_BLOCK ||
-                (type == Material.FERMENTED_SPIDER_EYE && isDustOrAncientNugget(itemStack)) ||
+                (type == Material.IRON_BLOCK && !isClassItem(itemStack)) ||
                 type == Material.NETHERITE_SCRAP ||
                 (type == Material.NETHERITE_INGOT && !isMagnet(itemStack)) ||
-                type == Material.NETHERITE_BLOCK;
+                (type == Material.NETHERITE_BLOCK && !isClassItem(itemStack));
 
     }
 
@@ -376,12 +385,11 @@ public class Tools {
         return false;
     }
 
-    private boolean isDustOrAncientNugget(ItemStack item) {
+    private boolean isDust(ItemStack item) {
         var meta = item.getItemMeta();
         if (meta != null && meta.getLore() != null) {
             var lore = meta.getLore().get(0);
-            return lore.equals(DiplomacyRecipes.getInstance().NETHERITE_NUGGET_LORE) ||
-                    lore.equals(DiplomacyRecipes.getInstance().GOLD_DUST_LORE) ||
+            return lore.equals(DiplomacyRecipes.getInstance().GOLD_DUST_LORE) ||
                     lore.equals(DiplomacyRecipes.getInstance().IRON_DUST_LORE) ||
                     lore.equals(DiplomacyRecipes.getInstance().NETHERITE_DUST_LORE);
         }
@@ -405,7 +413,9 @@ public class Tools {
     }
 
     private float[] getPurity(ItemStack item) {
-        if (!isMetal(item)) throw new IllegalArgumentException("Item is not a metal.");
+        if (!isMetal(item)) {
+            throw new IllegalArgumentException("Item is not a metal.");
+        }
         if (!hasPurity(item)) generatePurity(item, 1.0);
 
         var container = Objects.requireNonNull(item.getItemMeta()).getPersistentDataContainer();
@@ -547,6 +557,7 @@ public class Tools {
                     event.getBlock().getWorld().dropItem(event.getBlock().getLocation(), new ItemStack(Material.GRAVEL));
                 } else if (item.getType() == Material.AIR || isSifter(item)) {
                     if (isSifter(item)) {
+                        event.getPlayer().getWorld().playSound(event.getBlock().getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 0.5f, (float) (Math.random() * 8.0));
                         var meta = item.getItemMeta();
                         var damage = ((Damageable) meta).getDamage();
                         if (Math.random() < 1.0 / (1.0 + meta.getEnchantLevel(Enchantment.DURABILITY))) {
@@ -787,8 +798,7 @@ public class Tools {
 
             // generate purity
             if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                if (item.getType() == Material.IRON_INGOT || item.getType() == Material.GOLD_INGOT || item.getType() == Material.NETHERITE_INGOT
-                        || item.getType() == Material.IRON_NUGGET || item.getType() == Material.GOLD_NUGGET || item.getType() == Material.NETHERITE_SCRAP) {
+                if (isMetal(item)) {
                     if (!hasPurity(item)) {
                         generatePurity(item, 1.0);
                     }
@@ -1214,12 +1224,12 @@ public class Tools {
             if (inventory instanceof FurnaceInventory) {
                 var cursor = event.getCursor();
                 if (event.getSlotType() == InventoryType.SlotType.CRAFTING && cursor != null && (cursor.getType() == Material.SUGAR || cursor.getType() == Material.REDSTONE || cursor.getType() == Material.GLOWSTONE_DUST)) {
-                    if (!isDustOrAncientNugget(cursor)) event.setCancelled(true);
+                    if (!isDust(cursor)) event.setCancelled(true);
                     return;
                 }
                 var current = event.getCurrentItem();
                 if ((event.getSlotType() == InventoryType.SlotType.CRAFTING || event.isShiftClick()) && current != null && (current.getType() == Material.SUGAR || current.getType() == Material.REDSTONE || current.getType() == Material.GLOWSTONE_DUST)) {
-                    if (!isDustOrAncientNugget(current)) event.setCancelled(true);
+                    if (!isDust(current)) event.setCancelled(true);
                     return;
                 }
             }
@@ -1227,14 +1237,94 @@ public class Tools {
 
             var item = event.getCurrentItem();
             if (item == null) return;
-            if (item.getType() == Material.IRON_INGOT || item.getType() == Material.GOLD_INGOT || item.getType() == Material.NETHERITE_INGOT
-                    || item.getType() == Material.IRON_NUGGET || item.getType() == Material.GOLD_NUGGET || item.getType() == Material.NETHERITE_SCRAP
-                    || item.getType() == Material.FERMENTED_SPIDER_EYE) {
+            if (!isMetal(item)) return;
+            if (!hasPurity(item)) {
+                var nItem = generatePurity(item, 1.0);
+                event.setCurrentItem(nItem);
+            }
+        }
 
-                if (item.getType() == Material.FERMENTED_SPIDER_EYE && !isDustOrAncientNugget(item)) return;
-                if (!hasPurity(item)) {
-                    var nItem = generatePurity(item, 1.0);
-                    event.setCurrentItem(nItem);
+        @EventHandler
+        private void onInventoryPickupItem(InventoryPickupItemEvent event) {
+            var item = event.getItem().getItemStack();
+            if (isMetal(item)) {
+                var inv = event.getInventory();
+                for (var content : inv.getContents()) {
+                    if (isMetal(content) && content.getType() == item.getType()) {
+                        var combined = getCombinedPurity(item, content);
+                        content.setItemMeta(combined[0].getItemMeta());
+                        content.setAmount(combined[0].getAmount());
+                        if (combined.length > 1) {
+                            item.setItemMeta(combined[1].getItemMeta());
+                            item.setAmount(combined[1].getAmount());
+                        } else {
+                            event.getItem().remove();
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        @EventHandler
+        private void onBlockDispense(BlockDispenseEvent event) {
+            var item = event.getItem();
+            if (!isMetal(item)) return;
+
+            var block = event.getBlock();
+            Inventory inv;
+            if (block.getType() == Material.DROPPER) {
+                inv = ((Dropper) block.getState()).getInventory();
+            } else {
+                inv = ((Dispenser) block.getState()).getInventory();
+            }
+
+            int slot = -1;
+            for (int i = 0; i <inv.getSize(); i++) {
+                var stack = inv.getItem(i);
+                if (isMetal(stack) && Arrays.equals(getPurity(stack), getPurity(item))) {
+                    slot = i;
+                    break;
+                }
+            }
+
+            var dropItem = dropItemFromPurity(item);
+            event.setItem(dropItem[1]);
+            if (dropItem[0] != null && slot > -1) {
+                int finalSlot = slot;
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inv.setItem(finalSlot, dropItem[0]), 0L);
+            }
+        }
+
+        @EventHandler
+        private void onInventoryMoveItem(InventoryMoveItemEvent event) {
+            var item = event.getItem();
+            var slot = event.getSource().first(item);
+            if (isMetal(item)) {
+                var inv = event.getDestination();
+                switch (inv.getType()) {
+                    case BARREL, CHEST, DISPENSER, SHULKER_BOX:
+                        break;
+                    default:
+                        return;
+                }
+                if (inv.firstEmpty() == -1) return;
+                var transfer = item;
+                var drop = dropItemFromPurity(item);
+                transfer = drop[1];
+                event.getSource().setItem(slot, drop[0]);
+                for (int i = 0; i < inv.getSize(); i++) {
+                    var content = inv.getItem(i);
+                    if (content == null || content.getType() == Material.AIR) {
+                        inv.setItem(i, transfer);
+                        event.setCancelled(true);
+                        return;
+                    } else if (isMetal(content) && content.getType() == item.getType() && content.getAmount() < 64) {
+                        inv.setItem(i, getCombinedPurity(transfer, content)[0]);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
             }
         }
@@ -1257,7 +1347,7 @@ public class Tools {
                             event.getItem().remove();
                             event.setCancelled(true);
                             var player = ((Player) event.getEntity());
-                            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.2f, (float)(Math.random() * 8));
+                            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.2f, (float) (Math.random() * 8));
                             return;
                         }
                     }
@@ -1273,7 +1363,7 @@ public class Tools {
             var smelting = inventory.getSmelting();
             var type = smelting.getType();
             if (type == Material.SUGAR || type == Material.REDSTONE || type == Material.GLOWSTONE_DUST) {
-                if (!isDustOrAncientNugget(smelting)) {
+                if (!isDust(smelting)) {
                     event.setCancelled(true);
                     return;
                 }
@@ -1281,21 +1371,12 @@ public class Tools {
 
                 Material material = switch (type) {
                     case SUGAR -> Material.IRON_NUGGET;
-                    case REDSTONE -> Material.FERMENTED_SPIDER_EYE;
+                    case REDSTONE -> Material.NETHERITE_SCRAP;
                     case GLOWSTONE_DUST -> Material.GOLD_NUGGET;
                     default -> null;
                 };
                 var item = new ItemStack(material);
 
-                if (material == Material.FERMENTED_SPIDER_EYE) {
-                    var meta = item.getItemMeta();
-                    var lore = new ArrayList<String>();
-                    lore.add(DiplomacyRecipes.getInstance().NETHERITE_NUGGET_LORE);
-                    meta.setLore(lore);
-                    meta.setDisplayName(ChatColor.RESET + "Ancient Nugget");
-                    meta.setDisplayName("Ancient Nugget");
-                    item.setItemMeta(meta);
-                }
                 var newResult = generatePurity(item, 0.01);
 
                 if (result != null) {

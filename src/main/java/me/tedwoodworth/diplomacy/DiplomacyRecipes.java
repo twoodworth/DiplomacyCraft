@@ -290,32 +290,10 @@ public class DiplomacyRecipes {
                 Material.GLOWSTONE_DUST, 0, 200);
         Diplomacy.getInstance().getServer().addRecipe(goldNugget);
 
-        var ancientNugget = new ItemStack(Material.FERMENTED_SPIDER_EYE);
-        lore = new ArrayList<>();
-        lore.add(NETHERITE_NUGGET_LORE);
-        meta = ancientNugget.getItemMeta();
-        meta.setDisplayName(ChatColor.RESET + "Ancient Nugget");
-        meta.setLocalizedName("Ancient Nugget");
-        meta.setLore(lore);
-        ancientNugget.setItemMeta(meta);
-
-        FurnaceRecipe ancientNuggetR = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "ancient_nugget"),
-                ancientNugget,
+        FurnaceRecipe ancientNuggetR = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_Scrap"),
+                new ItemStack(Material.NETHERITE_SCRAP),
                 Material.REDSTONE, 0, 200);
         Diplomacy.getInstance().getServer().addRecipe(ancientNuggetR);
-
-        var netheriteScrap = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_scrap"), new ItemStack(Material.NETHERITE_SCRAP));
-        netheriteScrap.shape("NNN", "NNN", "NNN");
-        netheriteScrap.setIngredient('N', Material.FERMENTED_SPIDER_EYE);
-        Diplomacy.getInstance().getServer().addRecipe(netheriteScrap);
-
-
-        ancientNugget.setAmount(9);
-        var ancientNugget2 = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "ancient_nugget2"), ancientNugget);
-        ancientNugget2.shape("N");
-        ancientNugget2.setIngredient('N', Material.NETHERITE_SCRAP);
-        Diplomacy.getInstance().getServer().addRecipe(ancientNugget2);
-
 
         // Sifter
         var sifterLore = new ArrayList<String>();
