@@ -13,8 +13,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
@@ -551,6 +554,7 @@ public class Tools {
                             if (damage == 164) {
                                 player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
                                 player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
+                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
                             } else {
                                 ((Damageable) meta).setDamage(damage + 1);
                                 item.setItemMeta(meta);
@@ -720,6 +724,18 @@ public class Tools {
         }
 
         @EventHandler
+        private void onPlayerDropItem(PlayerDropItemEvent event) {
+            var item = event.getItemDrop();
+            var inventory = event.getPlayer().getInventory();
+            var currentItem = inventory.getItemInMainHand();
+            if (currentItem != null && isMetal(currentItem) && item.getItemStack().getAmount() == 1) {
+                var dropItem = dropItemFromPurity(currentItem);
+                inventory.setItemInMainHand(dropItem[0]);
+                item.setItemStack(dropItem[1]);
+            }
+        }
+
+        @EventHandler
         private void onItemUse(PlayerInteractEvent event) {
             var item = event.getItem();
             if (item == null) return;
@@ -846,6 +862,23 @@ public class Tools {
         }
 
         @EventHandler
+        private void onItemMerge(ItemMergeEvent event) {
+            var entity = event.getEntity();
+            var target = event.getTarget();
+
+            var entityStack = entity.getItemStack();
+            var targetStack = target.getItemStack();
+            if (entityStack.getType() == targetStack.getType() && isMetal(entityStack) && isMetal(targetStack)) {
+                event.setCancelled(true);
+                var combined = getCombinedPurity(entityStack, targetStack);
+                target.setItemStack(combined[0]);
+                entity.remove();
+                event.setCancelled(true);
+
+            }
+        }
+
+        @EventHandler
         private void onInventoryClick(InventoryClickEvent event) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "broadcast " + event.getRawSlot());  // TODO remove
             var currentItem = event.getCurrentItem();
@@ -853,7 +886,8 @@ public class Tools {
                 generatePurity(currentItem, 1.0);
 
             var cursorItem = event.getCursor();
-            if (cursorItem != null && isMetal(cursorItem) && !hasPurity(cursorItem)) generatePurity(cursorItem, 1.0);
+            if (cursorItem != null && isMetal(cursorItem) && !hasPurity(cursorItem))
+                generatePurity(cursorItem, 1.0);
 
             var view = event.getView();
             if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT &&
@@ -864,15 +898,13 @@ public class Tools {
                             view.getTopInventory().getType() == InventoryType.ANVIL)) {
                 var usesMetal = false;
                 var slots = view.countSlots() - 5;
-                var min = 64;
                 for (int i = 0; i < slots; i++) {
                     var item = view.getItem(i);
                     if (view.getSlotType(i) == InventoryType.SlotType.CRAFTING
                             && item != null && isMetal(item)) {
                         usesMetal = true;
+                        break;
                     }
-                    if (item != null)
-                        min = Math.min(min, item.getAmount());
                 }
                 if (!usesMetal) return;
                 if (cursorItem != null && cursorItem.getType() != Material.AIR && !event.isShiftClick()) {
@@ -890,7 +922,7 @@ public class Tools {
                                 event.setCancelled(true);
                                 return;
                             }
-                            if (item.getAmount() > min) {
+                            if (item.getAmount() > 1) {
                                 int num = i;
                                 if (item.getType() != Material.AIR)
                                     Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
@@ -902,7 +934,7 @@ public class Tools {
                                             () -> view.setItem(num, new ItemStack(Material.AIR)), 1L);
                             }
                         } else {
-                            if (item.getAmount() > min) {
+                            if (item.getAmount() > 1) {
                                 int num = i;
                                 if (item.getType() != Material.AIR)
                                     Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
@@ -948,7 +980,9 @@ public class Tools {
                     if (currentItem != null && isMetal(currentItem)) {
                         var dropItem = dropItemFromPurity(currentItem);
                         event.setCurrentItem(dropItem[0]);
-                        event.getWhoClicked().getWorld().dropItemNaturally(event.getWhoClicked().getLocation(), dropItem[1]);
+                        var item = event.getWhoClicked().getWorld().dropItemNaturally(event.getWhoClicked().getLocation(), dropItem[1]);
+                        item.setPickupDelay(60);
+                        item.setVelocity(event.getWhoClicked().getLocation().getDirection().multiply(0.25));
                         event.setCancelled(true);
                         return;
                     }
@@ -972,6 +1006,17 @@ public class Tools {
                     }
                 }
                 case RIGHT -> {
+                    if (event.getSlot() == -999) {
+                        if (cursorItem != null && isMetal(cursorItem)) {
+                            var dropItem = dropItemFromPurity(cursorItem);
+                            event.getView().setCursor(dropItem[0]);
+                            var item = event.getWhoClicked().getWorld().dropItemNaturally(event.getWhoClicked().getLocation(), dropItem[1]);
+                            item.setPickupDelay(60);
+                            item.setVelocity(event.getWhoClicked().getLocation().getDirection().multiply(0.25));
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
                     if ((cursorItem != null && cursorItem.getType() != Material.AIR) && (currentItem == null || currentItem.getType() == Material.AIR) && event.getSlotType() != InventoryType.SlotType.ARMOR) {
                         if (isMetal(cursorItem)) {
                             var dropped = dropItemFromPurity(cursorItem);
@@ -1198,12 +1243,24 @@ public class Tools {
         private void onEntityPickupItem(EntityPickupItemEvent event) {
             var item = event.getItem().getItemStack();
             if (item == null) return;
-            if (item.getType() == Material.IRON_INGOT || item.getType() == Material.GOLD_INGOT || item.getType() == Material.NETHERITE_INGOT
-                    || item.getType() == Material.IRON_NUGGET || item.getType() == Material.GOLD_NUGGET || item.getType() == Material.NETHERITE_SCRAP ||
-                    item.getType() == Material.FERMENTED_SPIDER_EYE) {
-                if (item.getType() == Material.FERMENTED_SPIDER_EYE && !isDustOrAncientNugget(item)) return;
-                if (!hasPurity(item)) {
-                    generatePurity(item, 1.0);
+            if (isMetal(item) && event.getEntity() instanceof Player) {
+                var inv = ((Player) event.getEntity()).getInventory();
+                for (var content : inv.getContents()) {
+                    if (isMetal(content) && content.getType() == item.getType()) {
+                        var combined = getCombinedPurity(item, content);
+                        content.setItemMeta(combined[0].getItemMeta());
+                        content.setAmount(combined[0].getAmount());
+                        if (combined.length > 1) {
+                            item.setItemMeta(combined[1].getItemMeta());
+                            item.setAmount(combined[1].getAmount());
+                        } else {
+                            event.getItem().remove();
+                            event.setCancelled(true);
+                            var player = ((Player) event.getEntity());
+                            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.2f, (float)(Math.random() * 8));
+                            return;
+                        }
+                    }
                 }
             }
         }
