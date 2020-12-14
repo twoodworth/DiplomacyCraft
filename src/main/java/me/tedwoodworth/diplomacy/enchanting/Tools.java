@@ -99,7 +99,8 @@ public class Tools {
         if (itemStack == null) return false;
 
         var type = itemStack.getType();
-        return type == Material.GOLD_NUGGET ||
+        return isPlate(itemStack) ||
+                type == Material.GOLD_NUGGET ||
                 (type == Material.GOLD_BLOCK && !isClassItem(itemStack)) ||
                 type == Material.GOLD_INGOT ||
                 (type == Material.IRON_INGOT && !isMagnet(itemStack)) ||
@@ -112,6 +113,7 @@ public class Tools {
     }
 
     public ItemStack[] dragSplitStackPurities(ItemStack itemStack, int slots) {
+        var isPlate = isPlate(itemStack);
         var meta = itemStack.getItemMeta();
         var amount = itemStack.getAmount();
         var splitSize = amount / slots;
@@ -122,17 +124,28 @@ public class Tools {
         int h = 0;
         for (int i = 0; i < slots; i++) {
             var stack = new ItemStack(itemStack.getType(), splitSize);
+            var lore = new ArrayList<String>();
+            lore.add(plateLore);
+            var sMeta = stack.getItemMeta();
+            sMeta.setLore(lore);
+            stack.setItemMeta(meta);
             var stackPurities = new float[splitSize];
 
             if (splitSize >= 0) System.arraycopy(purities, h, stackPurities, 0, splitSize);
             h += splitSize;
 
             setPurity(stack, stackPurities);
-            var stackMeta = stack.getItemMeta();
-            stackMeta.setDisplayName(meta.getDisplayName());
-            stackMeta.setLocalizedName(meta.getLocalizedName());
-            stackMeta.setLore(generatePurityLure(stackPurities));
-            stack.setItemMeta(stackMeta);
+            sMeta = stack.getItemMeta();
+            sMeta.setDisplayName(meta.getDisplayName());
+            sMeta.setLocalizedName(meta.getLocalizedName());
+            sMeta.setLore(generatePurityLure(stackPurities));
+            var sLore = sMeta.getLore();
+            if (isPlate(itemStack)) {
+                sLore.add("");
+                sLore.add(plateLore);
+                sMeta.setLore(lore);
+            }
+            stack.setItemMeta(sMeta);
             stacks[i] = stack;
         }
 
@@ -140,6 +153,13 @@ public class Tools {
             stacks[slots] = air;
         } else {
             var stack = new ItemStack(itemStack.getType(), leftover);
+            if (isPlate) {
+                var lore = new ArrayList<String>();
+                lore.add(plateLore);
+                var sMeta = stack.getItemMeta();
+                sMeta.setLore(lore);
+                stack.setItemMeta(sMeta);
+            }
             var stackPurities = new float[leftover];
             if (purities.length - h >= 0) System.arraycopy(purities, h, stackPurities, 0, purities.length - h);
             setPurity(stack, stackPurities);
@@ -147,6 +167,12 @@ public class Tools {
             stackMeta.setDisplayName(meta.getDisplayName());
             stackMeta.setLocalizedName(meta.getLocalizedName());
             stackMeta.setLore(generatePurityLure(stackPurities));
+            var lore = stackMeta.getLore();
+            if (isPlate(itemStack)) {
+                lore.add("");
+                lore.add(plateLore);
+                stackMeta.setLore(lore);
+            }
             stack.setItemMeta(stackMeta);
             stacks[slots] = stack;
         }
@@ -205,6 +231,12 @@ public class Tools {
         var newStack = new ItemStack(itemStack.getType(), newPurities.length);
         var newMeta = newStack.getItemMeta();
         newMeta.setLore(generatePurityLure(newPurities));
+        var lore = newMeta.getLore();
+        if (isPlate(itemStack)) {
+            lore.add("");
+            lore.add(plateLore);
+            newMeta.setLore(lore);
+        }
         newMeta.setDisplayName(itemStack.getItemMeta().getDisplayName());
         newMeta.setLocalizedName(itemStack.getItemMeta().getLocalizedName());
         newMeta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, newPurities);
@@ -214,6 +246,12 @@ public class Tools {
         var otherMeta = otherStack.getItemMeta();
         otherMeta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, otherPurities);
         otherMeta.setLore(generatePurityLure(otherPurities));
+        lore = otherMeta.getLore();
+        if (isPlate(itemStack)) {
+            lore.add("");
+            lore.add(plateLore);
+            otherMeta.setLore(lore);
+        }
         otherStack.setItemMeta(otherMeta);
 
         var stacks = new ItemStack[2];
@@ -235,6 +273,12 @@ public class Tools {
         ItemStack newStack = new ItemStack(stack.getType(), newPurities.length);
         var newMeta = newStack.getItemMeta();
         newMeta.setLore(generatePurityLure(newPurities));
+        var lore = newMeta.getLore();
+        if (isPlate(stack)) {
+            lore.add("");
+            lore.add(plateLore);
+            newMeta.setLore(lore);
+        }
         newMeta.setDisplayName(stack.getItemMeta().getDisplayName());
         newMeta.setLocalizedName(stack.getItemMeta().getLocalizedName());
         newMeta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, newPurities);
@@ -243,6 +287,12 @@ public class Tools {
         var newStack2 = new ItemStack(stack.getType(), 1);
         var newMeta2 = newStack2.getItemMeta();
         newMeta2.setLore(generatePurityLure(itemPurity));
+        lore = newMeta2.getLore();
+        if (isPlate(stack)) {
+            lore.add("");
+            lore.add(plateLore);
+            newMeta2.setLore(lore);
+        }
         newMeta2.setDisplayName(stack.getItemMeta().getDisplayName());
         newMeta2.setLocalizedName(stack.getItemMeta().getLocalizedName());
         newMeta2.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, itemPurity);
@@ -267,6 +317,12 @@ public class Tools {
             ItemStack newStack = new ItemStack(stack1.getType(), newPurities.length);
             var meta = newStack.getItemMeta();
             meta.setLore(generatePurityLure(newPurities));
+            var lore = meta.getLore();
+            if (isPlate(stack1)) {
+                lore.add("");
+                lore.add(plateLore);
+                meta.setLore(lore);
+            }
             meta.setDisplayName(stack1.getItemMeta().getDisplayName());
             meta.setLocalizedName(stack1.getItemMeta().getLocalizedName());
             meta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, newPurities);
@@ -293,6 +349,12 @@ public class Tools {
             ItemStack newStack = new ItemStack(stack1.getType(), 64);
             var meta = newStack.getItemMeta();
             meta.setLore(generatePurityLure(newPurities1));
+            var lore = meta.getLore();
+            if (isPlate(stack1)) {
+                lore.add("");
+                lore.add(plateLore);
+                meta.setLore(lore);
+            }
             meta.setDisplayName(stack1.getItemMeta().getDisplayName());
             meta.setLocalizedName(stack1.getItemMeta().getLocalizedName());
             meta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, newPurities1);
@@ -301,6 +363,12 @@ public class Tools {
             ItemStack newStack2 = new ItemStack(stack2.getType(), newPurities2.length);
             var meta2 = newStack2.getItemMeta();
             meta2.setLore(generatePurityLure(newPurities2));
+            lore = meta2.getLore();
+            if (isPlate(stack1)) {
+                lore.add("");
+                lore.add(plateLore);
+                meta2.setLore(lore);
+            }
             meta2.setDisplayName(stack2.getItemMeta().getDisplayName());
             meta2.setLocalizedName(stack2.getItemMeta().getLocalizedName());
             meta2.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, newPurities2);
@@ -474,7 +542,7 @@ public class Tools {
     }
 
     private void setPurity(ItemStack item, float[] purities) {
-        if (!(isMetal(item) || isPlate(item))) throw new IllegalArgumentException("Item is not a metal.");
+        if (!(isMetal(item))) throw new IllegalArgumentException("Item is not a metal.");
         var meta = item.getItemMeta();
         var container = Objects.requireNonNull(meta).getPersistentDataContainer();
         container.set(purityKey, FloatArrayPersistentDataType.instance, purities);
@@ -483,7 +551,7 @@ public class Tools {
     }
 
     private float[] getPurity(ItemStack item) {
-        if (!(isMetal(item) || isPlate(item))) {
+        if (!(isMetal(item))) {
             throw new IllegalArgumentException("Item is not a metal.");
         }
         if (!hasPurity(item)) generatePurity(item, 1.0);
@@ -512,8 +580,9 @@ public class Tools {
             inventory.setRepairCost(0);
             var item = inventory.getItem(0);
             var item2 = inventory.getItem(1);
-            if (item != null && isMetal(item) && isIngot(item) && !isRefined(item) && item.getAmount() == 1 && item2 != null && item2.getType() == Material.BLAZE_POWDER && item2.getAmount() == 1) {
-                var plate = getMetalPlate(item);
+            if (item != null && isMetal(item) && isIngot(item) && !isRefined(item) && item2 != null && item2.getType() == Material.BLAZE_POWDER) {
+                var nItem = dropItemFromPurity(item);
+                var plate = getMetalPlate(nItem[1]);
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, plate), 1L);
             } else {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, air), 1L);
@@ -840,20 +909,18 @@ public class Tools {
             if (item == null) return;
 
             // Metal Plates
-            if (isPlate(item)) {
+            if (isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 var block = event.getClickedBlock();
                 if (block != null && block.getType() == Material.CAULDRON) {
                     var cauldron = (Levelled) block.getBlockData();
-                    if (cauldron.getLevel() == cauldron.getMaximumLevel()) {
-                        cauldron.setLevel(0);
+                    if (cauldron.getLevel() != 0) {
+                        cauldron.setLevel(cauldron.getLevel() - 1);
                         block.setBlockData(cauldron);
                         var hand = event.getHand();
                         Material material;
-                        switch(item.getType()) {
-                            case HEAVY_WEIGHTED_PRESSURE_PLATE ->
-                                material = Material.IRON_NUGGET;
-                            case LIGHT_WEIGHTED_PRESSURE_PLATE ->
-                                material = Material.GOLD_NUGGET;
+                        switch (item.getType()) {
+                            case HEAVY_WEIGHTED_PRESSURE_PLATE -> material = Material.IRON_NUGGET;
+                            case LIGHT_WEIGHTED_PRESSURE_PLATE -> material = Material.GOLD_NUGGET;
                             default -> {
                                 event.setCancelled(true);
                                 return;
@@ -868,7 +935,13 @@ public class Tools {
                         lore.add(refinedLore);
                         meta.setLore(lore);
                         nuggets.setItemMeta(meta);
-                        event.getPlayer().getEquipment().setItem(hand, nuggets);
+
+                        if (item.getAmount() > 1)
+                            event.getPlayer().getEquipment().setItem(hand, dropItemFromPurity(item)[0]);
+                        else
+                            event.getPlayer().getEquipment().setItem(hand, air);
+
+                        block.getWorld().dropItem(block.getLocation(), nuggets);
                         block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
                         block.getWorld().playSound(block.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 1, 1);
                     }
@@ -1025,15 +1098,52 @@ public class Tools {
             if (cursorItem != null && isMetal(cursorItem) && !hasPurity(cursorItem))
                 generatePurity(cursorItem, 1.0);
 
+            if (event.getRawSlot() == -1) return;
             var view = event.getView();
             if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT &&
                     view.getTopInventory().getType() == InventoryType.ANVIL && view.getItem(event.getRawSlot()) != null &&
                     (cursorItem == null || cursorItem.getType() == Material.AIR)) {
-                event.getView().setCursor(view.getItem(event.getRawSlot()));
-                view.setItem(0, air);
-                view.setItem(1, air);
+                if (cursorItem != null && cursorItem.getType() != Material.AIR && !event.isShiftClick()) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                if (!event.isShiftClick()) {
+                    event.getView().setCursor(view.getItem(event.getRawSlot()));
+                }
+
+                var item0 = view.getItem(0);
+                if (item0 != null && item0.getAmount() > 1)
+                    item0.setAmount(item0.getAmount() - 1);
+                else
+                    view.setItem(0, air);
+
+                var item1 = view.getItem(1);
+                if (item1 != null && item1.getAmount() > 1)
+                    item1.setAmount(item1.getAmount() - 1);
+                else
+                    view.setItem(1, air);
+
                 view.setItem(2, air);
+
+                var player = event.getWhoClicked();
+                var block = player.getTargetBlock(null, 5);
+                var loc = block.getLocation();
+
+                block.getWorld().playSound(loc, Sound.BLOCK_ANVIL_USE, 1, 1);
+
+                if (Math.random() < 0.05) {
+                    if (block.getType() == Material.ANVIL) {
+                        block.setType(Material.CHIPPED_ANVIL);
+                    } else if (block.getType() == Material.CHIPPED_ANVIL) {
+                        block.setType(Material.DAMAGED_ANVIL);
+                    } else {
+                        block.setType(Material.AIR);
+                        block.getWorld().playSound(loc, Sound.BLOCK_ANVIL_DESTROY, 1, 1);
+                    }
+                }
             }
+
             if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT &&
                     view.getItem(0) != null &&
                     view.getItem(0).getType() != Material.AIR &&
@@ -1300,7 +1410,7 @@ public class Tools {
                             int j = i;
                             if (Objects.equals(view.getInventory(currentSlot), view.getTopInventory())) {
                                 switch (view.getTopInventory().getType()) {
-                                    case HOPPER, DROPPER, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
+                                    case HOPPER, DROPPER, ANVIL, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
                                 }
                             }
                             if (Objects.equals(view.getInventory(j), currentInventory)) continue;
@@ -1329,7 +1439,7 @@ public class Tools {
                             int j = i;
                             if (Objects.equals(view.getInventory(currentSlot), view.getTopInventory())) {
                                 switch (view.getTopInventory().getType()) {
-                                    case HOPPER, DROPPER, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
+                                    case HOPPER, DROPPER, ANVIL, DISPENSER, CHEST, ENDER_CHEST, SHULKER_BOX -> j = size - i - 1;
                                 }
                             }
                             if (Objects.equals(view.getInventory(j), currentInventory)) continue;
