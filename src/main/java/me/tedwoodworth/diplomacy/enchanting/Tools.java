@@ -9,16 +9,14 @@ import org.bukkit.block.Dropper;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.ChestedHorse;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.*;
@@ -29,10 +27,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.material.Cauldron;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -42,20 +40,49 @@ import static org.bukkit.potion.PotionEffectType.*;
 public class Tools {
     private static Tools instance = null;
     public final NamespacedKey purityKey = new NamespacedKey(Diplomacy.getInstance(), "purity");
-    public final NamespacedKey slurryKey = new NamespacedKey(Diplomacy.getInstance(), "slurry");
-    public final NamespacedKey foldsKey = new NamespacedKey(Diplomacy.getInstance(), "folds");
     private final String purityLore = ChatColor.GRAY + "Purity:";
+    private final String foldsLore = ChatColor.GRAY + "Folds:";
     private final String plateLore = ChatColor.BLUE + "Refined Plate";
     private final String refinedLore = ChatColor.BLUE + "Refined";
-    private final String slurriedLore = ChatColor.BLUE + "Slurried";
     private final ItemStack air = new ItemStack(Material.AIR);
 
+    private final String NETHERITE_LAYER_LORE = ChatColor.GREEN + "Netherite Fortified";
+    private final String CRYING_OBSIDIAN_LAYER_LORE = ChatColor.GREEN + "Crying Obsidian Fortified";
+    private final String OBSIDIAN_LAYER_LORE = ChatColor.GREEN + "Obsidian Fortified";
+    private final String ENDSTONE_LAYER_LORE = ChatColor.GREEN + "Endstone Fortified";
+
+    private final String WITHER_LAYER_LORE = ChatColor.RED + "Wither Insulated";
+    private final String MAGMA_CREAM_LAYER_LORE = ChatColor.RED + "Magma Cream Insulated";
+    private final String CHORUS_LAYER_LORE = ChatColor.RED + "Chorus Insulated";
+    private final String SOUL_LAYER_LORE = ChatColor.RED + "Soul Insulated";
+
+    private final String SHULKER_LAYER_LORE = ChatColor.YELLOW + "Shulker  Embedded";
+    private final String HONEY_LAYER_LORE = ChatColor.YELLOW + "Honey Embedded";
+    private final String SLIME_LAYER_LORE = ChatColor.YELLOW + "Slime Embedded";
+    private final String WOOD_LAYER_LORE = ChatColor.YELLOW + "Wood Embedded";
+
+    private final String NAUTILUS_LAYER_LORE = ChatColor.BLUE + "Nautilus Padded";
+    private final String SCUTE_LAYER_LORE = ChatColor.BLUE + "Scute Padded";
+    private final String MEMBRANE_LAYER_LORE = ChatColor.BLUE + "Membrane Padded";
+    private final String WOOL_LAYER_LORE = ChatColor.BLUE + "Wool Padded";
+
+
+    private final Map<Material, String> layerLores = new HashMap<>();
+
+
+    public final List<Material> layers = new ArrayList<>();
+    public final List<Material> helmets = new ArrayList<>();
+    public final List<Material> chestplates = new ArrayList<>();
+    public final List<Material> leggings = new ArrayList<>();
+    public final List<Material> boots = new ArrayList<>();
     public final Set<Material> wooden = new HashSet<>();
     public final Set<Material> stone = new HashSet<>();
     public final Set<Material> iron = new HashSet<>();
     public final Set<Material> gold = new HashSet<>();
     public final Set<Material> diamond = new HashSet<>();
     public final List<Material> planks = new ArrayList<>();
+    public final List<Material> wool = new ArrayList<>();
+
     public final String p0 = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "||||||||||";
     public final String p1 = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "|||||||||" + ChatColor.DARK_RED + ChatColor.BOLD + "|";
     public final String p2 = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "||||||||" + ChatColor.RED + ChatColor.BOLD + "||";
@@ -83,6 +110,28 @@ public class Tools {
         return meta != null
                 && meta.getLore() != null
                 && meta.getLore().get(0).contains("Prefix:");
+    }
+
+    public List<String> getLayers(ItemStack itemStack) {
+        int layers = 0;
+        var layerList = new ArrayList<String>();
+        var meta = itemStack.getItemMeta();
+        var lore = meta.getLore();
+        if (lore != null) {
+            for (var line : lore) {
+                if (layerLores.containsValue(line)) {
+                    layerList.add(line);
+                    layers++;
+                }
+                if (layers == 4) break;
+            }
+        }
+        return layerList;
+    }
+
+    public boolean hasFolds(ItemStack item) {
+        return (item != null && isMetal(item) && item.getItemMeta() != null &&
+                item.getItemMeta().getLore() != null && item.getItemMeta().getLore().contains(foldsLore));
     }
 
     public boolean isIngot(ItemStack itemStack) {
@@ -552,6 +601,126 @@ public class Tools {
         planks.add(Material.CRIMSON_PLANKS);
         planks.add(Material.BIRCH_PLANKS);
         planks.add(Material.ACACIA_PLANKS);
+
+        layers.add(Material.NETHERITE_INGOT);
+        layers.add(Material.CRYING_OBSIDIAN);
+        layers.add(Material.OBSIDIAN);
+        layers.add(Material.END_STONE);
+        layers.add(Material.WITHER_SKELETON_SKULL);
+        layers.add(Material.MAGMA_CREAM);
+        layers.add(Material.POPPED_CHORUS_FRUIT);
+        layers.add(Material.SOUL_SAND);
+        layers.add(Material.SHULKER_SHELL);
+        layers.add(Material.HONEY_BOTTLE);
+        layers.add(Material.SLIME_BALL);
+        layers.addAll(planks);
+        layers.add(Material.NAUTILUS_SHELL);
+        layers.add(Material.SCUTE);
+        layers.add(Material.PHANTOM_MEMBRANE);
+        layers.add(Material.WHITE_WOOL);
+        layers.add(Material.BLACK_WOOL);
+        layers.add(Material.BLUE_WOOL);
+        layers.add(Material.BROWN_WOOL);
+        layers.add(Material.CYAN_WOOL);
+        layers.add(Material.GRAY_WOOL);
+        layers.add(Material.GREEN_WOOL);
+        layers.add(Material.LIGHT_BLUE_WOOL);
+        layers.add(Material.LIGHT_GRAY_WOOL);
+        layers.add(Material.LIME_WOOL);
+        layers.add(Material.MAGENTA_WOOL);
+        layers.add(Material.ORANGE_WOOL);
+        layers.add(Material.PINK_WOOL);
+        layers.add(Material.PURPLE_WOOL);
+        layers.add(Material.RED_WOOL);
+        layers.add(Material.YELLOW_WOOL);
+
+        wool.add(Material.WHITE_WOOL);
+        wool.add(Material.BLACK_WOOL);
+        wool.add(Material.BLUE_WOOL);
+        wool.add(Material.BROWN_WOOL);
+        wool.add(Material.CYAN_WOOL);
+        wool.add(Material.GRAY_WOOL);
+        wool.add(Material.GREEN_WOOL);
+        wool.add(Material.LIGHT_BLUE_WOOL);
+        wool.add(Material.LIGHT_GRAY_WOOL);
+        wool.add(Material.LIME_WOOL);
+        wool.add(Material.MAGENTA_WOOL);
+        wool.add(Material.ORANGE_WOOL);
+        wool.add(Material.PINK_WOOL);
+        wool.add(Material.PURPLE_WOOL);
+        wool.add(Material.RED_WOOL);
+        wool.add(Material.YELLOW_WOOL);
+
+        helmets.add(Material.LEATHER_HELMET);
+        helmets.add(Material.CHAINMAIL_HELMET);
+        helmets.add(Material.IRON_HELMET);
+        helmets.add(Material.GOLDEN_HELMET);
+        helmets.add(Material.DIAMOND_HELMET);
+        helmets.add(Material.NETHERITE_HELMET);
+        helmets.add(Material.TURTLE_HELMET);
+
+        chestplates.add(Material.LEATHER_CHESTPLATE);
+        chestplates.add(Material.CHAINMAIL_CHESTPLATE);
+        chestplates.add(Material.IRON_CHESTPLATE);
+        chestplates.add(Material.GOLDEN_CHESTPLATE);
+        chestplates.add(Material.DIAMOND_CHESTPLATE);
+        chestplates.add(Material.NETHERITE_CHESTPLATE);
+
+        leggings.add(Material.LEATHER_LEGGINGS);
+        leggings.add(Material.CHAINMAIL_LEGGINGS);
+        leggings.add(Material.IRON_LEGGINGS);
+        leggings.add(Material.GOLDEN_LEGGINGS);
+        leggings.add(Material.DIAMOND_LEGGINGS);
+        leggings.add(Material.NETHERITE_LEGGINGS);
+
+        boots.add(Material.LEATHER_BOOTS);
+        boots.add(Material.CHAINMAIL_BOOTS);
+        boots.add(Material.IRON_BOOTS);
+        boots.add(Material.GOLDEN_BOOTS);
+        boots.add(Material.DIAMOND_BOOTS);
+        boots.add(Material.NETHERITE_BOOTS);
+
+        layerLores.put(Material.NETHERITE_INGOT, NETHERITE_LAYER_LORE);
+        layerLores.put(Material.CRYING_OBSIDIAN, CRYING_OBSIDIAN_LAYER_LORE);
+        layerLores.put(Material.OBSIDIAN, OBSIDIAN_LAYER_LORE);
+        layerLores.put(Material.END_STONE, ENDSTONE_LAYER_LORE);
+        layerLores.put(Material.WITHER_SKELETON_SKULL, WITHER_LAYER_LORE);
+        layerLores.put(Material.MAGMA_CREAM, MAGMA_CREAM_LAYER_LORE);
+        layerLores.put(Material.POPPED_CHORUS_FRUIT, CHORUS_LAYER_LORE);
+        layerLores.put(Material.SOUL_SAND, SOUL_LAYER_LORE);
+        layerLores.put(Material.SHULKER_SHELL, SHULKER_LAYER_LORE);
+        layerLores.put(Material.HONEY_BOTTLE, HONEY_LAYER_LORE);
+        layerLores.put(Material.SLIME_BALL, SLIME_LAYER_LORE);
+        layerLores.put(Material.OAK_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.NAUTILUS_SHELL, NAUTILUS_LAYER_LORE);
+        layerLores.put(Material.SCUTE, SCUTE_LAYER_LORE);
+        layerLores.put(Material.PHANTOM_MEMBRANE, MEMBRANE_LAYER_LORE);
+        layerLores.put(Material.WHITE_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.BLACK_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.BLUE_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.BROWN_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.CYAN_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.GRAY_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.GREEN_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.LIGHT_BLUE_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.LIGHT_GRAY_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.LIME_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.MAGENTA_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.ORANGE_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.PINK_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.PURPLE_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.RED_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.YELLOW_WOOL, WOOL_LAYER_LORE);
+        layerLores.put(Material.ACACIA_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.BIRCH_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.CRIMSON_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.DARK_OAK_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.JUNGLE_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.OAK_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.WARPED_PLANKS, WOOD_LAYER_LORE);
+        layerLores.put(Material.SPRUCE_PLANKS, WOOD_LAYER_LORE);
+
+
     }
 
 
@@ -561,8 +730,14 @@ public class Tools {
 
     private boolean isNew(ItemStack item) {
         var meta = item.getItemMeta();
-        return (!meta.hasLore() || meta.getLore().get(0).equals(DiplomacyRecipes.getInstance().NEW_LORE)) && !meta.hasEnchants() &&
-                ((Damageable) meta).getDamage() == 0;
+        return (meta != null && meta.getLore() != null && meta.getLore().contains(DiplomacyRecipes.getInstance().NEW_LORE)) ||
+                ((meta != null && !meta.hasLore() && !meta.hasEnchants() &&
+                        ((Damageable) meta).getDamage() == 0));
+    }
+
+    public boolean isNewLayer(ItemStack item) {
+        var meta = item.getItemMeta();
+        return (meta != null && meta.getLore() != null && meta.getLore().contains(DiplomacyRecipes.getInstance().NEW_LAYER_LORE));
     }
 
     private boolean isRefined(ItemStack item) {
@@ -578,8 +753,10 @@ public class Tools {
     private boolean isSlurried(ItemStack item) {
         var meta = item.getItemMeta();
         if (meta != null && meta.getLore() != null) {
-            var lore = meta.getLore().get(0);
-            return lore.equals(slurriedLore);
+            var lore = meta.getLore();
+            return lore.contains(DiplomacyRecipes.getInstance().SLURRY_IRON_LORE) ||
+                    lore.contains(DiplomacyRecipes.getInstance().SLURRY_GOLD_LORE) ||
+                    lore.contains(DiplomacyRecipes.getInstance().SLURRY_NETHERITE_LORE);
         }
         return false;
     }
@@ -630,7 +807,7 @@ public class Tools {
     }
 
     private float[] getPurity(ItemStack item) {
-        if (!(isMetal(item))) {
+        if (!(isMetal(item)) && !isSlurried(item)) {
             throw new IllegalArgumentException("Item is not a metal.");
         }
         if (!hasPurity(item)) generatePurity(item, 1.0);
@@ -663,6 +840,54 @@ public class Tools {
                 var nItem = dropItemFromPurity(item);
                 var plate = getMetalPlate(nItem[1]);
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, plate), 1L);
+            } else if (item != null && isSlurried(item) && item2 != null && item2.getType() == Material.BLAZE_POWDER) {
+                ItemStack nItem;
+                var meta = item.getItemMeta();
+                var lore = meta.getLore();
+                if (lore.contains(DiplomacyRecipes.getInstance().SLURRY_IRON_LORE)) {
+                    nItem = new ItemStack(Material.IRON_INGOT);
+                    var i = lore.indexOf(DiplomacyRecipes.getInstance().SLURRY_IRON_LORE);
+                    lore.remove(i);
+                    lore.remove(i - 1);
+                    meta.setDisplayName(ChatColor.RESET + "Iron Ingot");
+                    meta.setLocalizedName("Iron Ingot");
+                } else if (lore.contains(DiplomacyRecipes.getInstance().SLURRY_GOLD_LORE)) {
+                    nItem = new ItemStack(Material.GOLD_INGOT);
+                    var i = lore.indexOf(DiplomacyRecipes.getInstance().SLURRY_GOLD_LORE);
+                    lore.remove(i);
+                    lore.remove(i - 1);
+                    meta.setDisplayName(ChatColor.RESET + "Gold Ingot");
+                    meta.setLocalizedName("Gold Ingot");
+                } else {
+                    nItem = new ItemStack(Material.NETHERITE_INGOT);
+                    var i = lore.indexOf(DiplomacyRecipes.getInstance().SLURRY_NETHERITE_LORE);
+                    lore.remove(i);
+                    lore.remove(i - 1);
+                    meta.setDisplayName(ChatColor.RESET + "Netherite Ingot");
+                    meta.setLocalizedName("Netherite Ingot");
+                }
+                nItem.setItemMeta(item.getItemMeta());
+                int folds;
+                if (lore.contains(foldsLore)) {
+                    var i = lore.indexOf(foldsLore);
+                    folds = Integer.parseInt(lore.get(i + 1)) + 1;
+                    lore.set(i + 1, String.valueOf(folds));
+                } else {
+                    lore.add("");
+                    lore.add(foldsLore);
+                    lore.add("1");
+                    folds = 1;
+                }
+                lore.add("");
+                lore.add(refinedLore);
+                meta.setLore(lore);
+                nItem.setItemMeta(meta);
+                var purity = getPurity(nItem)[0];
+                var unbreaking = (int) (((-5.0 * Math.log(purity)) / (3 * Math.log(10.0))) * (1.0 - 1.0 / folds));
+                if (unbreaking > 0) {
+                    nItem.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
+                }
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, nItem), 1L);
             } else {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, air), 1L);
             }
@@ -712,8 +937,15 @@ public class Tools {
                 }
                 if (unbreaking > 0) result.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
             }
+            var containsDust = false;
+            for (var item : inventory.getMatrix()) {
+                if (item != null && isDust(item)) {
+                    containsDust = true;
+                    break;
+                }
+            }
 
-            if (isNew(result) && !isMetal(result)) {
+            if (!containsDust && isNew(result) && !isMetal(result)) {
                 var meta = result.getItemMeta();
                 if (meta != null && meta.getLore() != null) {
                     var lore = meta.getLore();
@@ -758,6 +990,115 @@ public class Tools {
                 }
             }
 
+            // Armor layers
+            if (isNewLayer(result)) {
+                Material layerType = Material.AIR;
+                ItemStack armor = air;
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    var type = item.getType();
+                    if (helmets.contains(type) || chestplates.contains(type) || leggings.contains(type) || boots.contains(type)) {
+                        if (isSifter(item)) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        armor = item;
+                    } else {
+                        if (layerType == Material.AIR) layerType = type;
+                        else if (layerType != type && !(wool.contains(item.getType()) && wool.contains(layerType) && !(planks.contains(item.getType()) && planks.contains(layerType)))) {
+                            event.getInventory().setResult(air);
+                            return;
+                        }
+                    }
+                }
+                if (layerType == Material.HONEY_BOTTLE) {
+                    var count = 0;
+                    for (var item : inventory.getMatrix()) {
+                        if (item.getType() == Material.HONEY_BOTTLE) count++;
+                    }
+                    var player = event.getView().getPlayer();
+                    if (player.getInventory().firstEmpty() == -1)
+                        player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.GLASS_BOTTLE, count));
+                    else
+                        player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE, count));
+                }
+                if (armor == air) {
+                    event.getInventory().setResult(air);
+                    return;
+                }
+                var layers = getLayers(armor);
+                if (layers.size() == 4) {
+                    event.getInventory().setResult(air);
+                    return;
+                }
+                var nLayer = layerLores.get(layerType);
+                if (layers.contains(nLayer)) {
+                    event.getInventory().setResult(air);
+                    return;
+                }
+                result.setType(armor.getType());
+                result.setItemMeta(armor.getItemMeta());
+                result.setData(armor.getData());
+
+                var fire = 0;
+                var proj = 0;
+                var blast = 0;
+                var melee = 0;
+
+                var meta = result.getItemMeta();
+                if (meta.hasEnchant(Enchantment.PROTECTION_FIRE)) {
+                    fire = meta.getEnchantLevel(Enchantment.PROTECTION_FIRE);
+                    meta.removeEnchant(Enchantment.PROTECTION_FIRE);
+                }
+                if (meta.hasEnchant(Enchantment.PROTECTION_PROJECTILE)) {
+                    proj = meta.getEnchantLevel(Enchantment.PROTECTION_PROJECTILE);
+                    meta.removeEnchant(Enchantment.PROTECTION_PROJECTILE);
+                }
+                if (meta.hasEnchant(Enchantment.PROTECTION_EXPLOSIONS)) {
+                    blast = meta.getEnchantLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                    meta.removeEnchant(Enchantment.PROTECTION_EXPLOSIONS);
+                }
+                if (meta.hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL)) {
+                    melee = meta.getEnchantLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    meta.removeEnchant(Enchantment.PROTECTION_ENVIRONMENTAL);
+                }
+
+                if (nLayer.equals(NETHERITE_LAYER_LORE)) blast += 4;
+                else if (nLayer.equals(CRYING_OBSIDIAN_LAYER_LORE)) blast += 3;
+                else if (nLayer.equals(OBSIDIAN_LAYER_LORE)) blast += 2;
+                else if (nLayer.equals(ENDSTONE_LAYER_LORE)) blast += 1;
+                else if (nLayer.equals(WITHER_LAYER_LORE)) fire += 4;
+                else if (nLayer.equals(MAGMA_CREAM_LAYER_LORE)) fire += 3;
+                else if (nLayer.equals(CHORUS_LAYER_LORE)) fire += 2;
+                else if (nLayer.equals(SOUL_LAYER_LORE)) fire += 1;
+                else if (nLayer.equals(SHULKER_LAYER_LORE)) proj += 4;
+                else if (nLayer.equals(HONEY_LAYER_LORE)) proj += 3;
+                else if (nLayer.equals(SLIME_LAYER_LORE)) proj += 2;
+                else if (nLayer.equals(WOOD_LAYER_LORE)) proj += 1;
+                else if (nLayer.equals(NAUTILUS_LAYER_LORE)) melee += 4;
+                else if (nLayer.equals(SCUTE_LAYER_LORE)) melee += 3;
+                else if (nLayer.equals(MEMBRANE_LAYER_LORE)) melee += 2;
+                else if (nLayer.equals(WOOL_LAYER_LORE)) melee += 1;
+
+                var rMeta = result.getItemMeta();
+                var lore = rMeta.getLore();
+                if (lore == null) {
+                    lore = new ArrayList<>();
+                    lore.add("");
+                }
+                lore.add(nLayer);
+                rMeta.setLore(lore);
+                result.setItemMeta(rMeta);
+
+                if (fire > 0) result.addUnsafeEnchantment(Enchantment.PROTECTION_FIRE, fire);
+                if (proj > 0) result.addUnsafeEnchantment(Enchantment.PROTECTION_PROJECTILE, proj);
+                if (blast > 0) result.addUnsafeEnchantment(Enchantment.PROTECTION_EXPLOSIONS, blast);
+                if (melee > 0) result.addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, melee);
+
+                inventory.setResult(result);
+            }
+
+
             // Metal / purities
             if (isMetal(result)) {
                 var isRefined = false;
@@ -784,6 +1125,75 @@ public class Tools {
                 if (isRefined) refine(result);
                 event.getInventory().setResult(result);
             }
+
+            if (isSlurried(result)) {
+                for (var content : inventory.getMatrix()) {
+                    if (content.getType() == Material.POTION) {
+                        var meta = (PotionMeta) content.getItemMeta();
+                        if (meta.getBasePotionData().getType() != PotionType.MUNDANE) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    } else if (content.getType() == Material.SUGAR || content.getType() == Material.GLOWSTONE_DUST || content.getType() == Material.REDSTONE) {
+                        if (!isDust(content)) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    } else if (isMetal(content)) {
+                        if (content.getAmount() == 1)
+                            result.setItemMeta(content.getItemMeta());
+                        else {
+                            var item = dropItemFromPurity(content)[1];
+                            result.setItemMeta(item.getItemMeta());
+                        }
+                        var meta = result.getItemMeta();
+                        var lore = meta.getLore();
+                        lore.add("");
+                        String name;
+                        switch (content.getType()) {
+                            default -> {
+                                name = "Slurried Iron Ingot";
+                                lore.add(DiplomacyRecipes.getInstance().SLURRY_IRON_LORE);
+                            }
+                            case GOLD_INGOT -> {
+                                name = "Slurried Gold Ingot";
+                                lore.add(DiplomacyRecipes.getInstance().SLURRY_GOLD_LORE);
+                            }
+                            case NETHERITE_INGOT -> {
+                                name = "Slurried Netherite Ingot";
+                                lore.add(DiplomacyRecipes.getInstance().SLURRY_NETHERITE_LORE);
+                            }
+                        }
+                        if (lore.contains(refinedLore)) {
+                            var i = lore.indexOf(refinedLore);
+                            lore.remove(i);
+                            lore.remove(i - 1);
+                        }
+                        meta.setLore(lore);
+                        meta.setDisplayName(ChatColor.RESET + name);
+                        meta.setLocalizedName(name);
+                        if (meta.hasEnchants()) {
+                            for (var enchant : meta.getEnchants().keySet()) {
+                                meta.removeEnchant(enchant);
+                            }
+                        }
+                        result.setItemMeta(meta);
+
+                    }
+                }
+                inventory.setResult(result);
+            }
+
+            // Cancelling crafts for special items
+            for (var content : inventory.getMatrix()) {
+                if (content == null) continue;
+                if ((isMagnet(content) && !isSifter(result))
+                        || isSlurried(content)
+                        || (isDust(content) && !isSlurried(result))) {
+                    inventory.setResult(air);
+                    return;
+                }
+            }
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -792,6 +1202,17 @@ public class Tools {
 
             var location = event.getBlock().getLocation();
             location.setY(location.getY() + 1.0);
+
+            // Nether gold ore
+            if (event.getBlock().getType() == Material.NETHER_GOLD_ORE) {
+                var amount = (int) (Math.random() * 5) + 2;
+                var drop = new ItemStack(Material.GOLD_NUGGET, amount);
+                generatePurity(drop, 0.5);
+                event.setDropItems(false);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                        event.getBlock().getWorld().dropItem(location, drop), 1L);
+            }
+
             // Gravel
             if (event.getBlock().getType() == Material.GRAVEL) {
                 event.setDropItems(false);
@@ -900,7 +1321,7 @@ public class Tools {
                     if (goldDust > 0) {
                         double chance;
                         if (level == 4) chance = 0.012;
-                        else if (level == 5) chance = 0.053;
+                        else if (level == 5 || level == 6) chance = 0.053;
                         else if (level == 7) chance = 0.231;
                         else chance = 0.0;
 
@@ -1073,7 +1494,7 @@ public class Tools {
                     if (l > -1 && type != null)
                         event.getPlayer().addPotionEffect(new PotionEffect(type, t, l, true, false, false));
 
-                    // Coal
+                    // Charcoal
                     if (level < 1) return;
 
                     int coal;
@@ -1101,7 +1522,7 @@ public class Tools {
                         }
 
                         if (drops > 0) {
-                            var coalItem = new ItemStack(Material.COAL, drops);
+                            var coalItem = new ItemStack(Material.CHARCOAL, drops);
                             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
                                     event.getBlock().getWorld().dropItem(location, coalItem), 1L);
                         }
@@ -1156,7 +1577,7 @@ public class Tools {
                     if (goldDust > 0) {
                         double chance;
                         if (level == 4) chance = 0.012;
-                        else if (level == 5) chance = 0.053;
+                        else if (level == 5 || level == 6) chance = 0.053;
                         else if (level == 7) chance = 0.231;
                         else chance = 0.0;
 
@@ -1313,9 +1734,147 @@ public class Tools {
         }
 
         @EventHandler
+        private void onEntityDamage(EntityDamageEvent event) {
+            var cause = event.getCause();
+            var entity = event.getEntity();
+            var damage = event.getDamage();
+            var reduce = 0.0;
+
+            if (!(entity instanceof LivingEntity)) return;
+            var equip = ((LivingEntity) entity).getEquipment();
+            var helmet = air;
+            var chest = air;
+            var legs = air;
+            var boots = air;
+
+            if (equip != null) {
+                helmet = equip.getHelmet();
+                chest = equip.getChestplate();
+                legs = equip.getLeggings();
+                boots = equip.getBoots();
+            }
+
+            if (helmet == null) helmet = air;
+            if (chest == null) chest = air;
+            if (legs == null) legs = air;
+            if (boots == null) boots = air;
+
+            switch (helmet.getType()) {
+                case LEATHER_HELMET -> reduce += 0.02;
+                case GOLDEN_HELMET, CHAINMAIL_HELMET -> reduce += 0.03;
+                case IRON_HELMET -> reduce += 0.04;
+                case TURTLE_HELMET, DIAMOND_HELMET -> reduce += 0.05;
+                case NETHERITE_HELMET -> reduce += 0.06;
+            }
+
+            switch (chest.getType()) {
+                case LEATHER_CHESTPLATE -> reduce += 0.06;
+                case GOLDEN_CHESTPLATE, CHAINMAIL_CHESTPLATE -> reduce += 0.10;
+                case IRON_CHESTPLATE -> reduce += 0.12;
+                case DIAMOND_CHESTPLATE -> reduce += 0.15;
+                case NETHERITE_CHESTPLATE -> reduce += 0.16;
+            }
+
+            switch (legs.getType()) {
+                case LEATHER_LEGGINGS -> reduce += 0.04;
+                case GOLDEN_LEGGINGS -> reduce += 0.06;
+                case CHAINMAIL_LEGGINGS -> reduce += 0.08;
+                case IRON_LEGGINGS -> reduce += 0.10;
+                case DIAMOND_LEGGINGS -> reduce += 0.11;
+                case NETHERITE_LEGGINGS -> reduce += 0.12;
+            }
+
+            switch (boots.getType()) {
+                case LEATHER_BOOTS -> reduce += 0.01;
+                case GOLDEN_BOOTS -> reduce += 0.02;
+                case CHAINMAIL_BOOTS -> reduce += 0.03;
+                case IRON_BOOTS -> reduce += 0.04;
+                case DIAMOND_BOOTS -> reduce += 0.05;
+                case NETHERITE_BOOTS -> reduce += 0.06;
+            }
+
+            reduce /= 4.0;
+            reduce *= 6.0;
+
+            switch (cause) {
+                case BLOCK_EXPLOSION, ENTITY_EXPLOSION -> {
+                    damage *= 4;
+                    if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
+                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                    if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
+                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                    ((LivingEntity) entity).setHealth(Math.max(0.1, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                    event.setDamage(0.1);
+                    if (reduce == 1) event.setCancelled(true);
+                }
+                case CONTACT, ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> {
+                    damage *= 1.5;
+                    if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
+                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
+                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                    if (reduce == 1) event.setCancelled(true);
+                    else {
+                        ((LivingEntity) entity).setHealth(Math.max(0.1, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        event.setDamage(0.1);
+                    }
+
+                }
+                case DRAGON_BREATH, FIRE, FIRE_TICK, HOT_FLOOR, LAVA -> {
+                    damage *= 2;
+                    if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
+                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                    if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
+                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                    if (reduce == 1) event.setCancelled(true);
+                    else {
+                        ((LivingEntity) entity).setHealth(Math.max(0.1, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        event.setDamage(0.1);
+                    }
+                }
+                case PROJECTILE -> {
+                    damage *= 2;
+                    if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
+                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                    if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
+                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                    if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
+                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                    if (reduce == 1) {
+                        event.setCancelled(true);
+                    }
+                    else {
+                        ((LivingEntity) entity).setHealth(Math.max(0.1, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        event.setDamage(0.1);
+                    }
+                }
+            }
+        }
+
+        @EventHandler
         private void onItemUse(PlayerInteractEvent event) {
             var item = event.getItem();
             if (item == null) return;
+
+            // Ancient Dust
+            if (item.getType() == Material.REDSTONE && isDust(item)) {
+                event.setCancelled(true);
+                return;
+            }
 
             // Metal Plates
             if (isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -1379,7 +1938,7 @@ public class Tools {
 
             // magnet
             if (item.getAmount() == 1 && hasPurity(item)) {
-                if (getPurity(item)[0] <= 0.00003511f) {
+                if (getPurity(item)[0] <= 0.00006310f) {
                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.hasBlock() && event.getClickedBlock().getType().equals(Material.LODESTONE)) {
                         if (item.getType().equals(Material.IRON_INGOT) || item.getType().equals(Material.NETHERITE_INGOT)) {
                             var meta = item.getItemMeta();
@@ -1416,6 +1975,20 @@ public class Tools {
 
         @EventHandler
         private void onInventoryDrag(InventoryDragEvent event) {
+            var temp = event.getOldCursor();
+            if (hasFolds(temp)) return;
+
+            var view = event.getView();
+            for (var slot : event.getRawSlots()) {
+                var inv = view.getInventory(slot);
+                if (inv != null && inv.getType() == InventoryType.BREWING) {
+                    if (isDust(temp)) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+
             var type = event.getType();
             if (type == DragType.EVEN) {
                 var slots = event.getRawSlots();
@@ -1427,7 +2000,6 @@ public class Tools {
                 var cursor = newStacks[slots.size()];
                 int i = 0;
                 for (var num : slots) {
-                    var view = event.getView();
                     var slotItem = view.getItem(num);
 
                     if (slotItem != null && slotItem.getType() != Material.AIR) {
@@ -1452,7 +2024,6 @@ public class Tools {
                 var cursorItem = event.getOldCursor();
                 if (!isMetal(cursorItem)) return;
                 var slots = event.getRawSlots();
-                var view = event.getView();
                 var player = event.getWhoClicked();
                 event.setCancelled(true);
                 for (var num : slots) {
@@ -1486,6 +2057,10 @@ public class Tools {
 
             var entityStack = entity.getItemStack();
             var targetStack = target.getItemStack();
+
+
+            if (hasFolds(entityStack) || hasFolds(targetStack)) return;
+
             var isRefined = isRefined(entityStack);
             if (entityStack.getType() == targetStack.getType() && isMetal(entityStack) && isMetal(targetStack) && isRefined == isRefined(targetStack)) {
                 event.setCancelled(true);
@@ -1498,8 +2073,15 @@ public class Tools {
         }
 
         @EventHandler
+        private void onBrew(BrewEvent event) {
+            var ingredient = event.getContents().getIngredient();
+            if (ingredient != null && isDust(ingredient)) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
         private void onInventoryClick(InventoryClickEvent event) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "broadcast " + event.getRawSlot());  // TODO remove
             var currentItem = event.getCurrentItem();
             if (currentItem != null && isMetal(currentItem) && !hasPurity(currentItem))
                 generatePurity(currentItem, 1.0);
@@ -1511,12 +2093,30 @@ public class Tools {
             if (event.getRawSlot() == -1) return;
 
             var view = event.getView();
+            var temp = view.getInventory(event.getRawSlot());
+            if (temp != null && temp.getType() == InventoryType.BREWING) {
+                if (temp != null && temp.getType() == InventoryType.BREWING) {
+                    if (cursorItem != null && isDust(cursorItem)) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+            if ((currentItem != null && isSifter(currentItem)) && view.getType() == InventoryType.CRAFTING && event.isShiftClick() && (view.getItem(5) == null || view.getItem(5).getType() == Material.AIR)) {
+                event.setCancelled(true);
+                return;
+            }
+            if ((cursorItem != null && isSifter(cursorItem)) && view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.ARMOR) {
+                event.setCancelled(true);
+                return;
+            }
+
             if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT &&
                     view.getTopInventory().getType() == InventoryType.ANVIL && view.getItem(event.getRawSlot()) != null && view.getItem(event.getRawSlot()).getType() != Material.AIR) {
 
                 if (!event.isShiftClick()) {
                     if (cursorItem != null && cursorItem.getType() == currentItem.getType() && isMetal(cursorItem) && isMetal(currentItem)
-                            && isRefined(cursorItem) == isRefined(currentItem)) {
+                            && isRefined(cursorItem) == isRefined(currentItem) && !hasFolds(currentItem) && !hasFolds(cursorItem)) {
                         event.getView().setCursor(getCombinedPurity(cursorItem, currentItem)[0]);
                     } else if (cursorItem == null || cursorItem.getType() == Material.AIR)
                         event.getView().setCursor(view.getItem(event.getRawSlot()));
@@ -1552,7 +2152,7 @@ public class Tools {
                 var block = player.getTargetBlock(null, 5);
                 var loc = block.getLocation();
 
-                block.getWorld().playSound(loc, Sound.BLOCK_ANVIL_USE, 1, 1);
+                block.getWorld().playSound(loc, Sound.BLOCK_ANVIL_USE, 0.5f, 1);
 
                 if (Math.random() < 0.02) {
                     if (block.getType() == Material.ANVIL) {
@@ -1611,9 +2211,10 @@ public class Tools {
                         } else {
                             if (item.getAmount() > 1) {
                                 int num = i;
+                                item.setAmount(item.getAmount() - 1);
                                 if (item.getType() != Material.AIR)
                                     Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
-                                            () -> view.setItem(num, dropItemFromPurity(item)[0]), 1L);
+                                            () -> view.setItem(num, item), 1L);
                             } else {
                                 int num = i;
                                 if (item.getType() != Material.AIR)
@@ -1622,6 +2223,13 @@ public class Tools {
                             }
                         }
                     }
+                }
+                if (currentItem != null && isSlurried(currentItem)) {
+                    var inv = event.getWhoClicked().getInventory();
+                    if (inv.firstEmpty() == -1) {
+                        event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), new ItemStack(Material.GLASS_BOTTLE));
+                    } else
+                        inv.addItem(new ItemStack(Material.GLASS_BOTTLE));
                 }
             }
 
@@ -1634,6 +2242,7 @@ public class Tools {
                         for (int i = 0; i < slots; i++) {
                             if (view.getSlotType(i).equals(InventoryType.SlotType.RESULT)) continue;
                             var item = view.getItem(i);
+                            if (hasFolds(currentItem) || hasFolds(item)) continue;
                             if (item != null && item.getType() == cursorItem.getType() && isMetal(item) && isRefined == isRefined(item)) {
                                 var nStack = getCombinedPurity(cursorItem, item);
                                 cursorItem.setAmount(nStack[0].getAmount());
@@ -1666,6 +2275,7 @@ public class Tools {
                     if (cursorItem != null && currentItem != null
                             && cursorItem.getType() == currentItem.getType()
                             && isMetal(cursorItem) && isMetal(currentItem) && isRefined(cursorItem) == isRefined(currentItem)) {
+                        if (hasFolds(currentItem) || hasFolds(cursorItem)) return;
                         var combined = getCombinedPurity(currentItem, cursorItem);
                         currentItem.setAmount(combined[0].getAmount());
                         currentItem.setItemMeta(combined[0].getItemMeta());
@@ -1703,6 +2313,7 @@ public class Tools {
                     } else if (cursorItem != null && cursorItem.getType() != Material.AIR &&
                             currentItem != null && currentItem.getType() != Material.AIR &&
                             event.getSlotType() != InventoryType.SlotType.ARMOR) {
+                        if (hasFolds(cursorItem) || hasFolds(currentItem)) return;
                         if (isMetal(currentItem) && isMetal(cursorItem) && currentItem.getType() == cursorItem.getType() && currentItem.getAmount() < 64 && isRefined(currentItem) == isRefined(cursorItem)) {
                             var dropped = dropItemFromPurity(cursorItem);
                             event.getWhoClicked().setItemOnCursor(dropped[0]);
@@ -1756,6 +2367,7 @@ public class Tools {
                                     view.getSlotType(currentSlot) == InventoryType.SlotType.CRAFTING) {
                                 for (int i = inv; i < (inv + 27); i++) {
                                     var slotItem = view.getItem(i);
+                                    if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
                                     if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
                                         var combined = getCombinedPurity(slotItem, nCurrentItem);
                                         view.setItem(i, combined[0]);
@@ -1790,6 +2402,7 @@ public class Tools {
                                         j = inv + 45 - i - 1;
                                     }
                                     var slotItem = view.getItem(j);
+                                    if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
                                     if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
                                         var combined = getCombinedPurity(slotItem, nCurrentItem);
                                         view.setItem(j, combined[0]);
@@ -1845,6 +2458,7 @@ public class Tools {
 
 
                             var slotItem = view.getItem(j);
+                            if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
                             if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
                                 var combined = getCombinedPurity(slotItem, nCurrentItem);
                                 view.setItem(j, combined[0]);
@@ -1912,9 +2526,13 @@ public class Tools {
         @EventHandler
         private void onInventoryPickupItem(InventoryPickupItemEvent event) {
             var item = event.getItem().getItemStack();
+
+            if (hasFolds(item)) return;
+
             if (isMetal(item)) {
                 var inv = event.getInventory();
                 for (var content : inv.getContents()) {
+                    if (hasFolds(content)) continue;
                     if (isMetal(content) && content.getType() == item.getType() && isRefined(content) == isRefined(item)) {
                         var combined = getCombinedPurity(item, content);
                         content.setItemMeta(combined[0].getItemMeta());
@@ -1981,6 +2599,9 @@ public class Tools {
                 event.getSource().setItem(slot, drop[0]);
                 for (int i = 0; i < inv.getSize(); i++) {
                     var content = inv.getItem(i);
+                    if (content != null && isMetal(content) && content.getItemMeta() != null &&
+                            content.getItemMeta().getLore() != null && content.getItemMeta().getLore().contains(foldsLore))
+                        continue;
                     if (content == null || content.getType() == Material.AIR) {
                         inv.setItem(i, transfer);
                         event.setCancelled(true);
@@ -2105,7 +2726,7 @@ public class Tools {
                 result.removeEnchantment(Enchantment.DURABILITY);
                 var ingredient = inventory[1];
                 if (ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchants()) {
-                    result.addEnchantment(Enchantment.DURABILITY, ingredient.getEnchantmentLevel(Enchantment.DURABILITY));
+                    result.addUnsafeEnchantment(Enchantment.DURABILITY, ingredient.getEnchantmentLevel(Enchantment.DURABILITY));
                 }
                 event.setResult(result);
             }

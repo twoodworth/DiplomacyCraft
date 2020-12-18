@@ -19,9 +19,12 @@ public class DiplomacyRecipes {
     public String IRON_DUST_LORE = ChatColor.BLUE + "Iron Dust";
     public String GOLD_DUST_LORE = ChatColor.BLUE + "Gold Dust";
     public String NETHERITE_DUST_LORE = ChatColor.BLUE + "Ancient Dust";
-    public String NETHERITE_NUGGET_LORE = ChatColor.BLUE + "Ancient Nugget";
     public String SIFTER_LORE = ChatColor.BLUE + "Sifter";
     public String MAGNET_LORE = ChatColor.BLUE + "Magnet";
+    public String SLURRY_IRON_LORE = ChatColor.BLUE + "Slurried Iron Ingot";
+    public String SLURRY_GOLD_LORE = ChatColor.BLUE + "Slurried Gold Ingot";
+    public String SLURRY_NETHERITE_LORE = ChatColor.BLUE + "Slurried Netherite Ingot";
+    public String NEW_LAYER_LORE = "new layer";
 
     public static DiplomacyRecipes getInstance() {
         if (instance == null) {
@@ -355,7 +358,87 @@ public class DiplomacyRecipes {
         netheriteSifter.setIngredient('S', Material.NETHERITE_INGOT);
         Diplomacy.getInstance().getServer().addRecipe(netheriteSifter);
 
+        lore = new ArrayList<>();
+        lore.add(SLURRY_IRON_LORE);
+        var slurriedIron = new ItemStack(Material.BRICK);
+        meta.setDisplayName(ChatColor.RESET + "Slurried Iron Ingot");
+        meta.setLocalizedName("Slurried Iron Ingot");
+        meta.setLore(lore);
+        slurriedIron.setItemMeta(meta);
+        var slurriedIronIngot = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "slurried_iron"), slurriedIron);
+        slurriedIronIngot.addIngredient(2, Material.CLAY_BALL);
+        slurriedIronIngot.addIngredient(2, Material.CHARCOAL);
+        slurriedIronIngot.addIngredient(2, Material.SUGAR);
+        slurriedIronIngot.addIngredient(1, Material.WHITE_CONCRETE_POWDER);
+        slurriedIronIngot.addIngredient(1, Material.IRON_INGOT);
+        slurriedIronIngot.addIngredient(1, Material.POTION);
+        Diplomacy.getInstance().getServer().addRecipe(slurriedIronIngot);
 
+        lore = new ArrayList<>();
+        lore.add(SLURRY_GOLD_LORE);
+        var slurriedGold = new ItemStack(Material.BRICK);
+        meta.setDisplayName(ChatColor.RESET + "Slurried Gold Ingot");
+        meta.setLocalizedName("Slurried Gold Ingot");
+        meta.setLore(lore);
+        slurriedGold.setItemMeta(meta);
+        var slurriedGoldIngot = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "slurried_gold"), slurriedGold);
+        slurriedGoldIngot.addIngredient(2, Material.CLAY_BALL);
+        slurriedGoldIngot.addIngredient(2, Material.CHARCOAL);
+        slurriedGoldIngot.addIngredient(2, Material.GLOWSTONE_DUST);
+        slurriedGoldIngot.addIngredient(1, Material.WHITE_CONCRETE_POWDER);
+        slurriedGoldIngot.addIngredient(1, Material.GOLD_INGOT);
+        slurriedGoldIngot.addIngredient(1, Material.POTION);
+        Diplomacy.getInstance().getServer().addRecipe(slurriedGoldIngot);
+
+        lore = new ArrayList<>();
+        lore.add(SLURRY_NETHERITE_LORE);
+        var slurriedNetherite = new ItemStack(Material.BRICK);
+        meta.setDisplayName(ChatColor.RESET + "Slurried Netherite Ingot");
+        meta.setLocalizedName("Slurried Netherite Ingot");
+        meta.setLore(lore);
+        slurriedNetherite.setItemMeta(meta);
+        var slurriedNetheriteIngot = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "slurried_netherite"), slurriedNetherite);
+        slurriedNetheriteIngot.addIngredient(2, Material.CLAY_BALL);
+        slurriedNetheriteIngot.addIngredient(2, Material.CHARCOAL);
+        slurriedNetheriteIngot.addIngredient(2, Material.REDSTONE);
+        slurriedNetheriteIngot.addIngredient(1, Material.WHITE_CONCRETE_POWDER);
+        slurriedNetheriteIngot.addIngredient(1, Material.NETHERITE_INGOT);
+        slurriedNetheriteIngot.addIngredient(1, Material.POTION);
+        Diplomacy.getInstance().getServer().addRecipe(slurriedNetheriteIngot);
+
+
+
+        var layers = new RecipeChoice.MaterialChoice(Tools.getInstance().layers);
+        lore = new ArrayList<>();
+        lore.add(NEW_LAYER_LORE);
+        var layerItem = new ItemStack(Material.STICK);
+        var layerMeta = layerItem.getItemMeta();
+        layerMeta.setLore(lore);
+        layerItem.setItemMeta(layerMeta);
+
+        var helmetLayer = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "helmet_layer"), layerItem);
+        helmetLayer.shape("III", "IHI");
+        helmetLayer.setIngredient('I', layers);
+        helmetLayer.setIngredient('H', new RecipeChoice.MaterialChoice(Tools.getInstance().helmets));
+        Diplomacy.getInstance().getServer().addRecipe(helmetLayer);
+
+        var chestLayer = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "chest_layer"), layerItem);
+        chestLayer.shape("ICI", "III", "III");
+        chestLayer.setIngredient('I', layers);
+        chestLayer.setIngredient('C', new RecipeChoice.MaterialChoice(Tools.getInstance().chestplates));
+        Diplomacy.getInstance().getServer().addRecipe(chestLayer);
+
+        var leggingLayer = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "legging_layer"), layerItem);
+        leggingLayer.shape("III", "ILI", "I I");
+        leggingLayer.setIngredient('I', layers);
+        leggingLayer.setIngredient('L', new RecipeChoice.MaterialChoice(Tools.getInstance().leggings));
+        Diplomacy.getInstance().getServer().addRecipe(leggingLayer);
+
+        var bootLayer = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "boot_layer"), layerItem);
+        bootLayer.shape("IBI", "I I");
+        bootLayer.setIngredient('I', layers);
+        bootLayer.setIngredient('B', new RecipeChoice.MaterialChoice(Tools.getInstance().boots));
+        Diplomacy.getInstance().getServer().addRecipe(bootLayer);
 
 
 
