@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
@@ -17,14 +18,8 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ExpBottleEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -748,8 +743,15 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
-        private void onPlayerCommandSend(PlayerCommandPreprocessEvent event) {
-
+        private void onDamage(EntityDamageEvent event) {
+            var entity = event.getEntity();
+            if (entity instanceof Item) {
+                var item = (Item) entity;
+                if (Tools.getInstance().isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
         }
 
         @EventHandler(priority = EventPriority.HIGHEST)
@@ -771,7 +773,7 @@ public class DiplomacyPlayers {
                     }
                 }
                 event.blockList().removeAll(keepBlocks);
-            } else if (entity instanceof Creeper || entity instanceof Wither || entity instanceof WitherSkull || entity instanceof DragonFireball || entity instanceof EnderCrystal) {
+            } else if (entity instanceof Creeper || entity instanceof Wither || entity instanceof WitherSkull || entity instanceof DragonFireball || entity instanceof EnderCrystal || entity instanceof Item) {
                 for (var block : event.blockList()) {
                     var chunk = block.getChunk();
                     var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);

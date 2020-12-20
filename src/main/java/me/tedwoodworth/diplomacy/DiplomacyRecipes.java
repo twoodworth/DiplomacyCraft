@@ -25,6 +25,9 @@ public class DiplomacyRecipes {
     public String SLURRY_GOLD_LORE = ChatColor.BLUE + "Slurried Gold Ingot";
     public String SLURRY_NETHERITE_LORE = ChatColor.BLUE + "Slurried Netherite Ingot";
     public String NEW_LAYER_LORE = "new layer";
+    public String GRENADE_LORE = ChatColor.YELLOW + "Right Click: " + ChatColor.GRAY + "Overhand throw";
+    public String GRENADE_LORE_2 = ChatColor.YELLOW + "Left Click: " + ChatColor.GRAY + "Underhand throw";
+    public String GRENADE_LORE_3 = ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Wait until letting go to throw";
 
     public static DiplomacyRecipes getInstance() {
         if (instance == null) {
@@ -407,7 +410,6 @@ public class DiplomacyRecipes {
         Diplomacy.getInstance().getServer().addRecipe(slurriedNetheriteIngot);
 
 
-
         var layers = new RecipeChoice.MaterialChoice(Tools.getInstance().layers);
         lore = new ArrayList<>();
         lore.add(NEW_LAYER_LORE);
@@ -440,6 +442,27 @@ public class DiplomacyRecipes {
         bootLayer.setIngredient('B', new RecipeChoice.MaterialChoice(Tools.getInstance().boots));
         Diplomacy.getInstance().getServer().addRecipe(bootLayer);
 
+        var grenade = new ItemStack(Material.FIREWORK_STAR);
+        grenade.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var grenadeMeta = grenade.getItemMeta();
+        grenadeMeta.setDisplayName(ChatColor.RESET + "Grenade");
+        grenadeMeta.setLocalizedName("Grenade");
+        lore = new ArrayList<>();
+        lore.add(GRENADE_LORE);
+        lore.add(GRENADE_LORE_2);
+        lore.add(GRENADE_LORE_3);
+        lore.add("");
+        lore.add(ChatColor.RED + "Grenade will explode 4-6 seconds after thrown.");
+        grenadeMeta.setLore(lore);
+        grenadeMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        grenade.setItemMeta(grenadeMeta);
+
+        var grenadeRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "grenade"), grenade);
+        grenadeRecipe.shape("RII", "IFI", "III");
+        grenadeRecipe.setIngredient('I', Material.IRON_NUGGET);
+        grenadeRecipe.setIngredient('R', Material.REDSTONE);
+        grenadeRecipe.setIngredient('F', Material.FIRE_CHARGE);
+        Diplomacy.getInstance().getServer().addRecipe(grenadeRecipe);
 
 
     }
