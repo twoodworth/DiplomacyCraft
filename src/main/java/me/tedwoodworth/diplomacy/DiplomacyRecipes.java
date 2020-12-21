@@ -32,7 +32,7 @@ public class DiplomacyRecipes {
     public String NEW_LAYER_LORE = "new layer";
     public String GRENADE_LORE = ChatColor.YELLOW + "Right Click: " + ChatColor.GRAY + "Overhand throw";
     public String GRENADE_LORE_2 = ChatColor.YELLOW + "Left Click: " + ChatColor.GRAY + "Underhand throw";
-    public String GRENADE_LORE_3 = ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Wait until letting go to throw";
+    public String GRENADE_LORE_3 = ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Unpin and wait until releasing shift to throw";
 
     public static DiplomacyRecipes getInstance() {
         if (instance == null) {
@@ -203,60 +203,65 @@ public class DiplomacyRecipes {
         sawLore.add(NEW_LORE);
         sawLore.add(SAW_LORE);
 
-        var woodenSaw = new ItemStack(Material.WOODEN_AXE);
+        var woodenSaw = new ItemStack(Material.WOODEN_HOE);
         meta = woodenSaw.getItemMeta();
         meta.setLore(sawLore);
         meta.setLocalizedName("Wooden Saw");
         meta.setDisplayName(ChatColor.RESET + "Wooden Saw");
         woodenSaw.setItemMeta(meta);
+        woodenSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe woodenSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "wooden_saw"), woodenSaw);
         woodenSawR.shape(" S ", "S S", "MMM");
         woodenSawR.setIngredient('S', Material.STICK);
         woodenSawR.setIngredient('M', planks);
         Diplomacy.getInstance().getServer().addRecipe(woodenSawR);
 
-        var stoneSaw = new ItemStack(Material.STONE_AXE);
+        var stoneSaw = new ItemStack(Material.STONE_HOE);
         meta = stoneSaw.getItemMeta();
         meta.setLore(sawLore);
         meta.setDisplayName(ChatColor.RESET + "Stone Saw");
         meta.setLocalizedName("Stone Saw");
         stoneSaw.setItemMeta(meta);
+        stoneSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe stoneSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "stone_saw"), stoneSaw);
         stoneSawR.shape(" S ", "S S", "MMM");
         stoneSawR.setIngredient('S', Material.STICK);
         stoneSawR.setIngredient('M', stones);
         Diplomacy.getInstance().getServer().addRecipe(stoneSawR);
 
-        var goldSaw = new ItemStack(Material.GOLDEN_AXE);
+        var goldSaw = new ItemStack(Material.GOLDEN_HOE);
         meta = goldSaw.getItemMeta();
         meta.setLore(sawLore);
         goldSaw.setItemMeta(meta);
         meta.setDisplayName(ChatColor.RESET + "Golden Saw");
         meta.setLocalizedName("Golden Saw");
+        goldSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe goldenSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "gold_saw"), goldSaw);
         goldenSawR.shape(" S ", "S S", "MMM");
         goldenSawR.setIngredient('S', Material.STICK);
         goldenSawR.setIngredient('M', Material.GOLD_INGOT);
         Diplomacy.getInstance().getServer().addRecipe(goldenSawR);
 
-        var ironSaw = new ItemStack(Material.IRON_AXE);
+        var ironSaw = new ItemStack(Material.IRON_HOE);
         meta = ironSaw.getItemMeta();
         meta.setLore(sawLore);
         meta.setDisplayName(ChatColor.RESET + "Iron Saw");
         meta.setLocalizedName("Iron Saw");
         ironSaw.setItemMeta(meta);
+        ironSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe ironSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "iron_saw"), ironSaw);
         ironSawR.shape(" S ", "S S", "MMM");
         ironSawR.setIngredient('S', Material.STICK);
         ironSawR.setIngredient('M', Material.IRON_INGOT);
         Diplomacy.getInstance().getServer().addRecipe(ironSawR);
 
-        var diamondSaw = new ItemStack(Material.DIAMOND_AXE);
+        var diamondSaw = new ItemStack(Material.DIAMOND_HOE);
         meta = diamondSaw.getItemMeta();
         meta.setLore(sawLore);
         meta.setDisplayName(ChatColor.RESET + "Diamond Saw");
         meta.setLocalizedName("Diamond Saw");
         diamondSaw.setItemMeta(meta);
+        diamondSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe diamondSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "diamond_saw"), diamondSaw);
         diamondSawR.shape(" S ", "S S", "MMM");
         diamondSawR.setIngredient('S', Material.STICK);
