@@ -15,14 +15,8 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.ItemMergeEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -2015,6 +2009,130 @@ public class Tools {
             }
         }
 
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+        private void onBlockExplode(EntityDeathEvent event) {
+            var entity = event.getEntity();
+            if (entity instanceof InventoryHolder) {
+                var location = entity.getLocation();
+                var inventory = ((InventoryHolder) entity).getInventory();
+                for (var content : inventory.getContents()) {
+                    if (content != null && content.getType() != Material.AIR) {
+                        if (content.getItemMeta() != null && content.getItemMeta().hasEnchant(Enchantment.VANISHING_CURSE))
+                            continue;
+                        location.getWorld().dropItemNaturally(location, content);
+                    }
+                }
+                inventory.clear();
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+        private void onBlockExplode(BlockExplodeEvent event) {
+            var blocks = event.blockList();
+            var yield = event.getYield();
+            for (var block : new ArrayList<>(blocks)) {
+                if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
+                    blocks.remove(block);
+                    var purity = getBlockPurity(block);
+                    setBlockPurity(block, -1F);
+                    if (Math.random() < yield) {
+                        var item = new ItemStack(block.getType());
+                        var purityArray = new float[1];
+                        purityArray[0] = purity;
+                        setPurity(item, purityArray);
+                        ItemStack finalItem = item;
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                () -> block.getWorld().dropItem(block.getLocation(), finalItem), 1L);
+                    }
+                    block.setType(Material.AIR);
+                }
+
+                // Containers
+                var state = block.getState();
+                if (state instanceof BlockInventoryHolder) {
+                    blocks.remove(block);
+                    var location = block.getLocation();
+                    var inventory = ((BlockInventoryHolder) block.getState()).getInventory();
+                    for (var content : inventory.getContents()) {
+                        if (content != null && content.getType() != Material.AIR) {
+                            location.getWorld().dropItemNaturally(location, content);
+                        }
+                    }
+                    inventory.clear();
+                    location.getWorld().dropItemNaturally(location, new ItemStack(block.getType()));
+                    block.setType(Material.AIR);
+                }
+            }
+        }
+
+        @EventHandler
+        private void onEntityAttack(EntityDamageByEntityEvent event) {
+            var damager = event.getDamager();
+            if (!(damager instanceof LivingEntity)) return;
+            var equipment = ((LivingEntity) damager).getEquipment();
+            if (equipment == null) return;
+            var hand = equipment.getItemInMainHand();
+            var meta = hand.getItemMeta();
+            if (meta == null || !tools.contains(hand.getType())) return;
+            var r = Math.random();
+            var unbreaking = 0;
+            if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
+            var durability = hand.getType().getMaxDurability();
+
+            if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
+                var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                    meta.removeEnchant(Enchantment.DAMAGE_ALL);
+                    if (level > 1) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                    }
+                    hand.setItemMeta(meta);
+                }
+            }
+            if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
+                var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                    meta.removeEnchant(Enchantment.DIG_SPEED);
+                    if (level > 1) {
+                        meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                    }
+                    hand.setItemMeta(meta);
+                }
+            }
+            if (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS)) {
+                var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                    meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
+                    if (level > 1) {
+                        meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
+                    }
+                    hand.setItemMeta(meta);
+                }
+            }
+            if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
+                var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                    meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
+                    if (level > 1) {
+                        meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
+                    }
+                    hand.setItemMeta(meta);
+                }
+            }
+            if (meta.hasEnchant(Enchantment.IMPALING)) {
+                var level = meta.getEnchantLevel(Enchantment.IMPALING);
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                    meta.removeEnchant(Enchantment.IMPALING);
+                    if (level > 1) {
+                        meta.addEnchant(Enchantment.IMPALING, level - 1, true);
+                    }
+                    hand.setItemMeta(meta);
+                }
+            }
+            equipment.setItemInMainHand(hand);
+        }
+
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         private void onEntityExplode(EntityExplodeEvent event) {
             var blocks = event.blockList();
@@ -2035,6 +2153,22 @@ public class Tools {
                     }
                     block.setType(Material.AIR);
                 }
+
+                // Containers
+                var state = block.getState();
+                if (state instanceof BlockInventoryHolder) {
+                    blocks.remove(block);
+                    var location = block.getLocation();
+                    var inventory = ((BlockInventoryHolder) block.getState()).getInventory();
+                    for (var content : inventory.getContents()) {
+                        if (content != null && content.getType() != Material.AIR) {
+                            location.getWorld().dropItemNaturally(location, content);
+                        }
+                    }
+                    inventory.clear();
+                    location.getWorld().dropItemNaturally(location, new ItemStack(block.getType()));
+                    block.setType(Material.AIR);
+                }
             }
         }
 
@@ -2045,8 +2179,23 @@ public class Tools {
             var location = event.getBlock().getLocation();
             location.setY(location.getY() + 0.5);
 
-            // Metal block
+            // Containers
             var block = event.getBlock();
+            var state = block.getState();
+            if (state instanceof BlockInventoryHolder) {
+                event.setDropItems(false);
+                var inventory = ((BlockInventoryHolder) block.getState()).getInventory();
+                for (var content : inventory.getContents()) {
+                    if (content != null && content.getType() != Material.AIR) {
+                        location.getWorld().dropItemNaturally(location, content);
+                    }
+                }
+                inventory.clear();
+                location.getWorld().dropItemNaturally(location, new ItemStack(block.getType()));
+            }
+
+
+            // Metal block
             var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
             if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
                 var purity = getBlockPurity(block);
@@ -2591,6 +2740,73 @@ public class Tools {
                     }
                 }
             }
+
+
+            // Blade Dulling
+            if (tools.contains(item.getType())) {
+                var player = event.getPlayer();
+                var equipment = player.getEquipment();
+                if (equipment == null) return;
+                var hand = equipment.getItemInMainHand();
+                var meta = hand.getItemMeta();
+                if (meta == null || !tools.contains(hand.getType())) return;
+                var r = Math.random();
+                var unbreaking = 0;
+                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
+                var durability = hand.getType().getMaxDurability();
+
+                if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
+                    var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
+                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.DAMAGE_ALL);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                        }
+                        hand.setItemMeta(meta);
+                    }
+                }
+                if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
+                    var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
+                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.DIG_SPEED);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                        }
+                        hand.setItemMeta(meta);
+                    }
+                }
+                if (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS)) {
+                    var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
+                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
+                        }
+                        hand.setItemMeta(meta);
+                    }
+                }
+                if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
+                    var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
+                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
+                        }
+                        hand.setItemMeta(meta);
+                    }
+                }
+                if (meta.hasEnchant(Enchantment.IMPALING)) {
+                    var level = meta.getEnchantLevel(Enchantment.IMPALING);
+                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.IMPALING);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.IMPALING, level - 1, true);
+                        }
+                        hand.setItemMeta(meta);
+                    }
+                }
+                equipment.setItemInMainHand(hand);
+            }
         }
 
         @EventHandler
@@ -3070,7 +3286,6 @@ public class Tools {
             var item = event.getItem();
             if (item == null) return;
 
-
             // sharpening tools
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (isNetheriteRod(item) || isCoarseBlade(item) || isFineBlade(item) || isIronRod(item))) {
                 event.setCancelled(true);
@@ -3287,7 +3502,7 @@ public class Tools {
                 return;
             }
 
-            if (canCombine(entityStack, targetStack)) {
+            if (isMetal(entityStack) && canCombine(entityStack, targetStack)) {
                 event.setCancelled(true);
                 var combined = getCombinedPurity(entityStack, targetStack);
                 target.setItemStack(combined[0]);
@@ -3804,7 +4019,7 @@ public class Tools {
                     view.getTopInventory().getType() == InventoryType.ANVIL && view.getItem(event.getRawSlot()) != null && view.getItem(event.getRawSlot()).getType() != Material.AIR) {
 
                 if (!event.isShiftClick()) {
-                    if (canCombine(currentItem, cursorItem)) {
+                    if (isMetal(currentItem) && canCombine(currentItem, cursorItem)) {
                         event.getView().setCursor(getCombinedPurity(cursorItem, currentItem)[0]);
                     } else if (cursorItem == null || cursorItem.getType() == Material.AIR)
                         event.getView().setCursor(view.getItem(event.getRawSlot()));
@@ -3975,7 +4190,7 @@ public class Tools {
                             if (item == null || item.getType() == Material.AIR) {
                                 view.setItem(i, stacks[index]);
                                 index++;
-                            } else if (canCombine(item, stacks[index])) {
+                            } else if (isMetal(item) && canCombine(item, stacks[index])) {
                                 var combined = getCombinedPurity(item, stacks[index]);
                                 view.setItem(i, combined[0]);
                                 if (combined.length > 1) stacks[index] = combined[1];
@@ -4009,7 +4224,7 @@ public class Tools {
                     if (cursorItem == null || cursorItem.getType() == Material.AIR) {
                         event.getView().setCursor(currentItem);
                         event.setCurrentItem(air);
-                    } else if (canCombine(currentItem, cursorItem) && currentItem.getAmount() + cursorItem.getAmount() <= cursorItem.getMaxStackSize()) {
+                    } else if (isMetal(currentItem) && canCombine(currentItem, cursorItem) && currentItem.getAmount() + cursorItem.getAmount() <= cursorItem.getMaxStackSize()) {
                         if (hasPurity(currentItem)) {
                             event.getView().setCursor(getCombinedPurity(cursorItem, currentItem)[0]);
                         } else {
@@ -4046,7 +4261,7 @@ public class Tools {
                         for (int i = 0; i < slots; i++) {
                             if (view.getSlotType(i).equals(InventoryType.SlotType.RESULT)) continue;
                             var item = view.getItem(i);
-                            if (canCombine(item, cursorItem)) {
+                            if (isMetal(item) && canCombine(item, cursorItem)) {
                                 var nStack = getCombinedPurity(cursorItem, item);
                                 cursorItem.setAmount(nStack[0].getAmount());
                                 cursorItem.setItemMeta(nStack[0].getItemMeta());
@@ -4075,7 +4290,7 @@ public class Tools {
                     }
                 }
                 case LEFT -> {
-                    if (canCombine(currentItem, cursorItem)) {
+                    if (isMetal(currentItem) && canCombine(currentItem, cursorItem)) {
                         var combined = getCombinedPurity(currentItem, cursorItem);
                         currentItem.setAmount(combined[0].getAmount());
                         currentItem.setItemMeta(combined[0].getItemMeta());
@@ -4113,7 +4328,7 @@ public class Tools {
                     } else if (cursorItem != null && cursorItem.getType() != Material.AIR &&
                             currentItem != null && currentItem.getType() != Material.AIR &&
                             event.getSlotType() != InventoryType.SlotType.ARMOR) {
-                        if (canCombine(currentItem, cursorItem) && currentItem.getAmount() < 64) {
+                        if (isMetal(currentItem) && canCombine(currentItem, cursorItem) && currentItem.getAmount() < 64) {
                             var dropped = dropItemFromPurity(cursorItem);
                             event.getWhoClicked().setItemOnCursor(dropped[0]);
                             var combined = getCombinedPurity(dropped[1], currentItem);
@@ -4166,7 +4381,7 @@ public class Tools {
                                     view.getSlotType(currentSlot) == InventoryType.SlotType.CRAFTING) {
                                 for (int i = inv; i < (inv + 27); i++) {
                                     var slotItem = view.getItem(i);
-                                    if (canCombine(slotItem, nCurrentItem)) {
+                                    if (isMetal(slotItem) && canCombine(slotItem, nCurrentItem)) {
                                         var combined = getCombinedPurity(slotItem, nCurrentItem);
                                         view.setItem(i, combined[0]);
                                         if (combined.length > 1) {
@@ -4322,32 +4537,18 @@ public class Tools {
         }
 
         @EventHandler
-        private void onInventoryPickupItem(InventoryPickupItemEvent event) { // todo fix dupe
-            var item = event.getItem().getItemStack();
-            if (isMetal(item) && !hasPurity(item))
-                generatePurity(item, 1.0);
-            if (hasFolds(item)) return;
-            if (isGrenade(item) && item.getType() == Material.TNT) {
+        private void onInventoryPickupItem(InventoryPickupItemEvent event) {
+            var item = event.getItem();
+            if (isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
                 event.setCancelled(true);
                 return;
             }
-
-            if (isMetal(item)) {
-                var inv = event.getInventory();
-                for (var content : inv.getContents()) {
-                    if (canCombine(content, item)) {
-                        var combined = getCombinedPurity(item, content);
-                        content.setItemMeta(combined[0].getItemMeta());
-                        content.setAmount(combined[0].getAmount());
-                        if (combined.length > 1) {
-                            item.setItemMeta(combined[1].getItemMeta());
-                            item.setAmount(combined[1].getAmount());
-                        } else {
-                            event.getItem().remove();
-                            event.setCancelled(true);
-                            return;
-                        }
-                    }
+            if (!isMetal(item.getItemStack())) return;
+            var inv = event.getInventory();
+            for (var content : inv.getContents()) {
+                if (content != null && content.getType() != Material.AIR && Objects.equals(content.getItemMeta(), item.getItemStack().getItemMeta())) {
+                    event.setCancelled(true);
+                    return;
                 }
             }
         }
@@ -4392,8 +4593,37 @@ public class Tools {
             }
         }
 
-        private void manualTransfer(Inventory destination, Inventory source, ItemStack item) { // todo maybe move stacks at a time to reduce potential lag?
+        private void manualTransfer(InventoryHolder dHolder, InventoryHolder sHolder, ItemStack item) { // todo maybe move stacks at a time to reduce potential lag?
             var slot = -1;
+
+
+            Inventory destination;
+            Inventory source;
+            if (dHolder instanceof BlockInventoryHolder) {
+                var block = ((BlockInventoryHolder) dHolder).getBlock();
+                var loc = block.getLocation();
+                block = loc.getBlock();
+                var state = block.getState();
+                if (!(state instanceof BlockInventoryHolder)) return;
+                destination = ((BlockInventoryHolder) state).getInventory();
+            } else {
+                var entity = ((Entity) dHolder);
+                destination = ((InventoryHolder) entity).getInventory();
+            }
+
+            if (sHolder instanceof BlockInventoryHolder) {
+                var block = ((BlockInventoryHolder) sHolder).getBlock();
+                var loc = block.getLocation();
+                block = loc.getBlock();
+                var state = block.getState();
+                if (!(state instanceof BlockInventoryHolder)) return;
+                source = ((BlockInventoryHolder) state).getInventory();
+            } else {
+                var entity = ((Entity) sHolder);
+                source = ((InventoryHolder) entity).getInventory();
+            }
+
+
             for (int i = 0; i < source.getSize(); i++) {
                 var temp = source.getItem(i);
                 if (temp != null && temp.isSimilar(item)) {
@@ -4441,7 +4671,9 @@ public class Tools {
             var destination = event.getDestination();
             var source = event.getSource();
             event.setCancelled(true);
-            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> manualTransfer(destination, source, item), 0L);
+            var dHolder = destination.getHolder();
+            var sHolder = source.getHolder();
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> manualTransfer(dHolder, sHolder, item), 0L);
         }
 
         @EventHandler
