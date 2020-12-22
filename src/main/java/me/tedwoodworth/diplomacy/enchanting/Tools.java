@@ -1078,6 +1078,602 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
+
+            // Cancelling sharpening tools
+            for (var item : inventory.getMatrix()) {
+                if (isWhetstone(item)) {
+                    if (result.getType() == Material.FLOWER_POT || result.getType() == Material.BRICKS) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                }
+                if (isWaterstone(item)) {
+                    if (result.getType() == Material.NETHER_BRICK_FENCE || result.getType() == Material.NETHER_BRICK || result.getType() == Material.RED_NETHER_BRICKS) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                }
+                if (isCoarseSandPaper(item) || isFineSandPaper(item)) {
+                    if (result.getType() == Material.CREEPER_BANNER_PATTERN
+                            || result.getType() == Material.FLOWER_BANNER_PATTERN
+                            || result.getType() == Material.SKULL_BANNER_PATTERN
+                            || result.getType() == Material.MOJANG_BANNER_PATTERN
+                            || result.getType() == Material.BOOK
+                            || result.getType() == Material.CARTOGRAPHY_TABLE
+                            || result.getType() == Material.MAP
+                            || result.getType() == Material.FIREWORK_ROCKET
+                    ) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                }
+            }
+
+            // Fine sand paper
+            if (isFineSandPaper(result)) {
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    if (item.getType() == Material.SUGAR && !isDust(item)) {
+                        inventory.setResult(air);
+                        return;
+                    } else if (isFineSandPaper(item) || isCoarseSandPaper(item)) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                }
+            }
+
+            // Whetstone
+            if (isWhetstone(result)) {
+                var unbreaking = 0;
+                for (var item : inventory.getMatrix()) {
+                    if (item.getType() == Material.IRON_INGOT) {
+                        var meta = item.getItemMeta();
+                        if (meta == null || !meta.hasEnchant(Enchantment.DURABILITY) || meta.getEnchantLevel(Enchantment.DURABILITY) < 2) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
+                    }
+                }
+                var uses = 25 * unbreaking;
+                var meta = result.getItemMeta();
+                var lore = meta.getLore();
+                var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                lore.set(line + 1, String.valueOf(uses));
+                meta.setLore(lore);
+                result.setItemMeta(meta);
+                inventory.setResult(result);
+                return;
+            }
+
+            // Waterstone
+            if (isWaterstone(result)) {
+                var uses = 0;
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    if (item.getType() == Material.BRICK) {
+                        if (!isWhetstone(item)) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        var line = item.getItemMeta().getLore().indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        uses = Integer.parseInt(item.getItemMeta().getLore().get(line + 1));
+                    }
+                    if (item.getType() == Material.GLOWSTONE_DUST) {
+                        if (!isDust(item)) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    }
+                    if (item.getType() == Material.REDSTONE) {
+                        if (!isDust(item)) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    }
+                }
+                uses = (int) (uses + Math.pow(0.5 * uses, uses / (uses + 35.0)));
+                var meta = result.getItemMeta();
+                var lore = meta.getLore();
+                var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                lore.set(line + 1, String.valueOf(uses));
+                meta.setLore(lore);
+                result.setItemMeta(meta);
+                inventory.setResult(result);
+                return;
+            }
+
+            // Coarse Sharpening Blade
+            if (isCoarseBlade(result)) {
+                var uses = -1;
+                var knives = false;
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    if (item.getType() == Material.IRON_SWORD) {
+                        if (isHuntingKnife(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            var unbreaking = 1;
+                            if (item.getItemMeta().hasEnchant(Enchantment.DURABILITY)) {
+                                unbreaking = item.getEnchantmentLevel(Enchantment.DURABILITY);
+                                if (unbreaking < 5) {
+                                    inventory.setResult(air);
+                                    return;
+                                } else {
+                                    unbreaking++;
+                                }
+                            } else {
+                                inventory.setResult(air);
+                                return;
+                            }
+                            if (!item.getItemMeta().hasEnchant(Enchantment.DAMAGE_ALL) || item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) < 6) {
+                                inventory.setResult(air);
+                                return;
+                            }
+                            if (uses == -1)
+                                uses = (item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage()) * unbreaking;
+                            else {
+                                knives = true;
+                                uses = Math.min(uses, (item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage()) * unbreaking);
+                            }
+
+                        }
+                    }
+                }
+                if (!knives) {
+                    inventory.setResult(air);
+                    return;
+                }
+                uses = (int) Math.pow(uses, 6.0 / 7.0);
+                var meta = result.getItemMeta();
+                var lore = meta.getLore();
+                var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                lore.set(line + 1, String.valueOf(uses));
+                meta.setLore(lore);
+                result.setItemMeta(meta);
+                inventory.setResult(result);
+                return;
+            }
+
+            // Fine Sharpening Blade
+            if (isFineBlade(result)) {
+                var uses = -1;
+                var knives = false;
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    if (item.getType() == Material.NETHERITE_SWORD) {
+                        if (isHuntingKnife(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            var unbreaking = 1;
+                            if (item.getItemMeta().hasEnchant(Enchantment.DURABILITY)) {
+                                unbreaking = item.getEnchantmentLevel(Enchantment.DURABILITY);
+                                if (unbreaking < 5) {
+                                    inventory.setResult(air);
+                                    return;
+                                } else {
+                                    unbreaking++;
+                                }
+                            } else {
+                                inventory.setResult(air);
+                                return;
+                            }
+                            if (!item.getItemMeta().hasEnchant(Enchantment.DAMAGE_ALL) || item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) < 7) {
+                                inventory.setResult(air);
+                                return;
+                            }
+                            if (uses == -1)
+                                uses = (item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage()) * unbreaking;
+                            else {
+                                knives = true;
+                                uses = Math.min(uses, (item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage()) * unbreaking);
+                            }
+
+                        }
+                    }
+                }
+                if (!knives) {
+                    inventory.setResult(air);
+                    return;
+                }
+                uses = (int) (Math.pow(uses, 9.0 / 10.0) / 7.0);
+                var meta = result.getItemMeta();
+                var lore = meta.getLore();
+                var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                lore.set(line + 1, String.valueOf(uses));
+                meta.setLore(lore);
+                result.setItemMeta(meta);
+                inventory.setResult(result);
+                return;
+            }
+
+            // Iron Honing Rod
+            if (isIronRod(result)) {
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    if (tools.contains(item.getType())) {
+                        if (!isChisel(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            var durability = item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage();
+                            var unbreaking = 1;
+                            if (item.getItemMeta().hasEnchant(Enchantment.DURABILITY))
+                                unbreaking += item.getEnchantmentLevel(Enchantment.DURABILITY);
+                            if (durability * unbreaking < 1000) {
+                                inventory.setResult(air);
+                                return;
+                            }
+                        }
+                    } else {
+                        if (item.getItemMeta() == null || !item.getItemMeta().hasEnchant(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) != 10) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    }
+                }
+                inventory.setResult(result);
+                return;
+            }
+
+            // Netherite Honing Rod
+            if (isNetheriteRod(result)) {
+                for (var item : inventory.getMatrix()) {
+                    if (item == null || item.getType() == Material.AIR) continue;
+                    if (tools.contains(item.getType())) {
+                        if (!isChisel(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            var durability = item.getType().getMaxDurability() - ((Damageable) item.getItemMeta()).getDamage();
+                            var unbreaking = 1;
+                            if (item.getItemMeta().hasEnchant(Enchantment.DURABILITY))
+                                unbreaking += item.getEnchantmentLevel(Enchantment.DURABILITY);
+                            if (durability * unbreaking < 2500) {
+                                inventory.setResult(air);
+                                return;
+                            }
+                        }
+                    } else {
+                        if (item.getItemMeta() == null || !item.getItemMeta().hasEnchant(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) != 10) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    }
+                }
+                inventory.setResult(result);
+                return;
+            }
+
+            // Sharpness
+            if (result.getType() == Material.STICK && result.getItemMeta() != null && result.getItemMeta().hasEnchant(Enchantment.DAMAGE_ALL)) {
+                var meta = result.getItemMeta();
+
+                int sharpness = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
+                ItemStack nResult;
+                if (sharpness == 3) {
+                    ItemStack tool = null;
+                    ItemStack paper = null;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.PAPER) paper = item;
+                    }
+                    if (tool == null || !(isCoarseSandPaper(paper) || isFineSandPaper(paper))) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    if (isFineSandPaper(paper)) sharpness = 4;
+
+                    nResult = new ItemStack(tool);
+                } else if (sharpness == 5) {
+                    ItemStack tool = null;
+                    ItemStack whetstone = null;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.BRICK) whetstone = item;
+                    }
+                    if (tool == null || !isWhetstone(whetstone)) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult = new ItemStack(tool);
+                } else if (sharpness == 6) {
+                    ItemStack tool = null;
+                    ItemStack waterstone = null;
+                    var water = false;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.NETHER_BRICK) waterstone = item;
+                        if (item.getItemMeta() instanceof PotionMeta) {
+                            var potionType = ((PotionMeta) item.getItemMeta()).getBasePotionData().getType();
+                            if (potionType != PotionType.WATER) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                water = true;
+                            }
+                        }
+                    }
+                    if (tool == null || !isWaterstone(waterstone) || !water) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult = new ItemStack(tool);
+                } else if (sharpness == 7) {
+                    ItemStack tool = null;
+                    ItemStack coarseBlades = null;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.SMOOTH_QUARTZ_STAIRS) coarseBlades = item;
+                    }
+                    if (tool == null || !isCoarseBlade(coarseBlades)) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult = new ItemStack(tool);
+                } else if (sharpness == 8) {
+                    ItemStack tool = null;
+                    ItemStack fineBlades = null;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.POLISHED_BLACKSTONE_STAIRS) fineBlades = item;
+                    }
+                    if (tool == null || !isFineBlade(fineBlades)) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult = new ItemStack(tool);
+                } else if (sharpness == 9) {
+                    ItemStack tool = null;
+                    ItemStack rod = null;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null || item.getType() == Material.AIR) continue;
+                        var type = item.getType();
+                        if (tools.contains(type)) tool = item;
+                        if (type == Material.END_ROD) rod = item;
+                        if (isNetheriteRod(item)) sharpness = 10;
+                    }
+                    if (tool == null || !(isIronRod(rod) || isNetheriteRod(rod))) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult = new ItemStack(tool);
+                } else {
+                    inventory.setResult(air);
+                    return;
+                }
+
+                var type = nResult.getType();
+                var nMeta = nResult.getItemMeta();
+                if ((type == Material.WOODEN_HOE || type == Material.STONE_HOE || type == Material.IRON_HOE || type == Material.GOLDEN_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE)
+                        && !(isChisel(nResult) || isSaw(nResult))) {
+                    inventory.setResult(air);
+                    return;
+                }
+
+                if (type == Material.WOODEN_AXE
+                        || type == Material.STONE_AXE
+                        || type == Material.IRON_AXE
+                        || type == Material.GOLDEN_AXE
+                        || type == Material.DIAMOND_AXE
+                        || type == Material.NETHERITE_AXE
+                ) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.DAMAGE_ALL) || nMeta.getEnchantLevel(Enchantment.DAMAGE_ALL) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+
+                    nResult.removeEnchantment(Enchantment.DAMAGE_ALL);
+                    nResult.removeEnchantment(Enchantment.DIG_SPEED);
+                    nResult.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, sharpness);
+                    nResult.addUnsafeEnchantment(Enchantment.DIG_SPEED, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (isChisel(nResult)) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) || nMeta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+                    nResult.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (isHuntingKnife(nResult)) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) || nMeta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.LOOT_BONUS_MOBS);
+                    nResult.addUnsafeEnchantment(Enchantment.LOOT_BONUS_MOBS, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (type == Material.WOODEN_PICKAXE
+                        || type == Material.STONE_PICKAXE
+                        || type == Material.IRON_PICKAXE
+                        || type == Material.GOLDEN_PICKAXE
+                        || type == Material.DIAMOND_PICKAXE
+                        || type == Material.NETHERITE_PICKAXE
+                ) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.DIG_SPEED) || nMeta.getEnchantLevel(Enchantment.DIG_SPEED) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.DIG_SPEED);
+                    nResult.addUnsafeEnchantment(Enchantment.DIG_SPEED, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (isSaw(nResult)) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.DIG_SPEED) || nMeta.getEnchantLevel(Enchantment.DIG_SPEED) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.DIG_SPEED);
+                    nResult.addUnsafeEnchantment(Enchantment.DIG_SPEED, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (type == Material.WOODEN_SHOVEL
+                        || type == Material.STONE_SHOVEL
+                        || type == Material.IRON_SHOVEL
+                        || type == Material.GOLDEN_SHOVEL
+                        || type == Material.DIAMOND_SHOVEL
+                        || type == Material.NETHERITE_SHOVEL
+                ) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.DIG_SPEED) || nMeta.getEnchantLevel(Enchantment.DIG_SPEED) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.DIG_SPEED);
+                    nResult.addUnsafeEnchantment(Enchantment.DIG_SPEED, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (type == Material.WOODEN_SWORD
+                        || type == Material.STONE_SWORD
+                        || type == Material.IRON_SWORD
+                        || type == Material.GOLDEN_SWORD
+                        || type == Material.DIAMOND_SWORD
+                        || type == Material.NETHERITE_SWORD
+                ) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.DAMAGE_ALL) || nMeta.getEnchantLevel(Enchantment.DAMAGE_ALL) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.DAMAGE_ALL);
+                    nResult.removeEnchantment(Enchantment.SWEEPING_EDGE);
+                    nResult.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, sharpness);
+                    nResult.addUnsafeEnchantment(Enchantment.SWEEPING_EDGE, sharpness / 2);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+                if (type == Material.TRIDENT) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.IMPALING) || nMeta.getEnchantLevel(Enchantment.IMPALING) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.IMPALING);
+                    nResult.addUnsafeEnchantment(Enchantment.IMPALING, sharpness);
+                    if (nResult.getItemMeta() instanceof Damageable) {
+                        nMeta = nResult.getItemMeta();
+                        var damageable = (Damageable) nMeta;
+                        var max = nResult.getType().getMaxDurability();
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        if (nDurability < 1) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        damageable.setDamage(max - nDurability);
+                        nResult.setItemMeta(nMeta);
+                        inventory.setResult(nResult);
+                    }
+                    return;
+                }
+            }
+
             // No repairing
             if (tools.contains(result.getType())) {
                 ItemStack tool = null;
@@ -1408,7 +2004,7 @@ public class Tools {
                 if (content == null) continue;
                 if ((isMagnet(content) && !isSifter(result))
                         || isSlurried(content)
-                        || (isDust(content) && !result.getType().equals(Material.POTION))
+                        || (isDust(content) && !(result.getType().equals(Material.POTION) || isFineSandPaper(result)))
                         || isGrenade(content)) {
                     inventory.setResult(air);
                     return;
@@ -1601,7 +2197,9 @@ public class Tools {
 
                         if (drops > 0) {
                             var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
+                            goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
                             var meta = goldDustItem.getItemMeta();
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.setDisplayName(ChatColor.RESET + "Gold Dust");
                             meta.setLocalizedName("Gold Dust");
                             var lore = new ArrayList<String>();
@@ -1647,7 +2245,9 @@ public class Tools {
 
                         if (drops > 0) {
                             var ironDustItem = new ItemStack(Material.SUGAR);
+                            ironDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
                             var meta = ironDustItem.getItemMeta();
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.setDisplayName(ChatColor.RESET + "Iron Dust");
                             meta.setLocalizedName("Iron Dust");
                             var lore = new ArrayList<String>();
@@ -1856,7 +2456,9 @@ public class Tools {
 
                         if (drops > 0) {
                             var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
+                            goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
                             var meta = goldDustItem.getItemMeta();
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.setDisplayName(ChatColor.RESET + "Gold Dust");
                             meta.setLocalizedName("Gold Dust");
                             var lore = new ArrayList<String>();
@@ -1970,7 +2572,9 @@ public class Tools {
 
                         if (drops > 0) {
                             var ancientDustItem = new ItemStack(Material.REDSTONE);
+                            ancientDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
                             var meta = ancientDustItem.getItemMeta();
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.setDisplayName(ChatColor.RESET + "Ancient Dust");
                             meta.setLocalizedName("Ancient Dust");
                             var lore = new ArrayList<String>();
@@ -2464,6 +3068,12 @@ public class Tools {
             if (item == null) return;
 
 
+            // sharpening tools
+            if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (isNetheriteRod(item) || isCoarseBlade(item) || isFineBlade(item) || isIronRod(item))) {
+                event.setCancelled(true);
+                return;
+            }
+
             // Grenade
             if (isGrenade(item) && event.getAction() != Action.PHYSICAL) {
                 if (item.getAmount() > 1) item.setAmount(item.getAmount() - 1);
@@ -2708,6 +3318,7 @@ public class Tools {
 
             if (event.getRawSlot() == -1) return;
 
+
             // Cancel brewing dust
             var view = event.getView();
             var temp = view.getInventory(event.getRawSlot());
@@ -2715,6 +3326,319 @@ public class Tools {
                 if (temp != null && temp.getType() == InventoryType.BREWING) {
                     if (cursorItem != null && isDust(cursorItem)) {
                         event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+
+            // Sharpening tools
+            if (event.getSlotType() == InventoryType.SlotType.RESULT) {
+                if (currentItem != null && currentItem.getItemMeta() != null) {
+
+                    // Using whetstone
+                    var meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 5)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 5)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 5)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 5 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 5)
+                    ) {
+                        ItemStack whetstone = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isWhetstone(view.getItem(i))) {
+                                whetstone = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (whetstone == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var stoneMeta = whetstone.getItemMeta();
+                        var lore = stoneMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            stoneMeta.setLore(lore);
+                            whetstone.setItemMeta(stoneMeta);
+                            whetstone.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), whetstone);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(whetstone);
+                            }
+                            return;
+                        }
+                    }
+
+                    // Using waterstone
+                    meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 6)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 6)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 6)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 6 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 6)
+                    ) {
+                        ItemStack waterstone = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isWaterstone(view.getItem(i))) {
+                                waterstone = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (waterstone == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var stoneMeta = waterstone.getItemMeta();
+                        var lore = stoneMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            stoneMeta.setLore(lore);
+                            waterstone.setItemMeta(stoneMeta);
+                            waterstone.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), waterstone);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(waterstone);
+                            }
+                            first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), new ItemStack(Material.GLASS_BOTTLE, 1));
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE, 1));
+                            }
+                            return;
+                        }
+                    }
+
+                    // Using coarse blades
+                    meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 7)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 7)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 7)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 7 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 7)
+                    ) {
+                        ItemStack coarseBlades = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isCoarseBlade(view.getItem(i))) {
+                                coarseBlades = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (coarseBlades == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var bladeMeta = coarseBlades.getItemMeta();
+                        var lore = bladeMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            bladeMeta.setLore(lore);
+                            coarseBlades.setItemMeta(bladeMeta);
+                            coarseBlades.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), coarseBlades);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(coarseBlades);
+                            }
+                            return;
+                        }
+                    }
+
+                    // using fine blades
+                    meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 8)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 8)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 8)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 8 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 8)
+                    ) {
+                        ItemStack fineBlades = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isFineBlade(view.getItem(i))) {
+                                fineBlades = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (fineBlades == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var bladeMeta = fineBlades.getItemMeta();
+                        var lore = bladeMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            bladeMeta.setLore(lore);
+                            fineBlades.setItemMeta(bladeMeta);
+                            fineBlades.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), fineBlades);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(fineBlades);
+                            }
+                            return;
+                        }
+                    }
+
+
+                    // Using iron rod
+                    meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 9)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 9)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 9)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 9 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 9)
+                    ) {
+                        ItemStack ironRod = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isIronRod(view.getItem(i))) {
+                                ironRod = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (ironRod == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var rodMeta = ironRod.getItemMeta();
+                        var lore = rodMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            rodMeta.setLore(lore);
+                            ironRod.setItemMeta(rodMeta);
+                            ironRod.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), ironRod);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(ironRod);
+                            }
+                            return;
+                        }
+                    }
+
+
+                    // Using netherite rod
+                    meta = currentItem.getItemMeta();
+                    if ((meta.hasEnchant(Enchantment.DAMAGE_ALL) && currentItem.getEnchantmentLevel(Enchantment.DAMAGE_ALL) == 10)
+                            || (meta.hasEnchant(Enchantment.DIG_SPEED) && currentItem.getEnchantmentLevel(Enchantment.DIG_SPEED) == 10)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) == 10)
+                            || (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS) && currentItem.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) == 10 && !isSifter(currentItem))
+                            || (meta.hasEnchant(Enchantment.IMPALING) && currentItem.getEnchantmentLevel(Enchantment.IMPALING) == 10)
+                    ) {
+                        ItemStack netheriteRod = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isNetheriteRod(view.getItem(i))) {
+                                netheriteRod = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (netheriteRod == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var rodMeta = netheriteRod.getItemMeta();
+                        var lore = rodMeta.getLore();
+                        var line = lore.indexOf(DiplomacyRecipes.getInstance().REMAINING_USES_LORE);
+                        var uses = Integer.parseInt(lore.get(line + 1));
+                        if (uses > 1) {
+                            lore.set(line + 1, String.valueOf(uses - 1));
+                            rodMeta.setLore(lore);
+                            netheriteRod.setItemMeta(rodMeta);
+                            netheriteRod.setAmount(1);
+                            var first = event.getWhoClicked().getInventory().firstEmpty();
+                            if (first == -1) {
+                                event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), netheriteRod);
+                            } else {
+                                event.getWhoClicked().getInventory().addItem(netheriteRod);
+                            }
+                            return;
+                        }
+                    }
+
+                    // Crafting iron rod
+                    if (isIronRod(currentItem)) {
+                        ItemStack chisel = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isChisel(view.getItem(i))) {
+                                chisel = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (chisel == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var durability = chisel.getType().getMaxDurability() - ((Damageable) chisel.getItemMeta()).getDamage();
+                        var unbreaking = 0;
+                        if (chisel.getItemMeta().hasEnchant(Enchantment.DURABILITY))
+                            unbreaking = chisel.getEnchantmentLevel(Enchantment.DURABILITY);
+                        durability = (int) (durability - 1000.0 / (1.0 + unbreaking));
+                        if (durability < 1) return;
+                        meta = chisel.getItemMeta();
+                        ((Damageable) meta).setDamage(chisel.getType().getMaxDurability() - durability);
+                        var nChisel = new ItemStack(chisel);
+                        nChisel.setItemMeta(meta);
+                        var first = event.getWhoClicked().getInventory().firstEmpty();
+                        if (first == -1) {
+                            event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), nChisel);
+                        } else {
+                            event.getWhoClicked().getInventory().addItem(nChisel);
+                        }
+                        return;
+                    }
+                    // Crafting netherite rod
+                    if (isNetheriteRod(currentItem)) {
+                        ItemStack chisel = null;
+                        for (int i = 0; i < view.countSlots(); i++) {
+                            if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
+                            if (isChisel(view.getItem(i))) {
+                                chisel = new ItemStack(view.getItem(i));
+                                break;
+                            }
+                        }
+                        if (chisel == null) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        var durability = chisel.getType().getMaxDurability() - ((Damageable) chisel.getItemMeta()).getDamage();
+                        var unbreaking = 0;
+                        if (chisel.getItemMeta().hasEnchant(Enchantment.DURABILITY))
+                            unbreaking = chisel.getEnchantmentLevel(Enchantment.DURABILITY);
+                        durability = (int) (durability - 2500.0 / (1.0 + unbreaking));
+                        if (durability < 1) return;
+                        meta = chisel.getItemMeta();
+                        ((Damageable) meta).setDamage(chisel.getType().getMaxDurability() - durability);
+                        var nChisel = new ItemStack(chisel);
+                        nChisel.setItemMeta(meta);
+                        var first = event.getWhoClicked().getInventory().firstEmpty();
+                        if (first == -1) {
+                            event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), nChisel);
+                        } else {
+                            event.getWhoClicked().getInventory().addItem(nChisel);
+                        }
                         return;
                     }
                 }
@@ -3476,19 +4400,6 @@ public class Tools {
                     generatePurity(content, 1.0);
                 }
             }
-
-            if (inv.getType() == InventoryType.GRINDSTONE) {
-                var holder = inv.getHolder();
-                if (holder instanceof Entity) {
-                    var entity = (Entity) holder;
-                    var name = entity.getName();
-                    if (!name.contains("Grindstone - Remaining Durability:")) {
-                        entity.setCustomNameVisible(true);
-                        entity.setCustomName("Grindstone - Remaining Durability: 200");
-                    }
-
-                }
-            }
         }
 
         @EventHandler
@@ -3578,8 +4489,11 @@ public class Tools {
                     default -> null;
                 };
                 var item = new ItemStack(material);
-
-                var newResult = generatePurity(item, 0.01);
+                ItemStack newResult;
+                if (material == Material.NETHERITE_SCRAP) {
+                    newResult = generatePurity(item, Math.random() / 100.0);
+                } else
+                    newResult = generatePurity(item, 0.01);
 
                 if (result != null) {
                     inventory.setResult(getCombinedPurity(newResult, result)[0]);
@@ -3612,7 +4526,9 @@ public class Tools {
                 var item = new ItemStack(material);
 
                 ItemStack newResult;
-                if (item.getType() != Material.AIR)
+                if (item.getType() == Material.NETHERITE_SCRAP && Math.random() < 0.25) {
+                    newResult = generatePurity(item, 0.15);
+                } else if (item.getType() != Material.AIR)
                     newResult = generatePurity(item, 1.0);
                 else
                     newResult = item;
@@ -3640,7 +4556,7 @@ public class Tools {
             if (result != null) {
                 result.removeEnchantment(Enchantment.DURABILITY);
                 var ingredient = inventory[1];
-                if (ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchants()) {
+                if (ingredient != null && ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchants()) {
                     result.addUnsafeEnchantment(Enchantment.DURABILITY, ingredient.getEnchantmentLevel(Enchantment.DURABILITY));
                 }
                 event.setResult(result);
@@ -4151,5 +5067,61 @@ public class Tools {
                 currentItem.getItemMeta() != null &&
                 currentItem.getItemMeta().getLore() != null &&
                 currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().KNIFE_LORE);
+    }
+
+    private boolean isCoarseSandPaper(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().COARSE_PAPER_LORE);
+    }
+
+    private boolean isFineSandPaper(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().FINE_PAPER_LORE);
+    }
+
+    private boolean isWhetstone(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().WHETSTONE_LORE);
+    }
+
+    private boolean isWaterstone(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().WATERSTONE_LORE);
+    }
+
+    private boolean isCoarseBlade(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().COARSE_BLADE_LORE);
+    }
+
+    private boolean isFineBlade(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().FINE_BLADE_LORE);
+    }
+
+    private boolean isIronRod(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().IRON_ROD_LORE);
+    }
+
+    private boolean isNetheriteRod(ItemStack currentItem) {
+        return currentItem != null &&
+                currentItem.getItemMeta() != null &&
+                currentItem.getItemMeta().getLore() != null &&
+                currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().NETHERITE_ROD_LORE);
     }
 }

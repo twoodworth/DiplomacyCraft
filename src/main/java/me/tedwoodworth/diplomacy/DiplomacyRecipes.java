@@ -34,6 +34,16 @@ public class DiplomacyRecipes {
     public String GRENADE_LORE_2 = ChatColor.YELLOW + "Left Click: " + ChatColor.GRAY + "Underhand throw";
     public String GRENADE_LORE_3 = ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Unpin and wait until releasing shift to throw";
 
+    public String COARSE_PAPER_LORE = ChatColor.BLUE + "Coarse Sandpaper";
+    public String FINE_PAPER_LORE = ChatColor.BLUE + "Fine Sandpaper";
+    public String WHETSTONE_LORE = ChatColor.BLUE + "Whetstone";
+    public String WATERSTONE_LORE = ChatColor.BLUE + "Waterstone";
+    public String COARSE_BLADE_LORE = ChatColor.BLUE + "Coarse Sharpening Blades";
+    public String FINE_BLADE_LORE = ChatColor.BLUE + "Fine Sharpening Blades";
+    public String IRON_ROD_LORE = ChatColor.BLUE + "Iron Honing Rod";
+    public String NETHERITE_ROD_LORE = ChatColor.BLUE + "Netherite Honing Rod";
+    public String REMAINING_USES_LORE = ChatColor.GRAY + "Remaining Uses:";
+
     public static DiplomacyRecipes getInstance() {
         if (instance == null) {
             instance = new DiplomacyRecipes();
@@ -527,6 +537,217 @@ public class DiplomacyRecipes {
         grenadeRecipe.setIngredient('R', Material.REDSTONE);
         grenadeRecipe.setIngredient('F', Material.FIRE_CHARGE);
         Diplomacy.getInstance().getServer().addRecipe(grenadeRecipe);
+
+        var coarseSandPaper = new ItemStack(Material.PAPER, 3);
+        coarseSandPaper.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var paperMeta = coarseSandPaper.getItemMeta();
+        paperMeta.setDisplayName(ChatColor.RESET + "Coarse Sandpaper");
+        paperMeta.setLocalizedName("Coarse Sandpaper");
+        lore = new ArrayList<>();
+        lore.add(COARSE_PAPER_LORE);
+        paperMeta.setLore(lore);
+        paperMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        coarseSandPaper.setItemMeta(paperMeta);
+
+        var coarsePaperRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "coarse_paper"), coarseSandPaper);
+        coarsePaperRecipe.shape("QQQ", "QSQ", "PPP");
+        coarsePaperRecipe.setIngredient('Q', Material.QUARTZ);
+        coarsePaperRecipe.setIngredient('S', Material.SLIME_BALL);
+        coarsePaperRecipe.setIngredient('P', Material.PAPER);
+        Diplomacy.getInstance().getServer().addRecipe(coarsePaperRecipe);
+
+        var fineSandPaper = new ItemStack(Material.PAPER, 3);
+        fineSandPaper.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var paperMeta2 = fineSandPaper.getItemMeta();
+        paperMeta2.setDisplayName(ChatColor.RESET + "Fine Sandpaper");
+        paperMeta2.setLocalizedName("Coarse Sand Paper");
+        lore = new ArrayList<>();
+        lore.add(FINE_PAPER_LORE);
+        paperMeta2.setLore(lore);
+        paperMeta2.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        fineSandPaper.setItemMeta(paperMeta2);
+
+        var finePaperRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "fine_paper"), fineSandPaper);
+        finePaperRecipe.shape(" D ", "DSD", "PPP");
+        finePaperRecipe.setIngredient('D', Material.SUGAR);
+        finePaperRecipe.setIngredient('S', Material.SLIME_BALL);
+        finePaperRecipe.setIngredient('P', Material.PAPER);
+        Diplomacy.getInstance().getServer().addRecipe(finePaperRecipe);
+
+        var sharp3 = new ItemStack(Material.STICK);
+        sharp3.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 3);
+        var sharp3recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp3"), sharp3);
+
+        var toolChoice = new RecipeChoice.MaterialChoice(Tools.getInstance().tools);
+        sharp3recipe.addIngredient(toolChoice);
+        sharp3recipe.addIngredient(Material.PAPER);
+        Diplomacy.getInstance().getServer().addRecipe(sharp3recipe);
+
+        var whetstone = new ItemStack(Material.BRICK, 1);
+        whetstone.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var whetstoneMeta = whetstone.getItemMeta();
+        whetstoneMeta.setDisplayName(ChatColor.RESET + "Whetstone");
+        whetstoneMeta.setLocalizedName("Whetstone");
+        lore = new ArrayList<>();
+        lore.add(WHETSTONE_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("200");
+        whetstoneMeta.setLore(lore);
+        whetstoneMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        whetstone.setItemMeta(whetstoneMeta);
+
+        var whetstoneRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "whetstone"), whetstone);
+        whetstoneRecipe.shape("DDD", "III", "OOO");
+        whetstoneRecipe.setIngredient('D', Material.DIAMOND);
+        whetstoneRecipe.setIngredient('I', Material.IRON_INGOT);
+        whetstoneRecipe.setIngredient('O', Material.OBSIDIAN);
+        Diplomacy.getInstance().getServer().addRecipe(whetstoneRecipe);
+
+        var sharp5 = new ItemStack(Material.STICK);
+        sharp5.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 5);
+        var sharp5recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp5"), sharp5);
+
+        sharp5recipe.addIngredient(toolChoice);
+        sharp5recipe.addIngredient(Material.BRICK);
+        Diplomacy.getInstance().getServer().addRecipe(sharp5recipe);
+
+        var waterstone = new ItemStack(Material.NETHER_BRICK, 1);
+        waterstone.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var waterstoneMeta = waterstone.getItemMeta();
+        waterstoneMeta.setDisplayName(ChatColor.RESET + "Waterstone");
+        waterstoneMeta.setLocalizedName("Waterstone");
+        lore = new ArrayList<>();
+        lore.add(WATERSTONE_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("250");
+        waterstoneMeta.setLore(lore);
+        waterstoneMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        waterstone.setItemMeta(waterstoneMeta);
+
+        var waterstoneRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "waterstone"), waterstone);
+        waterstoneRecipe.shape("AGA", "GBG", "AGA");
+        waterstoneRecipe.setIngredient('A', Material.REDSTONE);
+        waterstoneRecipe.setIngredient('G', Material.GLOWSTONE_DUST);
+        waterstoneRecipe.setIngredient('B', Material.BRICK);
+        Diplomacy.getInstance().getServer().addRecipe(waterstoneRecipe);
+
+        var sharp6 = new ItemStack(Material.STICK);
+        sharp6.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 6);
+        var sharp6recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp6"), sharp6);
+
+        sharp6recipe.addIngredient(toolChoice);
+        sharp6recipe.addIngredient(Material.NETHER_BRICK);
+        sharp6recipe.addIngredient(Material.POTION);
+        Diplomacy.getInstance().getServer().addRecipe(sharp6recipe);
+
+
+        var coarseBlade = new ItemStack(Material.SMOOTH_QUARTZ_STAIRS, 1);
+        coarseBlade.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var coarseBladeMeta = coarseBlade.getItemMeta();
+        coarseBladeMeta.setDisplayName(ChatColor.RESET + "Coarse Sharpening Blades");
+        coarseBladeMeta.setLocalizedName("Coarse Sharpening Blades");
+        lore = new ArrayList<>();
+        lore.add(COARSE_BLADE_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("400");
+        coarseBladeMeta.setLore(lore);
+        coarseBladeMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        coarseBlade.setItemMeta(coarseBladeMeta);
+
+        var coarseBladeRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "coarse_blade"), coarseBlade);
+        coarseBladeRecipe.shape("B B", "OOO");
+        coarseBladeRecipe.setIngredient('O', Material.OBSIDIAN);
+        coarseBladeRecipe.setIngredient('B', Material.IRON_SWORD);
+        Diplomacy.getInstance().getServer().addRecipe(coarseBladeRecipe);
+
+        var sharp7 = new ItemStack(Material.STICK);
+        sharp7.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 7);
+        var sharp7recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp7"), sharp7);
+
+        sharp7recipe.addIngredient(toolChoice);
+        sharp7recipe.addIngredient(Material.SMOOTH_QUARTZ_STAIRS);
+        Diplomacy.getInstance().getServer().addRecipe(sharp7recipe);
+
+
+        var fineBlade = new ItemStack(Material.POLISHED_BLACKSTONE_STAIRS, 1);
+        fineBlade.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var fineBladeMeta = fineBlade.getItemMeta();
+        fineBladeMeta.setDisplayName(ChatColor.RESET + "Fine Sharpening Blades");
+        fineBladeMeta.setLocalizedName("Fine Sharpening Blades");
+        lore = new ArrayList<>();
+        lore.add(FINE_BLADE_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("500");
+        fineBladeMeta.setLore(lore);
+        fineBladeMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        fineBlade.setItemMeta(fineBladeMeta);
+
+        var fineBladeRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "fine_blade"), fineBlade);
+        fineBladeRecipe.shape("B B", "OOO");
+        fineBladeRecipe.setIngredient('O', Material.OBSIDIAN);
+        fineBladeRecipe.setIngredient('B', Material.NETHERITE_SWORD);
+        Diplomacy.getInstance().getServer().addRecipe(fineBladeRecipe);
+
+        var sharp8 = new ItemStack(Material.STICK);
+        sharp8.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 8);
+        var sharp8recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp8"), sharp8);
+
+        sharp8recipe.addIngredient(toolChoice);
+        sharp8recipe.addIngredient(Material.POLISHED_BLACKSTONE_STAIRS);
+        Diplomacy.getInstance().getServer().addRecipe(sharp8recipe);
+
+
+        var ironRod = new ItemStack(Material.END_ROD, 1);
+        var ironRodMeta = ironRod.getItemMeta();
+        ironRodMeta.setDisplayName(ChatColor.RESET + "Iron Honing Rod");
+        ironRodMeta.setLocalizedName("Iron Honing Rod");
+        lore = new ArrayList<>();
+        lore.add(IRON_ROD_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("1000");
+        ironRodMeta.setLore(lore);
+        ironRodMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        ironRod.setItemMeta(ironRodMeta);
+
+        var ironRodRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "iron_rod"), ironRod);
+        ironRodRecipe.shape(" I", "HI", " I");
+        var choice = new RecipeChoice.MaterialChoice(Material.WOODEN_HOE, Material.STONE_HOE, Material.IRON_HOE, Material.GOLDEN_HOE, Material.DIAMOND_HOE, Material.NETHERITE_HOE);
+        ironRodRecipe.setIngredient('H', choice);
+        ironRodRecipe.setIngredient('I', Material.IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(ironRodRecipe);
+
+        var sharp9 = new ItemStack(Material.STICK);
+        sharp9.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 9);
+        var sharp9recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp9"), sharp9);
+
+        sharp9recipe.addIngredient(toolChoice);
+        sharp9recipe.addIngredient(Material.END_ROD);
+        Diplomacy.getInstance().getServer().addRecipe(sharp9recipe);
+
+        var netheriteRod = new ItemStack(Material.END_ROD, 1);
+        netheriteRod.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
+        var netheriteRodMeta = netheriteRod.getItemMeta();
+        netheriteRodMeta.setDisplayName(ChatColor.RESET + "Netherite Honing Rod");
+        netheriteRodMeta.setLocalizedName("Netherite Honing Rod");
+        lore = new ArrayList<>();
+        lore.add(NETHERITE_ROD_LORE);
+        lore.add("");
+        lore.add(REMAINING_USES_LORE);
+        lore.add("2500");
+        netheriteRodMeta.setLore(lore);
+        netheriteRodMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        netheriteRod.setItemMeta(netheriteRodMeta);
+
+        var netheriteRodRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_rod"), netheriteRod);
+        netheriteRodRecipe.shape(" I", "HI", " I");
+        netheriteRodRecipe.setIngredient('H', choice);
+        netheriteRodRecipe.setIngredient('I', Material.NETHERITE_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(netheriteRodRecipe);
 
 
     }
