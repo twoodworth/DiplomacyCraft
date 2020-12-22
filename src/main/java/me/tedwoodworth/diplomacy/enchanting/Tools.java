@@ -474,6 +474,7 @@ public class Tools {
     }
 
     public ItemStack[] getCombinedPurity(ItemStack stack1, ItemStack stack2) {
+        if (!canCombine(stack1, stack2)) throw new IllegalArgumentException("Items cannot be combined");
         var purities1 = getPurity(stack1);
         var purities2 = getPurity(stack2);
         var isRefined = isRefined(stack1);
@@ -833,7 +834,9 @@ public class Tools {
     }
 
     private boolean canCombine(ItemStack item1, ItemStack item2) {
-        return item1.getType() == item2.getType()
+        return item1 != null && item1.getItemMeta() != null
+                && item2 != null && item2.getItemMeta() != null
+                && item1.getType() == item2.getType()
                 && isMetal(item1) == isMetal(item2)
                 && !(item1.getItemMeta().hasEnchants() && !isGrenade(item1))
                 && !(item2.getItemMeta().hasEnchants() && !isGrenade(item2))
@@ -3222,7 +3225,7 @@ public class Tools {
                 for (var num : slots) {
                     var slotItem = view.getItem(num);
 
-                    if (slotItem != null && slotItem.getType() != Material.AIR) {
+                    if (slotItem != null && slotItem.getType() != Material.AIR && canCombine(slotItem, newStacks[i])) {
                         var combined = getCombinedPurity(slotItem, newStacks[i]);
                         view.setItem(num, combined[0]);
 
@@ -3279,16 +3282,12 @@ public class Tools {
             var targetStack = target.getItemStack();
 
 
-            if (hasFolds(entityStack) || hasFolds(targetStack)) return;
-
-
             if ((isGrenade(entityStack) && entityStack.getType() == Material.TNT) || isGrenade(targetStack) && targetStack.getType() == Material.TNT) {
                 event.setCancelled(true);
                 return;
             }
 
-            var isRefined = isRefined(entityStack);
-            if (entityStack.getType() == targetStack.getType() && isMetal(entityStack) && isMetal(targetStack) && isRefined == isRefined(targetStack)) {
+            if (canCombine(entityStack, targetStack)) {
                 event.setCancelled(true);
                 var combined = getCombinedPurity(entityStack, targetStack);
                 target.setItemStack(combined[0]);
@@ -3805,8 +3804,7 @@ public class Tools {
                     view.getTopInventory().getType() == InventoryType.ANVIL && view.getItem(event.getRawSlot()) != null && view.getItem(event.getRawSlot()).getType() != Material.AIR) {
 
                 if (!event.isShiftClick()) {
-                    if (cursorItem != null && cursorItem.getType() == currentItem.getType() && isMetal(cursorItem) && isMetal(currentItem)
-                            && isRefined(cursorItem) == isRefined(currentItem) && !hasFolds(currentItem) && !hasFolds(cursorItem)) {
+                    if (canCombine(currentItem, cursorItem)) {
                         event.getView().setCursor(getCombinedPurity(cursorItem, currentItem)[0]);
                     } else if (cursorItem == null || cursorItem.getType() == Material.AIR)
                         event.getView().setCursor(view.getItem(event.getRawSlot()));
@@ -4044,13 +4042,11 @@ public class Tools {
             switch (click) {
                 case DOUBLE_CLICK -> {
                     if (cursorItem != null && isMetal(cursorItem)) {
-                        var isRefined = isRefined(cursorItem);
                         var slots = view.countSlots() - 5;
                         for (int i = 0; i < slots; i++) {
                             if (view.getSlotType(i).equals(InventoryType.SlotType.RESULT)) continue;
                             var item = view.getItem(i);
-                            if (hasFolds(currentItem) || hasFolds(item)) continue;
-                            if (item != null && item.getType() == cursorItem.getType() && isMetal(item) && isRefined == isRefined(item)) {
+                            if (canCombine(item, cursorItem)) {
                                 var nStack = getCombinedPurity(cursorItem, item);
                                 cursorItem.setAmount(nStack[0].getAmount());
                                 cursorItem.setItemMeta(nStack[0].getItemMeta());
@@ -4079,10 +4075,7 @@ public class Tools {
                     }
                 }
                 case LEFT -> {
-                    if (cursorItem != null && currentItem != null
-                            && cursorItem.getType() == currentItem.getType()
-                            && isMetal(cursorItem) && isMetal(currentItem) && isRefined(cursorItem) == isRefined(currentItem)) {
-                        if (hasFolds(currentItem) || hasFolds(cursorItem)) return;
+                    if (canCombine(currentItem, cursorItem)) {
                         var combined = getCombinedPurity(currentItem, cursorItem);
                         currentItem.setAmount(combined[0].getAmount());
                         currentItem.setItemMeta(combined[0].getItemMeta());
@@ -4120,8 +4113,7 @@ public class Tools {
                     } else if (cursorItem != null && cursorItem.getType() != Material.AIR &&
                             currentItem != null && currentItem.getType() != Material.AIR &&
                             event.getSlotType() != InventoryType.SlotType.ARMOR) {
-                        if (hasFolds(cursorItem) || hasFolds(currentItem)) return;
-                        if (isMetal(currentItem) && isMetal(cursorItem) && currentItem.getType() == cursorItem.getType() && currentItem.getAmount() < 64 && isRefined(currentItem) == isRefined(cursorItem)) {
+                        if (canCombine(currentItem, cursorItem) && currentItem.getAmount() < 64) {
                             var dropped = dropItemFromPurity(cursorItem);
                             event.getWhoClicked().setItemOnCursor(dropped[0]);
                             var combined = getCombinedPurity(dropped[1], currentItem);
@@ -4174,8 +4166,7 @@ public class Tools {
                                     view.getSlotType(currentSlot) == InventoryType.SlotType.CRAFTING) {
                                 for (int i = inv; i < (inv + 27); i++) {
                                     var slotItem = view.getItem(i);
-                                    if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
-                                    if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
+                                    if (canCombine(slotItem, nCurrentItem)) {
                                         var combined = getCombinedPurity(slotItem, nCurrentItem);
                                         view.setItem(i, combined[0]);
                                         if (combined.length > 1) {
@@ -4331,7 +4322,7 @@ public class Tools {
         }
 
         @EventHandler
-        private void onInventoryPickupItem(InventoryPickupItemEvent event) {
+        private void onInventoryPickupItem(InventoryPickupItemEvent event) { // todo fix dupe
             var item = event.getItem().getItemStack();
             if (isMetal(item) && !hasPurity(item))
                 generatePurity(item, 1.0);
@@ -4344,8 +4335,7 @@ public class Tools {
             if (isMetal(item)) {
                 var inv = event.getInventory();
                 for (var content : inv.getContents()) {
-                    if (hasFolds(content)) continue;
-                    if (isMetal(content) && content.getType() == item.getType() && isRefined(content) == isRefined(item)) {
+                    if (canCombine(content, item)) {
                         var combined = getCombinedPurity(item, content);
                         content.setItemMeta(combined[0].getItemMeta());
                         content.setAmount(combined[0].getAmount());
@@ -4402,39 +4392,56 @@ public class Tools {
             }
         }
 
+        private void manualTransfer(Inventory destination, Inventory source, ItemStack item) { // todo maybe move stacks at a time to reduce potential lag?
+            var slot = -1;
+            for (int i = 0; i < source.getSize(); i++) {
+                var temp = source.getItem(i);
+                if (temp != null && temp.isSimilar(item)) {
+                    slot = i;
+                    break;
+                }
+            }
+            if (slot == -1) return;
+            var slotItem = source.getItem(slot);
+            int finalSlot = slot;
+            ItemStack transfer;
+            ItemStack nSource;
+            if (slotItem.getAmount() > 1) {
+                var drop = dropItemFromPurity(slotItem);
+                transfer = drop[1];
+                nSource = drop[0];
+            } else {
+                transfer = item;
+                nSource = air;
+            }
+
+            var full = true;
+            for (int i = 0; i < destination.getSize(); i++) {
+                var content = destination.getItem(i);
+                if (!(canCombine(content, transfer) || content == null || content.getType() == Material.AIR)) continue;
+                if (content == null || content.getType() == Material.AIR) {
+                    destination.setItem(i, transfer);
+                    full = false;
+                    break;
+                } else if (content.getAmount() < 64) {
+                    destination.setItem(i, getCombinedPurity(transfer, content)[0]);
+                    full = false;
+                    break;
+                }
+            }
+            if (!full)
+                source.setItem(finalSlot, nSource);
+
+        }
+
         @EventHandler
         private void onInventoryMoveItem(InventoryMoveItemEvent event) {
             var item = event.getItem();
-            var slot = event.getSource().first(item);
-            if (isMetal(item)) {
-                var inv = event.getDestination();
-                switch (inv.getType()) {
-                    case BARREL, CHEST, DISPENSER, SHULKER_BOX:
-                        break;
-                    default:
-                        return;
-                }
-                if (inv.firstEmpty() == -1) return;
-                var transfer = item;
-                var drop = dropItemFromPurity(item);
-                transfer = drop[1];
-                event.getSource().setItem(slot, drop[0]);
-                for (int i = 0; i < inv.getSize(); i++) {
-                    var content = inv.getItem(i);
-                    if (content != null && isMetal(content) && content.getItemMeta() != null &&
-                            content.getItemMeta().getLore() != null && content.getItemMeta().getLore().contains(foldsLore))
-                        continue;
-                    if (content == null || content.getType() == Material.AIR) {
-                        inv.setItem(i, transfer);
-                        event.setCancelled(true);
-                        return;
-                    } else if (isMetal(content) && content.getType() == item.getType() && content.getAmount() < 64 && isRefined(content) == isRefined(item)) {
-                        inv.setItem(i, getCombinedPurity(transfer, content)[0]);
-                        event.setCancelled(true);
-                        return;
-                    }
-                }
-            }
+            if (!isMetal(item)) return;
+            var destination = event.getDestination();
+            var source = event.getSource();
+            event.setCancelled(true);
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> manualTransfer(destination, source, item), 0L);
         }
 
         @EventHandler
@@ -4446,10 +4453,11 @@ public class Tools {
                 return;
             }
             if (isMetal(item) && event.getEntity() instanceof Player) {
+                if (item.getItemMeta().hasEnchants()) return;
                 var isRefined = isRefined(item);
                 var inv = ((Player) event.getEntity()).getInventory();
                 for (var content : inv.getContents()) {
-                    if (isMetal(content) && content.getType() == item.getType() && isRefined == isRefined(content)) {
+                    if (canCombine(item, content)) {
                         var combined = getCombinedPurity(item, content);
                         content.setItemMeta(combined[0].getItemMeta());
                         content.setAmount(combined[0].getAmount());
