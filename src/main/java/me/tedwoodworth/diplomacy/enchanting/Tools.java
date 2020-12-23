@@ -5,10 +5,7 @@ import me.tedwoodworth.diplomacy.DiplomacyRecipes;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Dispenser;
-import org.bukkit.block.Dropper;
-import org.bukkit.block.Furnace;
+import org.bukkit.block.*;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -19,9 +16,11 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.potion.PotionEffect;
@@ -1672,11 +1671,11 @@ public class Tools {
             }
 
             // No repairing
-            if (tools.contains(result.getType())) {
+            if (result instanceof Damageable) {
                 ItemStack tool = null;
                 for (var item : inventory.getMatrix()) {
                     if (item == null || item.getType() == Material.AIR) continue;
-                    if (!tools.contains(item.getType())) break;
+                    if (!(item instanceof Damageable)) break;
                     else {
                         if (tool == null) tool = item;
                         else {
@@ -2009,22 +2008,2090 @@ public class Tools {
             }
         }
 
-
-        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-        private void onBlockExplode(EntityDeathEvent event) {
+        @EventHandler
+        private void onEntitySpawn(EntitySpawnEvent event) {
             var entity = event.getEntity();
-            if (entity instanceof InventoryHolder) {
-                var location = entity.getLocation();
-                var inventory = ((InventoryHolder) entity).getInventory();
-                for (var content : inventory.getContents()) {
-                    if (content != null && content.getType() != Material.AIR) {
-                        if (content.getItemMeta() != null && content.getItemMeta().hasEnchant(Enchantment.VANISHING_CURSE))
-                            continue;
-                        location.getWorld().dropItemNaturally(location, content);
+            if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
+            ((LivingEntity) entity).setCanPickupItems(true);
+
+            var equipment = ((LivingEntity) entity).getEquipment();
+            if (equipment == null) return;
+
+            // Piglin / Zombie piglin / Zoglin
+            if (entity.getType() == EntityType.PIGLIN || entity.getType() == EntityType.ZOMBIFIED_PIGLIN) { //todo piglin brute
+                ItemStack weapon;
+                var r = Math.random();
+                if (r < 0.2 || (entity.getType() == EntityType.ZOMBIFIED_PIGLIN && r >= 0.00015241579))
+                    weapon = new ItemStack(Material.GOLDEN_SWORD);
+                else if (r < 0.4 && entity.getType() == EntityType.PIGLIN) weapon = new ItemStack(Material.CROSSBOW);
+                else weapon = air;
+
+                if (weapon.getType() == Material.GOLDEN_SWORD) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DAMAGE_ALL, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DAMAGE_ALL, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DAMAGE_ALL, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DAMAGE_ALL, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DAMAGE_ALL, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DAMAGE_ALL, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DAMAGE_ALL, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DAMAGE_ALL, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DAMAGE_ALL, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DAMAGE_ALL, 1, true);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else if (weapon.getType() == Material.CROSSBOW) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.QUICK_CHARGE, 5, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.QUICK_CHARGE, 4, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.QUICK_CHARGE, 3, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.QUICK_CHARGE, 2, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.QUICK_CHARGE, 1, true);
+
+                    r = Math.random();
+                    if (r < 0.012345679) meta.addEnchant(Enchantment.MULTISHOT, 1, true);
+
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else {
+                    equipment.setItemInMainHand(weapon);
+                }
+
+                r = Math.random();
+                if (r < 0.333333333) {
+                    var helmet = new ItemStack(Material.GOLDEN_HELMET);
+                    var max = helmet.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = helmet.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var fire = 0;
+                    var blast = 0;
+                    var proj = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.CRIMSON_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    helmet.setItemMeta(meta);
+                    equipment.setHelmet(helmet);
+
+                } else {
+                    equipment.setHelmet(air);
+                }
+
+                r = Math.random();
+                if (r < 0.333333333) {
+                    var chest = new ItemStack(Material.GOLDEN_CHESTPLATE);
+                    var max = chest.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = chest.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var fire = 0;
+                    var blast = 0;
+                    var proj = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.CRIMSON_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    chest.setItemMeta(meta);
+                    equipment.setChestplate(chest);
+
+                } else {
+                    equipment.setChestplate(air);
+                }
+
+                r = Math.random();
+                if (r < 0.333333333) {
+                    var leggings = new ItemStack(Material.GOLDEN_LEGGINGS);
+                    var max = leggings.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = leggings.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var fire = 0;
+                    var blast = 0;
+                    var proj = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.CRIMSON_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    leggings.setItemMeta(meta);
+                    equipment.setLeggings(leggings);
+
+                } else {
+                    equipment.setLeggings(air);
+                }
+
+                r = Math.random();
+                if (r < 0.333333333) {
+                    var boots = new ItemStack(Material.GOLDEN_BOOTS);
+                    var max = boots.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = boots.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var fire = 0;
+                    var blast = 0;
+                    var proj = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.CRIMSON_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    boots.setItemMeta(meta);
+                    equipment.setBoots(boots);
+
+                } else {
+                    equipment.setBoots(air);
+                }
+
+                // drowned, zombie, husk, and zombie villager
+            } else if (entity.getType() == EntityType.DROWNED || entity.getType() == EntityType.HUSK || entity.getType() == EntityType.ZOMBIE || entity.getType() == EntityType.ZOMBIE_VILLAGER) { //todo piglin brute
+                ItemStack weapon = air;
+                Enchantment enchantType = Enchantment.DURABILITY;
+                var r = Math.random();
+                if (entity.getType() == EntityType.DROWNED) {
+                    if (r < 0.002) {
+                        weapon = new ItemStack(Material.TRIDENT);
+                        enchantType = Enchantment.IMPALING;
+                    } else if (r < 0.05)
+                        weapon = new ItemStack(Material.FISHING_ROD);
+                    else weapon = air;
+                } else {
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        r = Math.random();
+                        switch ((int) (r * 22)) {
+                            case 0, 1, 2, 3, 4 -> {
+                                r = Math.random();
+                                if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_AXE);
+                                else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_AXE);
+                                else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_AXE);
+                                else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_AXE);
+                                else weapon = new ItemStack(Material.WOODEN_AXE);
+                                enchantType = Enchantment.DAMAGE_ALL;
+                            }
+                            case 5 -> {
+                                var chiselLore = new ArrayList<String>();
+                                chiselLore.add(DiplomacyRecipes.getInstance().CHISEL_LORE);
+                                ItemMeta meta;
+                                r = Math.random();
+                                if (r < 1.69350878e-5) {
+                                    weapon = new ItemStack(Material.DIAMOND_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Diamond Chisel");
+                                    meta.setDisplayName(ChatColor.RESET + "Diamond Chisel");
+                                } else if (r < 0.00015241579) {
+                                    weapon = new ItemStack(Material.IRON_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Iron Chisel");
+                                    meta.setDisplayName(ChatColor.RESET + "Iron Chisel");
+                                } else if (r < 0.00137174211) {
+                                    weapon = new ItemStack(Material.GOLDEN_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Golden Chisel");
+                                    meta.setDisplayName(ChatColor.RESET + "Golden Chisel");
+                                } else if (r < 0.037037037) {
+                                    weapon = new ItemStack(Material.STONE_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Stone Chisel");
+                                    meta.setDisplayName(ChatColor.RESET + "Stone Chisel");
+                                } else {
+                                    weapon = new ItemStack(Material.WOODEN_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Wooden Chisel");
+                                    meta.setDisplayName(ChatColor.RESET + "Wooden Chisel");
+                                }
+                                meta.setLore(chiselLore);
+                                weapon.setItemMeta(meta);
+                                enchantType = Enchantment.LOOT_BONUS_BLOCKS;
+                            }
+                            case 6 -> {
+                                r = Math.random();
+                                if (r < 1.69350878e-5) {
+                                    weapon = new ItemStack(Material.DIAMOND_HOE);
+                                } else if (r < 0.00015241579) {
+                                    weapon = new ItemStack(Material.IRON_HOE);
+                                } else if (r < 0.00137174211) {
+                                    weapon = new ItemStack(Material.GOLDEN_HOE);
+                                } else if (r < 0.037037037) {
+                                    weapon = new ItemStack(Material.STONE_HOE);
+                                } else {
+                                    weapon = new ItemStack(Material.WOODEN_HOE);
+                                }
+                                enchantType = Enchantment.DURABILITY;
+                            }
+                            case 7, 8 -> {
+                                var knifeLore = new ArrayList<String>();
+                                knifeLore.add(DiplomacyRecipes.getInstance().KNIFE_LORE);
+                                ItemMeta meta;
+                                r = Math.random();
+                                if (r < 1.69350878e-5) {
+                                    weapon = new ItemStack(Material.DIAMOND_SWORD);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Diamond Hunting Knife");
+                                    meta.setDisplayName(ChatColor.RESET + "Diamond Hunting Knife");
+                                } else if (r < 0.00015241579) {
+                                    weapon = new ItemStack(Material.IRON_SWORD);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Iron Hunting Knife");
+                                    meta.setDisplayName(ChatColor.RESET + "Iron Hunting Knife");
+                                } else if (r < 0.00137174211) {
+                                    weapon = new ItemStack(Material.GOLDEN_SWORD);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Golden Hunting Knife");
+                                    meta.setDisplayName(ChatColor.RESET + "Golden Hunting Knife");
+                                } else if (r < 0.037037037) {
+                                    weapon = new ItemStack(Material.STONE_SWORD);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Stone Hunting Knife");
+                                    meta.setDisplayName(ChatColor.RESET + "Stone Hunting Knife");
+                                } else {
+                                    weapon = new ItemStack(Material.WOODEN_SWORD);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Wooden Hunting Knife");
+                                    meta.setDisplayName(ChatColor.RESET + "Wooden Hunting Knife");
+                                }
+                                meta.setLore(knifeLore);
+                                weapon.setItemMeta(meta);
+                                enchantType = Enchantment.LOOT_BONUS_MOBS;
+                            }
+                            case 9, 10 -> {
+
+                                r = Math.random();
+                                if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_PICKAXE);
+                                else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_PICKAXE);
+                                else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_PICKAXE);
+                                else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_PICKAXE);
+                                else weapon = new ItemStack(Material.WOODEN_PICKAXE);
+                                enchantType = Enchantment.DIG_SPEED;
+                            }
+                            case 11 -> {
+
+                                var sawLore = new ArrayList<String>();
+                                sawLore.add(DiplomacyRecipes.getInstance().SAW_LORE);
+                                ItemMeta meta;
+                                r = Math.random();
+                                if (r < 1.69350878e-5) {
+                                    weapon = new ItemStack(Material.DIAMOND_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Diamond Saw");
+                                    meta.setDisplayName(ChatColor.RESET + "Diamond Saw");
+                                } else if (r < 0.00015241579) {
+                                    weapon = new ItemStack(Material.IRON_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Iron Saw");
+                                    meta.setDisplayName(ChatColor.RESET + "Iron Saw");
+                                } else if (r < 0.00137174211) {
+                                    weapon = new ItemStack(Material.GOLDEN_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Golden Saw");
+                                    meta.setDisplayName(ChatColor.RESET + "Golden Saw");
+                                } else if (r < 0.037037037) {
+                                    weapon = new ItemStack(Material.STONE_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Stone Saw");
+                                    meta.setDisplayName(ChatColor.RESET + "Stone Saw");
+                                } else {
+                                    weapon = new ItemStack(Material.WOODEN_HOE);
+                                    meta = weapon.getItemMeta();
+                                    meta.setLocalizedName("Wooden Saw");
+                                    meta.setDisplayName(ChatColor.RESET + "Wooden Saw");
+                                }
+                                meta.setLore(sawLore);
+                                meta.addEnchant(Enchantment.SILK_TOUCH, 1, true);
+                                weapon.setItemMeta(meta);
+                                enchantType = Enchantment.DIG_SPEED;
+                            }
+                            case 12, 13 -> {
+
+                                r = Math.random();
+                                if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_SHOVEL);
+                                else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_SHOVEL);
+                                else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_SHOVEL);
+                                else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_SHOVEL);
+                                else weapon = new ItemStack(Material.WOODEN_SHOVEL);
+                                enchantType = Enchantment.DIG_SPEED;
+                            }
+                            case 14, 15, 16, 17, 18, 19, 20, 21, 22 -> {
+
+                                r = Math.random();
+                                if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_SWORD);
+                                else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_SWORD);
+                                else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_SWORD);
+                                else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_SWORD);
+                                else weapon = new ItemStack(Material.WOODEN_SWORD);
+                                enchantType = Enchantment.DAMAGE_ALL;
+                            }
+                            default -> {
+                                weapon = air;
+                                enchantType = Enchantment.DURABILITY;
+                            }
+                        }
                     }
                 }
-                inventory.clear();
+
+                if (weapon.getType() == Material.TRIDENT) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.IMPALING, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.IMPALING, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.IMPALING, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.IMPALING, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.IMPALING, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.IMPALING, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.IMPALING, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.IMPALING, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.IMPALING, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.IMPALING, 1, true);
+
+                    meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else if (weapon.getType() == Material.FISHING_ROD) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 0.00137174211) meta.addEnchant(Enchantment.LURE, 3, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.LURE, 2, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.LURE, 1, true);
+
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else if ((weapon.getType() == Material.WOODEN_HOE
+                        || weapon.getType() == Material.STONE_HOE
+                        || weapon.getType() == Material.IRON_HOE
+                        || weapon.getType() == Material.GOLDEN_HOE
+                        || weapon.getType() == Material.DIAMOND_HOE) && !isChisel(weapon) && !isSaw(weapon)) {
+
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else if (weapon.getType() != Material.AIR) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (enchantType != Enchantment.DURABILITY) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(enchantType, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(enchantType, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(enchantType, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(enchantType, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(enchantType, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(enchantType, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(enchantType, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(enchantType, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(enchantType, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(enchantType, 1, true);
+
+                        if (r < 0.333333333) {
+                            if (weapon.getType() == Material.DIAMOND_AXE
+                                    || weapon.getType() == Material.IRON_AXE
+                                    || weapon.getType() == Material.GOLDEN_AXE
+                                    || weapon.getType() == Material.STONE_AXE
+                                    || weapon.getType() == Material.WOODEN_AXE
+                            ) {
+                                meta.addEnchant(Enchantment.DIG_SPEED, meta.getEnchantLevel(Enchantment.DAMAGE_ALL), true);
+                            } else if (
+                                    (weapon.getType() == Material.DIAMOND_SWORD
+                                            || weapon.getType() == Material.IRON_SWORD
+                                            || weapon.getType() == Material.GOLDEN_SWORD
+                                            || weapon.getType() == Material.STONE_SWORD
+                                            || weapon.getType() == Material.WOODEN_SWORD) && !isHuntingKnife(weapon)
+                            ) {
+                                if (meta.getEnchantLevel(Enchantment.DAMAGE_ALL) > 1)
+                                    meta.addEnchant(Enchantment.SWEEPING_EDGE, meta.getEnchantLevel(Enchantment.DAMAGE_ALL) / 2, true);
+                            }
+                        }
+                    }
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else {
+                    equipment.setItemInMainHand(weapon);
+                }
+
+                var type = weapon.getType();
+                if (
+                        type == Material.DIAMOND_HOE ||
+                                type == Material.DIAMOND_SWORD ||
+                                type == Material.DIAMOND_AXE ||
+                                type == Material.DIAMOND_PICKAXE ||
+                                type == Material.DIAMOND_SHOVEL
+                ) {
+                    weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 2);
+                    equipment.setItemInMainHand(weapon);
+                } else if (
+                        type == Material.IRON_HOE ||
+                                type == Material.IRON_SWORD ||
+                                type == Material.IRON_AXE ||
+                                type == Material.IRON_PICKAXE ||
+                                type == Material.IRON_SHOVEL ||
+                                type == Material.GOLDEN_HOE ||
+                                type == Material.GOLDEN_SWORD ||
+                                type == Material.GOLDEN_AXE ||
+                                type == Material.GOLDEN_PICKAXE ||
+                                type == Material.GOLDEN_SHOVEL
+                ) {
+                    r = Math.random();
+                    if (r < 1.69350878e-5) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+                    else if (r < 5.08052634e-5) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 9);
+                    else if (r < 0.00015241579) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 8);
+                    else if (r < 0.000457247371) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 7);
+                    else if (r < 0.00137174211) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 6);
+                    else if (r < 0.00411522634) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                    else if (r < 0.012345679) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 4);
+                    else if (r < 0.037037037) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
+                    else if (r < 0.111111111) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 2);
+                    else if (r < 0.333333333) weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                    equipment.setItemInMainHand(weapon);
+                } else if (type == Material.WOODEN_HOE ||
+                        type == Material.WOODEN_SWORD ||
+                        type == Material.WOODEN_AXE ||
+                        type == Material.WOODEN_PICKAXE ||
+                        type == Material.WOODEN_SHOVEL) {
+                    var biome = event.getLocation().getBlock().getBiome();
+                    if (biome == Biome.SAVANNA || biome == Biome.SAVANNA_PLATEAU || biome == Biome.SHATTERED_SAVANNA || biome == Biome.SHATTERED_SAVANNA_PLATEAU) {
+                        weapon.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                        equipment.setItemInMainHand(weapon);
+                    }
+                }
+
+
+                if (entity.getType() == EntityType.DROWNED) {
+                    r = Math.random();
+                    if (r < 0.02) equipment.setItemInOffHand(new ItemStack(Material.NAUTILUS_SHELL));
+                    else equipment.setItemInOffHand(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack helmet;
+
+                    if (r < 1.69350878e-5) helmet = new ItemStack(Material.DIAMOND_HELMET);
+                    else if (r < 0.00015241579) helmet = new ItemStack(Material.IRON_HELMET);
+                    else if (r < 0.00137174211) helmet = new ItemStack(Material.GOLDEN_HELMET);
+                    else if (r < 0.037037037) helmet = new ItemStack(Material.CHAINMAIL_HELMET);
+                    else helmet = new ItemStack(Material.LEATHER_HELMET);
+                    var max = helmet.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = helmet.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (helmet.getType() == Material.DIAMOND_HELMET) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (helmet.getType() == Material.IRON_HELMET || helmet.getType() == Material.GOLDEN_HELMET) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) meta.addEnchant(Enchantment.WATER_WORKER, 1, true);
+
+                    r = Math.random();
+                    if (r < 0.00137174211) meta.addEnchant(Enchantment.OXYGEN, 3, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.OXYGEN, 2, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.OXYGEN, 1, true);
+
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                    }
+                    helmet.setItemMeta(meta);
+                    equipment.setHelmet(helmet);
+
+                } else {
+                    equipment.setHelmet(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack chestplate;
+
+                    if (r < 1.69350878e-5) chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE);
+                    else if (r < 0.00015241579) chestplate = new ItemStack(Material.IRON_CHESTPLATE);
+                    else if (r < 0.00137174211) chestplate = new ItemStack(Material.GOLDEN_CHESTPLATE);
+                    else if (r < 0.037037037) chestplate = new ItemStack(Material.CHAINMAIL_CHESTPLATE);
+                    else chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+                    var max = chestplate.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = chestplate.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (chestplate.getType() == Material.DIAMOND_CHESTPLATE)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (chestplate.getType() == Material.IRON_CHESTPLATE || chestplate.getType() == Material.GOLDEN_CHESTPLATE) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.THORNS, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.THORNS, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.THORNS, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.THORNS, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.THORNS, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.THORNS, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.THORNS, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.THORNS, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.THORNS, 2, true);
+                        else meta.addEnchant(Enchantment.THORNS, 1, true);
+                    }
+
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                    }
+                    chestplate.setItemMeta(meta);
+                    equipment.setChestplate(chestplate);
+
+                } else {
+                    equipment.setChestplate(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack leggings;
+
+                    if (r < 1.69350878e-5) leggings = new ItemStack(Material.DIAMOND_LEGGINGS);
+                    else if (r < 0.00015241579) leggings = new ItemStack(Material.IRON_LEGGINGS);
+                    else if (r < 0.00137174211) leggings = new ItemStack(Material.GOLDEN_LEGGINGS);
+                    else if (r < 0.037037037) leggings = new ItemStack(Material.CHAINMAIL_LEGGINGS);
+                    else leggings = new ItemStack(Material.LEATHER_LEGGINGS);
+                    var max = leggings.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = leggings.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (leggings.getType() == Material.DIAMOND_LEGGINGS)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (leggings.getType() == Material.IRON_LEGGINGS || leggings.getType() == Material.GOLDEN_LEGGINGS) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                    }
+                    leggings.setItemMeta(meta);
+                    equipment.setLeggings(leggings);
+
+                } else {
+                    equipment.setLeggings(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack boots;
+
+                    if (r < 1.69350878e-5) boots = new ItemStack(Material.DIAMOND_BOOTS);
+                    else if (r < 0.00015241579) boots = new ItemStack(Material.IRON_BOOTS);
+                    else if (r < 0.00137174211) boots = new ItemStack(Material.GOLDEN_BOOTS);
+                    else if (r < 0.037037037) boots = new ItemStack(Material.CHAINMAIL_BOOTS);
+                    else boots = new ItemStack(Material.LEATHER_BOOTS);
+                    var max = boots.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = boots.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (boots.getType() == Material.DIAMOND_BOOTS) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (boots.getType() == Material.IRON_BOOTS || boots.getType() == Material.GOLDEN_BOOTS) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.PROTECTION_FALL, 7, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.PROTECTION_FALL, 6, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.PROTECTION_FALL, 5, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.PROTECTION_FALL, 4, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.PROTECTION_FALL, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.PROTECTION_FALL, 2, true);
+                        else meta.addEnchant(Enchantment.PROTECTION_FALL, 1, true);
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        r = Math.random();
+                        if (r < 0.000457247371) meta.addEnchant(Enchantment.DEPTH_STRIDER, 3, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DEPTH_STRIDER, 2, true);
+                        else meta.addEnchant(Enchantment.DEPTH_STRIDER, 1, true);
+                    }
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                    }
+                    boots.setItemMeta(meta);
+                    equipment.setBoots(boots);
+
+                } else {
+                    equipment.setBoots(air);
+                }
+
+                // Skeleton, wither skeleton, stray
+            } else if (entity.getType() == EntityType.SKELETON || entity.getType() == EntityType.WITHER_SKELETON || entity.getType() == EntityType.STRAY) {
+                var environment = event.getLocation().getWorld().getEnvironment();
+                var r = Math.random();
+                var weapon = air;
+                if (entity.getType() == EntityType.WITHER_SKELETON) {
+                    if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_SWORD);
+                    else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_SWORD);
+                    else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_SWORD);
+                    else if (r < 0.8) weapon = new ItemStack(Material.STONE_SWORD);
+                    else weapon = new ItemStack(Material.BOW);
+                } else {
+                    if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_SWORD);
+                    else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_SWORD);
+                    else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_SWORD);
+                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
+                        weapon = new ItemStack(Material.STONE_SWORD);
+                    else if (r < 0.2) weapon = new ItemStack(Material.WOODEN_SWORD);
+                    else weapon = new ItemStack(Material.BOW);
+                }
+
+                if (weapon.getType() == Material.BOW) {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                } else {
+                    var max = weapon.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = weapon.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DAMAGE_ALL, 10, true);
+                    else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DAMAGE_ALL, 9, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.DAMAGE_ALL, 8, true);
+                    else if (r < 0.000457247371) meta.addEnchant(Enchantment.DAMAGE_ALL, 7, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.DAMAGE_ALL, 6, true);
+                    else if (r < 0.00411522634) meta.addEnchant(Enchantment.DAMAGE_ALL, 5, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.DAMAGE_ALL, 4, true);
+                    else if (r < 0.037037037) meta.addEnchant(Enchantment.DAMAGE_ALL, 3, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.DAMAGE_ALL, 2, true);
+                    else if (r < 0.333333333) meta.addEnchant(Enchantment.DAMAGE_ALL, 1, true);
+
+                    if (meta.getEnchantLevel(Enchantment.DAMAGE_ALL) > 1)
+                        meta.addEnchant(Enchantment.SWEEPING_EDGE, meta.getEnchantLevel(Enchantment.DAMAGE_ALL) / 2, true);
+
+                    if (weapon.getType() == Material.IRON_SWORD || weapon.getType() == Material.GOLDEN_SWORD) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    } else if (weapon.getType() == Material.DIAMOND_SWORD)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (weapon.getType() == Material.STONE_SWORD && environment == World.Environment.NETHER)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (weapon.getType() == Material.WOODEN_SWORD) {
+                        var biome = event.getLocation().getBlock().getBiome();
+                        if (biome == Biome.SAVANNA || biome == Biome.SAVANNA_PLATEAU || biome == Biome.SHATTERED_SAVANNA || biome == Biome.SHATTERED_SAVANNA_PLATEAU) {
+                            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                        }
+                    }
+                    weapon.setItemMeta(meta);
+                    equipment.setItemInMainHand(weapon);
+                }
+
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack helmet;
+
+                    if (r < 1.69350878e-5) helmet = new ItemStack(Material.DIAMOND_HELMET);
+                    else if (r < 0.00015241579) helmet = new ItemStack(Material.IRON_HELMET);
+                    else if (r < 0.00137174211) helmet = new ItemStack(Material.GOLDEN_HELMET);
+                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
+                        helmet = new ItemStack(Material.CHAINMAIL_HELMET);
+                    else helmet = new ItemStack(Material.LEATHER_HELMET);
+                    var max = helmet.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = helmet.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (helmet.getType() == Material.DIAMOND_HELMET) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (helmet.getType() == Material.IRON_HELMET || helmet.getType() == Material.GOLDEN_HELMET) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    if (environment == World.Environment.NORMAL) {
+                        r = Math.random();
+                        if (r < 0.012345679) meta.addEnchant(Enchantment.WATER_WORKER, 1, true);
+
+                        r = Math.random();
+                        if (r < 0.00137174211) meta.addEnchant(Enchantment.OXYGEN, 3, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.OXYGEN, 2, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.OXYGEN, 1, true);
+                    }
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+                    var fire = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.333333333 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    helmet.setItemMeta(meta);
+                    equipment.setHelmet(helmet);
+
+                } else {
+                    equipment.setHelmet(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack chestplate;
+
+                    if (r < 1.69350878e-5) chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE);
+                    else if (r < 0.00015241579) chestplate = new ItemStack(Material.IRON_CHESTPLATE);
+                    else if (r < 0.00137174211) chestplate = new ItemStack(Material.GOLDEN_CHESTPLATE);
+                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
+                        chestplate = new ItemStack(Material.CHAINMAIL_CHESTPLATE);
+                    else chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+                    var max = chestplate.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = chestplate.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (chestplate.getType() == Material.DIAMOND_CHESTPLATE)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (chestplate.getType() == Material.IRON_CHESTPLATE || chestplate.getType() == Material.GOLDEN_CHESTPLATE) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    if (environment == World.Environment.NORMAL) {
+                        r = Math.random();
+                        if (r < 0.111111111) {
+                            if (r < 1.69350878e-5) meta.addEnchant(Enchantment.THORNS, 10, true);
+                            else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.THORNS, 9, true);
+                            else if (r < 0.00015241579) meta.addEnchant(Enchantment.THORNS, 8, true);
+                            else if (r < 0.000457247371) meta.addEnchant(Enchantment.THORNS, 7, true);
+                            else if (r < 0.00137174211) meta.addEnchant(Enchantment.THORNS, 6, true);
+                            else if (r < 0.00411522634) meta.addEnchant(Enchantment.THORNS, 5, true);
+                            else if (r < 0.012345679) meta.addEnchant(Enchantment.THORNS, 4, true);
+                            else if (r < 0.037037037) meta.addEnchant(Enchantment.THORNS, 3, true);
+                            else if (r < 0.111111111) meta.addEnchant(Enchantment.THORNS, 2, true);
+                            else meta.addEnchant(Enchantment.THORNS, 1, true);
+                        }
+                    }
+
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+                    var fire = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.333333333 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    chestplate.setItemMeta(meta);
+                    equipment.setChestplate(chestplate);
+
+                } else {
+                    equipment.setChestplate(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack leggings;
+
+                    if (r < 1.69350878e-5) leggings = new ItemStack(Material.DIAMOND_LEGGINGS);
+                    else if (r < 0.00015241579) leggings = new ItemStack(Material.IRON_LEGGINGS);
+                    else if (r < 0.00137174211) leggings = new ItemStack(Material.GOLDEN_LEGGINGS);
+                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
+                        leggings = new ItemStack(Material.CHAINMAIL_LEGGINGS);
+                    else leggings = new ItemStack(Material.LEATHER_LEGGINGS);
+                    var max = leggings.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = leggings.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (leggings.getType() == Material.DIAMOND_LEGGINGS)
+                        meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (leggings.getType() == Material.IRON_LEGGINGS || leggings.getType() == Material.GOLDEN_LEGGINGS) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+                    var fire = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.333333333 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    leggings.setItemMeta(meta);
+                    equipment.setLeggings(leggings);
+
+                } else {
+                    equipment.setLeggings(air);
+                }
+
+                r = Math.random();
+                if (r < 0.111111111) {
+                    ItemStack boots;
+
+                    if (r < 1.69350878e-5) boots = new ItemStack(Material.DIAMOND_BOOTS);
+                    else if (r < 0.00015241579) boots = new ItemStack(Material.IRON_BOOTS);
+                    else if (r < 0.00137174211) boots = new ItemStack(Material.GOLDEN_BOOTS);
+                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
+                        boots = new ItemStack(Material.CHAINMAIL_BOOTS);
+                    else boots = new ItemStack(Material.LEATHER_BOOTS);
+                    var max = boots.getType().getMaxDurability();
+                    var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                    var meta = boots.getItemMeta();
+                    ((Damageable) meta).setDamage(max - durability);
+
+                    if (boots.getType() == Material.DIAMOND_BOOTS) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                    else if (boots.getType() == Material.IRON_BOOTS || boots.getType() == Material.GOLDEN_BOOTS) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                        else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                        else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                        else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                        else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111) {
+                        r = Math.random();
+                        if (r < 1.69350878e-5) meta.addEnchant(Enchantment.PROTECTION_FALL, 7, true);
+                        else if (r < 0.00015241579) meta.addEnchant(Enchantment.PROTECTION_FALL, 6, true);
+                        else if (r < 0.000457247371) meta.addEnchant(Enchantment.PROTECTION_FALL, 5, true);
+                        else if (r < 0.00411522634) meta.addEnchant(Enchantment.PROTECTION_FALL, 4, true);
+                        else if (r < 0.012345679) meta.addEnchant(Enchantment.PROTECTION_FALL, 3, true);
+                        else if (r < 0.111111111) meta.addEnchant(Enchantment.PROTECTION_FALL, 2, true);
+                        else meta.addEnchant(Enchantment.PROTECTION_FALL, 1, true);
+                    }
+
+                    if (environment == World.Environment.NORMAL) {
+                        r = Math.random();
+                        if (r < 0.012345679) {
+                            r = Math.random();
+                            if (r < 0.000457247371) meta.addEnchant(Enchantment.DEPTH_STRIDER, 3, true);
+                            else if (r < 0.012345679) meta.addEnchant(Enchantment.DEPTH_STRIDER, 2, true);
+                            else meta.addEnchant(Enchantment.DEPTH_STRIDER, 1, true);
+                        }
+                    }
+
+                    var lore = new ArrayList<String>();
+                    lore.add("");
+                    var layers = 0;
+                    var blast = 0;
+                    var proj = 0;
+                    var melee = 0;
+                    var fire = 0;
+
+                    r = Math.random();
+                    if (r < 0.333333333) {
+                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                        proj++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.333333333 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.SOUL_SAND));
+                        fire++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.111111111 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                        melee++;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.SLIME_BALL));
+                        proj += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.012345679 && environment == World.Environment.NORMAL && layers < 4) {
+                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                        melee += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00411522634 && layers < 4) {
+                        lore.add(layerLores.get(Material.OBSIDIAN));
+                        blast += 2;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4) {
+                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                        blast += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        proj += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.SCUTE));
+                        melee += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 0.00015241579 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                        fire += 3;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NORMAL) {
+                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                        melee += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                        blast += 4;
+                        layers++;
+                    }
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5 && layers < 4 && environment == World.Environment.NETHER) {
+                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                        fire += 4;
+                        layers++;
+                    }
+
+                    if (layers > 0) {
+                        meta.setLore(lore);
+                        if (blast > 0) meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, blast, true);
+                        if (proj > 0) meta.addEnchant(Enchantment.PROTECTION_PROJECTILE, proj, true);
+                        if (melee > 0) meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, melee, true);
+                        if (fire > 0) meta.addEnchant(Enchantment.PROTECTION_FIRE, fire, true);
+                    }
+                    boots.setItemMeta(meta);
+                    equipment.setBoots(boots);
+
+                } else {
+                    equipment.setBoots(air);
+                }
+
+            } else if (entity.getType() == EntityType.VINDICATOR) {
+                var r = Math.random();
+                var weapon = equipment.getItemInMainHand();
+
+                var max = weapon.getType().getMaxDurability();
+                var durability = (int) (Math.pow(Math.random(), 5) * max) + 1;
+                var meta = weapon.getItemMeta();
+                ((Damageable) meta).setDamage(max - durability);
+
+
+                if (weapon.getType() == Material.CROSSBOW) {
+
+                    r = Math.random();
+                    if (r < 1.69350878e-5) meta.addEnchant(Enchantment.QUICK_CHARGE, 5, true);
+                    else if (r < 0.00015241579) meta.addEnchant(Enchantment.QUICK_CHARGE, 4, true);
+                    else if (r < 0.00137174211) meta.addEnchant(Enchantment.QUICK_CHARGE, 3, true);
+                    else if (r < 0.012345679) meta.addEnchant(Enchantment.QUICK_CHARGE, 2, true);
+                    else if (r < 0.111111111) meta.addEnchant(Enchantment.QUICK_CHARGE, 1, true);
+
+                    r = Math.random();
+                    if (r < 0.012345679) meta.addEnchant(Enchantment.MULTISHOT, 1, true);
+
+                    weapon.setItemMeta(meta);
+                } else if (weapon.getType() != Material.AIR) {
+                    r = Math.random();
+                    if (r < 1.69350878e-5) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 10, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 10, true);
+                    } else if (r < 5.08052634e-5) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 9, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 9, true);
+                    } else if (r < 0.00015241579) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 8, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 8, true);
+                    } else if (r < 0.000457247371) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 7, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 7, true);
+                    } else if (r < 0.00137174211) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 6, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 6, true);
+                    } else if (r < 0.00411522634) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 5, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 5, true);
+                    } else if (r < 0.012345679) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 4, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 4, true);
+                    } else if (r < 0.037037037) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 3, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 3, true);
+                    } else if (r < 0.111111111) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 2, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 2, true);
+                    } else if (r < 0.333333333) {
+                        meta.addEnchant(Enchantment.DAMAGE_ALL, 1, true);
+                        meta.addEnchant(Enchantment.DIG_SPEED, 1, true);
+                    }
+                    weapon.setItemMeta(meta);
+                }
+
+                r = Math.random();
+                if (r < 1.69350878e-5) meta.addEnchant(Enchantment.DURABILITY, 10, true);
+                else if (r < 5.08052634e-5) meta.addEnchant(Enchantment.DURABILITY, 9, true);
+                else if (r < 0.00015241579) meta.addEnchant(Enchantment.DURABILITY, 8, true);
+                else if (r < 0.000457247371) meta.addEnchant(Enchantment.DURABILITY, 7, true);
+                else if (r < 0.00137174211) meta.addEnchant(Enchantment.DURABILITY, 6, true);
+                else if (r < 0.00411522634) meta.addEnchant(Enchantment.DURABILITY, 5, true);
+                else if (r < 0.012345679) meta.addEnchant(Enchantment.DURABILITY, 4, true);
+                else if (r < 0.037037037) meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                else if (r < 0.111111111) meta.addEnchant(Enchantment.DURABILITY, 2, true);
+                else if (r < 0.333333333) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+                weapon.setItemMeta(meta);
+                equipment.setItemInMainHand(weapon);
             }
+        }
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+        private void onEntityDeath(EntityDeathEvent event) {
+            if (event.getEntity().getType() == EntityType.ENDER_DRAGON || event.getEntity().getType() == EntityType.WITHER)
+                return;
+            var drops = event.getDrops();
+            var nDrops = new ArrayList<>(drops);
+            drops.clear();
+
+
+            var entity = event.getEntity();
+            if (entity.getKiller() == null) return; //todo change in ecology update
+
+            if (entity instanceof InventoryHolder) {
+                var holder = (InventoryHolder) entity;
+                for (var item : holder.getInventory()) {
+                    drops.add(item);
+                }
+            } else {
+                var equipment = entity.getEquipment();
+                if (equipment != null) {
+                    if (equipment.getBoots() != null && equipment.getBoots().getType() != Material.AIR)
+                        drops.add(equipment.getBoots());
+                    if (equipment.getChestplate() != null && equipment.getChestplate().getType() != Material.AIR)
+                        drops.add(equipment.getChestplate());
+                    if (equipment.getHelmet() != null && equipment.getBoots().getType() != Material.AIR)
+                        drops.add(equipment.getHelmet());
+                    if (equipment.getItemInMainHand() != null && equipment.getItemInMainHand().getType() != Material.AIR)
+                        drops.add(equipment.getItemInMainHand());
+                    if (equipment.getItemInOffHand() != null && equipment.getItemInOffHand().getType() != Material.AIR)
+                        drops.add(equipment.getItemInOffHand());
+                    if (equipment.getLeggings() != null && equipment.getLeggings().getType() != Material.AIR)
+                        drops.add(equipment.getLeggings());
+                }
+            }
+
+            for (var drop : nDrops) {
+                var isSimilar = false;
+                for (var item : new ArrayList<>(drops)) {
+                    if (drop.isSimilar(item)) isSimilar = true;
+                    break;
+                }
+                if (!isSimilar) drops.add(drop);
+            }
+
+            for (var drop : new ArrayList<>(drops)) {
+                if (isMetal(drop)) {
+                    if (!hasPurity(drop))
+                        generatePurity(drop, 1.0);
+                }
+                drops.remove(drop);
+                if (drop == null || drop.getType() == Material.AIR) continue;
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), drop);
+            }
+
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                if (entity != null) entity.remove();
+            }, 40L);
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -2069,10 +4136,18 @@ public class Tools {
         @EventHandler
         private void onEntityAttack(EntityDamageByEntityEvent event) {
             var damager = event.getDamager();
+            var damaged = event.getEntity();
             if (!(damager instanceof LivingEntity)) return;
             var equipment = ((LivingEntity) damager).getEquipment();
             if (equipment == null) return;
             var hand = equipment.getItemInMainHand();
+
+            if (isHuntingKnife(hand)) {
+                if (damager.getLocation().distanceSquared(damaged.getLocation()) > 1.44) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
             var meta = hand.getItemMeta();
             if (meta == null || !tools.contains(hand.getType())) return;
             var r = Math.random();
@@ -2807,6 +4882,16 @@ public class Tools {
                 }
                 equipment.setItemInMainHand(hand);
             }
+
+            // Metal drops
+            if (event.isDropItems()) {
+                var drops = block.getDrops();
+                for (var drop : drops) {
+                    if (isMetal(drop) && !hasPurity(drop)) {
+                        generatePurity(drop, 1.0);
+                    }
+                }
+            }
         }
 
         @EventHandler
@@ -3059,7 +5144,7 @@ public class Tools {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeTick(item, curTime + 1L, explodeTime, player), 1L);
         }
 
-        @EventHandler
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
         private void onEntityDamage(EntityDamageEvent event) {
             var cause = event.getCause();
             var entity = event.getEntity();
@@ -4684,6 +6769,10 @@ public class Tools {
                 event.setCancelled(true);
                 return;
             }
+
+            if (isMetal(item) && !hasPurity(item))
+                generatePurity(item, 1.0);
+
             if (isMetal(item) && event.getEntity() instanceof Player) {
                 if (item.getItemMeta().hasEnchants()) return;
                 var isRefined = isRefined(item);
@@ -4704,6 +6793,11 @@ public class Tools {
                             return;
                         }
                     }
+                }
+            } else {
+                if (isMetal(item)) {
+                    event.setCancelled(true);
+                    return;
                 }
             }
         }
@@ -4804,6 +6898,34 @@ public class Tools {
         }
 
         @EventHandler
+        private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+            var entity = event.getRightClicked();
+            var hand = event.getHand();
+            var playerEquipment = event.getPlayer().getEquipment();
+            var item = playerEquipment.getItem(hand);
+
+            if (entity.getType() == EntityType.PIGLIN) {
+                var equipment = ((LivingEntity) entity).getEquipment();
+                if ((equipment.getItemInOffHand() == null || equipment.getItemInOffHand().getType() == Material.AIR) && item.getType() == Material.GOLD_INGOT) {
+                    event.setCancelled(true);
+                    ItemStack keep;
+                    ItemStack give;
+
+                    if (item.getAmount() > 1) {
+                        var drops = dropItemFromPurity(item);
+                        keep = drops[0];
+                        give = drops[1];
+                    } else {
+                        keep = air;
+                        give = item;
+                    }
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> playerEquipment.setItem(hand, keep), 0L);
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> equipment.setItemInOffHand(give), 0L);
+                }
+            }
+        }
+
+        @EventHandler
         private void onPlayerInteract(PlayerInteractEvent event) {
             var player = event.getPlayer();
             var item = event.getPlayer().getInventory().getItemInMainHand();
@@ -4828,6 +6950,7 @@ public class Tools {
                 return;
             }
         }
+
     }
 
     private void prepareGrindstone(GrindstoneInventory inv) {
