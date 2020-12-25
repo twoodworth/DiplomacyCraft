@@ -3,8 +3,10 @@ package me.tedwoodworth.diplomacy.enchanting;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyRecipes;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
+import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.enchantments.Enchantment;
@@ -23,6 +25,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataHolder;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -2012,7 +2015,8 @@ public class Tools {
         private void onEntitySpawn(EntitySpawnEvent event) {
             var entity = event.getEntity();
             if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
-            ((LivingEntity) entity).setCanPickupItems(true);
+            if (!(entity instanceof Slime || entity instanceof MagmaCube))
+                ((LivingEntity) entity).setCanPickupItems(true);
 
             var equipment = ((LivingEntity) entity).getEquipment();
             if (equipment == null) return;
@@ -4043,10 +4047,24 @@ public class Tools {
             var nDrops = new ArrayList<>(drops);
             drops.clear();
 
-
             var entity = event.getEntity();
-            if (entity.getKiller() == null) return; //todo change in ecology update
+            var last = entity.getLastDamageCause();
 
+            if (last instanceof EntityDamageByEntityEvent) {
+                var killer = ((EntityDamageByEntityEvent) entity.getLastDamageCause()).getDamager();
+                if (killer == null || !(killer instanceof Player || (killer instanceof Tameable && ((Tameable) killer).isTamed()) || killer instanceof Projectile))
+                    return;
+                if (killer instanceof Projectile) {
+                    var projectile = ((Projectile) killer);
+                    var shooter = projectile.getShooter();
+                    if (shooter instanceof Player) killer = ((Player) shooter);
+                    else return;
+                }
+            } //todo allow all deaths to drop in ecology update
+
+
+            var lootDamage = Entities.getInstance().getLootDamage(entity);
+            System.out.println("Death loot damage cubed: " + lootDamage);
             if (entity instanceof InventoryHolder) {
                 var holder = (InventoryHolder) entity;
                 for (var item : holder.getInventory()) {
@@ -4061,7 +4079,7 @@ public class Tools {
                         drops.add(equipment.getChestplate());
                     if (equipment.getHelmet() != null && equipment.getBoots().getType() != Material.AIR)
                         drops.add(equipment.getHelmet());
-                    if (equipment.getItemInMainHand() != null && equipment.getItemInMainHand().getType() != Material.AIR)
+                    if (equipment.getItemInMainHand() != null && entity.getType() != EntityType.WITCH && equipment.getItemInMainHand().getType() != Material.AIR)
                         drops.add(equipment.getItemInMainHand());
                     if (equipment.getItemInOffHand() != null && equipment.getItemInOffHand().getType() != Material.AIR)
                         drops.add(equipment.getItemInOffHand());
@@ -4069,9 +4087,523 @@ public class Tools {
                         drops.add(equipment.getLeggings());
                 }
             }
+            if (!(entity instanceof Ageable) || ((Ageable) entity).isAdult()) {
+                switch (entity.getType()) {
+                    case BAT -> {
+                        if (Math.random() < lootDamage) drops.add(new ItemStack(Material.RABBIT_HIDE));
+                    }
+                    case CAT, OCELOT -> {
+                        if (Math.random() < lootDamage) drops.add(new ItemStack(Material.PORKCHOP));
+                    }
+                    case CHICKEN -> {
+                        if (Math.pow(Math.random(), 7.0) < lootDamage) drops.add(new ItemStack(Material.CHICKEN));
+                        var squared = Math.pow(lootDamage, 2.25);
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.FEATHER));
+                        }
+                    }
+                    case COD -> {
+                        if (Math.pow(Math.random(), 5.0) < lootDamage) drops.add(new ItemStack(Material.COD));
+                    }
+                    case DONKEY -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 4; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.MUTTON));
+                        for (int i = 0; i < 7; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.LEATHER));
+                        for (int i = 0; i < 3; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case FOX -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 2; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.MUTTON));
+                        if (Math.random() < squared)
+                            drops.add(new ItemStack(Material.BONE));
+                    }
+                    case PARROT -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        for (int i = 0; i < 3; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.FEATHER));
+                    }
+                    case HORSE -> {
+                        for (int i = 0; i < 6; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.MUTTON));
+                        for (int i = 0; i < 11; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.LEATHER));
+                        for (int i = 0; i < 5; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case MUSHROOM_COW -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        for (int i = 0; i < 4; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.BEEF));
+
+                        ItemStack type;
+                        if (((MushroomCow) entity).getVariant() == MushroomCow.Variant.BROWN)
+                            type = new ItemStack(Material.BROWN_MUSHROOM);
+                        else type = new ItemStack(Material.RED_MUSHROOM);
+                        for (int i = 0; i < 3; i++)
+                            if (Math.random() < squared)
+                                drops.add(type);
+                        for (int i = 0; i < 6; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.LEATHER));
+                        for (int i = 0; i < 4; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case MULE -> {
+                        for (int i = 0; i < 5; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.MUTTON));
+                        for (int i = 0; i < 9; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.LEATHER));
+                        for (int i = 0; i < 3; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case PIG -> {
+                        for (int i = 0; i < 8; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.PORKCHOP));
+                        for (int i = 0; i < 4; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case PIGLIN -> {
+                        for (int i = 0; i < 6; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.PORKCHOP));
+                        for (int i = 0; i < 2; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case RABBIT -> {
+                        if (Math.pow(Math.random(), 4) < lootDamage)
+                            drops.add(new ItemStack(Material.RABBIT));
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < Math.pow(lootDamage, 9)) drops.add(new ItemStack(Material.RABBIT_FOOT));
+                        }
+                        for (int i = 0; i < 3; i++)
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.RABBIT_HIDE));
+                    }
+                    case SALMON -> {
+                        if (Math.pow(Math.random(), 5.0) < lootDamage) drops.add(new ItemStack(Material.SALMON));
+                    }
+                    case SHEEP -> {
+                        var squared = Math.pow(lootDamage, 1.2);
+                        for (int i = 0; i < 6; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.MUTTON));
+                        if (!((Sheep) entity).isSheared()) {
+                            var color = ((Sheep) entity).getColor();
+                            if (color != null) {
+                                Material wool = switch (color) {
+                                    case WHITE -> Material.WHITE_WOOL;
+                                    case ORANGE -> Material.ORANGE_WOOL;
+                                    case MAGENTA -> Material.MAGENTA_WOOL;
+                                    case LIGHT_BLUE -> Material.LIGHT_BLUE_WOOL;
+                                    case YELLOW -> Material.YELLOW_WOOL;
+                                    case LIME -> Material.LIME_WOOL;
+                                    case PINK -> Material.PINK_WOOL;
+                                    case GRAY -> Material.GRAY_WOOL;
+                                    case LIGHT_GRAY -> Material.LIGHT_GRAY_WOOL;
+                                    case CYAN -> Material.CYAN_WOOL;
+                                    case PURPLE -> Material.PURPLE_WOOL;
+                                    case BLUE -> Material.BLUE_WOOL;
+                                    case BROWN -> Material.BROWN_WOOL;
+                                    case GREEN -> Material.GREEN_WOOL;
+                                    case RED -> Material.RED_WOOL;
+                                    case BLACK -> Material.BLACK_WOOL;
+                                };
+                                for (int i = 0; i < 3; i++) {
+                                    if (Math.random() < squared) drops.add(new ItemStack(wool));
+                                }
+                            }
+                        }
+                    }
+                    case SKELETON_HORSE -> {
+                        for (int i = 0; i < 12; i++)
+                            if (Math.random() < Math.pow(lootDamage, 2))
+                                drops.add(new ItemStack(Material.BONE));
+                    }
+                    case SQUID -> {
+                        if (Math.random() < lootDamage)
+                            drops.add(new ItemStack(Material.INK_SAC));
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.MUTTON));
+                        }
+                    }
+                    case STRIDER -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.STRING));
+                        }
+                    }
+                    case TROPICAL_FISH -> {
+                        if (Math.pow(Math.random(), 5.0) < lootDamage) drops.add(new ItemStack(Material.TROPICAL_FISH));
+                    }
+                    case TURTLE -> {
+                        if (Math.random() < Math.pow(lootDamage, 4.0)) drops.add(new ItemStack(Material.SCUTE));
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.MUTTON));
+                        }
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.SEAGRASS));
+                        }
+                    }
+                    case POLAR_BEAR -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        for (int i = 0; i < 9; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BEEF));
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BONE));
+                        }
+                        for (int i = 0; i < 11; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                    }
+                    case CAVE_SPIDER, SPIDER -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.SPIDER_EYE));
+                        }
+                        for (int i = 0; i < 10; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.STRING));
+                        }
+                    }
+                    case DOLPHIN -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.PORKCHOP));
+                        }
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case IRON_GOLEM -> {
+                        for (int i = 0; i < 12; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.IRON_INGOT));
+                        }
+                        if (Math.random() < lootDamage) drops.add(new ItemStack(Material.POPPY));
+                    }
+                    case LLAMA, TRADER_LLAMA -> {
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.MUTTON));
+                        }
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case PANDA -> {
+                        for (int i = 0; i < 9; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                        for (int i = 0; i < 9; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.PORKCHOP));
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case PUFFERFISH -> {
+                        if (Math.pow(Math.random(), 4.0) < lootDamage) drops.add(new ItemStack(Material.PUFFERFISH));
+                    }
+                    case WOLF -> {
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.MUTTON));
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                    }
+                    case ZOMBIFIED_PIGLIN -> {
+                        for (int i = 0; i < 6; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.ROTTEN_FLESH));
+                        }
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case BLAZE -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 12; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BLAZE_ROD));
+                        }
+                    }
+                    case CREEPER -> {
+                        for (int i = 0; i < 7; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.GUNPOWDER));
+                        }
+                        if (Math.random() < Math.pow(lootDamage, 8)) drops.add(new ItemStack(Material.CREEPER_HEAD));
+                    }
+                    case DROWNED, ZOMBIE, ZOMBIE_VILLAGER, HUSK -> {
+                        for (int i = 0; i < 12; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.ROTTEN_FLESH));
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                        if (entity.getType() == EntityType.ZOMBIE) {
+                            if (Math.random() < Math.pow(lootDamage, 8)) drops.add(new ItemStack(Material.ZOMBIE_HEAD));
+                        }
+                    }
+                    case ELDER_GUARDIAN -> {
+                        if (Math.random() < lootDamage)
+                            drops.add(new ItemStack(Material.HEART_OF_THE_SEA));
+                        if (Math.pow(Math.random(), 5) < lootDamage) drops.add(new ItemStack(Material.WET_SPONGE));
+
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.PRISMARINE_SHARD));
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.PRISMARINE_CRYSTALS));
+                        }
+                    }
+                    case GUARDIAN -> {
+                        if (Math.random() < Math.pow(lootDamage, 3)) drops.add(new ItemStack(Material.WET_SPONGE));
+
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < lootDamage)
+                                drops.add(new ItemStack(Material.PRISMARINE_SHARD));
+                        }
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.PRISMARINE_CRYSTALS));
+                        }
+                    }
+                    case GHAST -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.GUNPOWDER));
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.GHAST_TEAR));
+                        }
+                    }
+                    case HOGLIN -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        for (int i = 0; i < 14; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.PORKCHOP));
+                        }
+                        for (int i = 0; i < 9; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.LEATHER));
+                        }
+                        for (int i = 0; i < 6; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case MAGMA_CUBE -> {
+                        if (Math.random() < Math.pow(lootDamage, 1.5)) drops.add(new ItemStack(Material.MAGMA_CREAM));
+                    }
+                    case SLIME -> {
+                        if (Math.random() < Math.pow(lootDamage, 1.5)) drops.add(new ItemStack(Material.SLIME_BALL));
+                    }
+                    case RAVAGER -> {
+                        drops.add(new ItemStack(Material.SADDLE));
+                        for (int i = 0; i < 12; i++)
+                            if (Math.pow(Math.random(), 1.2) < lootDamage)
+                                drops.add(new ItemStack(Material.IRON_INGOT));
+
+                        if (Math.random() < lootDamage) drops.add(new ItemStack(Material.CHAIN));
+                    }
+                    case SHULKER -> {
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.pow(Math.random(), 2.5) < lootDamage)
+                                drops.add(new ItemStack(Material.SHULKER_SHELL));
+                        }
+                    }
+                    case SKELETON, STRAY, WITHER_SKELETON -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        if (entity.getEquipment() != null && entity.getEquipment().getItemInMainHand().getType() == Material.BOW) {
+                            for (int i = 0; i < 9; i++) {
+                                if (Math.random() < squared) {
+                                    ItemStack arrow;
+
+                                    if (entity.getType() == EntityType.STRAY && Math.random() < 0.2) {
+                                        arrow = new ItemStack(Material.TIPPED_ARROW);
+                                        var meta = arrow.getItemMeta();
+                                        ((PotionMeta) meta).setBasePotionData(new PotionData(PotionType.WEAKNESS));
+                                        arrow.setItemMeta(meta);
+                                    } else arrow = new ItemStack(Material.ARROW);
+                                    var r = Math.random();
+                                    if (r < 1.69350878e-5) arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 10);
+                                    else if (r < 5.08052634e-5)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 9);
+                                    else if (r < 0.00015241579)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 8);
+                                    else if (r < 0.000457247371)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 7);
+                                    else if (r < 0.00137174211)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 6);
+                                    else if (r < 0.00411522634)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 5);
+                                    else if (r < 0.012345679)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 4);
+                                    else if (r < 0.037037037)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 3);
+                                    else if (r < 0.111111111)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 2);
+                                    else if (r < 0.333333333)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 1);
+
+                                    if (Math.random() < 0.03)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, 2);
+                                    if (entity.getType() == EntityType.WITHER_SKELETON && Math.random() < 0.07)
+                                        arrow.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 1);
+                                    drops.add(arrow);
+                                }
+                            }
+                        }
+                        if (entity.getType() == EntityType.WITHER_SKELETON) {
+                            for (int i = 0; i < 4; i++) {
+                                if (Math.random() < squared) drops.add(new ItemStack(Material.COAL));
+                            }
+                            if (Math.random() < Math.pow(lootDamage, 8))
+                                drops.add(new ItemStack(Material.WITHER_SKELETON_SKULL));
+                        }
+                        for (int i = 0; i < 12; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BONE));
+                        }
+                        if (entity.getType() == EntityType.SKELETON) {
+                            if (Math.random() < Math.pow(lootDamage, 8))
+                                drops.add(new ItemStack(Material.SKELETON_SKULL));
+                        }
+                    }
+                    case WITCH -> {
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.NETHER_WART));
+                        }
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                        var cubed = Math.pow(lootDamage, 3);
+                        for (int i = 0; i < 2; i++) {
+                            if (Math.random() < cubed) drops.add(new ItemStack(Material.SUGAR));
+                            if (Math.random() < cubed) drops.add(new ItemStack(Material.REDSTONE));
+                            if (Math.random() < cubed) drops.add(new ItemStack(Material.GLOWSTONE_DUST));
+                            if (Math.random() < cubed) drops.add(new ItemStack(Material.GLASS_BOTTLE));
+                        }
+                    }
+                    case ZOGLIN -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 14; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.ROTTEN_FLESH));
+                        }
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case VILLAGER, WANDERING_TRADER, VINDICATOR, EVOKER -> {
+                        for (int i = 0; i < 3; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.BONE));
+                        }
+                    }
+                    case PHANTOM -> {
+                        for (int i = 0; i < 5; i++) {
+                            if (Math.random() < lootDamage) drops.add(new ItemStack(Material.PHANTOM_MEMBRANE));
+                        }
+                    }
+                    case ENDERMAN -> {
+                        var squared = Math.pow(lootDamage, 2);
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.random() < squared) drops.add(new ItemStack(Material.ENDER_PEARL));
+                        }
+                    }
+
+                }
+            }
+
 
             for (var drop : nDrops) {
                 var isSimilar = false;
+                if (drop.getType() == Material.ARROW
+                        || drop.getType() == Material.TIPPED_ARROW
+                        || drop.getType() == Material.CARROT
+                        || drop.getType() == Material.POTATO
+                        || drop.getType() == Material.COOKED_CHICKEN
+                        || drop.getType() == Material.COOKED_PORKCHOP
+                        || drop.getType() == Material.COOKED_BEEF
+                        || drop.getType() == Material.COOKED_MUTTON
+                        || drop.getType() == Material.COOKED_RABBIT
+                        || drop.getType() == Material.CHICKEN
+                        || drop.getType() == Material.PORKCHOP
+                        || drop.getType() == Material.BEEF
+                        || drop.getType() == Material.MUTTON
+                        || drop.getType() == Material.FEATHER
+                        || drop.getType() == Material.RABBIT
+                        || drop.getType() == Material.RABBIT_HIDE
+                        || drop.getType() == Material.RABBIT_FOOT
+                        || drop.getType() == Material.STRING
+                        || drop.getType() == Material.LEATHER
+                        || drop.getType() == Material.BLACK_WOOL
+                        || drop.getType() == Material.BLUE_WOOL
+                        || drop.getType() == Material.BROWN_WOOL
+                        || drop.getType() == Material.CYAN_WOOL
+                        || drop.getType() == Material.GRAY_WOOL
+                        || drop.getType() == Material.GREEN_WOOL
+                        || drop.getType() == Material.LIGHT_BLUE_WOOL
+                        || drop.getType() == Material.LIGHT_GRAY_WOOL
+                        || drop.getType() == Material.LIME_WOOL
+                        || drop.getType() == Material.MAGENTA_WOOL
+                        || drop.getType() == Material.ORANGE_WOOL
+                        || drop.getType() == Material.PINK_WOOL
+                        || drop.getType() == Material.PURPLE_WOOL
+                        || drop.getType() == Material.RED_WOOL
+                        || drop.getType() == Material.WHITE_WOOL
+                        || drop.getType() == Material.YELLOW_WOOL
+                        || drop.getType() == Material.INK_SAC
+                        || drop.getType() == Material.COD
+                        || drop.getType() == Material.COOKED_COD
+                        || drop.getType() == Material.SALMON
+                        || drop.getType() == Material.COOKED_SALMON
+                        || drop.getType() == Material.TROPICAL_FISH
+                        || drop.getType() == Material.PUFFERFISH
+                        || drop.getType() == Material.SEAGRASS
+                        || drop.getType() == Material.POPPY
+                        || drop.getType() == Material.IRON_INGOT
+                        || drop.getType() == Material.BAMBOO
+                        || drop.getType() == Material.GOLD_NUGGET
+                        || drop.getType() == Material.ROTTEN_FLESH
+                        || drop.getType() == Material.BONE
+                        || drop.getType() == Material.PRISMARINE_SHARD
+                        || drop.getType() == Material.PRISMARINE_CRYSTALS
+                        || drop.getType() == Material.WET_SPONGE
+                        || drop.getType() == Material.GUNPOWDER
+                        || drop.getType() == Material.GHAST_TEAR
+                        || drop.getType() == Material.MAGMA_CREAM
+                        || drop.getType() == Material.SLIME_BALL
+                        || drop.getType() == Material.SHULKER_SHELL
+                        || drop.getType() == Material.REDSTONE
+                        || drop.getType() == Material.GLOWSTONE_DUST
+                        || drop.getType() == Material.SUGAR
+                        || drop.getType() == Material.POTION
+                        || drop.getType() == Material.EMERALD
+                        || drop.getType() == Material.PHANTOM_MEMBRANE
+                        || drop.getType() == Material.ENDER_PEARL
+                ) continue;
                 for (var item : new ArrayList<>(drops)) {
                     if (drop.isSimilar(item)) isSimilar = true;
                     break;
@@ -4141,13 +4673,6 @@ public class Tools {
             var equipment = ((LivingEntity) damager).getEquipment();
             if (equipment == null) return;
             var hand = equipment.getItemInMainHand();
-
-            if (isHuntingKnife(hand)) {
-                if (damager.getLocation().distanceSquared(damaged.getLocation()) > 1.44) {
-                    event.setCancelled(true);
-                    return;
-                }
-            }
             var meta = hand.getItemMeta();
             if (meta == null || !tools.contains(hand.getType())) return;
             var r = Math.random();
@@ -4827,7 +5352,8 @@ public class Tools {
                 if (meta == null || !tools.contains(hand.getType())) return;
                 var r = Math.random();
                 var unbreaking = 0;
-                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
+                if (meta.hasEnchant(Enchantment.DURABILITY))
+                    unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
                 var durability = hand.getType().getMaxDurability();
 
                 if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
@@ -5150,6 +5676,20 @@ public class Tools {
             var entity = event.getEntity();
             var damage = event.getDamage();
             var reduce = 0.0;
+            Entity damager;
+            if (event instanceof EntityDamageByEntityEvent)
+                damager = ((EntityDamageByEntityEvent) event).getDamager();
+            else damager = null;
+
+            if (damager instanceof LivingEntity) {
+                var equipment = ((LivingEntity) damager).getEquipment();
+                if (equipment != null) {
+                    var hand = equipment.getItemInMainHand();
+                    if (isHuntingKnife(hand)) {
+                        damage = Math.max(0, damage - 3);
+                    }
+                }
+            }
 
             if (!(entity instanceof LivingEntity)) return;
             var equip = ((LivingEntity) entity).getEquipment();
@@ -5204,8 +5744,13 @@ public class Tools {
                 case NETHERITE_BOOTS -> reduce += 0.06;
             }
 
+            if (equip.getHelmet() == null) {
+                var armor = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_ARMOR).getValue();
+                reduce += armor * .02;
+            }
             reduce /= 4.0;
             reduce *= 6.0;
+            reduce = Math.min(1, reduce);
 
             switch (cause) {
                 case BLOCK_EXPLOSION, ENTITY_EXPLOSION -> {
@@ -5242,39 +5787,79 @@ public class Tools {
                     }
 
                     if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
-                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                        reduce += 0.0083333333 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
                     if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
-                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                        reduce += 0.0133333334 * chest.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                        reduce += 0.0116666667 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_EXPLOSIONS))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                        reduce += 0.0066666666 * legs.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
                     if (reduce == 1) event.setCancelled(true);
                     else {
-                        ((LivingEntity) entity).setHealth(Math.max(0.0, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        if (!(entity instanceof Player)) {
+                            var instance = Entities.getInstance();
+                            var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                            var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                            var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+                            var change = Math.min(percentDamage, percentHealth) * (0.85);
+                            instance.setLootDamage((LivingEntity) entity, Math.max(0, currentLootDamage - change) * .99);
+                        }
                         event.getEntity().setLastDamageCause(event);
-                        event.setDamage(0.0);
+                        event.setDamage(Math.min(((LivingEntity) entity).getHealth(), damage * (1.0 - reduce)));
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                            if (entity != null && ((LivingEntity) entity).getHealth() < 0.1)
+                                ((LivingEntity) entity).setHealth(0.0);
+                        }, 0L);
                     }
                 }
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> {
                     if (entity instanceof Player && ((Player) entity).isBlocking()) break;
                     if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
-                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                        reduce += 0.0083333333 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
                     if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
-                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                        reduce += 0.0133333334 * chest.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                        reduce += 0.0116666667 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+                        reduce += 0.0066666666 * legs.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
                     if (reduce == 1) event.setCancelled(true);
                     else {
-                        ((LivingEntity) entity).setHealth(Math.max(0.0, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+
+                        if (!(entity instanceof Player)) {
+                            var instance = Entities.getInstance();
+                            var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                            var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                            var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+
+                            System.out.println("-- " + entity.getType().name() + " --"); //todo remove
+                            System.out.println("Initial Loot damage: " + Math.pow(currentLootDamage, 3)); //todo remove
+                            var looting = 0;
+                            if (damager != null && damager instanceof LivingEntity) {
+                                var equipment = ((LivingEntity) damager).getEquipment();
+                                if (equipment != null) {
+                                    var item = equipment.getItemInMainHand();
+                                    if (isHuntingKnife(item)) {
+                                        looting += 1;
+                                        if (item.getItemMeta().hasEnchant(Enchantment.LOOT_BONUS_MOBS))
+                                            looting += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+                                    }
+
+                                }
+                            }
+                            var change = Math.min(percentDamage, percentHealth) * (0.8 - 0.0625 * looting);
+                            System.out.println("Change in damage: " + change); //todo remove
+                            instance.setLootDamage((LivingEntity) entity, Math.max(0, (currentLootDamage - change) * 0.99));
+                        }
+                        event.setDamage(Math.min(((LivingEntity) entity).getHealth(), damage * (1.0 - reduce)));
                         event.getEntity().setLastDamageCause(event);
-                        event.setDamage(0.0);
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                            if (entity != null && ((LivingEntity) entity).getHealth() < 0.1)
+                                ((LivingEntity) entity).setHealth(0.0);
+                        }, 0L);
                     }
 
                 }
-                case DRAGON_BREATH, FIRE, FIRE_TICK, HOT_FLOOR, LAVA -> {
+                case FIRE, FIRE_TICK, HOT_FLOOR, LAVA -> {
                     damage *= 2;
                     if (helmet.getItemMeta() instanceof Damageable) {
                         var meta = helmet.getItemMeta();
@@ -5317,32 +5902,80 @@ public class Tools {
                         boots.setItemMeta(meta);
                     }
                     if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
-                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                        reduce += 0.0083333333 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                     if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
-                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                        reduce += 0.0133333334 * chest.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                        reduce += 0.0116666667 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_FIRE))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                        reduce += 0.0066666666 * legs.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                     if (reduce == 1) event.setCancelled(true);
                     else {
-                        ((LivingEntity) entity).setHealth(Math.max(0.0, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        if (!(entity instanceof Player)) {
+                            var instance = Entities.getInstance();
+                            var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                            var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                            var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+                            var change = Math.min(percentDamage, percentHealth) * (0.925);
+                            instance.setLootDamage((LivingEntity) entity, Math.max(0, currentLootDamage - change) * .99);
+                        }
                         event.getEntity().setLastDamageCause(event);
-                        event.setDamage(0.0);
+                        event.setDamage(Math.min(((LivingEntity) entity).getHealth(), damage * (1.0 - reduce)));
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                            if (entity != null && ((LivingEntity) entity).getHealth() < 0.1)
+                                ((LivingEntity) entity).setHealth(0.0);
+                        }, 0L);
                     }
                 }
                 case PROJECTILE -> {
                     if (entity instanceof Player && ((Player) entity).isBlocking()) break;
                     if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
-                        reduce += 0.01 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                        reduce += 0.0083333333 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
                     if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
-                        reduce += 0.01 * chest.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                        reduce += 0.0133333334 * chest.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                        reduce += 0.0116666667 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
                     if (legs.getItemMeta() != null && legs.getItemMeta().hasEnchant(Enchantment.PROTECTION_PROJECTILE))
-                        reduce += 0.01 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
-                    ((LivingEntity) entity).setHealth(Math.max(0.0, ((LivingEntity) entity).getHealth() - damage * (1.0 - reduce)));
+                        reduce += 0.0066666666 * legs.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                    if (!(entity instanceof Player)) {
+                        var instance = Entities.getInstance();
+                        var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                        var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                        var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+                        var change = Math.min(percentDamage, percentHealth) * (0.65);
+                        instance.setLootDamage((LivingEntity) entity, Math.max(0, currentLootDamage - change) * 0.99);
+                    }
                     event.getEntity().setLastDamageCause(event);
+                    event.setDamage(Math.min(((LivingEntity) entity).getHealth(), damage * (1.0 - reduce)));
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                        if (entity != null && ((LivingEntity) entity).getHealth() < 0.1)
+                            ((LivingEntity) entity).setHealth(0.0);
+                    }, 0L);
+                }
+                case MAGIC, DRAGON_BREATH, SUFFOCATION, FALL, MELTING, DROWNING, VOID, LIGHTNING, STARVATION, POISON, WITHER, FALLING_BLOCK, FLY_INTO_WALL -> {
+                    if (!(entity instanceof Player)) {
+                        var instance = Entities.getInstance();
+                        var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                        var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                        var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+                        var change = Math.min(percentDamage, percentHealth) * (0.985);
+                        instance.setLootDamage((LivingEntity) entity, Math.max(0, currentLootDamage - change) * .99);
+                    }
+                }
+                default -> {
+                    if (!(entity instanceof Player)) {
+                        var instance = Entities.getInstance();
+                        var percentHealth = instance.getPercentHealth((LivingEntity) entity);
+                        var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
+                        var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
+                        var change = Math.min(percentDamage, percentHealth) * (0.9);
+                        instance.setLootDamage((LivingEntity) entity, Math.max(0, currentLootDamage - change * .99));
+                    }
+                }
+            }
+            if (entity.getType() == EntityType.HORSE || entity.getType() == EntityType.MULE || entity.getType() == EntityType.DONKEY || entity.getType() == EntityType.LLAMA || entity.getType() == EntityType.TRADER_LLAMA) {
+                if (Entities.getInstance().getPercentHealth((LivingEntity) entity) == 1.0) {
+                    ((LivingEntity) entity).setHealth(((LivingEntity) entity).getHealth() - event.getDamage());
                     event.setDamage(0.0);
                 }
             }
@@ -6733,7 +7366,8 @@ public class Tools {
             var full = true;
             for (int i = 0; i < destination.getSize(); i++) {
                 var content = destination.getItem(i);
-                if (!(canCombine(content, transfer) || content == null || content.getType() == Material.AIR)) continue;
+                if (!(canCombine(content, transfer) || content == null || content.getType() == Material.AIR))
+                    continue;
                 if (content == null || content.getType() == Material.AIR) {
                     destination.setItem(i, transfer);
                     full = false;

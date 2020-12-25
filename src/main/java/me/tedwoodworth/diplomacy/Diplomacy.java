@@ -7,6 +7,7 @@ import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
+import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
@@ -89,6 +90,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded schedulers");
         DiplomacyRecipes.getInstance().loadRecipes();
         System.out.println("[Diplomacy] Loaded recipes");
+        Entities.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded entity events");
 
 
         if (!setupEconomy()) {

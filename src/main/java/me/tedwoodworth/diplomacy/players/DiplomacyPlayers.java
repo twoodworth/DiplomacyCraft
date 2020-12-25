@@ -558,7 +558,7 @@ public class DiplomacyPlayers {
             var nation = diplomacyChunk.getNation();
 
             // Disable villager trades/interaction
-            if (entity instanceof Villager) {
+            if (entity instanceof Villager || entity instanceof WanderingTrader) {
                 event.getPlayer().sendMessage(ChatColor.RED + "Villager trading is currently disabled.");
                 event.setCancelled(true);
                 return;
