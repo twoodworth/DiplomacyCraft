@@ -4102,7 +4102,6 @@ public class Tools {
 
 
             var lootDamage = Entities.getInstance().getLootDamage(entity);
-            System.out.println("Death loot damage cubed: " + lootDamage);
             if (entity instanceof InventoryHolder) {
                 var holder = (InventoryHolder) entity;
                 for (var item : holder.getInventory()) {
@@ -5903,8 +5902,6 @@ public class Tools {
                             var percentDamage = instance.getPercentOfMaxHealth((LivingEntity) entity, damage * (1.0 - reduce));
                             var currentLootDamage = instance.getLootDamage((LivingEntity) entity);
 
-                            System.out.println("-- " + entity.getType().name() + " --"); //todo remove
-                            System.out.println("Initial Loot damage: " + Math.pow(currentLootDamage, 3)); //todo remove
                             var looting = 0;
                             if (damager != null && damager instanceof LivingEntity) {
                                 var equipment = ((LivingEntity) damager).getEquipment();
@@ -5919,7 +5916,6 @@ public class Tools {
                                 }
                             }
                             var change = Math.min(percentDamage, percentHealth) * (0.8 - 0.0625 * looting);
-                            System.out.println("Change in damage: " + change); //todo remove
                             instance.setLootDamage((LivingEntity) entity, Math.max(0, (currentLootDamage - change) * 0.99));
                         }
                         event.setDamage(Math.min(((LivingEntity) entity).getHealth(), damage * (1.0 - reduce)));
@@ -6170,9 +6166,236 @@ public class Tools {
             var player = event.getPlayer();
             if (item == null) return;
 
-            // using saw
+            // using chisel
+            if (isChisel(item)) {
+                var action = event.getAction();
+                if (player.getCooldown(item.getType()) > 0.0) {
+                    event.setCancelled(true);
+                    return;
+                }
 
-            if (isSaw(item)) {
+                var block = event.getClickedBlock();
+                if (block == null) return;
+                var material = block.getType();
+
+                if (action == Action.LEFT_CLICK_BLOCK) {
+                    player.sendMessage(ChatColor.RED + "Right click to use a chisel");
+                    event.setCancelled(true);
+                    return;
+                }
+                if (!(action == Action.RIGHT_CLICK_BLOCK)) return;
+                var fortune = 1;
+                if (item.getItemMeta().hasEnchant(Enchantment.LOOT_BONUS_BLOCKS))
+                    fortune += item.getItemMeta().getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
+
+                switch (material) {
+                    case GLOWSTONE -> {
+                        if (Math.random() < .75) {
+                            var amount = 1;
+                            for (int i = 0; i < 3; i++) {
+                                if (Math.pow(Math.random(), fortune) < .2) amount++;
+                            }
+                            block.setType(Material.AIR);
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(Material.GLOWSTONE_DUST, amount));
+                        }
+                    }
+                    case MELON -> {
+                        var amount = 1;
+                        for (int i = 0; i < 8; i++) {
+                            if (Math.pow(Math.random(), fortune) < .2) amount++;
+                        }
+                        block.setType(Material.AIR);
+                        block.getWorld().dropItem(block.getLocation(), new ItemStack(Material.MELON_SLICE, amount));
+                    }
+                    case SEA_LANTERN -> {
+                        if (Math.random() < .75) {
+                            var amount1 = 1;
+                            var amount2 = 0;
+                            for (int i = 0; i < 4; i++) {
+                                if (Math.pow(Math.random(), fortune) < .2) amount1++;
+                            }
+                            for (int i = 0; i < 4; i++) {
+                                if (Math.pow(Math.random(), fortune) < .05) amount2++;
+                            }
+                            block.setType(Material.AIR);
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(Material.PRISMARINE_CRYSTALS, amount1));
+                            if (amount2 > 0)
+                                block.getWorld().dropItem(block.getLocation(), new ItemStack(Material.PRISMARINE_SHARD, amount2));
+                        }
+                    }
+                    case COAL_ORE -> {
+                        if (Math.random() < 0.2 - 0.0136363636 * fortune) {
+                            block.setType(Material.AIR);
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.COAL));
+                        } else if (Math.random() < 0.02 * fortune) {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, new ItemStack(Material.COAL));
+                        }
+                    }
+                    case DIAMOND_ORE -> {
+                        var type = item.getType();
+                        if ((type == Material.IRON_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE) && Math.random() < .1 - 0.00606060606 * fortune) {
+                            block.setType(Material.AIR);
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.DIAMOND));
+                        } else if (Math.random() < 0.0095 * fortune) {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, new ItemStack(Material.DIAMOND));
+                        }
+                    }
+                    case EMERALD_ORE -> {
+                        var type = item.getType();
+                        if ((type == Material.IRON_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE) && Math.random() < .2 - 0.0121212121 * fortune) {
+                            block.setType(Material.AIR);
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.EMERALD));
+                        } else if (Math.random() < 0.023 * fortune) {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, new ItemStack(Material.EMERALD));
+                        }
+                    }
+                    case NETHER_GOLD_ORE -> {
+                        if (Math.random() < .3 - 0.0151515152 * fortune) {
+                            block.setType(Material.AIR);
+                            var nugget = new ItemStack(Material.GOLD_NUGGET);
+                            generatePurity(nugget, 0.3);
+                            player.getWorld().dropItem(block.getLocation(), nugget);
+                        } else if (Math.random() < 0.085 * fortune) {
+                            var amount = (int) (Math.random() * 3) + 1;
+                            var nugget = new ItemStack(Material.GOLD_NUGGET, amount);
+                            generatePurity(nugget, 0.3);
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, nugget);
+                        }
+                    }
+                    case LAPIS_ORE -> {
+                        var type = item.getType();
+                        if ((type == Material.STONE_HOE || type == Material.IRON_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE) && Math.random() < .21 - 0.0151515152 * fortune) {
+                            block.setType(Material.AIR);
+                            var amount = (int) ((Math.random()) * 3) + 1;
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.LAPIS_LAZULI, amount));
+
+                        } else if (Math.random() < 0.075 * fortune) {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, new ItemStack(Material.LAPIS_LAZULI, (int) ((Math.random()) * 3) + 1));
+                        }
+                    }
+                    case REDSTONE_ORE -> {
+                        var type = item.getType();
+                        if ((type == Material.IRON_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE) && Math.random() < .205 - 0.0151515152 * fortune) {
+                            block.setType(Material.AIR);
+                            var amount = (int) ((Math.random()) * 3) + 1;
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.REDSTONE, amount));
+                        } else {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            if (Math.random() < 0.03 * fortune) {
+                                player.getWorld().dropItem(l1, new ItemStack(Material.REDSTONE, (int) ((Math.random()) * 2) + 1));
+                            }
+                        }
+                    }
+                    case NETHER_QUARTZ_ORE -> {
+                        if (Math.random() < .3 - 0.0151515152 * fortune) {
+                            block.setType(Material.AIR);
+                            player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.QUARTZ));
+                        } else if (Math.random() < 0.07 * fortune) {
+                            var l1 = player.getEyeLocation().clone();
+                            var l2 = block.getLocation();
+                            l1.setX((l1.getX() + l2.getX()) / 2.0);
+                            l1.setY((l1.getY() + l2.getY()) / 2.0);
+                            l1.setZ((l1.getZ() + l2.getZ()) / 2.0);
+                            player.getWorld().dropItem(l1, new ItemStack(Material.QUARTZ));
+                        }
+                    }
+                    default -> {
+                        player.sendMessage(ChatColor.RED + "You cannot chisel this block.");
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
+                (player).swingMainHand();
+                var delay = 20;
+                switch (item.getType()) {
+                    case WOODEN_HOE -> delay = 45;
+                    case STONE_HOE -> delay = 30;
+                    case IRON_HOE -> delay = 20;
+                    case DIAMOND_HOE -> delay = 13;
+                    case NETHERITE_HOE -> delay = 8;
+                    case GOLDEN_HOE -> delay = 4;
+                }
+                player.setCooldown(Material.WOODEN_HOE, delay);
+                player.setCooldown(Material.STONE_HOE, delay);
+                player.setCooldown(Material.IRON_HOE, delay);
+                player.setCooldown(Material.DIAMOND_HOE, delay);
+                player.setCooldown(Material.NETHERITE_HOE, delay);
+                player.setCooldown(Material.GOLDEN_HOE, delay);
+
+                if (material != Material.MELON)
+                    player.getWorld().playSound(block.getLocation(), Sound.BLOCK_CHAIN_STEP, 1, (long) (Math.random() * 0.5 + 0.5));
+                else
+                    player.getWorld().playSound(block.getLocation(), Sound.BLOCK_PUMPKIN_CARVE, 1, (long) (Math.random() * 0.5 + 0.5));
+
+                //todo dull & durability decrease
+
+                var meta = item.getItemMeta();
+                var unbreaking = 0;
+                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                var durability = item.getType().getMaxDurability();
+
+                if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
+                    var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
+                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
+                        }
+                        item.setItemMeta(meta);
+                    }
+                }
+
+                if (Math.random() < 1.0 / (1.0 + unbreaking)) {
+                    var damageable = (Damageable) meta;
+                    var max = item.getType().getMaxDurability();
+                    var damage = damageable.getDamage() + 1;
+                    if (damage == max) {
+                        item = air;
+                    } else {
+                        damageable.setDamage(damage);
+                        item.setItemMeta(meta);
+                    }
+                }
+                player.getEquipment().setItem(event.getHand(), item);
+
+                event.setCancelled(true);
+                return;
+            }
+
+            // using saw
+            if (
+
+                    isSaw(item)) {
                 var action = event.getAction();
                 if (player.getCooldown(item.getType()) > 0.0) {
                     event.setCancelled(true);
@@ -6280,6 +6503,11 @@ public class Tools {
                         }
                     }
 
+                    case DIRT -> {
+                        player.sendMessage(ChatColor.RED + "You cannot saw this item.");
+                        event.setCancelled(true);
+                        return;
+                    }
                     default -> {
                         player.sendMessage(ChatColor.RED + "You cannot saw this item.");
                         return;
@@ -6342,7 +6570,11 @@ public class Tools {
             }
 
             // prevent tilling with chisel / saw
-            if ((isChisel(item) || isSaw(item)) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if ((
+
+                    isChisel(item) ||
+
+                            isSaw(item)) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 var block = event.getClickedBlock();
                 if (block == null) return;
                 var type = block.getType();
@@ -6353,14 +6585,24 @@ public class Tools {
             }
 
             // sharpening tools
-            if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (isNetheriteRod(item) || isCoarseBlade(item) || isFineBlade(item) || isIronRod(item))) {
+            if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (
+
+                    isNetheriteRod(item) ||
+
+                            isCoarseBlade(item) ||
+
+                            isFineBlade(item) ||
+
+                            isIronRod(item))) {
                 event.setCancelled(true);
                 return;
             }
 
             var action = event.getAction();
             // Grenade
-            if (isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
+            if (
+
+                    isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
                 ItemStack finalItem = item;
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeUse(finalItem, action, event.getPlayer(), event.getHand()), 2L);
                 event.setCancelled(true);
@@ -6368,13 +6610,17 @@ public class Tools {
             }
 
             // Ancient Dust
-            if (item.getType() == Material.REDSTONE && isDust(item)) {
+            if (item.getType() == Material.REDSTONE &&
+
+                    isDust(item)) {
                 event.setCancelled(true);
                 return;
             }
 
             // Metal Plates
-            if (isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (
+
+                    isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 var block = event.getClickedBlock();
                 if (block != null && block.getType() == Material.CAULDRON) {
                     var cauldron = (Levelled) block.getBlockData();
@@ -6416,7 +6662,9 @@ public class Tools {
             }
 
             // Lodestone sifter & not equipping
-            if (isSifter(item)) {
+            if (
+
+                    isSifter(item)) {
                 var meta = item.getItemMeta();
                 if (meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS) == 4) {
                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.hasBlock() && event.getClickedBlock().getType().equals(Material.LODESTONE)) {
@@ -6434,7 +6682,9 @@ public class Tools {
             }
 
             // magnet
-            if (item.getAmount() == 1 && hasPurity(item)) {
+            if (item.getAmount() == 1 &&
+
+                    hasPurity(item)) {
                 if (getPurity(item)[0] <= 0.00006310f) {
                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.hasBlock() && event.getClickedBlock().getType().equals(Material.LODESTONE)) {
                         if (item.getType().equals(Material.IRON_INGOT) || item.getType().equals(Material.NETHERITE_INGOT)) {
@@ -7781,12 +8031,13 @@ public class Tools {
 
             if (itemPickupList.contains(drop)) {
                 event.setCancelled(true);
-                System.out.println("Blocked pickup");//todo remove
                 return;
             }
 
-            itemPickupList.add(drop);
-            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> itemPickupList.remove(drop), 2L);
+            if (entity instanceof Player) {
+                itemPickupList.add(drop);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> itemPickupList.remove(drop), 2L);
+            }
 
 
             if (isMetal(item) && !hasPurity(item))
@@ -7983,9 +8234,13 @@ public class Tools {
                     event.setUseItemInHand(Event.Result.DENY);
                     event.setCancelled(true);
 
+                    if (lookingAt.getPickupDelay() > 0) {
+                        event.setCancelled(true);
+                        return;
+                    }
+
                     if (itemPickupList.contains(lookingAt)) {
                         event.setCancelled(true);
-                        System.out.println("Blocked pickup (right click side)");//todo remove
                         return;
                     }
 
