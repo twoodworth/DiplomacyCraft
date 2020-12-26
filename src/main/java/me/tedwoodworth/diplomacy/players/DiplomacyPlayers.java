@@ -745,7 +745,7 @@ public class DiplomacyPlayers {
             event.getPlayer().getInventory().addItem(getGuideBook());
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.HIGHEST)
         private void onDamage(EntityDamageEvent event) {
             var entity = event.getEntity();
             if (entity instanceof Item) {
@@ -755,6 +755,8 @@ public class DiplomacyPlayers {
                     return;
                 }
             }
+            if (!(entity instanceof LivingEntity) && DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation() != null)
+                event.setCancelled(true);//todo figure out
         }
 
         @EventHandler(priority = EventPriority.HIGH)

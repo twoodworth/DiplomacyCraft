@@ -242,9 +242,9 @@ public class DiplomacyRecipes {
         var goldSaw = new ItemStack(Material.GOLDEN_HOE);
         meta = goldSaw.getItemMeta();
         meta.setLore(sawLore);
-        goldSaw.setItemMeta(meta);
         meta.setDisplayName(ChatColor.RESET + "Golden Saw");
         meta.setLocalizedName("Golden Saw");
+        goldSaw.setItemMeta(meta);
         goldSaw.addEnchantment(Enchantment.SILK_TOUCH, 1);
         ShapedRecipe goldenSawR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "gold_saw"), goldSaw);
         goldenSawR.shape(" S ", "S S", "MMM");

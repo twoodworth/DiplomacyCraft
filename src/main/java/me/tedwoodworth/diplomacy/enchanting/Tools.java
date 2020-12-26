@@ -7,10 +7,13 @@ import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Levelled;
+import org.bukkit.block.data.type.TurtleEgg;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -44,6 +47,8 @@ public class Tools {
     private final String plateLore = ChatColor.BLUE + "Refined Plate";
     private final String refinedLore = ChatColor.BLUE + "Refined";
     private final ItemStack air = new ItemStack(Material.AIR);
+    private final Set<Player> grenadeDropList = new HashSet<>();
+    private final Set<Item> itemPickupList = new HashSet<>();
 
     private final String NETHERITE_LAYER_LORE = ChatColor.GREEN + "Netherite Fortified";
     private final String CRYING_OBSIDIAN_LAYER_LORE = ChatColor.GREEN + "Crying Obsidian Fortified";
@@ -1077,6 +1082,14 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
+            // removing cooldown (for most items)
+            if (tools.contains(result.getType()) && !isChisel(result) && !isSaw(result) && result.getItemMeta() != null) {
+                var meta = result.getItemMeta();
+                meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier("generic.attackSpeed", 20, AttributeModifier.Operation.ADD_NUMBER));
+                meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                result.setItemMeta(meta);
+                inventory.setResult(result);
+            }
 
             // Cancelling sharpening tools
             for (var item : inventory.getMatrix()) {
@@ -1674,16 +1687,27 @@ public class Tools {
             }
 
             // No repairing
-            if (result instanceof Damageable) {
+            if (result.getItemMeta() instanceof Damageable) {
                 ItemStack tool = null;
                 for (var item : inventory.getMatrix()) {
                     if (item == null || item.getType() == Material.AIR) continue;
-                    if (!(item instanceof Damageable)) break;
+                    var type = item.getType();
+                    if (!(tools.contains(type)
+                            || type == Material.SHEARS
+                            || type == Material.FISHING_ROD
+                            || type == Material.CARROT_ON_A_STICK
+                            || type == Material.FLINT_AND_STEEL
+                            || type == Material.BOW
+                            || type == Material.ELYTRA
+                            || type == Material.SHIELD
+                            || type == Material.CROSSBOW
+                            || type == Material.WARPED_FUNGUS_ON_A_STICK)) break;
                     else {
                         if (tool == null) tool = item;
                         else {
                             if (tool.getType() == item.getType()) {
                                 inventory.setResult(air);
+                                return;
                             }
                         }
                     }
@@ -1707,6 +1731,11 @@ public class Tools {
                             !item.getType().equals(Material.AIR) &&
                             !item.getType().equals(Material.BLACKSTONE) &&
                             !item.getType().equals(Material.STICK)) {
+                        var meta = result.getItemMeta();
+                        var lore = meta.getLore();
+                        lore.remove(DiplomacyRecipes.getInstance().NEW_LORE);
+                        meta.setLore(lore);
+                        result.setItemMeta(meta);
                         return;
                     }
                 }
@@ -1739,7 +1768,7 @@ public class Tools {
                 var meta = result.getItemMeta();
                 if (meta != null && meta.getLore() != null) {
                     var lore = meta.getLore();
-                    lore.remove(0);
+                    lore.remove(DiplomacyRecipes.getInstance().NEW_LORE);
                     meta.setLore(lore);
                     result.setItemMeta(meta);
                 }
@@ -2015,20 +2044,27 @@ public class Tools {
         private void onEntitySpawn(EntitySpawnEvent event) {
             var entity = event.getEntity();
             if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
-            if (!(entity instanceof Slime || entity instanceof MagmaCube))
+            if (entity instanceof Piglin //todo piglin brute
+                    || entity instanceof Evoker
+                    || entity instanceof Pillager
+                    || entity instanceof Skeleton
+                    || entity instanceof Stray
+                    || entity instanceof Vindicator
+                    || entity instanceof WitherSkeleton
+                    || entity instanceof Zombie
+                    || entity instanceof ZombieVillager)
                 ((LivingEntity) entity).setCanPickupItems(true);
 
             var equipment = ((LivingEntity) entity).getEquipment();
             if (equipment == null) return;
 
-            // Piglin / Zombie piglin / Zoglin
+            // Piglin / Zombie piglin / Brute
             if (entity.getType() == EntityType.PIGLIN || entity.getType() == EntityType.ZOMBIFIED_PIGLIN) { //todo piglin brute
                 ItemStack weapon;
                 var r = Math.random();
-                if (r < 0.2 || (entity.getType() == EntityType.ZOMBIFIED_PIGLIN && r >= 0.00015241579))
+                if (r < 0.5 || (entity.getType() == EntityType.ZOMBIFIED_PIGLIN))
                     weapon = new ItemStack(Material.GOLDEN_SWORD);
-                else if (r < 0.4 && entity.getType() == EntityType.PIGLIN) weapon = new ItemStack(Material.CROSSBOW);
-                else weapon = air;
+                else weapon = new ItemStack(Material.CROSSBOW);
 
                 if (weapon.getType() == Material.GOLDEN_SWORD) {
                     var max = weapon.getType().getMaxDurability();
@@ -3276,13 +3312,15 @@ public class Tools {
                     else if (r < 0.8) weapon = new ItemStack(Material.STONE_SWORD);
                     else weapon = new ItemStack(Material.BOW);
                 } else {
-                    if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_SWORD);
+                    if (r < 1.69350878e-5 && environment != World.Environment.NETHER)
+                        weapon = new ItemStack(Material.DIAMOND_SWORD);
                     else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_SWORD);
                     else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_SWORD);
-                    else if (r < 0.037037037 || environment == World.Environment.NETHER)
-                        weapon = new ItemStack(Material.STONE_SWORD);
-                    else if (r < 0.2) weapon = new ItemStack(Material.WOODEN_SWORD);
-                    else weapon = new ItemStack(Material.BOW);
+                    else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_SWORD);
+                    else if (r < 0.2) {
+                        if (environment == World.Environment.NETHER) weapon = new ItemStack(Material.STONE_SWORD);
+                        else weapon = new ItemStack(Material.WOODEN_SWORD);
+                    } else weapon = new ItemStack(Material.BOW);
                 }
 
                 if (weapon.getType() == Material.BOW) {
@@ -4682,7 +4720,7 @@ public class Tools {
 
             if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
                 var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
-                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
                     meta.removeEnchant(Enchantment.DAMAGE_ALL);
                     if (level > 1) {
                         meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
@@ -4692,7 +4730,7 @@ public class Tools {
             }
             if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
                 var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
-                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
                     meta.removeEnchant(Enchantment.DIG_SPEED);
                     if (level > 1) {
                         meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
@@ -4702,7 +4740,7 @@ public class Tools {
             }
             if (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS)) {
                 var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
-                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
                     meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
                     if (level > 1) {
                         meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
@@ -4712,7 +4750,7 @@ public class Tools {
             }
             if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
                 var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
-                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
                     meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
                     if (level > 1) {
                         meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
@@ -4722,7 +4760,7 @@ public class Tools {
             }
             if (meta.hasEnchant(Enchantment.IMPALING)) {
                 var level = meta.getEnchantLevel(Enchantment.IMPALING);
-                if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                if (r < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
                     meta.removeEnchant(Enchantment.IMPALING);
                     if (level > 1) {
                         meta.addEnchant(Enchantment.IMPALING, level - 1, true);
@@ -5458,6 +5496,10 @@ public class Tools {
             else
                 loc.setY(loc.getY() - 0.6);
 
+            velocity.add(player.getVelocity());
+            velocity.setY(velocity.getY() + (Math.random() - 0.5) * 0.025);
+            velocity.setX(velocity.getX() + (Math.random() - 0.5) * 0.025);
+            velocity.setZ(velocity.getZ() + (Math.random() - 0.5) * 0.025);
 
             var drop = player.getWorld().dropItem(loc, grenade);
             drop.setVelocity(velocity);
@@ -5499,7 +5541,6 @@ public class Tools {
                     y += vY / 10.0;
                     z += vZ / 10.0;
                     for (var entity : nearby) {
-                        if (!(entity instanceof LivingEntity)) continue;
                         if (curTime < 10L && entity.equals(player)) continue;
                         var box = entity.getBoundingBox();
                         if (box.contains(x, y, z)) {
@@ -5526,16 +5567,47 @@ public class Tools {
                             else if (b[0] == bY) v.setY(-1 * v.getY());
                             else v.setZ(-1 * v.getZ());
 
-                            v.setX(0.15 * v.getX());
-                            v.setY(0.15 * v.getY());
-                            v.setZ(0.15 * v.getZ());
+
+                            if ((entity instanceof LivingEntity && !(entity instanceof Bee))
+                                    || entity instanceof EnderCrystal
+                                    || entity instanceof ArmorStand) {
+                                v.add(entity.getVelocity());
+                                v.setX(0.15 * v.getX());
+                                v.setY(0.15 * v.getY());
+                                v.setZ(0.15 * v.getZ());
+                            } else if (
+                                    entity instanceof Item
+                                            || entity instanceof Explosive
+                                            || entity instanceof Projectile
+                                            || entity instanceof Bee
+                                            || entity instanceof FallingBlock) {
+                                var half = v.clone();
+                                half.setX(v.getX() / 2);
+                                half.setY(v.getY() / 2);
+                                half.setZ(v.getZ() / 2);
+
+                                var eV = entity.getVelocity();
+                                var half2 = eV.clone();
+                                half2.setX(eV.getX() / 2);
+                                half2.setY(eV.getY() / 2);
+                                half2.setZ(eV.getZ() / 2);
+                                v.add(half2);
+                                eV.add(half);
+                                entity.setVelocity(eV);
+
+                            } else if (
+                                    entity instanceof Minecart
+                                            || entity instanceof Boat) {
+                                v.add(entity.getVelocity());
+                            }
 
                             item.setVelocity(v);
 
                             if (vLength > 0.05) {
                                 item.getWorld().playSound(item.getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                             }
-                            if (vLength > 0.25) {
+
+                            if (entity instanceof LivingEntity && vLength > 0.25) {
                                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
                                 ((LivingEntity) entity).damage(1);
                             }
@@ -6000,9 +6072,285 @@ public class Tools {
         }
 
         @EventHandler
+        private void grenadeDrop(PlayerDropItemEvent event) {
+            var drop = event.getItemDrop();
+            var item = drop.getItemStack();
+            if (isGrenade(item) && item.getType() == Material.FIREWORK_STAR) {
+                var player = event.getPlayer();
+                grenadeDropList.add(player);
+                Bukkit.getScheduler().runTaskLater(
+                        Diplomacy.getInstance(),
+                        () -> grenadeDropList.remove(player),
+                        2L);
+            }
+        }
+
+        @EventHandler
+        private void grenadeDrop(InventoryClickEvent event) {
+            var item = event.getCurrentItem();
+            var player = event.getView().getPlayer();
+            var equip = player.getEquipment();
+            var item2 = air;
+            if (equip != null) item2 = equip.getItemInMainHand();
+            if ((isGrenade(item) && item != null && item.getType() == Material.FIREWORK_STAR) || (isGrenade(item2) && item2.getType() == Material.FIREWORK_STAR)) {
+                grenadeDropList.add((Player) player);
+                Bukkit.getScheduler().runTaskLater(
+                        Diplomacy.getInstance(),
+                        () -> grenadeDropList.remove(player),
+                        2L);
+            }
+        }
+
+        private void grenadeUse(ItemStack item, Action action, Player player, EquipmentSlot hand) {
+            boolean isOverhand = (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK);
+
+            if (!isOverhand && grenadeDropList.contains(player)) {
+                grenadeDropList.remove(player);
+                return;
+            }
+
+            var amount = item.getAmount();
+
+            if (amount > 1) item.setAmount(amount - 1);
+            else player.getEquipment().setItem(hand, air);
+
+
+            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
+            throwGrenade(player, isOverhand, (long) (Math.random() * 40L) + 70L);
+        }
+
+        @EventHandler
+        private void onProjectileLaunch(ProjectileLaunchEvent event) {
+            if (!(event.getEntity() instanceof AbstractArrow)) return;
+            var arrow = ((AbstractArrow) event.getEntity());
+            var shooter = arrow.getShooter();
+            if (shooter instanceof Skeleton) {
+                var r = Math.random();
+                var damage = arrow.getDamage();
+                if (r < 0.0173415299) arrow.setDamage(damage * 3.75);
+                else if (r < 0.0260122949) arrow.setDamage(damage * 3.50);
+                else if (r < 0.0390184423) arrow.setDamage(damage * 3.25);
+                else if (r < 0.0585276635) arrow.setDamage(damage * 3.00);
+                else if (r < 0.0877914952) arrow.setDamage(damage * 2.75);
+                else if (r < 0.131687243) arrow.setDamage(damage * 2.50);
+                else if (r < 0.197530864) arrow.setDamage(damage * 2.25);
+                else if (r < 0.296296296) arrow.setDamage(damage * 2.00);
+                else if (r < 0.444444444) arrow.setDamage(damage * 1.75);
+                else if (r < 0.666666667) arrow.setDamage(damage * 1.50);
+
+                if (arrow.getWorld().getEnvironment() == World.Environment.NETHER && Math.random() < 0.66) {
+                    arrow.setFireTicks(500);
+                }
+
+                if (Math.random() < 0.3) arrow.setKnockbackStrength(2);
+
+            } else if (arrow.isShotFromCrossbow() && !(shooter instanceof Player)) {
+
+                var r = Math.random();
+                if (r < 0.0173415299) arrow.setPierceLevel(10);
+                else if (r < 0.0260122949) arrow.setPierceLevel(9);
+                else if (r < 0.0390184423) arrow.setPierceLevel(8);
+                else if (r < 0.0585276635) arrow.setPierceLevel(7);
+                else if (r < 0.0877914952) arrow.setPierceLevel(6);
+                else if (r < 0.131687243) arrow.setPierceLevel(5);
+                else if (r < 0.197530864) arrow.setPierceLevel(4);
+                else if (r < 0.296296296) arrow.setPierceLevel(3);
+                else if (r < 0.444444444) arrow.setPierceLevel(2);
+                else if (r < 0.666666667) arrow.setPierceLevel(1);
+
+                if (Math.random() < 0.3) arrow.setKnockbackStrength(2);
+            } else if (shooter instanceof Player) {
+                //todo enchanted arrows
+            }
+        }
+
+        @EventHandler
         private void onItemUse(PlayerInteractEvent event) {
             var item = event.getItem();
+            var player = event.getPlayer();
             if (item == null) return;
+
+            // using saw
+
+            if (isSaw(item)) {
+                var action = event.getAction();
+                if (player.getCooldown(item.getType()) > 0.0) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                var block = event.getClickedBlock();
+                if (block == null) return;
+                var material = block.getType();
+
+
+                if (action == Action.LEFT_CLICK_BLOCK && material != Material.BEE_NEST) {
+                    player.sendMessage(ChatColor.RED + "Right click to use a saw");
+                    event.setCancelled(true);
+                    return;
+                }
+                if (!(action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK)) return;
+                var efficiency = 1;
+                if (item.getItemMeta().hasEnchant(Enchantment.DIG_SPEED))
+                    efficiency += item.getItemMeta().getEnchantLevel(Enchantment.DIG_SPEED);
+
+                switch (material) {
+                    case BEE_NEST -> {
+                        player.sendMessage(ChatColor.RED + "Use left click with saw to obtain a bee nest");
+                        return;
+                    }
+                    case ACACIA_LEAVES, BIRCH_LEAVES, BRAIN_CORAL, BRAIN_CORAL_FAN, BRAIN_CORAL_WALL_FAN, DEAD_BRAIN_CORAL_FAN, DEAD_BRAIN_CORAL_WALL_FAN, BROWN_MUSHROOM_BLOCK,
+                            BUBBLE_CORAL, DEAD_BUBBLE_CORAL_FAN, BUBBLE_CORAL_WALL_FAN, DEAD_BUBBLE_CORAL_WALL_FAN, DARK_OAK_LEAVES, DEAD_BUSH, FERN, FIRE_CORAL,
+                            FIRE_CORAL_FAN, FIRE_CORAL_WALL_FAN, DEAD_FIRE_CORAL_FAN, DEAD_FIRE_CORAL_WALL_FAN, GRASS, HORN_CORAL, HORN_CORAL_FAN, HORN_CORAL_WALL_FAN, DEAD_HORN_CORAL_FAN, DEAD_HORN_CORAL_WALL_FAN, JUNGLE_LEAVES, NETHER_SPROUTS, OAK_LEAVES,
+                            RED_MUSHROOM_BLOCK, SEAGRASS, SNOW, SNOW_BLOCK, SPRUCE_LEAVES, TUBE_CORAL, TUBE_CORAL_FAN, TUBE_CORAL_WALL_FAN, DEAD_TUBE_CORAL_FAN, DEAD_TUBE_CORAL_WALL_FAN, TURTLE_EGG,
+                            TWISTING_VINES, VINE, WEEPING_VINES -> {
+                        if (Math.pow(Math.random(), efficiency) < 0.8) {
+                            if (material == Material.BRAIN_CORAL_WALL_FAN) material = Material.BRAIN_CORAL_FAN;
+                            else if (material == Material.BUBBLE_CORAL_WALL_FAN) material = Material.BUBBLE_CORAL_FAN;
+                            else if (material == Material.FIRE_CORAL_WALL_FAN) material = Material.FIRE_CORAL_FAN;
+                            else if (material == Material.HORN_CORAL_WALL_FAN) material = Material.HORN_CORAL_FAN;
+                            else if (material == Material.TUBE_CORAL_WALL_FAN) material = Material.TUBE_CORAL_FAN;
+                            else if (material == Material.DEAD_BRAIN_CORAL_WALL_FAN)
+                                material = Material.DEAD_BRAIN_CORAL_FAN;
+                            else if (material == Material.DEAD_BUBBLE_CORAL_WALL_FAN)
+                                material = Material.DEAD_BUBBLE_CORAL_FAN;
+                            else if (material == Material.DEAD_FIRE_CORAL_WALL_FAN)
+                                material = Material.DEAD_FIRE_CORAL_FAN;
+                            else if (material == Material.DEAD_HORN_CORAL_WALL_FAN)
+                                material = Material.DEAD_HORN_CORAL_FAN;
+                            else if (material == Material.DEAD_TUBE_CORAL_WALL_FAN)
+                                material = Material.DEAD_TUBE_CORAL_FAN;
+
+                            if (material == Material.TURTLE_EGG) {
+                                var amount = ((TurtleEgg) block.getBlockData()).getEggs();
+                                block.getWorld().dropItem(block.getLocation(), new ItemStack(material, amount));
+                                block.setType(Material.AIR);
+                            } else {
+                                block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                                block.setType(Material.AIR);
+                            }
+                        }
+                    }
+
+                    case BLACK_STAINED_GLASS, BLACK_STAINED_GLASS_PANE, BLUE_ICE, BLUE_STAINED_GLASS,
+                            BLUE_STAINED_GLASS_PANE, BOOKSHELF, BROWN_STAINED_GLASS,
+                            BROWN_STAINED_GLASS_PANE, CLAY, COBWEB,
+                            CYAN_STAINED_GLASS, CYAN_STAINED_GLASS_PANE, GLASS, GLASS_PANE, GLOWSTONE,
+                            GRASS_BLOCK, GRASS_PATH, GRAY_STAINED_GLASS, GRAY_STAINED_GLASS_PANE, GREEN_STAINED_GLASS,
+                            GREEN_STAINED_GLASS_PANE, HORN_CORAL_BLOCK, ICE, LIGHT_BLUE_STAINED_GLASS, LIGHT_BLUE_STAINED_GLASS_PANE,
+                            LIGHT_GRAY_STAINED_GLASS, LIGHT_GRAY_STAINED_GLASS_PANE, LIME_STAINED_GLASS, LIME_STAINED_GLASS_PANE,
+                            MAGENTA_STAINED_GLASS, MAGENTA_STAINED_GLASS_PANE, MELON, MYCELIUM, ORANGE_STAINED_GLASS,
+                            ORANGE_STAINED_GLASS_PANE, PACKED_ICE, PINK_STAINED_GLASS, PINK_STAINED_GLASS_PANE, PURPLE_STAINED_GLASS,
+                            PURPLE_STAINED_GLASS_PANE, TUBE_CORAL_BLOCK, WHITE_STAINED_GLASS, WHITE_STAINED_GLASS_PANE, YELLOW_STAINED_GLASS,
+                            YELLOW_STAINED_GLASS_PANE -> {//todo add all blocks
+
+                        if (Math.pow(Math.random(), efficiency) < 0.4) {
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                            block.setType(Material.AIR);
+                        }
+                    }
+
+                    case BRAIN_CORAL_BLOCK, BUBBLE_CORAL_BLOCK, COAL_ORE, FIRE_CORAL_BLOCK, GILDED_BLACKSTONE, NETHER_GOLD_ORE,
+                            NETHER_QUARTZ_ORE, CRIMSON_NYLIUM, WARPED_NYLIUM, STONE -> {
+                        if (Math.pow(Math.random(), efficiency) < 0.1) {
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                            block.setType(Material.AIR);
+                        }
+                    }
+
+
+                    case LAPIS_ORE -> {
+                        if (item.getType() != Material.WOODEN_HOE && Math.pow(Math.random(), efficiency) < 0.08) {
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                            block.setType(Material.AIR);
+                        }
+                    }
+
+                    case EMERALD_ORE, REDSTONE_ORE -> {
+                        if (item.getType() != Material.WOODEN_HOE && item.getType() != Material.STONE_HOE && Math.pow(Math.random(), efficiency) < 0.04) {
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                            block.setType(Material.AIR);
+                        }
+                    }
+
+                    case DIAMOND_ORE -> {
+                        if (item.getType() != Material.WOODEN_HOE && item.getType() != Material.STONE_HOE && Math.pow(Math.random(), efficiency) < 0.001) {
+                            block.getWorld().dropItem(block.getLocation(), new ItemStack(material));
+                            block.setType(Material.AIR);
+                        }
+                    }
+
+                    default -> {
+                        player.sendMessage(ChatColor.RED + "You cannot saw this item.");
+                        return;
+                    }
+                }
+
+                (player).swingMainHand();
+                var delay = 70;
+                switch (item.getType()) {
+                    case WOODEN_HOE -> delay = 60;
+                    case STONE_HOE -> delay = 45;
+                    case IRON_HOE -> delay = 35;
+                    case DIAMOND_HOE -> delay = 28;
+                    case NETHERITE_HOE -> delay = 23;
+                    case GOLDEN_HOE -> delay = 19;
+                }
+                player.setCooldown(Material.WOODEN_HOE, delay);
+                player.setCooldown(Material.STONE_HOE, delay);
+                player.setCooldown(Material.IRON_HOE, delay);
+                player.setCooldown(Material.DIAMOND_HOE, delay);
+                player.setCooldown(Material.NETHERITE_HOE, delay);
+                player.setCooldown(Material.GOLDEN_HOE, delay);
+
+                player.getWorld().playSound(block.getLocation(), Sound.UI_STONECUTTER_TAKE_RESULT, 1, 1);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.getWorld().playSound(block.getLocation(), Sound.UI_STONECUTTER_TAKE_RESULT, 1, 4), (long) (delay / 3.0 * 2.0));
+
+                //todo dull & durability decrease
+
+                var meta = item.getItemMeta();
+                var unbreaking = 0;
+                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                var durability = item.getType().getMaxDurability();
+
+                if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
+                    var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
+                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
+                        meta.removeEnchant(Enchantment.DIG_SPEED);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                        }
+                        item.setItemMeta(meta);
+                    }
+                }
+
+                if (Math.random() < 1.0 / (1.0 + unbreaking)) {
+                    var damageable = (Damageable) meta;
+                    var max = item.getType().getMaxDurability();
+                    var damage = damageable.getDamage() + 1;
+                    if (damage == max) {
+                        item = air;
+                    } else {
+                        damageable.setDamage(damage);
+                        item.setItemMeta(meta);
+                    }
+                }
+                player.getEquipment().setItem(event.getHand(), item);
+
+                event.setCancelled(true);
+                return;
+            }
+
+            // prevent tilling with chisel / saw
+            if ((isChisel(item) || isSaw(item)) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                var block = event.getClickedBlock();
+                if (block == null) return;
+                var type = block.getType();
+                if (type != null && (type == Material.DIRT || type == Material.GRASS_BLOCK || type == Material.GRASS_PATH)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
 
             // sharpening tools
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (isNetheriteRod(item) || isCoarseBlade(item) || isFineBlade(item) || isIronRod(item))) {
@@ -6010,18 +6358,11 @@ public class Tools {
                 return;
             }
 
+            var action = event.getAction();
             // Grenade
-            if (isGrenade(item) && event.getAction() != Action.PHYSICAL) {
-                if (item.getAmount() > 1) item.setAmount(item.getAmount() - 1);
-                else {
-                    var hand = event.getHand();
-                    event.getPlayer().getEquipment().setItem(hand, air);
-
-                }
-                boolean isOverhand = (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK);
-
-                event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
-                throwGrenade(event.getPlayer(), isOverhand, (long) (Math.random() * 40L) + 70L);
+            if (isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
+                ItemStack finalItem = item;
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeUse(finalItem, action, event.getPlayer(), event.getHand()), 2L);
                 event.setCancelled(true);
                 return;
             }
@@ -6218,6 +6559,17 @@ public class Tools {
             if ((isGrenade(entityStack) && entityStack.getType() == Material.TNT) || isGrenade(targetStack) && targetStack.getType() == Material.TNT) {
                 event.setCancelled(true);
                 return;
+            }
+
+            if (itemPickupList.contains(entity) || itemPickupList.contains(target)) {
+                itemPickupList.remove(entity);
+                itemPickupList.remove(target);
+                itemPickupList.add(target);
+                itemPickupList.add(entity);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                    itemPickupList.remove(entity);
+                    itemPickupList.remove(target);
+                }, 2L);
             }
 
             if (isMetal(entityStack) && canCombine(entityStack, targetStack)) {
@@ -6583,7 +6935,7 @@ public class Tools {
                     var enchants = item.getEnchantments();
                     if (
                             (enchants.containsKey(Enchantment.DAMAGE_ALL) && enchants.get(Enchantment.DAMAGE_ALL) == 2)
-                                    || (enchants.containsKey(Enchantment.LOOT_BONUS_BLOCKS) && enchants.get(Enchantment.LOOT_BONUS_BLOCKS) == 2)
+                                    || (enchants.containsKey(Enchantment.LOOT_BONUS_MOBS) && enchants.get(Enchantment.LOOT_BONUS_MOBS) == 2)
                                     || (enchants.containsKey(Enchantment.DIG_SPEED) && enchants.get(Enchantment.DIG_SPEED) == 2)
                                     || (enchants.containsKey(Enchantment.IMPALING) && enchants.get(Enchantment.IMPALING) == 2)
                     ) {
@@ -6793,12 +7145,14 @@ public class Tools {
                     (view.getTopInventory().getType() == InventoryType.WORKBENCH ||
                             view.getTopInventory().getType() == InventoryType.CRAFTING)) {
                 var usesMetal = false;
+                var refined = false;
                 var slots = view.countSlots() - 5;
                 for (int i = 0; i < slots; i++) {
                     if (view.getSlotType(i) != InventoryType.SlotType.CRAFTING) continue;
                     var item = view.getItem(i);
                     if (item != null && isMetal(item)) {
                         usesMetal = true;
+                        if (isRefined(item)) refined = true;
                         break;
                     }
                 }
@@ -6899,6 +7253,14 @@ public class Tools {
                             if (item.getAmount() >= 0)
                                 System.arraycopy(nPurities, i, purities, 0, item.getAmount());
                             setPurity(item, purities);
+                            if (refined) {
+                                var meta = item.getItemMeta();
+                                var lore = meta.getLore();
+                                lore.add("");
+                                lore.add(refinedLore);
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
                             stacks[index++] = item;
                         }
                         index = 0;
@@ -7397,20 +7759,43 @@ public class Tools {
 
         @EventHandler
         private void onEntityPickupItem(EntityPickupItemEvent event) {
-            var item = event.getItem().getItemStack();
+            var drop = event.getItem();
+            var item = drop.getItemStack();
             if (item == null) return;
             if (isGrenade(item) && item.getType() == Material.TNT) {
                 event.setCancelled(true);
                 return;
             }
+            var entity = event.getEntity();
+            if (isMetal(item) && !(entity instanceof Player)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (entity instanceof Player) {
+                if (!((Player) entity).isSneaking()) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            if (itemPickupList.contains(drop)) {
+                event.setCancelled(true);
+                System.out.println("Blocked pickup");//todo remove
+                return;
+            }
+
+            itemPickupList.add(drop);
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> itemPickupList.remove(drop), 2L);
+
 
             if (isMetal(item) && !hasPurity(item))
                 generatePurity(item, 1.0);
 
             if (isMetal(item) && event.getEntity() instanceof Player) {
                 if (item.getItemMeta().hasEnchants()) return;
-                var isRefined = isRefined(item);
                 var inv = ((Player) event.getEntity()).getInventory();
+
                 for (var content : inv.getContents()) {
                     if (canCombine(item, content)) {
                         var combined = getCombinedPurity(item, content);
@@ -7427,11 +7812,6 @@ public class Tools {
                             return;
                         }
                     }
-                }
-            } else {
-                if (isMetal(item)) {
-                    event.setCancelled(true);
-                    return;
                 }
             }
         }
@@ -7521,13 +7901,20 @@ public class Tools {
         private void onPrepareSmithing(PrepareSmithingEvent event) {
             var inventory = event.getInventory().getContents();
             var result = event.getResult();
-            if (result != null) {
+            if (result != null && result.getType() != Material.AIR) {
                 result.removeEnchantment(Enchantment.DURABILITY);
                 var ingredient = inventory[1];
-                if (ingredient != null && ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchants()) {
+                if (ingredient != null && ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchant(Enchantment.DURABILITY)) {
                     result.addUnsafeEnchantment(Enchantment.DURABILITY, ingredient.getEnchantmentLevel(Enchantment.DURABILITY));
                 }
-                event.setResult(result);
+                var meta = result.getItemMeta();
+                var displayName = meta.getDisplayName();
+
+                if (isSaw(result)) displayName = "Netherite Saw";
+                else if (isChisel(result)) displayName = "Netherite Chisel";
+                else if (isHuntingKnife(result)) displayName = "Netherite Hunting Knife";
+                meta.setDisplayName(ChatColor.RESET + displayName);
+                result.setItemMeta(meta);
             }
         }
 
@@ -7562,7 +7949,13 @@ public class Tools {
         @EventHandler
         private void onPlayerInteract(PlayerInteractEvent event) {
             var player = event.getPlayer();
-            var item = event.getPlayer().getInventory().getItemInMainHand();
+            var hand = event.getHand();
+            if (hand == null) return;
+            var equip = event.getPlayer().getEquipment();
+            if (equip == null) return;
+            var item = equip.getItem(hand);
+            var type = item.getType();
+            var block = event.getClickedBlock();
             if (isHammer(item)) {
                 event.getPlayer().sendMessage(ChatColor.RED + "Hammers are a removed feature and can no longer be used. " +
                         "Your hammer has been reverted into the ingredients used to craft it.");
@@ -7582,9 +7975,98 @@ public class Tools {
                 player.getInventory().setItemInMainHand(air);
                 event.setCancelled(true);
                 return;
+            } else if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) && event.getHand() != EquipmentSlot.OFF_HAND && !event.isBlockInHand()) {
+                var lookingAt = getItemLookedAt(player);
+                if (lookingAt != null) {
+                    var lookingItem = lookingAt.getItemStack();
+                    if (isGrenade(lookingItem) && lookingItem.getType() == Material.TNT) return;
+                    event.setUseItemInHand(Event.Result.DENY);
+                    event.setCancelled(true);
+
+                    if (itemPickupList.contains(lookingAt)) {
+                        event.setCancelled(true);
+                        System.out.println("Blocked pickup (right click side)");//todo remove
+                        return;
+                    }
+
+                    itemPickupList.add(lookingAt);
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> itemPickupList.remove(lookingAt), 2L);
+
+                    var ogAmount = lookingItem.getAmount();
+
+                    if (item.getType() == Material.AIR) {
+                        player.getEquipment().setItem(event.getHand(), lookingItem);
+                        lookingAt.remove();
+                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, (float) (Math.random() * 8));
+                        return;
+                    } else if (isMetal(lookingItem)) {
+                        for (var content : player.getInventory().getContents()) {
+                            if (content != null && content.getType() != Material.AIR && content.getAmount() < 64 && canCombine(lookingItem, content)) {
+                                var combined = getCombinedPurity(lookingItem, content);
+                                content.setAmount(combined[0].getAmount());
+                                content.setItemMeta(combined[0].getItemMeta());
+                                if (combined.length > 1) lookingItem = combined[1];
+                                else lookingItem = air;
+                                break;
+                            }
+                        }
+                        if (lookingItem.getType() != Material.AIR) {
+                            var first = player.getInventory().firstEmpty();
+                            if (first != -1) {
+                                player.getInventory().setItem(first, lookingItem);
+                                lookingItem = air;
+                            }
+                        }
+                        if (lookingItem == air) {
+                            lookingAt.remove();
+                            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, (float) (Math.random() * 8));
+                        } else {
+                            if (lookingItem.getAmount() != ogAmount) {
+                                lookingAt.setItemStack(lookingItem);
+                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, (float) (Math.random() * 8));
+                            } else {
+                                player.sendMessage(ChatColor.RED + "You do not have enough room in your inventory to pick up this item.");
+                            }
+                        }
+                    } else {
+                        var leftover = player.getInventory().addItem(lookingItem).get(0);
+                        if (leftover != null && leftover.getAmount() == lookingItem.getAmount()) {
+                            player.sendMessage(ChatColor.RED + "You do not have enough room in your inventory to pick up this item.");
+                        } else {
+                            lookingAt.remove();
+                            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.3f, (float) (Math.random() * 8));
+                        }
+
+                    }
+                    return;
+                }
             }
+
         }
 
+    }
+
+    private Item getItemLookedAt(Player player) {
+        var location = player.getEyeLocation().clone();
+        var direction = location.getDirection();
+        for (int i = 0; i <= 20; i++) {
+            var nearby = player.getNearbyEntities(i, i, i);
+            for (var entity : nearby) {
+                var box = entity.getBoundingBox().clone();
+                box.expand(0.15, 0.0, 0.15, 0.15, 1.2, 0.15);
+                if (box.contains(location.toVector())) {
+                    if (entity instanceof Item) {
+                        return ((Item) entity);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            location.setX(location.getX() + direction.getX() * 0.25);
+            location.setY(location.getY() + direction.getY() * 0.25);
+            location.setZ(location.getZ() + direction.getZ() * 0.25);
+        }
+        return null;
     }
 
     private void prepareGrindstone(GrindstoneInventory inv) {
