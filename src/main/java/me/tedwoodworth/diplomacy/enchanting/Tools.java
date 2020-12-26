@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -849,13 +850,6 @@ public class Tools {
                 && !hasFolds(item2);
     }
 
-    private boolean isNew(ItemStack item) {
-        var meta = item.getItemMeta();
-        return (meta != null && meta.getLore() != null && meta.getLore().contains(DiplomacyRecipes.getInstance().NEW_LORE)) ||
-                ((meta != null && !meta.hasLore() && !meta.hasEnchants() &&
-                        ((Damageable) meta).getDamage() == 0));
-    }
-
     public boolean isNewLayer(ItemStack item) {
         var meta = item.getItemMeta();
         return (meta != null && meta.getLore() != null && meta.getLore().contains(DiplomacyRecipes.getInstance().NEW_LAYER_LORE));
@@ -1082,8 +1076,108 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
-            // removing cooldown (for most items)
-            if (tools.contains(result.getType()) && !isChisel(result) && !isSaw(result) && result.getItemMeta() != null) {
+            // blazed arrows
+            if (result.getType() == Material.ARROW && result.getAmount() == 8) {
+                var blaze = false;
+                var arrows = 0;
+                var punch = 2;
+                var power = 10;
+                ItemStack firstArrow = null;
+                for (var item : inventory.getMatrix()) {
+                    if (item.getType() == Material.BLAZE_POWDER) {
+                        blaze = true;
+                    } else if (firstArrow == null) {
+                        firstArrow = item;
+                    } else if (item.getType() == Material.TIPPED_ARROW) {
+                        var potionMeta = ((PotionMeta) firstArrow.getItemMeta());
+                        var potionMeta2 = ((PotionMeta) item.getItemMeta());
+                        if (potionMeta == null || potionMeta2 == null) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                        if (potionMeta.getBasePotionData().getType() != potionMeta2.getBasePotionData().getType()) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    } else {
+                        if (item.getType() != firstArrow.getType()) {
+                            inventory.setResult(air);
+                            return;
+                        }
+                    }
+                    if (item != null && item.getType() != Material.BLAZE_POWDER) {
+                        arrows++;
+                        var enchants = item.getEnchantments();
+                        if (punch > 0 && (enchants == null || !enchants.containsKey(Enchantment.ARROW_KNOCKBACK)))
+                            punch = 0;
+                        if (power > 0 && enchants != null && enchants.containsKey(Enchantment.ARROW_DAMAGE)) {
+                            power = Math.min(power, enchants.get(Enchantment.ARROW_DAMAGE));
+                        } else {
+                            power = 0;
+                        }
+                    }
+                }
+                if (arrows < 8) return;
+                if (!blaze) return;
+                if (firstArrow == null) return;
+                result = new ItemStack(firstArrow);
+                result.setAmount(8);
+                var enchants = result.getEnchantments();
+                for (var enchant : enchants.keySet()) {
+                    result.removeEnchantment(enchant);
+                }
+
+                if (punch > 0) result.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, punch);
+                if (power > 0) result.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, power);
+                result.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 1);
+                inventory.setResult(result);
+                return;
+            }
+
+            // heavy tipped arrows and heavy spectral arrows
+            if (result.getType() == Material.SPECTRAL_ARROW && result.getAmount() == 2) {
+                for (var item : inventory.getMatrix()) {
+                    if (item != null && item.getType() != Material.AIR && item.getType() != Material.ARROW && item.getType() != Material.GLOWSTONE_DUST)
+                        return;
+                    if (item != null && item.getType() == Material.ARROW) {
+                        var enchantments = item.getEnchantments();
+                        for (var enchantment : enchantments.keySet()) {
+                            result.addUnsafeEnchantment(enchantment, enchantments.get(enchantment));
+                        }
+                    }
+                }
+                inventory.setResult(result);
+            }
+
+            if (result.getType() == Material.TIPPED_ARROW) {
+                var arrows = 0;
+                var punch = 2;
+                var power = 10;
+                var flame = 1;
+                for (var item : inventory.getMatrix()) {
+                    if (item != null && item.getType() == Material.ARROW) {
+                        arrows++;
+                        var enchants = item.getEnchantments();
+                        if (punch > 0 && (enchants == null || !enchants.containsKey(Enchantment.ARROW_KNOCKBACK)))
+                            punch = 0;
+                        if (flame > 0 && (enchants == null || !enchants.containsKey(Enchantment.ARROW_FIRE))) flame = 0;
+                        if (power > 0 && enchants != null && enchants.containsKey(Enchantment.ARROW_DAMAGE)) {
+                            power = Math.min(power, enchants.get(Enchantment.ARROW_DAMAGE));
+                        } else {
+                            power = 0;
+                        }
+                    }
+                }
+                if (arrows < 8) return;
+                if (punch > 0) result.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, punch);
+                if (power > 0) result.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, power);
+                if (flame > 0) result.addUnsafeEnchantment(Enchantment.ARROW_FIRE, flame);
+                inventory.setResult(result);
+            }
+
+
+            // removing cooldown
+            if (tools.contains(result.getType()) && result.getItemMeta() != null) {
                 var meta = result.getItemMeta();
                 meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier("generic.attackSpeed", 20, AttributeModifier.Operation.ADD_NUMBER));
                 meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
@@ -1532,6 +1626,16 @@ public class Tools {
                     }
                     return;
                 }
+                if (nResult.getType() == Material.ARROW || nResult.getType() == Material.TIPPED_ARROW || nResult.getType() == Material.SPECTRAL_ARROW) {
+                    if (nMeta == null || !nMeta.hasEnchant(Enchantment.ARROW_DAMAGE) || nMeta.getEnchantLevel(Enchantment.ARROW_DAMAGE) != sharpness - 1) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    nResult.removeEnchantment(Enchantment.ARROW_DAMAGE);
+                    nResult.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, sharpness);
+                    inventory.setResult(nResult);
+                    return;
+                }
                 if (isHuntingKnife(nResult)) {
                     if (nMeta == null || !nMeta.hasEnchant(Enchantment.LOOT_BONUS_MOBS) || nMeta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS) != sharpness - 1) {
                         inventory.setResult(air);
@@ -1715,7 +1819,7 @@ public class Tools {
             }
 
             // Unbreaking
-            if (wooden.contains(result.getType()) && isNew(result)) {
+            if (wooden.contains(result.getType())) {
                 for (var item : inventory.getMatrix()) {
                     if (item != null &&
                             !item.getType().equals(Material.AIR) &&
@@ -1725,24 +1829,25 @@ public class Tools {
                     }
                 }
                 result.addEnchantment(Enchantment.DURABILITY, 1);
-            } else if (stone.contains(result.getType()) && isNew(result)) {
+                inventory.setResult(result);
+                return;
+            } else if (stone.contains(result.getType())) {
                 for (var item : inventory.getMatrix()) {
                     if (item != null &&
                             !item.getType().equals(Material.AIR) &&
                             !item.getType().equals(Material.BLACKSTONE) &&
                             !item.getType().equals(Material.STICK)) {
-                        var meta = result.getItemMeta();
-                        var lore = meta.getLore();
-                        lore.remove(DiplomacyRecipes.getInstance().NEW_LORE);
-                        meta.setLore(lore);
-                        result.setItemMeta(meta);
                         return;
                     }
                 }
                 result.addEnchantment(Enchantment.DURABILITY, 2);
-            } else if (diamond.contains(result.getType()) && isNew(result)) {
+                inventory.setResult(result);
+                return;
+            } else if (diamond.contains(result.getType())) {
                 result.addEnchantment(Enchantment.DURABILITY, 2);
-            } else if ((iron.contains(result.getType()) || gold.contains(result.getType())) && isNew(result)) {
+                inventory.setResult(result);
+                return;
+            } else if ((iron.contains(result.getType()) || gold.contains(result.getType()))) {
                 var unbreaking = 12;
                 for (var item : inventory.getMatrix()) {
                     if (item != null && (item.getType().equals(Material.IRON_INGOT) || item.getType().equals(Material.GOLD_INGOT))) {
@@ -1755,23 +1860,7 @@ public class Tools {
                     }
                 }
                 if (unbreaking > 0) result.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
-            }
-            var containsDust = false;
-            for (var item : inventory.getMatrix()) {
-                if (item != null && isDust(item)) {
-                    containsDust = true;
-                    break;
-                }
-            }
-
-            if (!containsDust && isNew(result) && !isMetal(result)) {
-                var meta = result.getItemMeta();
-                if (meta != null && meta.getLore() != null) {
-                    var lore = meta.getLore();
-                    lore.remove(DiplomacyRecipes.getInstance().NEW_LORE);
-                    meta.setLore(lore);
-                    result.setItemMeta(meta);
-                }
+                inventory.setResult(result);
                 return;
             }
 
@@ -4101,7 +4190,6 @@ public class Tools {
             } //todo allow all deaths to drop in ecology update
 
 
-            var lootDamage = Entities.getInstance().getLootDamage(entity);
             if (entity instanceof InventoryHolder) {
                 var holder = (InventoryHolder) entity;
                 for (var item : holder.getInventory()) {
@@ -4124,7 +4212,9 @@ public class Tools {
                         drops.add(equipment.getLeggings());
                 }
             }
-            if (!(entity instanceof Ageable) || ((Ageable) entity).isAdult()) {
+
+            if ((!(entity instanceof Ageable) || ((Ageable) entity).isAdult()) && !(entity instanceof Player)) {
+                var lootDamage = Entities.getInstance().getLootDamage(entity);
                 switch (entity.getType()) {
                     case BAT -> {
                         if (Math.random() < lootDamage) drops.add(new ItemStack(Material.RABBIT_HIDE));
@@ -4571,81 +4661,79 @@ public class Tools {
                     }
 
                 }
-            }
-
-
-            for (var drop : nDrops) {
-                var isSimilar = false;
-                if (drop.getType() == Material.ARROW
-                        || drop.getType() == Material.TIPPED_ARROW
-                        || drop.getType() == Material.CARROT
-                        || drop.getType() == Material.POTATO
-                        || drop.getType() == Material.COOKED_CHICKEN
-                        || drop.getType() == Material.COOKED_PORKCHOP
-                        || drop.getType() == Material.COOKED_BEEF
-                        || drop.getType() == Material.COOKED_MUTTON
-                        || drop.getType() == Material.COOKED_RABBIT
-                        || drop.getType() == Material.CHICKEN
-                        || drop.getType() == Material.PORKCHOP
-                        || drop.getType() == Material.BEEF
-                        || drop.getType() == Material.MUTTON
-                        || drop.getType() == Material.FEATHER
-                        || drop.getType() == Material.RABBIT
-                        || drop.getType() == Material.RABBIT_HIDE
-                        || drop.getType() == Material.RABBIT_FOOT
-                        || drop.getType() == Material.STRING
-                        || drop.getType() == Material.LEATHER
-                        || drop.getType() == Material.BLACK_WOOL
-                        || drop.getType() == Material.BLUE_WOOL
-                        || drop.getType() == Material.BROWN_WOOL
-                        || drop.getType() == Material.CYAN_WOOL
-                        || drop.getType() == Material.GRAY_WOOL
-                        || drop.getType() == Material.GREEN_WOOL
-                        || drop.getType() == Material.LIGHT_BLUE_WOOL
-                        || drop.getType() == Material.LIGHT_GRAY_WOOL
-                        || drop.getType() == Material.LIME_WOOL
-                        || drop.getType() == Material.MAGENTA_WOOL
-                        || drop.getType() == Material.ORANGE_WOOL
-                        || drop.getType() == Material.PINK_WOOL
-                        || drop.getType() == Material.PURPLE_WOOL
-                        || drop.getType() == Material.RED_WOOL
-                        || drop.getType() == Material.WHITE_WOOL
-                        || drop.getType() == Material.YELLOW_WOOL
-                        || drop.getType() == Material.INK_SAC
-                        || drop.getType() == Material.COD
-                        || drop.getType() == Material.COOKED_COD
-                        || drop.getType() == Material.SALMON
-                        || drop.getType() == Material.COOKED_SALMON
-                        || drop.getType() == Material.TROPICAL_FISH
-                        || drop.getType() == Material.PUFFERFISH
-                        || drop.getType() == Material.SEAGRASS
-                        || drop.getType() == Material.POPPY
-                        || drop.getType() == Material.IRON_INGOT
-                        || drop.getType() == Material.BAMBOO
-                        || drop.getType() == Material.GOLD_NUGGET
-                        || drop.getType() == Material.ROTTEN_FLESH
-                        || drop.getType() == Material.BONE
-                        || drop.getType() == Material.PRISMARINE_SHARD
-                        || drop.getType() == Material.PRISMARINE_CRYSTALS
-                        || drop.getType() == Material.WET_SPONGE
-                        || drop.getType() == Material.GUNPOWDER
-                        || drop.getType() == Material.GHAST_TEAR
-                        || drop.getType() == Material.MAGMA_CREAM
-                        || drop.getType() == Material.SLIME_BALL
-                        || drop.getType() == Material.SHULKER_SHELL
-                        || drop.getType() == Material.REDSTONE
-                        || drop.getType() == Material.GLOWSTONE_DUST
-                        || drop.getType() == Material.SUGAR
-                        || drop.getType() == Material.POTION
-                        || drop.getType() == Material.EMERALD
-                        || drop.getType() == Material.PHANTOM_MEMBRANE
-                        || drop.getType() == Material.ENDER_PEARL
-                ) continue;
-                for (var item : new ArrayList<>(drops)) {
-                    if (drop.isSimilar(item)) isSimilar = true;
-                    break;
+                for (var drop : nDrops) {
+                    var isSimilar = false;
+                    if (drop.getType() == Material.ARROW
+                            || drop.getType() == Material.TIPPED_ARROW
+                            || drop.getType() == Material.CARROT
+                            || drop.getType() == Material.POTATO
+                            || drop.getType() == Material.COOKED_CHICKEN
+                            || drop.getType() == Material.COOKED_PORKCHOP
+                            || drop.getType() == Material.COOKED_BEEF
+                            || drop.getType() == Material.COOKED_MUTTON
+                            || drop.getType() == Material.COOKED_RABBIT
+                            || drop.getType() == Material.CHICKEN
+                            || drop.getType() == Material.PORKCHOP
+                            || drop.getType() == Material.BEEF
+                            || drop.getType() == Material.MUTTON
+                            || drop.getType() == Material.FEATHER
+                            || drop.getType() == Material.RABBIT
+                            || drop.getType() == Material.RABBIT_HIDE
+                            || drop.getType() == Material.RABBIT_FOOT
+                            || drop.getType() == Material.STRING
+                            || drop.getType() == Material.LEATHER
+                            || drop.getType() == Material.BLACK_WOOL
+                            || drop.getType() == Material.BLUE_WOOL
+                            || drop.getType() == Material.BROWN_WOOL
+                            || drop.getType() == Material.CYAN_WOOL
+                            || drop.getType() == Material.GRAY_WOOL
+                            || drop.getType() == Material.GREEN_WOOL
+                            || drop.getType() == Material.LIGHT_BLUE_WOOL
+                            || drop.getType() == Material.LIGHT_GRAY_WOOL
+                            || drop.getType() == Material.LIME_WOOL
+                            || drop.getType() == Material.MAGENTA_WOOL
+                            || drop.getType() == Material.ORANGE_WOOL
+                            || drop.getType() == Material.PINK_WOOL
+                            || drop.getType() == Material.PURPLE_WOOL
+                            || drop.getType() == Material.RED_WOOL
+                            || drop.getType() == Material.WHITE_WOOL
+                            || drop.getType() == Material.YELLOW_WOOL
+                            || drop.getType() == Material.INK_SAC
+                            || drop.getType() == Material.COD
+                            || drop.getType() == Material.COOKED_COD
+                            || drop.getType() == Material.SALMON
+                            || drop.getType() == Material.COOKED_SALMON
+                            || drop.getType() == Material.TROPICAL_FISH
+                            || drop.getType() == Material.PUFFERFISH
+                            || drop.getType() == Material.SEAGRASS
+                            || drop.getType() == Material.POPPY
+                            || drop.getType() == Material.IRON_INGOT
+                            || drop.getType() == Material.BAMBOO
+                            || drop.getType() == Material.GOLD_NUGGET
+                            || drop.getType() == Material.ROTTEN_FLESH
+                            || drop.getType() == Material.BONE
+                            || drop.getType() == Material.PRISMARINE_SHARD
+                            || drop.getType() == Material.PRISMARINE_CRYSTALS
+                            || drop.getType() == Material.WET_SPONGE
+                            || drop.getType() == Material.GUNPOWDER
+                            || drop.getType() == Material.GHAST_TEAR
+                            || drop.getType() == Material.MAGMA_CREAM
+                            || drop.getType() == Material.SLIME_BALL
+                            || drop.getType() == Material.SHULKER_SHELL
+                            || drop.getType() == Material.REDSTONE
+                            || drop.getType() == Material.GLOWSTONE_DUST
+                            || drop.getType() == Material.SUGAR
+                            || drop.getType() == Material.POTION
+                            || drop.getType() == Material.EMERALD
+                            || drop.getType() == Material.PHANTOM_MEMBRANE
+                            || drop.getType() == Material.ENDER_PEARL
+                    ) continue;
+                    for (var item : new ArrayList<>(drops)) {
+                        if (drop.isSimilar(item)) isSimilar = true;
+                        break;
+                    }
+                    if (!isSimilar) drops.add(drop);
                 }
-                if (!isSimilar) drops.add(drop);
             }
 
             for (var drop : new ArrayList<>(drops)) {
@@ -6116,6 +6204,31 @@ public class Tools {
         }
 
         @EventHandler
+        private void onEntityShootBow(EntityShootBowEvent event) {
+            var bow = event.getBow();
+            var projectile = event.getProjectile();
+            var enchantments = bow.getEnchantments();
+            if (bow != null && bow.getType() == Material.CROSSBOW && (projectile instanceof AbstractArrow)) {
+                var arrow = ((AbstractArrow) projectile);
+                if (enchantments.containsKey(Enchantment.PIERCING)) {
+                    var piercing = enchantments.get(Enchantment.PIERCING);
+                    arrow.setPierceLevel(piercing);
+                    arrow.setCustomName(String.valueOf(piercing));
+                    arrow.setCustomNameVisible(false);
+                }
+                if (enchantments.containsKey(Enchantment.ARROW_KNOCKBACK)) {
+                    arrow.setKnockbackStrength(2);
+                }
+            }
+            if (enchantments.containsKey(Enchantment.PIERCING)) {
+                bow.removeEnchantment(Enchantment.PIERCING);
+            }
+            if (enchantments.containsKey(Enchantment.ARROW_KNOCKBACK)) {
+                bow.removeEnchantment(Enchantment.ARROW_KNOCKBACK);
+            }
+        }
+
+        @EventHandler
         private void onProjectileLaunch(ProjectileLaunchEvent event) {
             if (!(event.getEntity() instanceof AbstractArrow)) return;
             var arrow = ((AbstractArrow) event.getEntity());
@@ -6155,8 +6268,72 @@ public class Tools {
                 else if (r < 0.666666667) arrow.setPierceLevel(1);
 
                 if (Math.random() < 0.3) arrow.setKnockbackStrength(2);
-            } else if (shooter instanceof Player) {
-                //todo enchanted arrows
+            } else if (shooter instanceof Player && !arrow.isShotFromCrossbow()) {
+                var player = ((Player) shooter);
+                var equipment = player.getEquipment();
+                if (equipment == null) return;
+                var offHand = equipment.getItemInOffHand();
+                ItemStack itemArrow = null;
+                if (offHand != null && (offHand.getType() == Material.ARROW || offHand.getType() == Material.TIPPED_ARROW || offHand.getType() == Material.SPECTRAL_ARROW)) {
+                    itemArrow = offHand;
+                } else {
+                    var contents = player.getInventory().getContents();
+                    for (var content : contents) {
+                        if (contents != null && (content.getType() == Material.ARROW || content.getType() == Material.TIPPED_ARROW || content.getType() == Material.SPECTRAL_ARROW)) {
+                            itemArrow = content;
+                            break;
+                        }
+                    }
+                    if (itemArrow == null) return;
+                }
+                var enchants = itemArrow.getEnchantments();
+                if (enchants.containsKey(Enchantment.ARROW_DAMAGE)) {
+                    var damage = arrow.getDamage();
+                    var power = enchants.get(Enchantment.ARROW_DAMAGE);
+                    switch (power) {
+                        case 1 -> arrow.setDamage(damage * 1.50);
+                        case 2 -> arrow.setDamage(damage * 1.75);
+                        case 3 -> arrow.setDamage(damage * 2);
+                        case 4 -> arrow.setDamage(damage * 2.25);
+                        case 5 -> arrow.setDamage(damage * 2.5);
+                        case 6 -> arrow.setDamage(damage * 2.75);
+                        case 7 -> arrow.setDamage(damage * 3);
+                        case 8 -> arrow.setDamage(damage * 3.25);
+                        case 9 -> arrow.setDamage(damage * 3.50);
+                        case 10 -> arrow.setDamage(damage * 3.75);
+                    }
+
+                    arrow.setCustomName(String.valueOf(power));
+                    arrow.setCustomNameVisible(false);
+                }
+                if (enchants.containsKey(Enchantment.ARROW_FIRE)) {
+                    arrow.setFireTicks(500);
+                }
+                if (enchants.containsKey(Enchantment.ARROW_KNOCKBACK)) {
+                    arrow.setKnockbackStrength(2);
+                }
+
+            }
+        }
+
+        @EventHandler
+        private void arrowPickup(PlayerPickupArrowEvent event) {
+            var arrow = event.getArrow();
+            var item = event.getItem();
+            var stack = item.getItemStack();
+            if (arrow.getCustomName() != null) {
+                var power = Integer.parseInt(arrow.getCustomName());
+                if (Math.random() < Math.pow(0.9, Math.pow(power, 1.5))) {
+                    power--;
+                }
+                if (power > 0) {
+                    stack.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, power);
+                }
+            }
+            if (arrow.getKnockbackStrength() == 2) {
+                stack.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, 2);
+
+                item.setItemStack(stack);
             }
         }
 
@@ -6165,10 +6342,41 @@ public class Tools {
             var item = event.getItem();
             var player = event.getPlayer();
             if (item == null) return;
+            var action = event.getAction();
+            // charging crossbow
+            if (item.getType() == Material.CROSSBOW) {
+                var equipment = player.getEquipment();
+                if (equipment == null) return;
+                var offHand = equipment.getItemInOffHand();
+                ItemStack arrow = null;
+                if (offHand != null && (offHand.getType() == Material.SPECTRAL_ARROW || offHand.getType() == Material.TIPPED_ARROW || offHand.getType() == Material.ARROW))
+                    arrow = offHand;
+                else {
+                    var contents = player.getInventory().getContents();
+                    for (var content : contents) {
+                        if (content.getType() == Material.SPECTRAL_ARROW || content.getType() == Material.TIPPED_ARROW || content.getType() == Material.ARROW) {
+                            arrow = content;
+                            break;
+                        }
+                    }
+                }
+                if (arrow == null) return;
+                var arrowEnchants = arrow.getEnchantments();
+                if (arrowEnchants.containsKey(Enchantment.ARROW_DAMAGE)) {
+                    item.addUnsafeEnchantment(Enchantment.PIERCING, arrowEnchants.get(Enchantment.ARROW_DAMAGE));
+                } else {
+                    if (item.containsEnchantment(Enchantment.PIERCING)) item.removeEnchantment(Enchantment.PIERCING);
+                }
+                if (arrowEnchants.containsKey(Enchantment.ARROW_KNOCKBACK)) {
+                    item.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, 2);
+                } else {
+                    if (item.containsEnchantment(Enchantment.ARROW_KNOCKBACK))
+                        item.removeEnchantment(Enchantment.ARROW_KNOCKBACK);
+                }
+            }
 
             // using chisel
             if (isChisel(item)) {
-                var action = event.getAction();
                 if (player.getCooldown(item.getType()) > 0.0) {
                     event.setCancelled(true);
                     return;
@@ -6393,10 +6601,7 @@ public class Tools {
             }
 
             // using saw
-            if (
-
-                    isSaw(item)) {
-                var action = event.getAction();
+            if (isSaw(item)) {
                 if (player.getCooldown(item.getType()) > 0.0) {
                     event.setCancelled(true);
                     return;
@@ -6598,11 +6803,8 @@ public class Tools {
                 return;
             }
 
-            var action = event.getAction();
             // Grenade
-            if (
-
-                    isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
+            if (isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
                 ItemStack finalItem = item;
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeUse(finalItem, action, event.getPlayer(), event.getHand()), 2L);
                 event.setCancelled(true);
@@ -6618,9 +6820,7 @@ public class Tools {
             }
 
             // Metal Plates
-            if (
-
-                    isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (isPlate(item) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 var block = event.getClickedBlock();
                 if (block != null && block.getType() == Material.CAULDRON) {
                     var cauldron = (Levelled) block.getBlockData();
@@ -6837,6 +7037,17 @@ public class Tools {
             var ingredient = event.getContents().getIngredient();
             if (ingredient != null && isDust(ingredient)) {
                 event.setCancelled(true);
+            }
+            var contents = event.getContents().getContents();
+            for (var content : contents) {
+                var meta = content.getItemMeta();
+                if (meta == null) continue;
+                var lore = meta.getLore();
+                if (lore == null) continue;
+                if (lore.contains(DiplomacyRecipes.getInstance().IRON_SLURRY_LORE)
+                        || lore.contains(DiplomacyRecipes.getInstance().GOLD_SLURRY_LORE)
+                        || lore.contains(DiplomacyRecipes.getInstance().NETHERITE_SLURRY_LORE))
+                    event.setCancelled(true);
             }
         }
 
@@ -7183,18 +7394,22 @@ public class Tools {
                 if (event.getRawSlot() == 2 && view.getItem(2) != null && view.getItem(2).getType() != Material.AIR) {
                     var item = view.getItem(2);
                     var enchants = item.getEnchantments();
-                    if (
-                            (enchants.containsKey(Enchantment.DAMAGE_ALL) && enchants.get(Enchantment.DAMAGE_ALL) == 2)
-                                    || (enchants.containsKey(Enchantment.LOOT_BONUS_MOBS) && enchants.get(Enchantment.LOOT_BONUS_MOBS) == 2)
-                                    || (enchants.containsKey(Enchantment.DIG_SPEED) && enchants.get(Enchantment.DIG_SPEED) == 2)
-                                    || (enchants.containsKey(Enchantment.IMPALING) && enchants.get(Enchantment.IMPALING) == 2)
+                    if ((enchants.containsKey(Enchantment.DAMAGE_ALL) && enchants.get(Enchantment.DAMAGE_ALL) == 2)
+                            || (enchants.containsKey(Enchantment.ARROW_DAMAGE) && enchants.get(Enchantment.ARROW_DAMAGE) == 2)
+                            || (enchants.containsKey(Enchantment.LOOT_BONUS_MOBS) && enchants.get(Enchantment.LOOT_BONUS_MOBS) == 2)
+                            || (enchants.containsKey(Enchantment.DIG_SPEED) && enchants.get(Enchantment.DIG_SPEED) == 2)
+                            || (enchants.containsKey(Enchantment.IMPALING) && enchants.get(Enchantment.IMPALING) == 2)
                     ) {
+                        var itemAmount = item.getAmount();
                         var lapis = view.getItem(1);
                         var amount = lapis.getAmount();
-                        if (lapis.getAmount() > 1) {
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(1, new ItemStack(Material.LAPIS_LAZULI, amount - 1)), 0L);
-                        } else {
+                        if (lapis.getAmount() > itemAmount) {
+                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(1, new ItemStack(Material.LAPIS_LAZULI, amount - itemAmount)), 0L);
+                        } else if (lapis.getAmount() == itemAmount) {
                             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(1, air), 0L);
+                        } else {
+                            event.setCancelled(true);
+                            return;
                         }
                     } else {
                         var lapis = view.getItem(1);
@@ -7208,7 +7423,7 @@ public class Tools {
                 if (event.getClick().isShiftClick()) {
                     if (currentItem == null) return;
                     var type = currentItem.getType();
-                    if (!tools.contains(type)
+                    if (!(tools.contains(type) || type == Material.ARROW || type == Material.TIPPED_ARROW || type == Material.SPECTRAL_ARROW)
                             && type != Material.LAPIS_LAZULI) {
                         event.setCancelled(true);
                         return;
@@ -7235,7 +7450,34 @@ public class Tools {
                             }
                         }
                     }
-                    if (tools.contains(type)) {
+                    if (type == Material.ARROW || type == Material.SPECTRAL_ARROW || type == Material.TIPPED_ARROW) {
+                        var slot = event.getRawSlot();
+                        if (slot != 0) {
+                            var amount = 0;
+                            var slotItem = view.getItem(0);
+                            if (slotItem != null && slotItem.getType() == type)
+                                amount += slotItem.getAmount();
+                            amount += currentItem.getAmount();
+
+                            if (amount >= 64) {
+                                var nStack = new ItemStack(currentItem);
+                                nStack.setAmount(64);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                            }
+                            if (amount > 64) {
+                                var nStack = new ItemStack(currentItem);
+                                nStack.setAmount(amount - 64);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, nStack), 0L);
+
+                            } else {
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, air), 0L);
+                                var nStack = new ItemStack(currentItem);
+                                nStack.setAmount(amount);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                            }
+                        }
+                    }
+                    if (tools.contains(type) || type == Material.ARROW || type == Material.TIPPED_ARROW || type == Material.SPECTRAL_ARROW) {
                         if (!(event.getRawSlot() == 0 || event.getRawSlot() == 2 || (view.getItem(0) == null || view.getItem(0).getType() == Material.AIR))) {
                             event.setCancelled(true);
                             return;
@@ -7249,21 +7491,33 @@ public class Tools {
                 } else {
                     if ((cursorItem == null || cursorItem.getType() == Material.AIR) && currentItem != null && (event.getRawSlot() == 1 || event.getRawSlot() == 0)) {
                         var slot = event.getRawSlot();
-                        if (event.getClick() == ClickType.RIGHT && view.getItem(slot) != null) {
-                            var stack = new ItemStack(Material.LAPIS_LAZULI, view.getItem(slot).getAmount() / 2);
-                            var stack2 = new ItemStack(Material.LAPIS_LAZULI, view.getItem(slot).getAmount() - stack.getAmount());
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(stack), 0L);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, stack2), 0L);
+                        var type = currentItem.getType();
+                        if (type == Material.LAPIS_LAZULI) {
+                            if (event.getClick() == ClickType.RIGHT && view.getItem(slot) != null) {
+                                var stack = new ItemStack(Material.LAPIS_LAZULI, view.getItem(slot).getAmount() / 2);
+                                var stack2 = new ItemStack(Material.LAPIS_LAZULI, view.getItem(slot).getAmount() - stack.getAmount());
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(stack), 0L);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, stack2), 0L);
+                            } else {
+                                return;
+                            }
+                        } else if (type == Material.ARROW || type == Material.TIPPED_ARROW || type == Material.SPECTRAL_ARROW) {
+                            if (event.getClick() == ClickType.RIGHT && view.getItem(slot) != null) {
+                                var stack = new ItemStack(view.getItem(slot));
+                                stack.setAmount(view.getItem(slot).getAmount() / 2);
+                                var stack2 = new ItemStack(view.getItem(slot));
+                                stack2.setAmount(view.getItem(slot).getAmount() - stack.getAmount());
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(stack), 0L);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, stack2), 0L);
+                            } else {
+                                return;
+                            }
                         } else {
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(view.getItem(slot)), 0L);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(slot, air), 0L);
+                            event.setCancelled(true);
+                            return;
                         }
                     }
                     var type = cursorItem.getType();
-                    if (event.getRawSlot() == 0 && !tools.contains(cursorItem.getType())) {
-                        event.setCancelled(true);
-                        return;
-                    }
                     if (event.getRawSlot() == 1 && cursorItem.getType() != Material.LAPIS_LAZULI) {
                         event.setCancelled(true);
                         return;
@@ -7311,8 +7565,66 @@ public class Tools {
                                 }
                             }
                         }
+                    } else if (type == Material.ARROW || type == Material.TIPPED_ARROW || type == Material.SPECTRAL_ARROW) {
+                        if (event.getRawSlot() == 1) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                        if (event.getRawSlot() == 0) {
+                            if (event.isRightClick() && currentItem != null && currentItem.getType() == type) {
+                                if (currentItem.getAmount() < 64) {
+                                    var amount = currentItem.getAmount();
+                                    var nStack = new ItemStack(currentItem);
+                                    nStack.setAmount(amount + 1);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                                    if (cursorItem.getAmount() > 1) {
+                                        var amount2 = cursorItem.getAmount();
+                                        var nStack2 = new ItemStack(currentItem);
+                                        nStack2.setAmount(amount2 - 1);
+                                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(nStack2), 0L);
+                                    } else {
+                                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(air), 0L);
+                                    }
+                                }
+                            } else if (event.isRightClick() && (currentItem == null || currentItem.getType() == Material.AIR)) {
+                                var amount = cursorItem.getAmount();
+                                var nStack = new ItemStack(currentItem);
+                                nStack.setAmount(1);
+                                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                                if (amount > 1) {
+                                    var nStack2 = new ItemStack(currentItem);
+                                    nStack2.setAmount(amount - 1);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(nStack2), 0L);
+                                } else
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(air), 0L);
+
+                            } else {
+                                var amount = 0;
+                                var slotItem = view.getItem(0);
+                                if (slotItem != null && slotItem.getType() == type)
+                                    amount += slotItem.getAmount();
+                                amount += cursorItem.getAmount();
+
+                                if (amount >= 64) {
+                                    var nStack = new ItemStack(cursorItem);
+                                    nStack.setAmount(64);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                                }
+                                int finalAmount = amount;
+                                if (amount > 64) {
+                                    var nStack = new ItemStack(cursorItem);
+                                    nStack.setAmount(finalAmount - 64);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(nStack), 0L);
+                                } else {
+                                    var nStack = new ItemStack(cursorItem);
+                                    nStack.setAmount(finalAmount);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setItem(0, nStack), 0L);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> view.setCursor(air), 0L);
+                                }
+                            }
+                        }
                     }
-                    if (tools.contains(type)) {
+                    if (tools.contains(type) || type == Material.ARROW || type == Material.TIPPED_ARROW || type == Material.SPECTRAL_ARROW) {
                         if (event.getRawSlot() == 1) {
                             event.setCancelled(true);
                             return;
@@ -8328,7 +8640,7 @@ public class Tools {
         var tool = inv.getItem(0);
         var lapis = inv.getItem(1);
 
-        if (tool == null || !tools.contains(tool.getType())) {
+        if (tool == null || (!tools.contains(tool.getType()) && !(tool.getType() == Material.ARROW || tool.getType() == Material.TIPPED_ARROW || tool.getType() == Material.SPECTRAL_ARROW))) {
             inv.setItem(2, air);
             return;
         }
@@ -8342,6 +8654,10 @@ public class Tools {
             }
         }
 
+        if (hasLapis && lapis.getAmount() < tool.getAmount()) {
+            inv.setItem(2, air);
+            return;
+        }
         var type = tool.getType();
         if ((type == Material.WOODEN_HOE || type == Material.STONE_HOE || type == Material.IRON_HOE || type == Material.GOLDEN_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE)
                 && !(isChisel(tool) || isSaw(tool))) {
@@ -8455,6 +8771,32 @@ public class Tools {
                     result.setItemMeta(rMeta);
                     inv.setItem(2, result);
                 }
+            }
+            return;
+        }
+        if (tool.getType() == Material.ARROW || tool.getType() == Material.TIPPED_ARROW || tool.getType() == Material.SPECTRAL_ARROW) {
+            var power = 0;
+            var meta = tool.getItemMeta();
+            if (meta != null && meta.hasEnchant(Enchantment.ARROW_DAMAGE))
+                power = meta.getEnchantLevel(Enchantment.ARROW_DAMAGE);
+
+            if (power > 1) {
+                inv.setItem(2, air);
+                return;
+            }
+            if (power == 1) {
+                if (!hasLapis) {
+                    inv.setItem(2, air);
+                    return;
+                }
+                var result = new ItemStack(tool);
+                result.removeEnchantment(Enchantment.ARROW_DAMAGE);
+                result.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 2);
+                inv.setItem(2, result);
+            } else {
+                var result = new ItemStack(tool);
+                result.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 1);
+                inv.setItem(2, result);
             }
             return;
         }

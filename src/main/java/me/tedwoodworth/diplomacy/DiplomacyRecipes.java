@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 public class DiplomacyRecipes {
     private static DiplomacyRecipes instance = null;
-    public String NEW_LORE = "New";
     public String CHISEL_LORE = ChatColor.BLUE + "Chisel";
     public String KNIFE_LORE = ChatColor.BLUE + "Hunting Knife";
     public String SAW_LORE = ChatColor.BLUE + "Saw";
@@ -76,7 +75,6 @@ public class DiplomacyRecipes {
         var stones = new RecipeChoice.MaterialChoice(Arrays.asList(Material.COBBLESTONE, Material.BLACKSTONE));
 
         var chiselLore = new ArrayList<String>();
-        chiselLore.add(NEW_LORE);
         chiselLore.add(CHISEL_LORE);
 
         var woodChisel = new ItemStack(Material.WOODEN_HOE);
@@ -143,7 +141,6 @@ public class DiplomacyRecipes {
         // Knives
 
         var knifeLore = new ArrayList<String>();
-        knifeLore.add(NEW_LORE);
         knifeLore.add(KNIFE_LORE);
 
         var woodenKnife = new ItemStack(Material.WOODEN_SWORD);
@@ -210,7 +207,6 @@ public class DiplomacyRecipes {
         // Saws
 
         var sawLore = new ArrayList<String>();
-        sawLore.add(NEW_LORE);
         sawLore.add(SAW_LORE);
 
         var woodenSaw = new ItemStack(Material.WOODEN_HOE);
@@ -578,7 +574,11 @@ public class DiplomacyRecipes {
         sharp3.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 3);
         var sharp3recipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "sharp3"), sharp3);
 
-        var toolChoice = new RecipeChoice.MaterialChoice(Tools.getInstance().tools);
+        var sharpTools = new ArrayList<>(Tools.getInstance().tools);
+        sharpTools.add(Material.ARROW);
+        sharpTools.add(Material.TIPPED_ARROW);
+        sharpTools.add(Material.SPECTRAL_ARROW);
+        var toolChoice = new RecipeChoice.MaterialChoice(sharpTools);
         sharp3recipe.addIngredient(toolChoice);
         sharp3recipe.addIngredient(Material.PAPER);
         Diplomacy.getInstance().getServer().addRecipe(sharp3recipe);
@@ -748,6 +748,25 @@ public class DiplomacyRecipes {
         netheriteRodRecipe.setIngredient('H', choice);
         netheriteRodRecipe.setIngredient('I', Material.NETHERITE_INGOT);
         Diplomacy.getInstance().getServer().addRecipe(netheriteRodRecipe);
+
+        var heavyArrow = new ItemStack(Material.ARROW, 8);
+        heavyArrow.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, 2);
+
+        var heavyArrowRecipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "heavyArrow"), heavyArrow);
+        heavyArrowRecipe.addIngredient(Material.IRON_INGOT);
+        heavyArrowRecipe.addIngredient(Material.FEATHER);
+        heavyArrowRecipe.addIngredient(Material.STICK);
+        Diplomacy.getInstance().getServer().addRecipe(heavyArrowRecipe);
+
+        var blazedArrow = new ItemStack(Material.ARROW, 8);
+        blazedArrow.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 1);
+
+        var blazedArrowRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "blazedArrow"), blazedArrow);
+        var arrowChoice = new RecipeChoice.MaterialChoice(Material.ARROW, Material.SPECTRAL_ARROW, Material.TIPPED_ARROW);
+        blazedArrowRecipe.shape("AAA", "ABA", "AAA");
+        blazedArrowRecipe.setIngredient('A', arrowChoice);
+        blazedArrowRecipe.setIngredient('B', Material.BLAZE_POWDER);
+        Diplomacy.getInstance().getServer().addRecipe(blazedArrowRecipe);
 
 
     }
