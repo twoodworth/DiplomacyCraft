@@ -7051,10 +7051,23 @@ public class Tools {
                 generatePurity(cursorItem, 1.0);
 
             if (event.getRawSlot() == -1) return;
+            var view = event.getView();
 
+
+            // Cancel combining in frunace result
+            if (view.getTopInventory() instanceof FurnaceInventory && view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT) {
+                if (!event.isShiftClick() && isMetal(cursorItem) && canCombine(cursorItem, currentItem)) {
+                    var combined = getCombinedPurity(cursorItem, currentItem);
+                    view.setCursor(combined[0]);
+                    if (combined.length > 1)
+                        view.setItem(event.getRawSlot(), combined[1]);
+                    else view.setItem(event.getRawSlot(), air);
+                    event.setCancelled(true);
+                    return;
+                }
+            }
 
             // Cancel brewing dust
-            var view = event.getView();
             var temp = view.getInventory(event.getRawSlot());
             if (temp != null && temp.getType() == InventoryType.BREWING) {
                 if (temp != null && temp.getType() == InventoryType.BREWING) {

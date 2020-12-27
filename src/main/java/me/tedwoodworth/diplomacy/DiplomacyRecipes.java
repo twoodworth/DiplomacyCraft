@@ -317,6 +317,23 @@ public class DiplomacyRecipes {
                 Material.REDSTONE, 0, 200);
         Diplomacy.getInstance().getServer().addRecipe(ancientNuggetR);
 
+        // Metal Dust
+        var ironNuggetB = new BlastingRecipe(new NamespacedKey(Diplomacy.getInstance(), "iron_nuggetB"),
+                new ItemStack(Material.IRON_NUGGET),
+                Material.SUGAR, 0, 100);
+        Diplomacy.getInstance().getServer().addRecipe(ironNuggetB);
+
+        var goldNuggetB = new BlastingRecipe(new NamespacedKey(Diplomacy.getInstance(), "gold_nuggetB"),
+                new ItemStack(Material.GOLD_NUGGET),
+                Material.GLOWSTONE_DUST, 0, 100);
+        Diplomacy.getInstance().getServer().addRecipe(goldNuggetB);
+
+        var ancientNuggetRB = new BlastingRecipe(new NamespacedKey(Diplomacy.getInstance(), "netherite_ScrapB"),
+                new ItemStack(Material.NETHERITE_SCRAP),
+                Material.REDSTONE, 0, 100);
+        Diplomacy.getInstance().getServer().addRecipe(ancientNuggetRB);
+
+
         // Sifter
         var sifterLore = new ArrayList<String>();
         sifterLore.add(SIFTER_LORE);
