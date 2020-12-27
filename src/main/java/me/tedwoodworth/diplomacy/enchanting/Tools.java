@@ -7054,18 +7054,49 @@ public class Tools {
             var view = event.getView();
 
 
-            // Cancel combining in frunace result
-            if (view.getTopInventory() instanceof FurnaceInventory && view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT) {
-                if (!event.isShiftClick() && isMetal(cursorItem) && canCombine(cursorItem, currentItem)) {
-                    var combined = getCombinedPurity(cursorItem, currentItem);
-                    view.setCursor(combined[0]);
-                    if (combined.length > 1)
-                        view.setItem(event.getRawSlot(), combined[1]);
-                    else view.setItem(event.getRawSlot(), air);
-                    event.setCancelled(true);
-                    return;
+            // Cancel combining in frunace result & fixing furnace shift click
+            if (view.getTopInventory() instanceof FurnaceInventory) {
+                if (view.getSlotType(event.getRawSlot()) == InventoryType.SlotType.RESULT) {
+                    if (!event.isShiftClick() && isMetal(cursorItem) && canCombine(cursorItem, currentItem)) {
+                        var combined = getCombinedPurity(cursorItem, currentItem);
+                        view.setCursor(combined[0]);
+                        if (combined.length > 1)
+                            view.setItem(event.getRawSlot(), combined[1]);
+                        else view.setItem(event.getRawSlot(), air);
+                        event.setCancelled(true);
+                        return;
+                    }
+                    if (event.isShiftClick() && isMetal(currentItem)) {
+                        for (int i = 3; i <= 38; i++) {
+                            var content = view.getItem(i);
+                            if (canCombine(content, currentItem) && content.getAmount() < 64) {
+                                var combined = getCombinedPurity(content, currentItem);
+                                view.setItem(i, combined[0]);
+                                if (combined.length > 1) {
+                                    currentItem = combined[1];
+                                } else {
+                                    view.setItem(2, air);
+                                    event.setCancelled(true);
+                                    return;
+                                }
+                            }
+                        }
+                        for (int i = 3; i <= 38; i++) {
+                            var content = view.getItem(i);
+                            if (content.getType() == Material.AIR) {
+                                view.setItem(i, currentItem);
+                                view.setItem(2, air);
+                                event.setCancelled(true);
+                                return;
+                            }
+                        }
+                        view.setItem(2, currentItem);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
             }
+
 
             // Cancel brewing dust
             var temp = view.getInventory(event.getRawSlot());
