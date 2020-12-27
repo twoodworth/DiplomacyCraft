@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MenuCommand implements CommandExecutor, TabCompleter {
@@ -31,7 +32,9 @@ public class MenuCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return null;
+        var list = new ArrayList<String>();
+        list.add("menu");
+        return list;
     }
 
     private void menu(CommandSender sender) {

@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.enchanting;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyRecipes;
+import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
@@ -43,6 +44,7 @@ public class Tools {
     private static Tools instance = null;
     public final NamespacedKey purityKey = new NamespacedKey(Diplomacy.getInstance(), "purity");
     public final NamespacedKey purity3DKey = new NamespacedKey(Diplomacy.getInstance(), "purity3D");
+    public final NamespacedKey pickupKey = new NamespacedKey(Diplomacy.getInstance(), "pickup");
     private final String purityLore = ChatColor.GRAY + "Purity:";
     private final String foldsLore = ChatColor.GRAY + "Folds:";
     private final String plateLore = ChatColor.BLUE + "Refined Plate";
@@ -8335,7 +8337,7 @@ public class Tools {
             }
 
             if (entity instanceof Player) {
-                if (!((Player) entity).isSneaking()) {
+                if (!getAutoPickup((Player) entity) && !((Player) entity).isSneaking()) {
                     event.setCancelled(true);
                     return;
                 }
@@ -9199,5 +9201,26 @@ public class Tools {
                 currentItem.getItemMeta() != null &&
                 currentItem.getItemMeta().getLore() != null &&
                 currentItem.getItemMeta().getLore().contains(DiplomacyRecipes.getInstance().NETHERITE_ROD_LORE);
+    }
+
+    public boolean getAutoPickup(Player player) {
+        var container = player.getPersistentDataContainer();
+        if (!container.has(pickupKey, BooleanPersistentDataType.instance)) {
+            container.set(pickupKey, BooleanPersistentDataType.instance, true);
+            return true;
+        } else {
+            return container.get(pickupKey, BooleanPersistentDataType.instance);
+        }
+
+    }
+
+    public void toggleAutoPickup(Player player) {
+        var container = player.getPersistentDataContainer();
+        if (!container.has(pickupKey, BooleanPersistentDataType.instance)) {
+            container.set(pickupKey, BooleanPersistentDataType.instance, true);
+        } else {
+            container.set(pickupKey, BooleanPersistentDataType.instance, !container.get(pickupKey, BooleanPersistentDataType.instance));
+        }
+
     }
 }

@@ -141,4 +141,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  toggleAutopickup:
+    description: Toggle autopickup.
+    aliases: [ta]
+    usage: "Usage: /<command>"
+
 
