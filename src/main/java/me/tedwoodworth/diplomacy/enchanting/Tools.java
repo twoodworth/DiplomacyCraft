@@ -1061,6 +1061,43 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
+            // Depth Strider
+            if (result.getType() == Material.CHAINMAIL_BOOTS && result.getEnchantments().containsKey(Enchantment.DEPTH_STRIDER)) {
+                var level = result.getEnchantmentLevel(Enchantment.DEPTH_STRIDER);
+                for (var content : inventory.getMatrix()) {
+                    var type = content.getType();
+                    if (type == Material.LEATHER_BOOTS || type == Material.CHAINMAIL_BOOTS || type == Material.IRON_BOOTS
+                            || type == Material.GOLDEN_BOOTS || type == Material.DIAMOND_BOOTS || type == Material.NETHERITE_BOOTS) {
+                        if (!content.getEnchantments().containsKey(Enchantment.DEPTH_STRIDER)) {
+                            if (level == 1) {
+                                result = new ItemStack(content);
+                                result.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 1);
+                                inventory.setResult(result);
+                            } else {
+                                inventory.setResult(air);
+                            }
+                            return;
+                        }
+                        var curLevel = content.getEnchantmentLevel(Enchantment.DEPTH_STRIDER);
+                        if (curLevel == 1 && level == 2) {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 2);
+                            inventory.setResult(result);
+                            return;
+                        } else if (curLevel == 2 && level == 3) {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 3);
+                            inventory.setResult(result);
+                            return;
+                        } else {
+                            inventory.setResult(air);
+                            return;
+                        }
+
+                    }
+                }
+            }
+
             // blazed arrows
             if (result.getType() == Material.ARROW && result.getAmount() == 8) {
                 var blaze = false;

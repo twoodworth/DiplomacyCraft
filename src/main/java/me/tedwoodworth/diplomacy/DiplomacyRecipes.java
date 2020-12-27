@@ -785,6 +785,34 @@ public class DiplomacyRecipes {
         blazedArrowRecipe.setIngredient('B', Material.BLAZE_POWDER);
         Diplomacy.getInstance().getServer().addRecipe(blazedArrowRecipe);
 
+        var depthStrider1 = new ItemStack(Material.CHAINMAIL_BOOTS);
+        depthStrider1.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 1);
+
+        var depthStrider1R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "depthStrider1"), depthStrider1);
+        var bootChoices = new RecipeChoice.MaterialChoice(Material.LEATHER_BOOTS, Material.CHAINMAIL_BOOTS, Material.GOLDEN_BOOTS, Material.IRON_BOOTS, Material.DIAMOND_BOOTS, Material.NETHERITE_BOOTS);
+        depthStrider1R.shape("LLL", "LBL", "LLL");
+        depthStrider1R.setIngredient('L', Material.LEATHER);
+        depthStrider1R.setIngredient('B', bootChoices);
+        Diplomacy.getInstance().getServer().addRecipe(depthStrider1R);
+
+        var depthStrider2 = new ItemStack(Material.CHAINMAIL_BOOTS);
+        depthStrider2.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 2);
+
+        var depthStrider2R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "depthStrider2"), depthStrider2);
+        depthStrider2R.shape("LLL", "LBL", "LLL");
+        depthStrider2R.setIngredient('L', Material.SLIME_BALL);
+        depthStrider2R.setIngredient('B', bootChoices);
+        Diplomacy.getInstance().getServer().addRecipe(depthStrider2R);
+
+        var depthStrider3 = new ItemStack(Material.CHAINMAIL_BOOTS);
+        depthStrider3.addUnsafeEnchantment(Enchantment.DEPTH_STRIDER, 3);
+
+        var depthStrider3R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "depthStrider3"), depthStrider3);
+        depthStrider3R.shape("LLL", "LBL", "LLL");
+        depthStrider3R.setIngredient('L', Material.PHANTOM_MEMBRANE);
+        depthStrider3R.setIngredient('B', bootChoices);
+        Diplomacy.getInstance().getServer().addRecipe(depthStrider3R);
+
 
     }
 }
