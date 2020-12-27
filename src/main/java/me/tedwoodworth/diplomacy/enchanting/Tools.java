@@ -6,6 +6,9 @@ import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -6375,6 +6378,17 @@ public class Tools {
 
                 var block = event.getClickedBlock();
                 if (block == null) return;
+
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+                var chunk = block.getChunk();
+                var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                var nation = diplomacyChunk.getNation();
+                if (nation != null && !Objects.equals(playerNation, nation)) {
+                    return;
+                }
+
                 var material = block.getType();
 
                 if (action == Action.LEFT_CLICK_BLOCK) {
@@ -6600,6 +6614,17 @@ public class Tools {
 
                 var block = event.getClickedBlock();
                 if (block == null) return;
+
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var playerNation = Nations.getInstance().get(diplomacyPlayer);
+
+                var chunk = block.getChunk();
+                var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+                var nation = diplomacyChunk.getNation();
+                if (nation != null && !Objects.equals(playerNation, nation)) {
+                    return;
+                }
+
                 var material = block.getType();
 
 
