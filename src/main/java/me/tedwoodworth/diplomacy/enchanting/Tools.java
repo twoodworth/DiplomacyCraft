@@ -1061,6 +1061,149 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
+            // Quick Charge
+            if (result.getType() == Material.CROSSBOW && result.getEnchantments().containsKey(Enchantment.QUICK_CHARGE)) {
+                var level = result.getEnchantmentLevel(Enchantment.QUICK_CHARGE);
+                if (level == 1) {
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null) continue;
+                        if (item.getType() == Material.CROSSBOW) {
+                            if (item.containsEnchantment(Enchantment.QUICK_CHARGE)) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                result = new ItemStack(item);
+                                result.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 1);
+                                result.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                                inventory.setResult(result);
+                                return;
+                            }
+                        }
+                    }
+                } else if (level == 2) {
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null) continue;
+                        if (item.getType() == Material.CROSSBOW) {
+                            if (!item.containsEnchantment(Enchantment.QUICK_CHARGE) || item.getEnchantmentLevel(Enchantment.QUICK_CHARGE) != 1) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                result = new ItemStack(item);
+                                result.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 2);
+                                result.addUnsafeEnchantment(Enchantment.DURABILITY, 2);
+                                inventory.setResult(result);
+                                return;
+                            }
+                        }
+                    }
+                } else if (level == 3) {
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null) continue;
+                        else if (item.getType() == Material.REDSTONE && !isDust(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else if (item.getType() == Material.CROSSBOW) {
+                            if (!item.containsEnchantment(Enchantment.QUICK_CHARGE) || item.getEnchantmentLevel(Enchantment.QUICK_CHARGE) != 2) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                result = new ItemStack(item);
+                                result.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 3);
+                                result.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
+                                inventory.setResult(result);
+                            }
+                        }
+                    }
+                    return;
+                } else if (level == 4) {
+                    for (var item : inventory.getMatrix()) {
+                        if (item.getType() == Material.REDSTONE && isDust(item)) {
+                            inventory.setResult(air);
+                            return;
+                        } else if (item.getType() == Material.CROSSBOW) {
+                            if (!item.containsEnchantment(Enchantment.QUICK_CHARGE) || item.getEnchantmentLevel(Enchantment.QUICK_CHARGE) != 3) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                result = new ItemStack(item);
+                                result.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 4);
+                                result.addUnsafeEnchantment(Enchantment.DURABILITY, 4);
+                                inventory.setResult(result);
+                            }
+                        } else if (item.getType() == Material.IRON_INGOT) {
+                            if (!isMagnet(item)) {
+                                inventory.setResult(air);
+                                return;
+                            }
+                        }
+                    }
+                    return;
+                } else if (level == 5) {
+                    var magnet = false;
+                    var ingot = false;
+                    for (var item : inventory.getMatrix()) {
+                        if (item == null) continue;
+                        if (item.getType() == Material.NETHERITE_INGOT) {
+                            if (isMagnet(item)) {
+                                if (!magnet) magnet = true;
+                                else {
+                                    inventory.setResult(air);
+                                    return;
+                                }
+                            } else if (!item.containsEnchantment(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) < 10) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                if (!ingot) ingot = true;
+                                else {
+                                    inventory.setResult(air);
+                                    return;
+                                }
+                            }
+                        } else if (item.getType() == Material.CROSSBOW) {
+                            if (!item.containsEnchantment(Enchantment.QUICK_CHARGE) || item.getEnchantmentLevel(Enchantment.QUICK_CHARGE) != 4) {
+                                inventory.setResult(air);
+                                return;
+                            } else {
+                                result = new ItemStack(item);
+                                result.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 5);
+                                result.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                                inventory.setResult(result);
+                            }
+                        }
+                    }
+                    return;
+                }
+            }
+
+            // Thorns
+            if (result.getType() == Material.CHAINMAIL_CHESTPLATE && result.getEnchantments().containsKey(Enchantment.THORNS)) {
+                for (var content : inventory.getMatrix()) {
+                    if (content == null) continue;
+                    var type = content.getType();
+                    if (type == Material.LEATHER_CHESTPLATE || type == Material.CHAINMAIL_CHESTPLATE || type == Material.IRON_CHESTPLATE
+                            || type == Material.GOLDEN_CHESTPLATE || type == Material.DIAMOND_CHESTPLATE || type == Material.NETHERITE_CHESTPLATE) {
+                        if (!content.getEnchantments().containsKey(Enchantment.THORNS)) {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.THORNS, 1);
+                            inventory.setResult(result);
+                            return;
+                        }
+                        var level = content.getEnchantmentLevel(Enchantment.THORNS);
+                        if (level == 10) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.THORNS, level + 1);
+                            inventory.setResult(result);
+                            return;
+                        }
+
+                    }
+                }
+            }
+
             // Depth Strider
             if (result.getType() == Material.CHAINMAIL_BOOTS && result.getEnchantments().containsKey(Enchantment.DEPTH_STRIDER)) {
                 var level = result.getEnchantmentLevel(Enchantment.DEPTH_STRIDER);
@@ -2224,9 +2367,6 @@ public class Tools {
                     else if (r < 0.00137174211) meta.addEnchant(Enchantment.QUICK_CHARGE, 3, true);
                     else if (r < 0.012345679) meta.addEnchant(Enchantment.QUICK_CHARGE, 2, true);
                     else if (r < 0.111111111) meta.addEnchant(Enchantment.QUICK_CHARGE, 1, true);
-
-                    r = Math.random();
-                    if (r < 0.012345679) meta.addEnchant(Enchantment.MULTISHOT, 1, true);
 
                     weapon.setItemMeta(meta);
                     equipment.setItemInMainHand(weapon);
@@ -4135,9 +4275,6 @@ public class Tools {
                     else if (r < 0.012345679) meta.addEnchant(Enchantment.QUICK_CHARGE, 2, true);
                     else if (r < 0.111111111) meta.addEnchant(Enchantment.QUICK_CHARGE, 1, true);
 
-                    r = Math.random();
-                    if (r < 0.012345679) meta.addEnchant(Enchantment.MULTISHOT, 1, true);
-
                     weapon.setItemMeta(meta);
                 } else if (weapon.getType() != Material.AIR) {
                     r = Math.random();
@@ -6004,6 +6141,18 @@ public class Tools {
                 }
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> {
                     if (entity instanceof Player && ((Player) entity).isBlocking()) break;
+
+                    if (chest != null && chest.containsEnchantment(Enchantment.THORNS)) {
+                        var level = chest.getEnchantmentLevel(Enchantment.THORNS);
+                        if (Math.random() < Math.pow(0.99, Math.pow(10 - level, 3)) / 3.0) {
+                            chest.removeEnchantment(Enchantment.THORNS);
+                            if (level > 1) {
+                                chest.addUnsafeEnchantment(Enchantment.THORNS, level - 1);
+                            }
+                            equip.setChestplate(chest);
+                        }
+                    }
+
                     if (helmet.getItemMeta() != null && helmet.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
                         reduce += 0.0083333333 * helmet.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
                     if (chest.getItemMeta() != null && chest.getItemMeta().hasEnchant(Enchantment.PROTECTION_ENVIRONMENTAL))
@@ -6385,6 +6534,7 @@ public class Tools {
                 else {
                     var contents = player.getInventory().getContents();
                     for (var content : contents) {
+                        if (content == null) continue;
                         if (content.getType() == Material.SPECTRAL_ARROW || content.getType() == Material.TIPPED_ARROW || content.getType() == Material.ARROW) {
                             arrow = content;
                             break;
@@ -8572,14 +8722,22 @@ public class Tools {
                 if (ingredient != null && ingredient.getItemMeta() != null && ingredient.getItemMeta().hasEnchant(Enchantment.DURABILITY)) {
                     result.addUnsafeEnchantment(Enchantment.DURABILITY, ingredient.getEnchantmentLevel(Enchantment.DURABILITY));
                 }
-                var meta = result.getItemMeta();
-                var displayName = meta.getDisplayName();
 
-                if (isSaw(result)) displayName = "Netherite Saw";
-                else if (isChisel(result)) displayName = "Netherite Chisel";
-                else if (isHuntingKnife(result)) displayName = "Netherite Hunting Knife";
-                meta.setDisplayName(ChatColor.RESET + displayName);
-                result.setItemMeta(meta);
+
+                if (isSaw(result)) {
+                    var meta = result.getItemMeta();
+                    var displayName = "Netherite Saw";
+                    meta.setDisplayName(ChatColor.RESET + displayName);
+                    result.setItemMeta(meta);
+                } else if (isChisel(result)) {
+                    var meta = result.getItemMeta();
+                    var displayName = "Netherite Chisel";
+                    meta.setDisplayName(ChatColor.RESET + displayName);
+                } else if (isHuntingKnife(result)) {
+                    var meta = result.getItemMeta();
+                    var displayName = "Netherite Hunting Knife";
+                    meta.setDisplayName(ChatColor.RESET + displayName);
+                }
             }
         }
 

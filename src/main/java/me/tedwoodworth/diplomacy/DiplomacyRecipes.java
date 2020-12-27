@@ -813,6 +813,60 @@ public class DiplomacyRecipes {
         depthStrider3R.setIngredient('B', bootChoices);
         Diplomacy.getInstance().getServer().addRecipe(depthStrider3R);
 
+        var thorns = new ItemStack(Material.CHAINMAIL_CHESTPLATE);
+        thorns.addUnsafeEnchantment(Enchantment.THORNS, 1);
+
+        var thornsR = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "thorns"), thorns);
+        thornsR.addIngredient(Material.PRISMARINE_SHARD);
+        thornsR.addIngredient(new RecipeChoice.MaterialChoice(Material.LEATHER_CHESTPLATE, Material.CHAINMAIL_CHESTPLATE, Material.GOLDEN_CHESTPLATE,
+                Material.IRON_CHESTPLATE, Material.DIAMOND_CHESTPLATE, Material.NETHERITE_CHESTPLATE));
+        Diplomacy.getInstance().getServer().addRecipe(thornsR);
+
+        var quickCharge1 = new ItemStack(Material.CROSSBOW);
+        quickCharge1.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 1);
+
+        var quickCharge1R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "quickcharge1"), quickCharge1);
+        quickCharge1R.shape("III", "IBI", "III");
+        quickCharge1R.setIngredient('I', Material.IRON_NUGGET);
+        quickCharge1R.setIngredient('B', Material.CROSSBOW);
+        Diplomacy.getInstance().getServer().addRecipe(quickCharge1R);
+
+        var quickCharge2 = new ItemStack(Material.CROSSBOW);
+        quickCharge2.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 2);
+
+        var quickCharge2R = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "quickcharge2"), quickCharge2);
+        quickCharge2R.addIngredient(Material.CROSSBOW);
+        quickCharge2R.addIngredient(Material.SLIME_BLOCK);
+        Diplomacy.getInstance().getServer().addRecipe(quickCharge2R);
+
+        var quickCharge3 = new ItemStack(Material.CROSSBOW);
+        quickCharge3.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 3);
+
+        var quickCharge3R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "quickcharge3"), quickCharge3);
+        quickCharge3R.shape(" D ", "DBD", " D ");
+        quickCharge3R.setIngredient('D', Material.REDSTONE);
+        quickCharge3R.setIngredient('B', Material.CROSSBOW);
+        Diplomacy.getInstance().getServer().addRecipe(quickCharge3R);
+
+        var quickCharge4 = new ItemStack(Material.CROSSBOW);
+        quickCharge4.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 4);
+
+        var quickCharge4R = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "quickcharge4"), quickCharge4);
+        quickCharge4R.shape("RMR", "MBM", "RMR");
+        quickCharge4R.setIngredient('R', Material.REDSTONE);
+        quickCharge4R.setIngredient('B', Material.CROSSBOW);
+        quickCharge4R.setIngredient('M', Material.IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(quickCharge4R);
+
+        var quickCharge5 = new ItemStack(Material.CROSSBOW);
+        quickCharge5.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 5);
+
+        var quickCharge5R = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "quickcharge5"), quickCharge5);
+        quickCharge5R.addIngredient(Material.NETHERITE_INGOT);
+        quickCharge5R.addIngredient(Material.NETHERITE_INGOT);
+        quickCharge5R.addIngredient(Material.CROSSBOW);
+        Diplomacy.getInstance().getServer().addRecipe(quickCharge5R);
+
 
     }
 }
