@@ -46,7 +46,6 @@ public class Tools {
     public final NamespacedKey purity3DKey = new NamespacedKey(Diplomacy.getInstance(), "purity3D");
     public final NamespacedKey pickupKey = new NamespacedKey(Diplomacy.getInstance(), "pickup");
     private final String purityLore = ChatColor.GRAY + "Purity:";
-    private final String foldsLore = ChatColor.GRAY + "Folds:";
     private final String plateLore = ChatColor.BLUE + "Refined Plate";
     private final String refinedLore = ChatColor.BLUE + "Refined";
     private final ItemStack air = new ItemStack(Material.AIR);
@@ -144,11 +143,6 @@ public class Tools {
             }
         }
         return layerList;
-    }
-
-    public boolean hasFolds(ItemStack item) {
-        return (item != null && isMetal(item) && item.getItemMeta() != null &&
-                item.getItemMeta().getLore() != null && item.getItemMeta().getLore().contains(foldsLore));
     }
 
     public boolean isIngot(ItemStack itemStack) {
@@ -847,9 +841,7 @@ public class Tools {
                 && isRefined(item1) == isRefined(item2)
                 && isPlate(item1) == isPlate(item2)
                 && !isSlurried(item1)
-                && !isSlurried(item2)
-                && !hasFolds(item1)
-                && !hasFolds(item2);
+                && !isSlurried(item2);
     }
 
     public boolean isNewLayer(ItemStack item) {
@@ -988,11 +980,11 @@ public class Tools {
         var purities = data.get(purity3DKey, FloatArrayPersistentDataType.instance);
         if (purities == null) {
             purities = new float[16 * 16 * block.getWorld().getMaxHeight()];
-            Arrays.fill(purities, -1F);
+            Arrays.fill(purities, -2F);
             purities[num] = (float) (Math.random());
         }
         var purity = purities[num];
-        if (purity == -1F) {
+        if (purity <= -1F) {
             purity = (float) (Math.random());
             purities[num] = purity;
         }
@@ -1039,18 +1031,7 @@ public class Tools {
                     meta.setLocalizedName("Netherite Ingot");
                 }
                 nItem.setItemMeta(item.getItemMeta());
-                int folds;
-                if (lore.contains(foldsLore)) {
-                    var i = lore.indexOf(foldsLore);
-                    folds = Integer.parseInt(lore.get(i + 1)) + 1;
-                    lore.set(i + 1, String.valueOf(folds));
-                } else {
-                    lore.add("");
-                    lore.add(foldsLore);
-                    lore.add("1");
-                    folds = 1;
-                }
-                lore.add("");
+                lore.add("" + ChatColor.BLACK + ChatColor.MAGIC + (int) (Math.random() * Integer.MAX_VALUE));
                 lore.add(refinedLore);
                 meta.setLore(lore);
                 nItem.setItemMeta(meta);
@@ -1058,10 +1039,9 @@ public class Tools {
                 int unbreaking;
                 if (purity == 0.0f) unbreaking = 12;
                 else {
-                    unbreaking = (int) (((-5.0 * Math.log(purity)) / (3 * Math.log(10.0))) * (1.0 - 1.0 / (1.0 + folds)));
+                    unbreaking = (int) (((-5.0 * Math.log(purity)) / (3 * Math.log(10.0))));
+                    unbreaking = Math.min(10, unbreaking);
                 }
-                if (folds == 1) unbreaking /= 2;
-                unbreaking = Math.min(10, unbreaking);
                 if (unbreaking > 0) {
                     nItem.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
                 }
@@ -2074,6 +2054,10 @@ public class Tools {
                             return;
                         }
                     } else if (isMetal(content)) {
+                        if (content.getEnchantments().keySet().size() > 0) {
+                            inventory.setResult(air);
+                            return;
+                        }
                         if (content.getAmount() == 1)
                             result.setItemMeta(content.getItemMeta());
                         else {
@@ -2082,7 +2066,7 @@ public class Tools {
                         }
                         var meta = result.getItemMeta();
                         var lore = meta.getLore();
-                        lore.add("");
+                        lore.add("" + ChatColor.BLACK + ChatColor.MAGIC + (int) (Math.random() * Integer.MAX_VALUE));
                         String name;
                         switch (content.getType()) {
                             default -> {
@@ -4761,12 +4745,15 @@ public class Tools {
                 if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
                     blocks.remove(block);
                     var purity = getBlockPurity(block);
-                    setBlockPurity(block, -1F);
+                    setBlockPurity(block, -2F);
                     if (Math.random() < yield) {
+                        var isRefined = purity < 0;
+                        if (isRefined) purity *= -1;
                         var item = new ItemStack(block.getType());
                         var purityArray = new float[1];
                         purityArray[0] = purity;
                         setPurity(item, purityArray);
+                        if (isRefined) refine(item);
                         ItemStack finalItem = item;
                         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
                                 () -> block.getWorld().dropItem(block.getLocation(), finalItem), 1L);
@@ -4868,9 +4855,11 @@ public class Tools {
                 if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
                     blocks.remove(block);
                     var purity = getBlockPurity(block);
-                    setBlockPurity(block, -1F);
+                    setBlockPurity(block, -2F);
                     if (event.getEntity() instanceof TNTPrimed || Math.random() < yield) {
                         var item = new ItemStack(block.getType());
+                        var isRefined = purity < 0;
+                        if (isRefined) purity *= -1;
                         var purityArray = new float[1];
                         purityArray[0] = purity;
                         setPurity(item, purityArray);
@@ -4926,7 +4915,7 @@ public class Tools {
             var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
             if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
                 var purity = getBlockPurity(block);
-                setBlockPurity(block, -1F);
+                setBlockPurity(block, -2F);
 
                 if ((block.getType() == Material.IRON_BLOCK && (tool == Material.STONE_PICKAXE || tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE))
                         || (block.getType() == Material.GOLD_BLOCK && (tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE))
@@ -6925,8 +6914,6 @@ public class Tools {
         @EventHandler
         private void onInventoryDrag(InventoryDragEvent event) {
             var temp = event.getOldCursor();
-            if (hasFolds(temp)) return;
-
             var view = event.getView();
             for (var slot : event.getRawSlots()) {
                 var inv = view.getInventory(slot);
@@ -6942,7 +6929,7 @@ public class Tools {
             if (type == DragType.EVEN) {
                 var slots = event.getRawSlots();
                 var items = event.getOldCursor();
-                if (!isMetal(items)) return;
+                if (!isMetal(items) || items.getEnchantments().keySet().size() > 0) return;
                 var player = event.getWhoClicked();
                 event.setCancelled(true);
                 var newStacks = dragSplitStackPurities(items, slots.size());
@@ -6971,7 +6958,7 @@ public class Tools {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.setItemOnCursor(item), 1L);
             } else if (type == DragType.SINGLE) {
                 var cursorItem = event.getOldCursor();
-                if (!isMetal(cursorItem)) return;
+                if (!isMetal(cursorItem) || cursorItem.getEnchantments().keySet().size() > 0) return;
                 var slots = event.getRawSlots();
                 var player = event.getWhoClicked();
                 event.setCancelled(true);
@@ -7742,7 +7729,6 @@ public class Tools {
                     var amount = currentItem.getAmount();
                     var maxSize = currentItem.getMaxStackSize();
                     if (isSlurried(currentItem)
-                            || hasFolds(currentItem)
                             || (currentItem.getItemMeta() != null && currentItem.getItemMeta().hasEnchants() && !isGrenade(currentItem)))
                         maxSize = 1;
                     for (int i = start; i < start + 36; i++) {
@@ -7779,8 +7765,8 @@ public class Tools {
                             } else {
                                 var stacks = new ItemStack[2];
                                 var nItem = new ItemStack(item);
-                                nItem.setAmount(craftSlots);
-                                item.setAmount(item.getAmount() - craftSlots);
+                                nItem.setAmount(crafts);
+                                item.setAmount(item.getAmount() - crafts);
                                 stacks[0] = item;
                                 stacks[1] = nItem;
                                 newStacks.add(stacks);
@@ -7934,6 +7920,10 @@ public class Tools {
                     }
                 }
                 case LEFT -> {
+                    if (isMetal(cursorItem) && cursorItem.getEnchantments().keySet().size() > 0) {
+                        if (cursorItem.isSimilar(currentItem)) event.setCancelled(true);
+                        return;
+                    }
                     if (isMetal(currentItem) && canCombine(currentItem, cursorItem)) {
                         var combined = getCombinedPurity(currentItem, cursorItem);
                         currentItem.setAmount(combined[0].getAmount());
@@ -7950,8 +7940,13 @@ public class Tools {
                     }
                 }
                 case RIGHT -> {
+                    if ((isMetal(cursorItem) && cursorItem.getEnchantments().keySet().size() > 0) || (isMetal(currentItem) && currentItem.getEnchantments().keySet().size() > 0)) {
+                        if (cursorItem.isSimilar(currentItem)) event.setCancelled(true);
+                        return;
+                    }
                     if (event.getSlot() == -999) {
                         if (cursorItem != null && isMetal(cursorItem)) {
+                            if (cursorItem.getEnchantments().keySet().size() > 0) return;
                             var dropItem = dropItemFromPurity(cursorItem);
                             event.getView().setCursor(dropItem[0]);
                             var item = event.getWhoClicked().getWorld().dropItemNaturally(event.getWhoClicked().getLocation(), dropItem[1]);
@@ -7963,6 +7958,7 @@ public class Tools {
                     }
                     if ((cursorItem != null && cursorItem.getType() != Material.AIR) && (currentItem == null || currentItem.getType() == Material.AIR) && event.getSlotType() != InventoryType.SlotType.ARMOR) {
                         if (isMetal(cursorItem)) {
+                            if (cursorItem.getEnchantments().keySet().size() > 0) return;
                             var dropped = dropItemFromPurity(cursorItem);
                             event.getWhoClicked().setItemOnCursor(dropped[0]);
                             event.setCurrentItem(dropped[1]);
@@ -8059,8 +8055,7 @@ public class Tools {
                                         j = inv + 45 - i - 1;
                                     }
                                     var slotItem = view.getItem(j);
-                                    if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
-                                    if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
+                                    if (canCombine(slotItem, nCurrentItem) && isMetal(slotItem)) {
                                         var combined = getCombinedPurity(slotItem, nCurrentItem);
                                         view.setItem(j, combined[0]);
                                         if (combined.length > 1) {
@@ -8115,8 +8110,7 @@ public class Tools {
 
 
                             var slotItem = view.getItem(j);
-                            if (hasFolds(slotItem) || hasFolds(currentItem)) continue;
-                            if (slotItem != null && slotItem.getType() == nCurrentItem.getType() && isMetal(slotItem) && isRefined(slotItem) == isRefined(nCurrentItem)) {
+                            if (canCombine(slotItem, nCurrentItem) && isMetal(slotItem)) {
                                 var combined = getCombinedPurity(slotItem, nCurrentItem);
                                 view.setItem(j, combined[0]);
                                 if (combined.length > 1) {
