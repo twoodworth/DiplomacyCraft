@@ -867,6 +867,33 @@ public class DiplomacyRecipes {
         quickCharge5R.addIngredient(Material.CROSSBOW);
         Diplomacy.getInstance().getServer().addRecipe(quickCharge5R);
 
+        var fishingRod = new ItemStack(Material.FISHING_ROD);
+        fishingRod.addUnsafeEnchantment(Enchantment.LURE, 3);
+
+        var lure = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "lure"), fishingRod);
+        lure.addIngredient(Material.FISHING_ROD);
+        var foodChoice = new RecipeChoice.MaterialChoice(
+                Material.ROTTEN_FLESH, Material.MUTTON, Material.COOKED_MUTTON,
+                Material.COOKED_PORKCHOP, Material.COOKED_SALMON, Material.COOKED_BEEF,
+                Material.COOKED_CHICKEN, Material.COOKED_COD, Material.COOKED_RABBIT, Material.BEEF,
+                Material.CHICKEN, Material.MUTTON, Material.PORKCHOP, Material.RABBIT, Material.RABBIT_FOOT,
+                Material.PUFFERFISH, Material.COD, Material.SALMON, Material.TROPICAL_FISH, Material.ENCHANTED_GOLDEN_APPLE,
+                Material.GOLDEN_APPLE, Material.GOLDEN_CARROT, Material.POTATO, Material.BEETROOT, Material.BREAD, Material.CARROT,
+                Material.APPLE, Material.DRIED_KELP, Material.MELON, Material.POISONOUS_POTATO, Material.POTATO, Material.PUMPKIN_PIE,
+                Material.CAKE, Material.COOKIE, Material.SWEET_BERRIES, Material.SPIDER_EYE
+        );
+        lure.addIngredient(foodChoice);
+        Diplomacy.getInstance().getServer().addRecipe(lure);
+
+        var fireAspect = new ItemStack(Material.STONE_SWORD, 2);
+        fireAspect.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, 1);
+
+        var fireAspectR = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "fireAspect"), fireAspect);
+        fireAspectR.addIngredient(Material.BLAZE_POWDER);
+        fireAspectR.addIngredient(new RecipeChoice.MaterialChoice(Material.WOODEN_SWORD, Material.STONE_SWORD, Material.IRON_SWORD,
+                Material.GOLDEN_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD));
+        Diplomacy.getInstance().getServer().addRecipe(fireAspectR);
+
 
     }
 }

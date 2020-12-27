@@ -11,7 +11,6 @@ import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.type.TurtleEgg;
@@ -24,10 +23,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPickupArrowEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -207,7 +203,7 @@ public class Tools {
             sMeta = stack.getItemMeta();
             sMeta.setDisplayName(meta.getDisplayName());
             sMeta.setLocalizedName(meta.getLocalizedName());
-            sMeta.setLore(generatePurityLure(stackPurities));
+            sMeta.setLore(generatePurityLore(stackPurities));
             var sLore = sMeta.getLore();
             if (isRefined) {
                 sLore.add("");
@@ -242,7 +238,7 @@ public class Tools {
             var stackMeta = stack.getItemMeta();
             stackMeta.setDisplayName(meta.getDisplayName());
             stackMeta.setLocalizedName(meta.getLocalizedName());
-            stackMeta.setLore(generatePurityLure(stackPurities));
+            stackMeta.setLore(generatePurityLore(stackPurities));
             var nLore = stackMeta.getLore();
             if (isRefined) {
                 nLore.add("");
@@ -314,7 +310,7 @@ public class Tools {
 
         var newStack = new ItemStack(itemStack.getType(), newPurities.length);
         var newMeta = newStack.getItemMeta();
-        newMeta.setLore(generatePurityLure(newPurities));
+        newMeta.setLore(generatePurityLore(newPurities));
         var isRefined = isRefined(itemStack);
         var lore = newMeta.getLore();
         if (isRefined) {
@@ -335,7 +331,7 @@ public class Tools {
         var otherStack = new ItemStack(itemStack.getType(), otherPurities.length);
         var otherMeta = otherStack.getItemMeta();
         otherMeta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, otherPurities);
-        otherMeta.setLore(generatePurityLure(otherPurities));
+        otherMeta.setLore(generatePurityLore(otherPurities));
         lore = otherMeta.getLore();
         if (isRefined) {
             lore.add("");
@@ -369,7 +365,7 @@ public class Tools {
 
         ItemStack keepStack = new ItemStack(stack.getType(), keepItemPurities.length);
         var keepMeta = keepStack.getItemMeta();
-        keepMeta.setLore(generatePurityLure(keepItemPurities));
+        keepMeta.setLore(generatePurityLore(keepItemPurities));
         var lore = keepMeta.getLore();
         if (isRefined) {
             lore.add("");
@@ -390,7 +386,7 @@ public class Tools {
 
         var dropStack = new ItemStack(stack.getType(), dropAmount);
         var dropMeta = dropStack.getItemMeta();
-        dropMeta.setLore(generatePurityLure(dropItemPurities));
+        dropMeta.setLore(generatePurityLore(dropItemPurities));
         lore = dropMeta.getLore();
         if (isRefined) {
             lore.add("");
@@ -428,7 +424,7 @@ public class Tools {
 
         ItemStack newStack = new ItemStack(stack.getType(), newPurities.length);
         var newMeta = newStack.getItemMeta();
-        newMeta.setLore(generatePurityLure(newPurities));
+        newMeta.setLore(generatePurityLore(newPurities));
         var lore = newMeta.getLore();
         if (isRefined) {
             lore.add("");
@@ -449,7 +445,7 @@ public class Tools {
 
         var newStack2 = new ItemStack(stack.getType(), 1);
         var newMeta2 = newStack2.getItemMeta();
-        newMeta2.setLore(generatePurityLure(itemPurity));
+        newMeta2.setLore(generatePurityLore(itemPurity));
         lore = newMeta2.getLore();
         if (isRefined) {
             lore.add("");
@@ -487,7 +483,7 @@ public class Tools {
 
             ItemStack newStack = new ItemStack(stack1.getType(), newPurities.length);
             var meta = newStack.getItemMeta();
-            meta.setLore(generatePurityLure(newPurities));
+            meta.setLore(generatePurityLore(newPurities));
             var lore = meta.getLore();
             if (isRefined) {
                 lore.add("");
@@ -526,7 +522,7 @@ public class Tools {
 
             ItemStack newStack = new ItemStack(stack1.getType(), 64);
             var meta = newStack.getItemMeta();
-            meta.setLore(generatePurityLure(newPurities1));
+            meta.setLore(generatePurityLore(newPurities1));
             var lore = meta.getLore();
             if (isRefined) {
                 lore.add("");
@@ -547,7 +543,7 @@ public class Tools {
 
             ItemStack newStack2 = new ItemStack(stack2.getType(), newPurities2.length);
             var meta2 = newStack2.getItemMeta();
-            meta2.setLore(generatePurityLure(newPurities2));
+            meta2.setLore(generatePurityLore(newPurities2));
             lore = meta2.getLore();
             if (isRefined) {
                 lore.add("");
@@ -583,7 +579,7 @@ public class Tools {
         item.setItemMeta(meta);
     }
 
-    public List<String> generatePurityLure(float[] purities) {
+    public List<String> generatePurityLore(float[] purities) {
         var lore = new ArrayList<String>();
         lore.add(purityLore);
         StringBuilder loreBuilder = new StringBuilder();
@@ -620,7 +616,7 @@ public class Tools {
         var meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(purityKey, FloatArrayPersistentDataType.instance, purities);
 
-        meta.setLore(generatePurityLure(purities));
+        meta.setLore(generatePurityLore(purities));
         item.setItemMeta(meta);
         return item;
     }
@@ -916,7 +912,7 @@ public class Tools {
         var meta = item.getItemMeta();
         var container = Objects.requireNonNull(meta).getPersistentDataContainer();
         container.set(purityKey, FloatArrayPersistentDataType.instance, purities);
-        meta.setLore(generatePurityLure(purities));
+        meta.setLore(generatePurityLore(purities));
         item.setItemMeta(meta);
     }
 
@@ -1055,11 +1051,93 @@ public class Tools {
         }
 
         @EventHandler
+        private void onPlayerFish(PlayerFishEvent event) {
+            var player = event.getPlayer();
+            var hand1 = player.getInventory().getItemInMainHand();
+            var hand2 = player.getInventory().getItemInOffHand();
+            if (hand1 != null && hand1.getType() == Material.FISHING_ROD && hand1.containsEnchantment(Enchantment.LURE) && hand1.getItemMeta() != null) {
+                var durability = ((Damageable) hand1.getItemMeta()).getDamage();
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                        () -> {
+                            var nHand = player.getInventory().getItemInMainHand();
+                            if (nHand != null && nHand.getType() == Material.FISHING_ROD && nHand.getItemMeta() != null) {
+                                var nDamage = ((Damageable) nHand.getItemMeta()).getDamage();
+                                if (nDamage != durability && nHand.containsEnchantment(Enchantment.LURE)) {
+                                    nHand.removeEnchantment(Enchantment.LURE);
+                                    player.getEquipment().setItem(EquipmentSlot.HAND, nHand);
+                                }
+                            }
+                        },
+                        1L);
+            }
+            if (hand2 != null && hand2.getType() == Material.FISHING_ROD && hand2.containsEnchantment(Enchantment.LURE) && hand2.getItemMeta() != null) {
+                var durability = ((Damageable) hand2.getItemMeta()).getDamage();
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                        () -> {
+                            var nHand = player.getInventory().getItemInOffHand();
+                            if (nHand != null && nHand.getType() == Material.FISHING_ROD && nHand.getItemMeta() != null) {
+                                var nDamage = ((Damageable) nHand.getItemMeta()).getDamage();
+                                if (nDamage != durability && nHand.containsEnchantment(Enchantment.LURE)) {
+                                    nHand.removeEnchantment(Enchantment.LURE);
+                                    player.getEquipment().setItem(EquipmentSlot.OFF_HAND, nHand);
+                                }
+                            }
+                        },
+                        1L);
+            }
+        }
+
+        @EventHandler
         private void onPrepareItemCraft(PrepareItemCraftEvent event) {
             var inventory = event.getInventory();
 
             var result = inventory.getResult();
             if (result == null) return;
+
+            // Fire Aspect
+            if (result.getType() == Material.STONE_SWORD && result.getAmount() == 2) {
+                for (var content : inventory.getMatrix()) {
+                    if (content == null) continue;
+                    if (isHuntingKnife(content)) {
+                        inventory.setResult(air);
+                        return;
+                    }
+                    var type = content.getType();
+                    if (type == Material.WOODEN_SWORD || type == Material.STONE_SWORD || type == Material.IRON_SWORD
+                            || type == Material.GOLDEN_SWORD || type == Material.DIAMOND_SWORD || type == Material.NETHERITE_SWORD) {
+                        if (!content.getEnchantments().containsKey(Enchantment.FIRE_ASPECT)) {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, 1);
+                            inventory.setResult(result);
+                            return;
+                        }
+                        var level = content.getEnchantmentLevel(Enchantment.FIRE_ASPECT);
+                        if (level == 10) {
+                            inventory.setResult(air);
+                            return;
+                        } else {
+                            result = new ItemStack(content);
+                            result.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, level + 1);
+                            inventory.setResult(result);
+                            return;
+                        }
+
+                    }
+                }
+            }
+
+            // Lure
+            if (result.getType() == Material.FISHING_ROD && result.getEnchantments().containsKey(Enchantment.LURE)) {
+                for (var item : inventory.getMatrix()) {
+                    if (item == null) continue;
+                    if (item.getType() == Material.FISHING_ROD) {
+                        result = new ItemStack(item);
+                        result.addUnsafeEnchantment(Enchantment.LURE, 3);
+                        inventory.setResult(result);
+                        return;
+                    }
+                }
+            }
 
             // Quick Charge
             if (result.getType() == Material.CROSSBOW && result.getEnchantments().containsKey(Enchantment.QUICK_CHARGE)) {
@@ -1337,16 +1415,6 @@ public class Tools {
                 if (punch > 0) result.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, punch);
                 if (power > 0) result.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, power);
                 if (flame > 0) result.addUnsafeEnchantment(Enchantment.ARROW_FIRE, flame);
-                inventory.setResult(result);
-            }
-
-
-            // removing cooldown
-            if (tools.contains(result.getType()) && result.getItemMeta() != null) {
-                var meta = result.getItemMeta();
-                meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier("generic.attackSpeed", 20, AttributeModifier.Operation.ADD_NUMBER));
-                meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                result.setItemMeta(meta);
                 inventory.setResult(result);
             }
 
@@ -2934,7 +3002,12 @@ public class Tools {
                     else if (r < 0.111111111) meta.addEnchant(Enchantment.IMPALING, 2, true);
                     else if (r < 0.333333333) meta.addEnchant(Enchantment.IMPALING, 1, true);
 
-                    meta.addEnchant(Enchantment.DURABILITY, 3, true);
+                    r = Math.random();
+                    if (r < 0.00274348422) meta.addEnchant(Enchantment.LOYALTY, 3, true);
+                    else if (r < 0.024691358) meta.addEnchant(Enchantment.LOYALTY, 2, true);
+                    else if (r < 0.222222222) meta.addEnchant(Enchantment.LOYALTY, 1, true);
+
+                    meta.addEnchant(Enchantment.DURABILITY, 5, true);
                     weapon.setItemMeta(meta);
                     equipment.setItemInMainHand(weapon);
                 } else if (weapon.getType() == Material.FISHING_ROD) {
@@ -6014,6 +6087,15 @@ public class Tools {
                     var hand = equipment.getItemInMainHand();
                     if (isHuntingKnife(hand)) {
                         damage = Math.max(0, damage - 3);
+                    } else if (hand.containsEnchantment(Enchantment.FIRE_ASPECT)) {
+                        var level = hand.getEnchantmentLevel(Enchantment.FIRE_ASPECT);
+                        if (Math.random() < Math.pow(0.99, Math.pow(10 - level, 3)) / 3.0) {
+                            hand.removeEnchantment(Enchantment.FIRE_ASPECT);
+                            if (level > 1) {
+                                hand.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, level - 1);
+                            }
+                            equipment.setItemInMainHand(hand);
+                        }
                     }
                 }
             }
@@ -6411,6 +6493,7 @@ public class Tools {
         @EventHandler
         private void onProjectileLaunch(ProjectileLaunchEvent event) {
             if (!(event.getEntity() instanceof AbstractArrow)) return;
+            if (event.getEntity() instanceof Trident) return;
             var arrow = ((AbstractArrow) event.getEntity());
             var shooter = arrow.getShooter();
             if (shooter instanceof Skeleton) {
@@ -6459,7 +6542,7 @@ public class Tools {
                 } else {
                     var contents = player.getInventory().getContents();
                     for (var content : contents) {
-                        if (contents != null && (content.getType() == Material.ARROW || content.getType() == Material.TIPPED_ARROW || content.getType() == Material.SPECTRAL_ARROW)) {
+                        if (content != null && (content.getType() == Material.ARROW || content.getType() == Material.TIPPED_ARROW || content.getType() == Material.SPECTRAL_ARROW)) {
                             itemArrow = content;
                             break;
                         }
@@ -6499,6 +6582,23 @@ public class Tools {
         @EventHandler
         private void arrowPickup(PlayerPickupArrowEvent event) {
             var arrow = event.getArrow();
+            if (arrow instanceof Trident) {
+                var item = event.getItem();
+                var stack = item.getItemStack();
+                var meta = stack.getItemMeta();
+                if (meta.hasEnchant(Enchantment.IMPALING)) {
+                    var level = meta.getEnchantLevel(Enchantment.IMPALING);
+                    var durability = Material.TRIDENT.getMaxDurability();
+                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (6)) {
+                        meta.removeEnchant(Enchantment.IMPALING);
+                        if (level > 1) {
+                            meta.addEnchant(Enchantment.IMPALING, level - 1, true);
+                        }
+                        stack.setItemMeta(meta);
+                        item.setItemStack(stack);
+                    }
+                }
+            }
             var item = event.getItem();
             var stack = item.getItemStack();
             if (arrow.getCustomName() != null) {
@@ -6941,8 +7041,6 @@ public class Tools {
 
                 player.getWorld().playSound(block.getLocation(), Sound.UI_STONECUTTER_TAKE_RESULT, 1, 1);
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.getWorld().playSound(block.getLocation(), Sound.UI_STONECUTTER_TAKE_RESULT, 1, 4), (long) (delay / 3.0 * 2.0));
-
-                //todo dull & durability decrease
 
                 var meta = item.getItemMeta();
                 var unbreaking = 0;
@@ -8437,6 +8535,7 @@ public class Tools {
                 event.setCancelled(true);
                 return;
             }
+
             if (!isMetal(item.getItemStack())) return;
             var inv = event.getInventory();
             for (var content : inv.getContents()) {
@@ -8580,6 +8679,14 @@ public class Tools {
                 event.setCancelled(true);
                 return;
             }
+
+            if (item.getType() == Material.ELYTRA) {
+                if (!item.containsEnchantment(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) < 5) {
+                    item.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                    drop.setItemStack(item);
+                }
+            }
+
             var entity = event.getEntity();
             if (isMetal(item) && !(entity instanceof Player)) {
                 event.setCancelled(true);
@@ -8814,6 +8921,12 @@ public class Tools {
                     if (itemPickupList.contains(lookingAt)) {
                         event.setCancelled(true);
                         return;
+                    }
+
+                    if (lookingItem.getType() == Material.ELYTRA) {
+                        if (!lookingItem.containsEnchantment(Enchantment.DURABILITY) || lookingItem.getEnchantmentLevel(Enchantment.DURABILITY) < 5) {
+                            lookingItem.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                        }
                     }
 
                     itemPickupList.add(lookingAt);
