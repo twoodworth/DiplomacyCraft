@@ -462,7 +462,7 @@ public class DiplomacyPlayers {
 
             // Disable using enchanting tables
             if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.ENCHANTING_TABLE)) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (view #enchanting-guide in /discord)");
+                event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (enchantments obtained via crafting recipes, view #recipes in /discord)");
                 event.setCancelled(true);
                 return;
             }

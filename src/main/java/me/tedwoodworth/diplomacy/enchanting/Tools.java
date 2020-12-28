@@ -1046,6 +1046,13 @@ public class Tools {
                     nItem.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking);
                 }
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, nItem), 1L);
+            } else if (item != null && item.getType() == Material.NAME_TAG && (item2 == null || item2.getType() == Material.AIR)) {
+                var nItem = new ItemStack(NAME_TAG);
+                var name = inventory.getRenameText();
+                var meta = nItem.getItemMeta();
+                meta.setDisplayName(name);
+                nItem.setItemMeta(meta);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, nItem), 1L);
             } else {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> inventory.setItem(2, air), 1L);
             }
@@ -1095,6 +1102,32 @@ public class Tools {
             var result = inventory.getResult();
             if (result == null) return;
 
+
+            // renaming
+            if (result.getType() == Material.STONE_SWORD && result.getAmount() == 3) {
+                ItemStack item = null;
+                String displayName = null;
+                for (var content : inventory.getMatrix()) {
+                    if (content == null || content.getType() == Material.AIR) continue;
+                    else if (content.getType() == Material.NAME_TAG) {
+                        if (content.getItemMeta() == null) {
+                            inventory.setResult(air);
+                            return;
+                        } else
+                            displayName = content.getItemMeta().getDisplayName();
+                    } else item = new ItemStack(content);
+                }
+                if (item == null || displayName == null) {
+                    inventory.setResult(air);
+                    return;
+                }
+
+                var meta = item.getItemMeta();
+                meta.setDisplayName(displayName);
+                item.setItemMeta(meta);
+                inventory.setResult(item);
+                return;
+            }
 
             // suspicious stew
             if (result.getType() == Material.SUSPICIOUS_STEW) {
@@ -4533,6 +4566,18 @@ public class Tools {
                             if (Math.random() < squared)
                                 drops.add(new ItemStack(Material.BONE));
                     }
+                    case COW -> {
+                        var squared = Math.pow(lootDamage, 1.5);
+                        for (int i = 0; i < 7; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.BEEF));
+                        for (int i = 0; i < 6; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.LEATHER));
+                        for (int i = 0; i < 4; i++)
+                            if (Math.random() < squared)
+                                drops.add(new ItemStack(Material.BONE));
+                    }
                     case MULE -> {
                         for (int i = 0; i < 5; i++)
                             if (Math.random() < lootDamage)
@@ -6118,7 +6163,8 @@ public class Tools {
                             if (type == Material.WOODEN_AXE || type == Material.STONE_AXE || type == Material.IRON_AXE || type == Material.DIAMOND_AXE || type == Material.NETHERITE_AXE) {
                                 for (var item : player.getInventory().getContents()) {
                                     if (item == null) continue;
-                                    player.setCooldown(item.getType(), 25);
+                                    if (item.getType() == Material.SHIELD) continue;
+                                    player.setCooldown(item.getType(), 17);
                                 }
                             }
                         }
@@ -6813,7 +6859,7 @@ public class Tools {
                         var type = item.getType();
                         if ((type == Material.STONE_HOE || type == Material.IRON_HOE || type == Material.DIAMOND_HOE || type == Material.NETHERITE_HOE) && Math.random() < .21 - 0.0151515152 * fortune) {
                             block.setType(Material.AIR);
-                            var amount = (int) ((Math.random()) * 3) + 1;
+                            var amount = (int) ((Math.random()) * 6) + 4;
                             player.getWorld().dropItem(block.getLocation(), new ItemStack(Material.LAPIS_LAZULI, amount));
 
                         } else if (Math.random() < 0.075 * fortune) {
@@ -7510,57 +7556,6 @@ public class Tools {
                                 meta.setLore(lore);
                                 item.setItemMeta(meta);
                             }
-                        }
-                        if (getLayers(item).size() == 0) {
-                            if (fire > 0) {
-                                var lore = new ArrayList<String>();
-                                lore.add("");
-                                switch (fire) {
-                                    case 1 -> lore.add(layerLores.get(Material.SOUL_SAND));
-                                    case 2 -> lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                    case 3 -> {
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                    }
-                                    case 4 -> {
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                    }
-                                    case 5 -> {
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                    }
-                                    case 6 -> {
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                    }
-                                    case 7 -> {
-                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                    }
-                                    case 8 -> {
-                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                    }
-                                    case 9 -> {
-                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                    }
-                                    case 10 -> {
-                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
-                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
-                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
-                                        lore.add(layerLores.get(Material.SOUL_SAND));
-                                    }
-                                }
-                                var meta = item.getItemMeta();
-                                meta.setLore(lore);
-                                item.setItemMeta(meta);
-                            }
                             if (proj > 0) {
                                 var lore = new ArrayList<String>();
                                 lore.add("");
@@ -7613,7 +7608,7 @@ public class Tools {
                             if (melee > 0) {
                                 var lore = new ArrayList<String>();
                                 lore.add("");
-                                switch (proj) {
+                                switch (melee) {
                                     case 1 -> lore.add(layerLores.get(Material.WHITE_WOOL));
                                     case 2 -> lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
                                     case 3 -> {
@@ -7662,7 +7657,7 @@ public class Tools {
                             if (blast > 0) {
                                 var lore = new ArrayList<String>();
                                 lore.add("");
-                                switch (proj) {
+                                switch (blast) {
                                     case 1 -> lore.add(layerLores.get(Material.END_STONE));
                                     case 2 -> lore.add(layerLores.get(Material.OBSIDIAN));
                                     case 3 -> {
@@ -7709,7 +7704,6 @@ public class Tools {
                                 item.setItemMeta(meta);
                             }
                         }
-
                     }
                 }
                 if (wooden.contains(item.getType()) && item.containsEnchantment(Enchantment.DURABILITY)) {
@@ -9049,6 +9043,12 @@ public class Tools {
                 var state = block.getState();
                 if (!(state instanceof BlockInventoryHolder)) return;
                 destination = ((BlockInventoryHolder) state).getInventory();
+            } else if (dHolder instanceof DoubleChest) {
+                var chest = ((DoubleChest) dHolder);
+                var isLeft = false;
+                if (Objects.equals(chest.getLeftSide(), dHolder)) isLeft = true;
+                if (isLeft) destination = chest.getLeftSide().getInventory();
+                else destination = chest.getRightSide().getInventory();
             } else {
                 var entity = ((Entity) dHolder);
                 destination = ((InventoryHolder) entity).getInventory();
@@ -9061,6 +9061,12 @@ public class Tools {
                 var state = block.getState();
                 if (!(state instanceof BlockInventoryHolder)) return;
                 source = ((BlockInventoryHolder) state).getInventory();
+            } else if (sHolder instanceof DoubleChest) {
+                var chest = ((DoubleChest) sHolder);
+                var isLeft = false;
+                if (Objects.equals(chest.getLeftSide(), sHolder)) isLeft = true;
+                if (isLeft) source = chest.getLeftSide().getInventory();
+                else source = chest.getRightSide().getInventory();
             } else {
                 var entity = ((Entity) sHolder);
                 source = ((InventoryHolder) entity).getInventory();
