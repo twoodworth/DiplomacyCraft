@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static org.bukkit.Material.*;
 import static org.bukkit.potion.PotionEffectType.*;
 
 public class Tools {
@@ -62,7 +63,7 @@ public class Tools {
     private final String SOUL_LAYER_LORE = ChatColor.RED + "Soul Insulated";
 
     private final String SHULKER_LAYER_LORE = ChatColor.YELLOW + "Shulker  Embedded";
-    private final String HONEY_LAYER_LORE = ChatColor.YELLOW + "Honey Embedded";
+    private final String EMERALD_LAYER_LORE = ChatColor.YELLOW + "Emerald Embedded";
     private final String SLIME_LAYER_LORE = ChatColor.YELLOW + "Slime Embedded";
     private final String WOOD_LAYER_LORE = ChatColor.YELLOW + "Wood Embedded";
 
@@ -629,7 +630,7 @@ public class Tools {
         wooden.add(Material.WOODEN_SHOVEL);
 
         stone.add(Material.STONE_SWORD);
-        stone.add(Material.STONE_AXE);
+        stone.add(STONE_AXE);
         stone.add(Material.STONE_HOE);
         stone.add(Material.STONE_PICKAXE);
         stone.add(Material.STONE_SHOVEL);
@@ -645,7 +646,7 @@ public class Tools {
         iron.add(Material.IRON_BOOTS);
 
         diamond.add(Material.DIAMOND_SWORD);
-        diamond.add(Material.DIAMOND_AXE);
+        diamond.add(DIAMOND_AXE);
         diamond.add(Material.DIAMOND_HOE);
         diamond.add(Material.DIAMOND_PICKAXE);
         diamond.add(Material.DIAMOND_SHOVEL);
@@ -655,10 +656,10 @@ public class Tools {
         diamond.add(Material.DIAMOND_BOOTS);
 
         tools.add(Material.WOODEN_AXE);
-        tools.add(Material.STONE_AXE);
+        tools.add(STONE_AXE);
         tools.add(Material.IRON_AXE);
-        tools.add(Material.GOLDEN_AXE);
-        tools.add(Material.DIAMOND_AXE);
+        tools.add(GOLDEN_AXE);
+        tools.add(DIAMOND_AXE);
         tools.add(Material.NETHERITE_AXE);
         tools.add(Material.WOODEN_SWORD);
         tools.add(Material.STONE_SWORD);
@@ -687,7 +688,7 @@ public class Tools {
         tools.add(Material.NETHERITE_HOE);
 
         gold.add(Material.GOLDEN_SWORD);
-        gold.add(Material.GOLDEN_AXE);
+        gold.add(GOLDEN_AXE);
         gold.add(Material.GOLDEN_HOE);
         gold.add(Material.GOLDEN_PICKAXE);
         gold.add(Material.GOLDEN_SHOVEL);
@@ -714,7 +715,7 @@ public class Tools {
         layers.add(Material.POPPED_CHORUS_FRUIT);
         layers.add(Material.SOUL_SAND);
         layers.add(Material.SHULKER_SHELL);
-        layers.add(Material.HONEY_BOTTLE);
+        layers.add(Material.EMERALD);
         layers.add(Material.SLIME_BALL);
         layers.addAll(planks);
         layers.add(Material.NAUTILUS_SHELL);
@@ -792,7 +793,7 @@ public class Tools {
         layerLores.put(Material.POPPED_CHORUS_FRUIT, CHORUS_LAYER_LORE);
         layerLores.put(Material.SOUL_SAND, SOUL_LAYER_LORE);
         layerLores.put(Material.SHULKER_SHELL, SHULKER_LAYER_LORE);
-        layerLores.put(Material.HONEY_BOTTLE, HONEY_LAYER_LORE);
+        layerLores.put(Material.EMERALD, EMERALD_LAYER_LORE);
         layerLores.put(Material.SLIME_BALL, SLIME_LAYER_LORE);
         layerLores.put(Material.NAUTILUS_SHELL, NAUTILUS_LAYER_LORE);
         layerLores.put(Material.SCUTE, SCUTE_LAYER_LORE);
@@ -1093,6 +1094,13 @@ public class Tools {
 
             var result = inventory.getResult();
             if (result == null) return;
+
+
+            // suspicious stew
+            if (result.getType() == Material.SUSPICIOUS_STEW) {
+                inventory.setResult(air);
+                return;
+            }
 
             // Fire Aspect
             if (result.getType() == Material.STONE_SWORD && result.getAmount() == 2) {
@@ -1807,10 +1815,10 @@ public class Tools {
                 }
 
                 if (type == Material.WOODEN_AXE
-                        || type == Material.STONE_AXE
+                        || type == STONE_AXE
                         || type == Material.IRON_AXE
-                        || type == Material.GOLDEN_AXE
-                        || type == Material.DIAMOND_AXE
+                        || type == GOLDEN_AXE
+                        || type == DIAMOND_AXE
                         || type == Material.NETHERITE_AXE
                 ) {
                     if (nMeta == null || !nMeta.hasEnchant(Enchantment.DAMAGE_ALL) || nMeta.getEnchantLevel(Enchantment.DAMAGE_ALL) != sharpness - 1) {
@@ -2202,7 +2210,7 @@ public class Tools {
                 else if (nLayer.equals(CHORUS_LAYER_LORE)) fire += 2;
                 else if (nLayer.equals(SOUL_LAYER_LORE)) fire += 1;
                 else if (nLayer.equals(SHULKER_LAYER_LORE)) proj += 4;
-                else if (nLayer.equals(HONEY_LAYER_LORE)) proj += 3;
+                else if (nLayer.equals(EMERALD_LAYER_LORE)) proj += 3;
                 else if (nLayer.equals(SLIME_LAYER_LORE)) proj += 2;
                 else if (nLayer.equals(WOOD_LAYER_LORE)) proj += 1;
                 else if (nLayer.equals(NAUTILUS_LAYER_LORE)) melee += 4;
@@ -2817,10 +2825,10 @@ public class Tools {
                         switch ((int) (r * 22)) {
                             case 0, 1, 2, 3, 4 -> {
                                 r = Math.random();
-                                if (r < 1.69350878e-5) weapon = new ItemStack(Material.DIAMOND_AXE);
+                                if (r < 1.69350878e-5) weapon = new ItemStack(DIAMOND_AXE);
                                 else if (r < 0.00015241579) weapon = new ItemStack(Material.IRON_AXE);
-                                else if (r < 0.00137174211) weapon = new ItemStack(Material.GOLDEN_AXE);
-                                else if (r < 0.037037037) weapon = new ItemStack(Material.STONE_AXE);
+                                else if (r < 0.00137174211) weapon = new ItemStack(GOLDEN_AXE);
+                                else if (r < 0.037037037) weapon = new ItemStack(STONE_AXE);
                                 else weapon = new ItemStack(Material.WOODEN_AXE);
                                 enchantType = Enchantment.DAMAGE_ALL;
                             }
@@ -3056,10 +3064,10 @@ public class Tools {
                         else if (r < 0.333333333) meta.addEnchant(enchantType, 1, true);
 
                         if (r < 0.333333333) {
-                            if (weapon.getType() == Material.DIAMOND_AXE
+                            if (weapon.getType() == DIAMOND_AXE
                                     || weapon.getType() == Material.IRON_AXE
-                                    || weapon.getType() == Material.GOLDEN_AXE
-                                    || weapon.getType() == Material.STONE_AXE
+                                    || weapon.getType() == GOLDEN_AXE
+                                    || weapon.getType() == STONE_AXE
                                     || weapon.getType() == Material.WOODEN_AXE
                             ) {
                                 meta.addEnchant(Enchantment.DIG_SPEED, meta.getEnchantLevel(Enchantment.DAMAGE_ALL), true);
@@ -3085,7 +3093,7 @@ public class Tools {
                 if (
                         type == Material.DIAMOND_HOE ||
                                 type == Material.DIAMOND_SWORD ||
-                                type == Material.DIAMOND_AXE ||
+                                type == DIAMOND_AXE ||
                                 type == Material.DIAMOND_PICKAXE ||
                                 type == Material.DIAMOND_SHOVEL
                 ) {
@@ -3099,7 +3107,7 @@ public class Tools {
                                 type == Material.IRON_SHOVEL ||
                                 type == Material.GOLDEN_HOE ||
                                 type == Material.GOLDEN_SWORD ||
-                                type == Material.GOLDEN_AXE ||
+                                type == GOLDEN_AXE ||
                                 type == Material.GOLDEN_PICKAXE ||
                                 type == Material.GOLDEN_SHOVEL
                 ) {
@@ -3223,7 +3231,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -3351,7 +3359,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -3464,7 +3472,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -3596,7 +3604,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -3805,7 +3813,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -3966,7 +3974,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -4110,7 +4118,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -4275,7 +4283,7 @@ public class Tools {
 
                     r = Math.random();
                     if (r < 0.000457247371 && layers < 4 && environment == World.Environment.NORMAL) {
-                        lore.add(layerLores.get(Material.HONEY_BOTTLE));
+                        lore.add(layerLores.get(Material.EMERALD));
                         proj += 3;
                         layers++;
                     }
@@ -5037,6 +5045,13 @@ public class Tools {
             var equipment = ((LivingEntity) damager).getEquipment();
             if (equipment == null) return;
             var hand = equipment.getItemInMainHand();
+            if (damager instanceof Player) {
+                var player = ((Player) damager);
+                if (player.getCooldown(hand.getType()) > 0) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
             var meta = hand.getItemMeta();
             if (meta == null || !tools.contains(hand.getType())) return;
             var r = Math.random();
@@ -6081,7 +6096,7 @@ public class Tools {
                 damager = ((EntityDamageByEntityEvent) event).getDamager();
             else damager = null;
 
-            if (damager instanceof LivingEntity) {
+            if (damager instanceof LivingEntity && cause == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
                 var equipment = ((LivingEntity) damager).getEquipment();
                 if (equipment != null) {
                     var hand = equipment.getItemInMainHand();
@@ -6095,6 +6110,17 @@ public class Tools {
                                 hand.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, level - 1);
                             }
                             equipment.setItemInMainHand(hand);
+                        }
+                    } else {
+                        var type = hand.getType();
+                        if (damager instanceof Player) {
+                            var player = ((Player) damager);
+                            if (type == Material.WOODEN_AXE || type == Material.STONE_AXE || type == Material.IRON_AXE || type == Material.DIAMOND_AXE || type == Material.NETHERITE_AXE) {
+                                for (var item : player.getInventory().getContents()) {
+                                    if (item == null) continue;
+                                    player.setCooldown(item.getType(), 25);
+                                }
+                            }
                         }
                     }
                 }
@@ -6646,7 +6672,8 @@ public class Tools {
                 if (arrowEnchants.containsKey(Enchantment.ARROW_DAMAGE)) {
                     item.addUnsafeEnchantment(Enchantment.PIERCING, arrowEnchants.get(Enchantment.ARROW_DAMAGE));
                 } else {
-                    if (item.containsEnchantment(Enchantment.PIERCING)) item.removeEnchantment(Enchantment.PIERCING);
+                    if (item.containsEnchantment(Enchantment.PIERCING))
+                        item.removeEnchantment(Enchantment.PIERCING);
                 }
                 if (arrowEnchants.containsKey(Enchantment.ARROW_KNOCKBACK)) {
                     item.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, 2);
@@ -6845,6 +6872,11 @@ public class Tools {
                     case NETHERITE_HOE -> delay = 8;
                     case GOLDEN_HOE -> delay = 4;
                 }
+                if (player.hasPotionEffect(SLOW_DIGGING)) {
+                    var level = player.getPotionEffect(SLOW_DIGGING).getAmplifier() + 1;
+                    delay *= (1 + .1 * level);
+                }
+
                 player.setCooldown(Material.WOODEN_HOE, delay);
                 player.setCooldown(Material.STONE_HOE, delay);
                 player.setCooldown(Material.IRON_HOE, delay);
@@ -6861,7 +6893,8 @@ public class Tools {
 
                 var meta = item.getItemMeta();
                 var unbreaking = 0;
-                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                if (meta.hasEnchant(Enchantment.DURABILITY))
+                    unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
                 var durability = item.getType().getMaxDurability();
 
                 if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
@@ -6937,7 +6970,8 @@ public class Tools {
                             TWISTING_VINES, VINE, WEEPING_VINES -> {
                         if (Math.pow(Math.random(), efficiency) < 0.8) {
                             if (material == Material.BRAIN_CORAL_WALL_FAN) material = Material.BRAIN_CORAL_FAN;
-                            else if (material == Material.BUBBLE_CORAL_WALL_FAN) material = Material.BUBBLE_CORAL_FAN;
+                            else if (material == Material.BUBBLE_CORAL_WALL_FAN)
+                                material = Material.BUBBLE_CORAL_FAN;
                             else if (material == Material.FIRE_CORAL_WALL_FAN) material = Material.FIRE_CORAL_FAN;
                             else if (material == Material.HORN_CORAL_WALL_FAN) material = Material.HORN_CORAL_FAN;
                             else if (material == Material.TUBE_CORAL_WALL_FAN) material = Material.TUBE_CORAL_FAN;
@@ -7032,6 +7066,12 @@ public class Tools {
                     case NETHERITE_HOE -> delay = 23;
                     case GOLDEN_HOE -> delay = 19;
                 }
+
+                if (player.hasPotionEffect(SLOW_DIGGING)) {
+                    var level = player.getPotionEffect(SLOW_DIGGING).getAmplifier() + 1;
+                    delay *= (1 + .1 * level);
+                }
+
                 player.setCooldown(Material.WOODEN_HOE, delay);
                 player.setCooldown(Material.STONE_HOE, delay);
                 player.setCooldown(Material.IRON_HOE, delay);
@@ -7044,7 +7084,8 @@ public class Tools {
 
                 var meta = item.getItemMeta();
                 var unbreaking = 0;
-                if (meta.hasEnchant(Enchantment.DURABILITY)) unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                if (meta.hasEnchant(Enchantment.DURABILITY))
+                    unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
                 var durability = item.getType().getMaxDurability();
 
                 if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
@@ -7297,6 +7338,408 @@ public class Tools {
         }
 
         @EventHandler
+        private void onPlayerJoin(PlayerJoinEvent event) {
+            var player = event.getPlayer();
+            var inv = player.getInventory();
+            for (int i = 0; i < inv.getSize(); i++) {
+                var content = inv.getItem(i);
+                if (content == null || content.getType() == Material.AIR) continue;
+                applyScienceUpdateRestrictions(content);
+                inv.setItem(i, content);
+
+            }
+        }
+
+        private ItemStack applyScienceUpdateRestrictions(ItemStack item) {
+            if (isMetal(item) && !hasPurity(item)) {
+                generatePurity(item, 1.0);
+                return item;
+            } else {
+                if (item.containsEnchantment(Enchantment.MENDING))
+                    item.removeEnchantment(Enchantment.MENDING);
+                if (item.containsEnchantment(Enchantment.VANISHING_CURSE))
+                    item.removeEnchantment(Enchantment.VANISHING_CURSE);
+                if (item.containsEnchantment(Enchantment.BINDING_CURSE))
+                    item.removeEnchantment(Enchantment.BINDING_CURSE);
+                if (item.containsEnchantment(Enchantment.MENDING))
+                    item.removeEnchantment(Enchantment.MENDING);
+                switch (item.getType()) {
+                    case WOODEN_AXE, STONE_AXE, IRON_AXE, DIAMOND_AXE, GOLDEN_AXE, NETHERITE_AXE -> {
+                        var sharpness = 0;
+                        var efficiency = 0;
+                        var hasSharpness = false;
+                        var hasEfficiency = false;
+                        if (item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+                            hasSharpness = true;
+                            sharpness = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL);
+                        }
+                        if (item.containsEnchantment(Enchantment.DIG_SPEED)) {
+                            hasEfficiency = true;
+                            efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED);
+                        }
+                        if (sharpness != efficiency) {
+                            if (hasEfficiency) item.removeEnchantment(Enchantment.DIG_SPEED);
+                            if (hasSharpness) item.removeEnchantment(Enchantment.DAMAGE_ALL);
+                            item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, Math.max(sharpness, efficiency));
+                            item.addUnsafeEnchantment(Enchantment.DIG_SPEED, Math.max(sharpness, efficiency));
+                        }
+                        if (item.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
+                            item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+                        if (item.containsEnchantment(Enchantment.SILK_TOUCH))
+                            item.removeEnchantment(Enchantment.SILK_TOUCH);
+                        if (item.containsEnchantment(Enchantment.DAMAGE_ARTHROPODS))
+                            item.removeEnchantment(Enchantment.DAMAGE_ARTHROPODS);
+                        if (item.containsEnchantment(Enchantment.DAMAGE_UNDEAD))
+                            item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+                    }
+                    case WOODEN_PICKAXE, WOODEN_SHOVEL, STONE_PICKAXE, STONE_SHOVEL, IRON_PICKAXE, IRON_SHOVEL, DIAMOND_PICKAXE, DIAMOND_SHOVEL,
+                            NETHERITE_PICKAXE, NETHERITE_SHOVEL -> {
+                        if (item.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
+                            item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+                        if (item.containsEnchantment(Enchantment.SILK_TOUCH))
+                            item.removeEnchantment(Enchantment.SILK_TOUCH);
+                    }
+                    case BOW -> {
+                        var enchants = item.getEnchantments();
+                        if (enchants.size() > 0) {
+                            for (var enchant : enchants.keySet())
+                                item.removeEnchantment(enchant);
+                        }
+                    }
+                    case FISHING_ROD -> {
+                        if (item.containsEnchantment(Enchantment.LUCK))
+                            item.removeEnchantment(Enchantment.LUCK);
+                    }
+                    case TRIDENT -> {
+                        if (item.containsEnchantment(Enchantment.CHANNELING))
+                            item.removeEnchantment(Enchantment.CHANNELING);
+                        if (item.containsEnchantment(Enchantment.RIPTIDE))
+                            item.removeEnchantment(Enchantment.RIPTIDE);
+                        if (!item.containsEnchantment(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) != 3)
+                            item.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
+                    }
+                    case CROSSBOW -> {
+                        if (item.containsEnchantment(Enchantment.MULTISHOT))
+                            item.removeEnchantment(Enchantment.MULTISHOT);
+                    }
+                    case ELYTRA -> {
+
+                        if (item.containsEnchantment(Enchantment.DURABILITY) && item.getEnchantmentLevel(Enchantment.DURABILITY) != 5) {
+                            item.removeEnchantment(Enchantment.DURABILITY);
+                            item.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                        } else {
+                            item.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
+                        }
+                    }
+                    case LEATHER_HELMET, CHAINMAIL_HELMET, IRON_HELMET, GOLDEN_HELMET, DIAMOND_HELMET, NETHERITE_HELMET, TURTLE_HELMET,
+                            LEATHER_CHESTPLATE, CHAINMAIL_CHESTPLATE, IRON_CHESTPLATE, GOLDEN_CHESTPLATE, DIAMOND_CHESTPLATE, NETHERITE_CHESTPLATE,
+                            LEATHER_LEGGINGS, CHAINMAIL_LEGGINGS, IRON_LEGGINGS, GOLDEN_LEGGINGS, DIAMOND_LEGGINGS, NETHERITE_LEGGINGS,
+                            LEATHER_BOOTS, CHAINMAIL_BOOTS, GOLDEN_BOOTS, IRON_BOOTS, DIAMOND_BOOTS, NETHERITE_BOOTS -> {
+                        if (item.containsEnchantment(Enchantment.WATER_WORKER))
+                            item.removeEnchantment(Enchantment.WATER_WORKER);
+                        if (item.containsEnchantment(Enchantment.OXYGEN))
+                            item.removeEnchantment(Enchantment.OXYGEN);
+                        if (item.containsEnchantment(Enchantment.FROST_WALKER))
+                            item.removeEnchantment(Enchantment.FROST_WALKER);
+                        if (item.containsEnchantment(Enchantment.SOUL_SPEED))
+                            item.removeEnchantment(Enchantment.SOUL_SPEED);
+                        if (item.containsEnchantment(Enchantment.PROTECTION_FALL))
+                            item.removeEnchantment(Enchantment.PROTECTION_FALL);
+
+                        var fire = 0;
+                        var proj = 0;
+                        var blast = 0;
+                        var melee = 0;
+
+                        if (item.containsEnchantment(Enchantment.PROTECTION_FIRE))
+                            fire = item.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
+                        if (item.containsEnchantment(Enchantment.PROTECTION_PROJECTILE))
+                            proj = item.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE);
+                        if (item.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS))
+                            blast = item.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+                        if (item.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
+                            melee = item.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
+
+                        if (getLayers(item).size() == 0) {
+                            if (fire > 0) {
+                                var lore = new ArrayList<String>();
+                                lore.add("");
+                                switch (fire) {
+                                    case 1 -> lore.add(layerLores.get(Material.SOUL_SAND));
+                                    case 2 -> lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    case 3 -> {
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 4 -> {
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 5 -> {
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 6 -> {
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                    }
+                                    case 7 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 8 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 9 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 10 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                }
+                                var meta = item.getItemMeta();
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
+                        }
+                        if (getLayers(item).size() == 0) {
+                            if (fire > 0) {
+                                var lore = new ArrayList<String>();
+                                lore.add("");
+                                switch (fire) {
+                                    case 1 -> lore.add(layerLores.get(Material.SOUL_SAND));
+                                    case 2 -> lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    case 3 -> {
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 4 -> {
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 5 -> {
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 6 -> {
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                    }
+                                    case 7 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 8 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                    case 9 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                    }
+                                    case 10 -> {
+                                        lore.add(layerLores.get(Material.WITHER_SKELETON_SKULL));
+                                        lore.add(layerLores.get(Material.MAGMA_CREAM));
+                                        lore.add(layerLores.get(Material.POPPED_CHORUS_FRUIT));
+                                        lore.add(layerLores.get(Material.SOUL_SAND));
+                                    }
+                                }
+                                var meta = item.getItemMeta();
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
+                            if (proj > 0) {
+                                var lore = new ArrayList<String>();
+                                lore.add("");
+                                switch (proj) {
+                                    case 1 -> lore.add(layerLores.get(Material.OAK_PLANKS));
+                                    case 2 -> lore.add(layerLores.get(Material.SLIME_BALL));
+                                    case 3 -> {
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                    }
+                                    case 4 -> {
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                    }
+                                    case 5 -> {
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                    }
+                                    case 6 -> {
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                    }
+                                    case 7 -> {
+                                        lore.add(layerLores.get(Material.SHULKER_SHELL));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                    }
+                                    case 8 -> {
+                                        lore.add(layerLores.get(Material.SHULKER_SHELL));
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                    }
+                                    case 9 -> {
+                                        lore.add(layerLores.get(Material.SHULKER_SHELL));
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                    }
+                                    case 10 -> {
+                                        lore.add(layerLores.get(Material.SHULKER_SHELL));
+                                        lore.add(layerLores.get(Material.EMERALD));
+                                        lore.add(layerLores.get(Material.SLIME_BALL));
+                                        lore.add(layerLores.get(Material.OAK_PLANKS));
+                                    }
+                                }
+                                var meta = item.getItemMeta();
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
+                            if (melee > 0) {
+                                var lore = new ArrayList<String>();
+                                lore.add("");
+                                switch (proj) {
+                                    case 1 -> lore.add(layerLores.get(Material.WHITE_WOOL));
+                                    case 2 -> lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                    case 3 -> {
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                    }
+                                    case 4 -> {
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                    }
+                                    case 5 -> {
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                    }
+                                    case 6 -> {
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                    }
+                                    case 7 -> {
+                                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                    }
+                                    case 8 -> {
+                                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                    }
+                                    case 9 -> {
+                                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                    }
+                                    case 10 -> {
+                                        lore.add(layerLores.get(Material.NAUTILUS_SHELL));
+                                        lore.add(layerLores.get(Material.SCUTE));
+                                        lore.add(layerLores.get(Material.PHANTOM_MEMBRANE));
+                                        lore.add(layerLores.get(Material.WHITE_WOOL));
+                                    }
+                                }
+                                var meta = item.getItemMeta();
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
+                            if (blast > 0) {
+                                var lore = new ArrayList<String>();
+                                lore.add("");
+                                switch (proj) {
+                                    case 1 -> lore.add(layerLores.get(Material.END_STONE));
+                                    case 2 -> lore.add(layerLores.get(Material.OBSIDIAN));
+                                    case 3 -> {
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                    }
+                                    case 4 -> {
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                    }
+                                    case 5 -> {
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                    }
+                                    case 6 -> {
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                    }
+                                    case 7 -> {
+                                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                    }
+                                    case 8 -> {
+                                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                    }
+                                    case 9 -> {
+                                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                    }
+                                    case 10 -> {
+                                        lore.add(layerLores.get(Material.NETHERITE_INGOT));
+                                        lore.add(layerLores.get(Material.CRYING_OBSIDIAN));
+                                        lore.add(layerLores.get(Material.OBSIDIAN));
+                                        lore.add(layerLores.get(Material.END_STONE));
+                                    }
+                                }
+                                var meta = item.getItemMeta();
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                            }
+                        }
+
+                    }
+                }
+                if (wooden.contains(item.getType()) && item.containsEnchantment(Enchantment.DURABILITY)) {
+                    if (item.getEnchantmentLevel(Enchantment.DURABILITY) > 1) {
+                        item.removeEnchantment(Enchantment.DURABILITY);
+                        item.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                    }
+                } else if (stone.contains(item.getType()) && item.containsEnchantment(Enchantment.DURABILITY)) {
+                    if (item.getEnchantmentLevel(Enchantment.DURABILITY) > 2) {
+                        item.removeEnchantment(Enchantment.DURABILITY);
+                        item.addUnsafeEnchantment(Enchantment.DURABILITY, 2);
+                    }
+                } else if (item.containsEnchantment(Enchantment.DURABILITY) && (item.getType() == Material.LEATHER_HELMET || item.getType() == LEATHER_CHESTPLATE || item.getType() == Material.LEATHER_LEGGINGS || item.getType() == Material.LEATHER_BOOTS
+                        || item.getType() == TURTLE_HELMET || item.getType() == Material.CHAINMAIL_HELMET || item.getType() == Material.CHAINMAIL_CHESTPLATE || item.getType() == Material.CHAINMAIL_LEGGINGS ||
+                        item.getType() == Material.CHAINMAIL_BOOTS)
+                ) {
+                    item.removeEnchantment(Enchantment.DURABILITY);
+                } else if (diamond.contains(item.getType())) {
+                    if (!item.containsEnchantment(Enchantment.DURABILITY)) {
+                        item.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
+                    } else if (item.getEnchantmentLevel(Enchantment.DURABILITY) != 3) {
+                        item.removeEnchantment(Enchantment.DURABILITY);
+                        item.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
+                    }
+                }
+            }
+            return item;
+        }
+
+        @EventHandler
         private void onItemMerge(ItemMergeEvent event) {
             var entity = event.getEntity();
             var target = event.getTarget();
@@ -7339,6 +7782,14 @@ public class Tools {
             }
             var contents = event.getContents().getContents();
             for (var content : contents) {
+                // fire potion
+                if (content.getItemMeta() instanceof PotionMeta) {
+                    var potionType = ((PotionMeta) content.getItemMeta()).getBasePotionData().getType();
+                    if (potionType == PotionType.FIRE_RESISTANCE) {
+                        event.setCancelled(true);
+                    }
+                }
+
                 var meta = content.getItemMeta();
                 if (meta == null) continue;
                 var lore = meta.getLore();
@@ -8580,9 +9031,8 @@ public class Tools {
         private void onInventoryOpen(InventoryOpenEvent event) {
             var inv = event.getInventory();
             for (var content : inv.getContents()) {
-                if (isMetal(content) && !hasPurity(content)) {
-                    generatePurity(content, 1.0);
-                }
+                if (content == null) continue;
+                applyScienceUpdateRestrictions(content);
             }
         }
 
@@ -8679,13 +9129,8 @@ public class Tools {
                 event.setCancelled(true);
                 return;
             }
-
-            if (item.getType() == Material.ELYTRA) {
-                if (!item.containsEnchantment(Enchantment.DURABILITY) || item.getEnchantmentLevel(Enchantment.DURABILITY) < 5) {
-                    item.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
-                    drop.setItemStack(item);
-                }
-            }
+            applyScienceUpdateRestrictions(item);
+            drop.setItemStack(item);
 
             var entity = event.getEntity();
             if (isMetal(item) && !(entity instanceof Player)) {
@@ -8923,11 +9368,8 @@ public class Tools {
                         return;
                     }
 
-                    if (lookingItem.getType() == Material.ELYTRA) {
-                        if (!lookingItem.containsEnchantment(Enchantment.DURABILITY) || lookingItem.getEnchantmentLevel(Enchantment.DURABILITY) < 5) {
-                            lookingItem.addUnsafeEnchantment(Enchantment.DURABILITY, 5);
-                        }
-                    }
+                    applyScienceUpdateRestrictions(lookingItem);
+                    lookingAt.setItemStack(lookingItem);
 
                     itemPickupList.add(lookingAt);
                     Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> itemPickupList.remove(lookingAt), 2L);
@@ -9039,10 +9481,10 @@ public class Tools {
         }
 
         if (type == Material.WOODEN_AXE
-                || type == Material.STONE_AXE
+                || type == STONE_AXE
                 || type == Material.IRON_AXE
-                || type == Material.GOLDEN_AXE
-                || type == Material.DIAMOND_AXE
+                || type == GOLDEN_AXE
+                || type == DIAMOND_AXE
                 || type == Material.NETHERITE_AXE
         ) {
             var sharpness = 0;
