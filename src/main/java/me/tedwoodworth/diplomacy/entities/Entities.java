@@ -41,7 +41,7 @@ public class Entities {
             for (var entity : world.getEntities()) {
                 if (entity instanceof Player) {
                     var level = ((Player) entity).getFoodLevel();
-                    if (level > 0 && Math.random() < 0.25) ((Player) entity).setFoodLevel(level - 1);
+                    if (level > 0 && Math.random() < 0.2) ((Player) entity).setFoodLevel(level - 1);
                 } else if (entity instanceof LivingEntity) {
                     var living = ((LivingEntity) entity);
                     var health = living.getHealth();

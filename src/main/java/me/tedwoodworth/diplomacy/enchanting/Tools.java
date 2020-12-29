@@ -1361,13 +1361,14 @@ public class Tools {
             }
 
             // blazed arrows
-            if (result.getType() == Material.ARROW && result.getAmount() == 8) {
+            if (result.getType() == Material.ARROW && result.getAmount() == 8 && result.containsEnchantment(Enchantment.ARROW_FIRE)) {
                 var blaze = false;
                 var arrows = 0;
                 var punch = 2;
                 var power = 10;
                 ItemStack firstArrow = null;
                 for (var item : inventory.getMatrix()) {
+                    if (item == null) continue;
                     if (item.getType() == Material.BLAZE_POWDER) {
                         blaze = true;
                     } else if (firstArrow == null) {
@@ -1743,7 +1744,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.PAPER) paper = item;
                     }
                     if (tool == null || !(isCoarseSandPaper(paper) || isFineSandPaper(paper))) {
@@ -1759,7 +1761,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.BRICK) whetstone = item;
                     }
                     if (tool == null || !isWhetstone(whetstone)) {
@@ -1774,7 +1777,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.NETHER_BRICK) waterstone = item;
                         if (item.getItemMeta() instanceof PotionMeta) {
                             var potionType = ((PotionMeta) item.getItemMeta()).getBasePotionData().getType();
@@ -1797,7 +1801,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.SMOOTH_QUARTZ_STAIRS) coarseBlades = item;
                     }
                     if (tool == null || !isCoarseBlade(coarseBlades)) {
@@ -1811,7 +1816,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.POLISHED_BLACKSTONE_STAIRS) fineBlades = item;
                     }
                     if (tool == null || !isFineBlade(fineBlades)) {
@@ -1825,7 +1831,8 @@ public class Tools {
                     for (var item : inventory.getMatrix()) {
                         if (item == null || item.getType() == Material.AIR) continue;
                         var type = item.getType();
-                        if (tools.contains(type)) tool = item;
+                        if (tools.contains(type) || type == Material.TIPPED_ARROW || type == Material.ARROW || type == SPECTRAL_ARROW)
+                            tool = item;
                         if (type == Material.END_ROD) rod = item;
                         if (isNetheriteRod(item)) sharpness = 10;
                     }
@@ -1867,7 +1874,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.10 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -1889,7 +1896,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -1907,6 +1914,7 @@ public class Tools {
                     }
                     nResult.removeEnchantment(Enchantment.ARROW_DAMAGE);
                     nResult.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, sharpness);
+                    nResult.setAmount(1);
                     inventory.setResult(nResult);
                     return;
                 }
@@ -1921,7 +1929,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -1949,7 +1957,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -1971,7 +1979,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -1999,7 +2007,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -2029,7 +2037,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -2051,7 +2059,7 @@ public class Tools {
                         nMeta = nResult.getItemMeta();
                         var damageable = (Damageable) nMeta;
                         var max = nResult.getType().getMaxDurability();
-                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.15 * Math.pow(0.5, sharpness - 1))));
+                        var nDurability = (int) ((max - damageable.getDamage()) * (1 - (0.1 * Math.pow(0.25, sharpness - 1))));
                         if (nDurability < 1) {
                             inventory.setResult(air);
                             return;
@@ -8300,9 +8308,6 @@ public class Tools {
                             } else {
                                 return;
                             }
-                        } else {
-                            event.setCancelled(true);
-                            return;
                         }
                     }
                     var type = cursorItem.getType();
@@ -9516,7 +9521,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9533,7 +9538,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9567,7 +9572,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9583,7 +9588,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9643,7 +9648,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9659,7 +9664,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9699,7 +9704,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9715,7 +9720,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9750,7 +9755,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9766,7 +9771,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9807,7 +9812,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9823,7 +9828,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9865,7 +9870,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9881,7 +9886,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9916,7 +9921,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.925);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.975);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;
@@ -9932,7 +9937,7 @@ public class Tools {
                     var rMeta = result.getItemMeta();
                     var damageable = (Damageable) rMeta;
                     var max = result.getType().getMaxDurability();
-                    var nDurability = (int) ((max - damageable.getDamage()) * 0.85);
+                    var nDurability = (int) ((max - damageable.getDamage()) * 0.9);
                     if (nDurability < 1) {
                         inv.setItem(2, air);
                         return;

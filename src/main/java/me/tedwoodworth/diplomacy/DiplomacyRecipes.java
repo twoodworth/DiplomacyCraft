@@ -61,7 +61,7 @@ public class DiplomacyRecipes {
         lore.add(ChatColor.RED + "Warning: Enchanting tables are disabled,");
         lore.add(ChatColor.RED + "the only use of enchanting tables is for");
         lore.add(ChatColor.RED + "decoration. To add enchantments onto your items");
-        lore.add(ChatColor.RED + "view #enchanting-guide in the discord (/discord)");
+        lore.add(ChatColor.RED + "view #recipes in the discord (/discord)");
         meta.setLore(lore);
         table.setItemMeta(meta);
         ShapedRecipe enchantingTable = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "enchanting_table"), table);
