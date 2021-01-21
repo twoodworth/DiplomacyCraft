@@ -102,7 +102,8 @@ public class DiplomacyDynmap {
         use3d = false;
         infoWindow = "<div class=\"infoWindow\"><span style=\"font-size:120%;\">%nation%</span>" +
                 "<br /><span style=\"font-weight:bold;\">%Leader%: %leaders%</span>" +
-                "<br /><span style=\"font-weight:bold;\">Members: %members%</span></div>";
+                "<br /><span style=\"font-weight:bold;\">%Assistant%: %assistants%</span></div>" +
+                "<br /><span style=\"font-weight:bold;\">%Diplomat%: %diplomats%</span></div>";
         displayNationName = true;
 
         var color = Color.decode("#FF0000");

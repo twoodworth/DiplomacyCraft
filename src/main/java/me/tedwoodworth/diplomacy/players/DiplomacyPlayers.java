@@ -18,10 +18,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
@@ -44,6 +41,7 @@ public class DiplomacyPlayers {
     private final Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
     private final YamlConfiguration config;
     private ItemStack guideBook;
+    ArrayList<Material> badItems = new ArrayList<>();
 
     public static DiplomacyPlayers getInstance() {
         if (instance == null) {
@@ -54,6 +52,12 @@ public class DiplomacyPlayers {
 
     private DiplomacyPlayers() {
         config = YamlConfiguration.loadConfiguration(diplomacyPlayerConfigFile);
+
+        badItems.add(Material.FLINT_AND_STEEL);
+        badItems.add(Material.FIRE_CHARGE);
+        badItems.add(Material.END_CRYSTAL);
+        badItems.add(Material.PAINTING);
+        badItems.add(Material.ITEM_FRAME);
         save();
     }
 
@@ -286,6 +290,90 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
+        private void onBlockIgnite(BlockIgniteEvent event) {
+            var toBlock = event.getBlock();
+            var to = toBlock.getLocation();
+            var toChunk = to.getChunk();
+            var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+            if (toNation == null) return;
+
+            var fromBlock = event.getIgnitingBlock();
+            if (fromBlock == null) return;
+            var from = fromBlock.getLocation();
+            var fromChunk = from.getChunk();
+            var fromNation = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk).getNation();
+            if (!Objects.equals(fromNation, toNation))
+                event.setCancelled(true);
+        }
+
+        @EventHandler
+        private void onBlockSpread(BlockSpreadEvent event) {
+            var type = event.getSource().getType();
+            if (type != Material.FIRE && type != Material.LAVA) return;
+            var toBlock = event.getBlock();
+            var to = toBlock.getLocation();
+            var toChunk = to.getChunk();
+            var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk).getNation();
+            if (toNation == null) return;
+
+            var fromBlock = event.getSource();
+            var from = fromBlock.getLocation();
+            var fromChunk = from.getChunk();
+            var fromNation = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk).getNation();
+            if (!Objects.equals(fromNation, toNation))
+                event.setCancelled(true);
+        }
+
+        @EventHandler
+        private void onBlockBurn(BlockBurnEvent event) {
+            var block = event.getBlock().getLocation();
+            var chunk = block.getChunk();
+
+            var adj = new Location(block.getWorld(), block.getX() + 1, block.getY(), block.getZ());
+            var adjChunk = adj.getChunk();
+            if (!chunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(block.getWorld(), block.getX() - 1, block.getY(), block.getZ());
+            adjChunk = adj.getChunk();
+            if (!chunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(block.getWorld(), block.getX(), block.getY(), block.getZ() + 1);
+            adjChunk = adj.getChunk();
+            if (!chunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            adj = new Location(block.getWorld(), block.getX(), block.getY(), block.getZ() - 1);
+            adjChunk = adj.getChunk();
+            if (!chunk.equals(adjChunk)) {
+                var toNation = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation();
+                var adjNation = DiplomacyChunks.getInstance().getDiplomacyChunk(adjChunk).getNation();
+                if (toNation != null && !Objects.equals(toNation, adjNation)) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+
+        @EventHandler
         private void onBlockFromTo(BlockFromToEvent event) {
             if (event.getBlock().getType().equals(Material.DRAGON_EGG)) return;
             var to = event.getToBlock().getLocation();
@@ -445,6 +533,68 @@ public class DiplomacyPlayers {
             event.setExperience(0);
         }
 
+        @EventHandler
+        private void onPlayerBucketFill(PlayerBucketFillEvent event) {
+            var block = event.getBlock();
+
+            var chunk = block.getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
+
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
+            }
+            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+            event.setCancelled(true);
+        }
+
+        @EventHandler
+        private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+            var block = event.getBlock();
+
+            var chunk = block.getLocation().getChunk();
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+            if (nation == null) {
+                return;
+            }
+
+            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var player = event.getPlayer();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+
+            // if there is a group and the player is part of it
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
+
+            // if there isn't a group and the player can build anywhere, and its the player's nation
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+            if (Objects.equals(nation, playerNation)) {
+                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
+                    return;
+                }
+            }
+            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+            event.setCancelled(true);
+        }
+
         @EventHandler(ignoreCancelled = true)
         private void onPlayerInteract(PlayerInteractEvent event) {
             if (event.getClickedBlock() == null) {
@@ -491,20 +641,6 @@ public class DiplomacyPlayers {
                     return;
                 }
             }
-
-            ArrayList<Material> badItems = new ArrayList<>();
-            badItems.add(Material.BUCKET);
-            badItems.add(Material.COD_BUCKET);
-            badItems.add(Material.LAVA_BUCKET);
-            badItems.add(Material.PUFFERFISH_BUCKET);
-            badItems.add(Material.SALMON_BUCKET);
-            badItems.add(Material.TROPICAL_FISH_BUCKET);
-            badItems.add(Material.WATER_BUCKET);
-            badItems.add(Material.FLINT_AND_STEEL);
-            badItems.add(Material.FIRE_CHARGE);
-            badItems.add(Material.END_CRYSTAL);
-            badItems.add(Material.PAINTING);
-            badItems.add(Material.ITEM_FRAME);
 
 
             if (event.getItem() != null && badItems.contains(event.getItem().getType())) {

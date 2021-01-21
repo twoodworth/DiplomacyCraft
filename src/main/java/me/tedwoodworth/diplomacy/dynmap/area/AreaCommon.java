@@ -10,41 +10,70 @@ public class AreaCommon {
     public static String formatInfoWindow(final String infoWindow, final Nation nation) {
         String formattedWindow = new StringBuilder("<div class=\"regioninfo\">").append(infoWindow).append("</div>").toString();
 
+        var ranks = getNationRanks(nation);
         formattedWindow = formattedWindow.replace("%nation%", nation.getName());
         formattedWindow = formattedWindow.replace("%Leader%", nation.getClassFromID("8").getName());
-        formattedWindow = formattedWindow.replace("%leaders%", getNationLeaders(nation));
-        formattedWindow = formattedWindow.replace("%members%", getNationMembers(nation));
+        formattedWindow = formattedWindow.replace("%leaders%", ranks[0]);
+        formattedWindow = formattedWindow.replace("%assistant%", ranks[1]);
+        formattedWindow = formattedWindow.replace("%assistants%", ranks[2]);
 
         return formattedWindow;
 
     }
 
-    private static String getNationLeaders(final Nation nation) {
+    private static String[] getNationRanks(final Nation nation) {
         var leaders = new ArrayList<DiplomacyPlayer>();
+        var assistants = new ArrayList<DiplomacyPlayer>();
+        var diplomats = new ArrayList<DiplomacyPlayer>();
         for (final var member : nation.getMembers()) {
             if (nation.getMemberClass(member).getClassID().equalsIgnoreCase("8")) {
                 leaders.add(member);
+            } else if (nation.getMemberClass(member).getClassID().equalsIgnoreCase("7")) {
+                assistants.add(member);
+            } else if (nation.getMemberClass(member).getClassID().equalsIgnoreCase("6")) {
+                diplomats.add(member);
             }
         }
 
+        var ranks = new String[3];
         var strLeaders = new StringBuilder();
-        for (var leader : leaders) {
-            if (strLeaders.length() > 0) {
-                strLeaders.append(", ");
+        if (leaders.size() > 0) {
+            for (var leader : leaders) {
+                if (strLeaders.length() > 0) {
+                    strLeaders.append(", ");
+                }
+                strLeaders.append(leader.getOfflinePlayer().getName());
             }
-            strLeaders.append(leader.getOfflinePlayer().getName());
+            ranks[0] = strLeaders.toString();
+        } else {
+            ranks[0] = " ";
         }
-        return strLeaders.toString();
-    }
 
-    private static String getNationMembers(final Nation nation) {
-        var strMembers = new StringBuilder();
-        for (var member : nation.getMembers()) {
-            if (strMembers.length() > 0) {
-                strMembers.append(", ");
+        var strAssistants = new StringBuilder();
+        if (assistants.size() > 0) {
+            for (var assistant : assistants) {
+                if (strAssistants.length() > 0) {
+                    strAssistants.append(", ");
+                }
+                strAssistants.append(assistant.getOfflinePlayer().getName());
             }
-            strMembers.append(member.getOfflinePlayer().getName());
+            ranks[1] = strAssistants.toString();
+        } else {
+            ranks[1] = " ";
         }
-        return strMembers.toString();
+
+        var strDiplomats = new StringBuilder();
+        if (diplomats.size() > 0) {
+            for (var diplomat : diplomats) {
+                if (strDiplomats.length() > 0) {
+                    strDiplomats.append(", ");
+                }
+                strDiplomats.append(diplomat.getOfflinePlayer().getName());
+            }
+            ranks[2] = strDiplomats.toString();
+        } else {
+            ranks[2] = " ";
+        }
+        return ranks;
     }
 }

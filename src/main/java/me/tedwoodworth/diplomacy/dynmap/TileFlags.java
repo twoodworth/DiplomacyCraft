@@ -4,13 +4,14 @@ import java.util.HashMap;
 
 /**
  * scalable flags primitive - used for keeping track of potentially huge number of tiles
- * <p>
+ *
  * Represents a flag for each tile, with 2D coordinates based on 0,0 origin.  Flags are grouped
  * 64 x 64, represented by an array of 64 longs.  Each set is stored in a hashmap, keyed by a long
  * computed by ((x/64)<<32)+(y/64).
+ *
  */
 public class TileFlags {
-    private HashMap<Long, long[]> chunkmap = new HashMap<Long, long[]>();
+    private final HashMap<Long, long[]> chunkmap = new HashMap<Long, long[]>();
     private long last_key = Long.MAX_VALUE;
     private long[] last_row;
 
@@ -55,7 +56,6 @@ public class TileFlags {
                 row[y & 0x3F] &= ~(1L << (x & 0x3F));
         }
     }
-
     public void clear() {
         chunkmap.clear();
         last_row = null;
