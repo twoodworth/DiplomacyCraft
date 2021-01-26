@@ -50,9 +50,42 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         return null;
+    }
+
+    public static String getCardinalDirection(Player player) {
+        double rotation = (player.getLocation().getYaw() - 90.0F) % 360.0F;
+        if (rotation < 0.0D) {
+            rotation += 360.0D;
+        }
+        if ((0.0D <= rotation) && (rotation < 22.5D)) {
+            return "N";
+        }
+        if ((22.5D <= rotation) && (rotation < 67.5D)) {
+            return "NE";
+        }
+        if ((67.5D <= rotation) && (rotation < 112.5D)) {
+            return "E";
+        }
+        if ((112.5D <= rotation) && (rotation < 157.5D)) {
+            return "SE";
+        }
+        if ((157.5D <= rotation) && (rotation < 202.5D)) {
+            return "S";
+        }
+        if ((202.5D <= rotation) && (rotation < 247.5D)) {
+            return "SW";
+        }
+        if ((247.5D <= rotation) && (rotation < 292.5D)) {
+            return "W";
+        }
+        if ((292.5D <= rotation) && (rotation < 337.5D)) {
+            return "NW";
+        }
+        return "N";
     }
 
     private void map(CommandSender sender) {
@@ -65,7 +98,7 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
         var colors = new HashMap<Nation, Color>();
         var chunk = player.getLocation().getChunk();
         var chunkX = chunk.getX() - 6;
-        var chunkZ = chunk.getZ() - 6;
+        var chunkZ = chunk.getZ() + 6;
         var world = chunk.getWorld();
 
         var contestChunks = new HashMap<DiplomacyChunk, Nation>();
@@ -85,6 +118,26 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 .append("\n")
                 .append("\n");
 
+        var direction = getCardinalDirection(player);
+        var directionText = new ComponentBuilder();
+        directionText
+                .append("Facing: ")
+                .color(net.md_5.bungee.api.ChatColor.BLUE)
+                .bold(true);
+        switch (direction) {
+            default -> directionText.append("North");
+            case "NE" -> directionText.append("Northeast");
+            case "E" -> directionText.append("East");
+            case "SE" -> directionText.append("Southeast");
+            case "S" -> directionText.append("South");
+            case "SW" -> directionText.append("Southwest");
+            case "W" -> directionText.append("West");
+            case "NW" -> directionText.append("Northwest");
+        }
+        directionText.color(net.md_5.bungee.api.ChatColor.GOLD)
+                .bold(true);
+        var directionHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(directionText.create()));
+
         for (int i = 0; i < 13; i++) {
             mapMessage.append("  ");
             for (int j = 0; j < 13; j++) {
@@ -95,32 +148,54 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 var cChunk = world.getChunkAt(chunkX, chunkZ);
                 var dChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(cChunk);
                 var nation = dChunk.getNation();
-
-                if (nation == null) {
+                var current = false;
+                if (i == 6 && j == 6) {
                     symbol = "\u2014";
+                    current = true;
+                } else {
+                    if (nation == null) {
+                        symbol = "\u2014";
+                    } else {
+                        symbol = "\u2588";
+                    }
+                }
+                if (nation == null) {
                     mapComponent
                             .append(symbol)
-                            .color(net.md_5.bungee.api.ChatColor.DARK_GRAY)
                             .bold(true);
+                    if (current) {
+                        mapComponent
+                                .color(net.md_5.bungee.api.ChatColor.GOLD);
+                    } else {
+                        mapComponent
+                                .color(net.md_5.bungee.api.ChatColor.DARK_GRAY);
+                    }
                     hoverComponent
                             .append("Wilderness")
                             .color(net.md_5.bungee.api.ChatColor.DARK_GRAY)
                             .bold(true);
                 } else {
-                    Color color;
+                    net.md_5.bungee.api.ChatColor color;
                     if (colors.containsKey(nation)) {
-                        color = colors.get(nation);
+                        color = net.md_5.bungee.api.ChatColor.of(colors.get(nation));
                     } else {
-                        color = nation.getColor();
-                        colors.put(nation, color);
+                        var nColor = nation.getColor();
+                        color = net.md_5.bungee.api.ChatColor.of(nColor);
+                        colors.put(nation, nColor);
                     }
                     mapComponent
-                            .append("\u2588")
-                            .color(net.md_5.bungee.api.ChatColor.of(color))
+                            .append(symbol)
                             .bold(true);
+                    if (current) {
+                        mapComponent
+                                .color(net.md_5.bungee.api.ChatColor.GOLD);
+                    } else {
+                        mapComponent
+                                .color(color);
+                    }
                     hoverComponent
                             .append(nation.getName())
-                            .color(net.md_5.bungee.api.ChatColor.of(color))
+                            .color(color)
                             .bold(true);
 
                     if (dChunk.getGroup() != null) {
@@ -149,7 +224,14 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                         .color(net.md_5.bungee.api.ChatColor.GRAY)
                         .bold(true);
 
-                if (contestChunks.containsKey(dChunk)) {
+                if (current) {
+                    hoverComponent
+                            .append("\nCurrent Location")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true);
+                }
+
+                if (contestChunks.containsKey(dChunk) && !(i == 6 && j == 6)) {
                     var attacker = contestChunks.get(dChunk);
                     mapComponent.obfuscated(true);
                     hoverComponent
@@ -166,30 +248,136 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
 
                 mapComponent.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverComponent.create())));
                 mapMessage.append(mapComponent.create());
-                chunkZ++;
+                chunkZ--;
             }
-            if (i == 0) {
+            if (i == 4) {
                 mapMessage
-                        .append("  N")
-                        .color(net.md_5.bungee.api.ChatColor.RED);
-            } else if (i == 1) {
-                mapMessage.append(" W")
-                        .color(net.md_5.bungee.api.ChatColor.WHITE)
-                        .append("+")
+                        .append("  Facing:")
+                        .color(net.md_5.bungee.api.ChatColor.GOLD)
+                        .bold(true)
+                        .event(directionHover);
+            } else if (i == 6) {
+                mapMessage
+                        .append("    ")
+                        .event(directionHover);
+                if (direction.equals("NW")) {
+                    mapMessage
+                            .append("\\")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append(" ")
+                            .event(directionHover);
+                }
+
+                if (direction.equals("N")) {
+                    mapMessage
+                            .append("N")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append("N")
+                            .color(net.md_5.bungee.api.ChatColor.WHITE)
+                            .bold(true)
+                            .event(directionHover);
+                }
+
+                if (direction.equals("NE")) {
+                    mapMessage
+                            .append("/")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append(" ")
+                            .event(directionHover);
+                }
+            } else if (i == 7) {
+                mapMessage
+                        .append("    ")
+                        .event(directionHover);
+                if (direction.equals("W")) {
+                    mapMessage
+                            .append("W")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append("W")
+                            .color(net.md_5.bungee.api.ChatColor.WHITE)
+                            .bold(true)
+                            .event(directionHover);
+                }
+                mapMessage.append("+")
                         .bold(false)
                         .color(net.md_5.bungee.api.ChatColor.GRAY)
-                        .append("E")
-                        .bold(true)
-                        .color(net.md_5.bungee.api.ChatColor.WHITE);
-            } else if (i == 2) {
-                mapMessage.append("  S")
-                        .color(net.md_5.bungee.api.ChatColor.WHITE);
+                        .event(directionHover);
+                if (direction.equals("E")) {
+                    mapMessage
+                            .append("E")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append("E")
+                            .color(net.md_5.bungee.api.ChatColor.WHITE)
+                            .bold(true)
+                            .event(directionHover);
+                }
+            } else if (i == 8) {
+                mapMessage
+                        .append("    ")
+                        .event(directionHover);
+                if (direction.equals("SW")) {
+                    mapMessage
+                            .append("/")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append(" ")
+                            .event(directionHover);
+                }
+
+                if (direction.equals("S")) {
+                    mapMessage
+                            .append("S")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append("S")
+                            .color(net.md_5.bungee.api.ChatColor.WHITE)
+                            .bold(true)
+                            .event(directionHover);
+                }
+
+                if (direction.equals("SE")) {
+                    mapMessage
+                            .append("\\")
+                            .color(net.md_5.bungee.api.ChatColor.GOLD)
+                            .bold(true)
+                            .event(directionHover);
+                } else {
+                    mapMessage
+                            .append(" ")
+                            .event(directionHover);
+                }
             }
 
             if (i < 12)
                 mapMessage.append("\n");
             chunkX++;
-            chunkZ -= 13;
+            chunkZ += 13;
         }
 
         var nations = new ArrayList<>(colors.keySet());

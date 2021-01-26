@@ -37,8 +37,14 @@ public class Guis {
     }
 
     public void loadNationMenus() {
-        for (var nation : new ArrayList<>(Nations.getInstance().getNations())) {
-            getInstance().getNationMenu(nation);
+        var nations = new ArrayList<>(Nations.getInstance().getNations());
+        var size = nations.size();
+        var current = 0;
+        System.out.println("[Diplomacy] [GUIs] Loading nation menus (" + current + "/" + size + ")");
+        for (var nation : nations) {
+            getNationMenu(nation);
+            current++;
+            System.out.println("[Diplomacy] [GUIs] Loading nation menus (" + current + "/" + size + ")");
         }
     }
 
