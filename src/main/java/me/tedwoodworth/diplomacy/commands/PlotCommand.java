@@ -1,5 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
+import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
@@ -15,10 +17,7 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class PlotCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
@@ -290,6 +289,10 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
         nation.removeChunk(diplomacyChunk);
         otherNation.addChunk(diplomacyChunk);
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(otherNation, set));
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, set));
 
         if (nation.getGroups() != null) {
             for (var group : nation.getGroups()) {
@@ -358,6 +361,9 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.removeChunk(diplomacyChunk);
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, set));
 
         if (diplomacyChunk.getGroup() != null) {
             diplomacyChunk.getGroup().removeChunk(diplomacyChunk);

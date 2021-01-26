@@ -1,5 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
+import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.groups.GroupGuiFactory;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
@@ -605,6 +607,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             nation.removeChunk(diplomacyChunk);
             otherNation.addChunk(diplomacyChunk);
         }
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(otherNation, diplomacyChunks));
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
         group.setNation(otherNation);
     }

@@ -1,10 +1,14 @@
 package me.tedwoodworth.diplomacy.lives_and_tax;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.events.NationLeaveEvent;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class Tax implements Runnable {
@@ -57,6 +61,9 @@ public class Tax implements Runnable {
                                 }
                             }
                             nation.removeMember(member);
+                            var set = new HashSet<DiplomacyPlayer>();
+                            set.add(member);
+                            Bukkit.getPluginManager().callEvent(new NationLeaveEvent(set, nation));
                         } else {
                             if (player != null) {
                                 player.sendMessage(ChatColor.GREEN + "You have been taxed \u00A4" + formatter.format(tax));
@@ -76,6 +83,9 @@ public class Tax implements Runnable {
                             }
                         }
                         nation.removeMember(member);
+                        var set = new HashSet<DiplomacyPlayer>();
+                        set.add(member);
+                        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(set, nation));
                     }
                 } else {
                     economy.withdrawPlayer(member.getOfflinePlayer(), tax);

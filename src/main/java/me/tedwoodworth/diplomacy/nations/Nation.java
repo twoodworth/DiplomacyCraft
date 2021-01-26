@@ -125,7 +125,6 @@ public class Nation {
         memberConfig.set(id, "0");
         configSection.set("Members", memberConfig);
         ScoreboardManager.getInstance().updateScoreboards();
-        Bukkit.getPluginManager().callEvent(new NationJoinEvent(diplomacyPlayer, this));
     }
 
     public void removeMember(DiplomacyPlayer diplomacyPlayer) {
@@ -136,7 +135,6 @@ public class Nation {
         }
         configSection.set("Members", memberConfig);
         ScoreboardManager.getInstance().updateScoreboards();
-        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(diplomacyPlayer, this));
     }
 
     public List<NationClass> getClasses() {
@@ -290,7 +288,6 @@ public class Nation {
         var list = configSection.getMapList("Chunks");
         list.add(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
-        Bukkit.getPluginManager().callEvent(new NationAddChunkEvent(this, diplomacyChunk));
     }
 
     public void removeChunk(DiplomacyChunk diplomacyChunk) {
@@ -298,7 +295,6 @@ public class Nation {
         var list = configSection.getMapList("Chunks");
         list.remove(DiplomacyChunks.getInstance().chunkToConfigMap(diplomacyChunk));
         configSection.set("Chunks", list);
-        Bukkit.getPluginManager().callEvent(new NationRemoveChunkEvent(this, chunk));
     }
 
     public List<DiplomacyGroup> getGroups() {

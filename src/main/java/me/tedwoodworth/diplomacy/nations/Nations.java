@@ -166,14 +166,8 @@ public class Nations {
                 .bold(true);
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (i >= nations.size()) break;
-            var nL = "\n";
-            if (i < 9) nL += "0";
-            message.append(nL + (i + 1) + " ")
-                    .color(net.md_5.bungee.api.ChatColor.GREEN)
-                    .bold(true);
 
             var testNation = nations.get(i);
-
             net.md_5.bungee.api.ChatColor color;
             if (nation == null) {
                 color = net.md_5.bungee.api.ChatColor.AQUA;
@@ -196,6 +190,9 @@ public class Nations {
 
             var nationText = new ComponentBuilder();
             nationText
+                    .append("\n - ")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .bold(false)
                     .append(testNation.getName())
                     .color(color)
                     .bold(false)
@@ -247,12 +244,6 @@ public class Nations {
                 .bold(true);
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (i >= nations.size()) break;
-            var nL = "\n";
-            if (i < 9) nL += "0";
-            message.append(nL + (i + 1) + " ")
-                    .color(net.md_5.bungee.api.ChatColor.GREEN)
-                    .bold(true);
-
             var testNation = nations.get(i);
 
             net.md_5.bungee.api.ChatColor color;
@@ -277,6 +268,9 @@ public class Nations {
 
             var nationText = new ComponentBuilder();
             nationText
+                    .append("\n - ")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .bold(false)
                     .append(testNation.getName())
                     .color(color)
                     .bold(false)
@@ -323,14 +317,7 @@ public class Nations {
                 .bold(true);
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (i >= members.size()) break;
-            var nL = "\n";
-            if (i < 9) nL += "0";
-            message.append(nL + (i + 1) + " ")
-                    .color(net.md_5.bungee.api.ChatColor.GREEN)
-                    .bold(true);
-
             var testPlayer = members.get(i);
-
 
             var hoverText = new ComponentBuilder()
                     .append("[View Player Info]")
@@ -341,9 +328,13 @@ public class Nations {
 
             var rank = otherNation.getMemberClass(testPlayer).getPrefix();
             var playerText = new ComponentBuilder();
+            playerText
+                    .append("\n - ")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .bold(false);
             if (rank != null && !rank.equals("")) {
                 playerText
-                        .append(" " + rank)
+                        .append(rank + " ")
                         .color(net.md_5.bungee.api.ChatColor.GOLD)
                         .bold(true);
             }
@@ -391,14 +382,7 @@ public class Nations {
                 .bold(true);
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (i >= outlaws.size()) break;
-            var nL = "\n";
-            if (i < 9) nL += "0";
-            message.append(nL + (i + 1) + " ")
-                    .color(net.md_5.bungee.api.ChatColor.GREEN)
-                    .bold(true);
-
             var testPlayer = Bukkit.getOfflinePlayer(outlaws.get(i));
-
 
             var hoverText = new ComponentBuilder()
                     .append("[View Player Info]")
@@ -408,7 +392,10 @@ public class Nations {
 
             var playerText = new ComponentBuilder();
             playerText
-                    .append(" " + testPlayer.getName())
+                    .append("\n - ")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .bold(false)
+                    .append(testPlayer.getName())
                     .color(net.md_5.bungee.api.ChatColor.RED)
                     .bold(false)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/player info " + testPlayer.getName()))
@@ -456,12 +443,6 @@ public class Nations {
                 .bold(true);
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (i >= nations.size()) break;
-            var nL = "\n";
-            if (i < 9) nL += "0";
-            message.append(nL + (i + 1) + " ")
-                    .color(net.md_5.bungee.api.ChatColor.GREEN)
-                    .bold(true);
-
             var testNation = nations.get(i);
 
             net.md_5.bungee.api.ChatColor color;
@@ -486,6 +467,9 @@ public class Nations {
 
             var nationText = new ComponentBuilder();
             nationText
+                    .append("\n - ")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .bold(false)
                     .append(testNation.getName())
                     .color(color)
                     .bold(false)
@@ -556,7 +540,7 @@ public class Nations {
 
             var groupText = new ComponentBuilder();
             groupText
-                    .append(testGroup.getName())
+                    .append("\n" + testGroup.getName())
                     .color(color)
                     .bold(false)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/group info " + testGroup.getName()))

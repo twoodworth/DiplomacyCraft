@@ -6,23 +6,25 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class NationAddChunkEvent extends Event {
+import java.util.Set;
+
+public class NationRemoveChunksEvent extends Event {
 
     private final Nation nation;
-    private final DiplomacyChunk diplomacyChunk;
+    private final Set<DiplomacyChunk> chunks;
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public NationAddChunkEvent(Nation nation, DiplomacyChunk diplomacyChunk) {
+    public NationRemoveChunksEvent(Nation nation, Set<DiplomacyChunk> chunks) {
         this.nation = nation;
-        this.diplomacyChunk = diplomacyChunk;
+        this.chunks = chunks;
     }
 
     public Nation getNation() {
         return nation;
     }
 
-    public DiplomacyChunk getDiplomacyChunk() {
-        return diplomacyChunk;
+    public Set<DiplomacyChunk> getChunks() {
+        return chunks;
     }
 
     @Override

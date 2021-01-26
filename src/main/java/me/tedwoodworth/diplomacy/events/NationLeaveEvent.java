@@ -6,19 +6,21 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 public class NationLeaveEvent extends Event {
 
-    private DiplomacyPlayer diplomacyPlayer;
+    private Set<DiplomacyPlayer> diplomacyPlayers;
     private Nation nation;
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public NationLeaveEvent(DiplomacyPlayer diplomacyPlayer, Nation nation) {
+    public NationLeaveEvent(Set<DiplomacyPlayer> diplomacyPlayers, Nation nation) {
         this.nation = nation;
-        this.diplomacyPlayer = diplomacyPlayer;
+        this.diplomacyPlayers = diplomacyPlayers;
     }
 
-    public DiplomacyPlayer getDiplomacyPlayer() {
-        return diplomacyPlayer;
+    public Set<DiplomacyPlayer> getDiplomacyPlayer() {
+        return diplomacyPlayers;
     }
 
     public Nation getNation() {

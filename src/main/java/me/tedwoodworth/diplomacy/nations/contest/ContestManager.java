@@ -1,6 +1,8 @@
 package me.tedwoodworth.diplomacy.nations.contest;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
+import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -137,7 +139,16 @@ public class ContestManager {
         var diplomacyChunk = contest.getDiplomacyChunk();
         var defendingNation = diplomacyChunk.getNation();
         Objects.requireNonNull(defendingNation).removeChunk(contest.getDiplomacyChunk());
-        contest.getAttackingNation().addChunk(diplomacyChunk);
+
+
+        var attackingNation = contest.getAttackingNation();
+        attackingNation.addChunk(diplomacyChunk);
+
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(defendingNation, set));
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(attackingNation, set));
+
         if (defendingNation.getGroups() != null) {
             for (var group : defendingNation.getGroups()) {
                 if (group.getChunks().contains(diplomacyChunk)) {
@@ -152,7 +163,13 @@ public class ContestManager {
 
     private void winWildernessContest(Contest contest) {
         var diplomacyChunk = contest.getDiplomacyChunk();
-        contest.getAttackingNation().addChunk(diplomacyChunk);
+        var attackingNation = contest.getAttackingNation();
+        attackingNation.addChunk(diplomacyChunk);
+
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(attackingNation, set));
+
         contest.sendFireworks();
         contest.sendNewNationTitles();
         endContest(contest);
@@ -245,7 +262,7 @@ public class ContestManager {
         var attackingPlayerCount = attackingPlayers.size();
         int defendingPlayerCount;
         if (attackingPlayerCount == 0) {
-           defendingPlayerCount = defendingPlayers.size();
+            defendingPlayerCount = defendingPlayers.size();
         } else {
             defendingPlayerCount = 0;
         }

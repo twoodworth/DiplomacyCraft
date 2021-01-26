@@ -1,6 +1,10 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
+import me.tedwoodworth.diplomacy.events.NationJoinEvent;
+import me.tedwoodworth.diplomacy.events.NationLeaveEvent;
+import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
@@ -841,6 +845,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeMember(member);
         }
 
+        if (otherNation.getIsOpen())
+            Bukkit.getPluginManager().callEvent(new NationJoinEvent(members, otherNation));
+
+        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(members, nation));
+
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
@@ -884,6 +893,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeChunk(diplomacyChunk);
             otherNation.addChunk(diplomacyChunk);
         }
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(otherNation, diplomacyChunks));
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
@@ -970,8 +981,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var diplomacyChunks = nation.getChunks();
         for (var diplomacyChunk : diplomacyChunks) {
             nation.removeChunk(diplomacyChunk);
-
         }
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
@@ -1739,6 +1750,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
 
             nation.addMember(diplomacyPlayer);
+            var set = new HashSet<DiplomacyPlayer>();
+            set.add(diplomacyPlayer);
+            Bukkit.getPluginManager().callEvent(new NationJoinEvent(set, nation));
             sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
             return;
         }
@@ -1763,6 +1777,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.addMember(diplomacyPlayer);
+        var set = new HashSet<DiplomacyPlayer>();
+        set.add(diplomacyPlayer);
+        Bukkit.getPluginManager().callEvent(new NationJoinEvent(set, nation));
         sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
 
 
@@ -2134,6 +2151,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
         nation.removeMember(diplomacyPlayer);
+        var set = new HashSet<DiplomacyPlayer>();
+        set.add(diplomacyPlayer);
+        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(set, nation));
 
     }
 
@@ -2182,6 +2202,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
             sender.sendMessage(ChatColor.AQUA + "Since another player has joined your nation, it will not disband.");
             nation.removeMember(diplomacyPlayer);
+            var set = new HashSet<DiplomacyPlayer>();
+            set.add(diplomacyPlayer);
+            Bukkit.getPluginManager().callEvent(new NationLeaveEvent(set, nation));
         }
 
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
@@ -2220,8 +2243,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var diplomacyChunks = nation.getChunks();
         for (var diplomacyChunk : diplomacyChunks) {
             nation.removeChunk(diplomacyChunk);
-
         }
+
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
         var balance = nation.getBalance();
         if (nation.getBalance() >= 0.01) {
@@ -2318,6 +2342,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         senderNation.removeMember(otherDiplomacyPlayer);
+        var set = new HashSet<DiplomacyPlayer>();
+        set.add(otherDiplomacyPlayer);
+        Bukkit.getPluginManager().callEvent(new NationLeaveEvent(set, senderNation));
     }
 
 
