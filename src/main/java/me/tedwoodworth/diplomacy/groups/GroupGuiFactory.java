@@ -57,21 +57,21 @@ public class GroupGuiFactory {
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
         ));
 
-            gui.addElement(new StaticGuiElement('a',
-                    new ItemStack(Material.NAME_TAG),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Name:",
-                    ChatColor.GRAY + group.getName(),
-                    " ",
-                    ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/group rename " + group.getName() + " <name>"
-            ));
+        gui.addElement(new StaticGuiElement('a',
+                new ItemStack(Material.NAME_TAG),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Name:",
+                ChatColor.GRAY + group.getName(),
+                " ",
+                ChatColor.BLUE + "Change Name: " + ChatColor.GRAY + "/group rename " + group.getName() + " <name>"
+        ));
 
-            gui.addElement(new StaticGuiElement('b',
-                    group.getShield(),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",
-                    ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/group banner " + group.getName()
-            ));
+        gui.addElement(new StaticGuiElement('b',
+                group.getShield(),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Group Banner:",
+                ChatColor.BLUE + "Change Banner: " + ChatColor.GRAY + "/group banner " + group.getName()
+        ));
 
         gui.addElement(new StaticGuiElement('c',
                 new ItemStack(Material.PLAYER_HEAD),
@@ -146,8 +146,7 @@ public class GroupGuiFactory {
                 new ItemStack(Material.BLUE_BANNER),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getNations("alphabetically");
-                    Objects.requireNonNull(nGui).show(clicker);
+                    Nations.getInstance().listNations((Player) clicker, 1);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Nations",
@@ -164,17 +163,6 @@ public class GroupGuiFactory {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "All Players",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all players",
                 ChatColor.RED + "Currently under maintenance"
-        ));
-        gui.addElement(new StaticGuiElement('j',
-                new ItemStack(Material.SHIELD),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = NationGuiFactory.createAllGroups("alphabet", 0);
-                    nGui.show(clicker);
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "All Groups",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View all groups"
         ));
         gui.addElement(new StaticGuiElement('k',
                 new ItemStack(Material.BARRIER),
@@ -218,7 +206,7 @@ public class GroupGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     if (click.getType().isLeftClick()) {
-                        var nGui = createMembers(group,"alphabet", slot);
+                        var nGui = createMembers(group, "alphabet", slot);
                         nGui.show(clicker);
                     } else if (click.getType().isRightClick()) {
                         var nGui = createMembers(group, "reverseAlphabet", slot);

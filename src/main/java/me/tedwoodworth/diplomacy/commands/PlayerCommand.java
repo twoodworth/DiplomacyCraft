@@ -69,8 +69,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + playerUsage);
             }
-        }
-        else {
+        } else {
             sender.sendMessage(incorrectUsage + playerUsage);
         }
         return true;
@@ -80,23 +79,26 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length != 0) {
             if (args.length == 1) {
-                return Arrays.asList("info", "list", "setMain", "accounts");
-            } else if (args[0].equalsIgnoreCase("info")) {
+                return Arrays.asList("info", "setMain", "accounts", "setRank");
+            } else if (args[0].equalsIgnoreCase("info") && args.length == 2) {
                 var players = new ArrayList<String>();
                 for (var player : Bukkit.getOnlinePlayers()) {
-                    players.add(player.getName());
+                    if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        players.add(player.getName());
                 }
                 return players;
-            } else if (args[0].equalsIgnoreCase("accounts")) {
+            } else if (args[0].equalsIgnoreCase("accounts") && args.length == 2) {
                 var players = new ArrayList<String>();
                 for (var player : Bukkit.getOnlinePlayers()) {
-                    players.add(player.getName());
+                    if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        players.add(player.getName());
                 }
                 return players;
-            } else if (args[0].equalsIgnoreCase("setMain")) {
+            } else if (args[0].equalsIgnoreCase("setMain") && args.length == 2) {
                 var players = new ArrayList<String>();
                 for (var player : Bukkit.getOnlinePlayers()) {
-                    players.add(player.getName());
+                    if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        players.add(player.getName());
                 }
                 return players;
             }
@@ -110,8 +112,9 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
             return;
         }
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Players " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "1" + ChatColor.YELLOW + " ----");
-        sender.sendMessage(ChatColor.GOLD + "/player list" + ChatColor.WHITE + " Get a list of all nations");
-        sender.sendMessage(ChatColor.GOLD + "/player info" + ChatColor.WHITE + " Get info about a nation");
+        sender.sendMessage(ChatColor.GOLD + "/player list" + ChatColor.WHITE + " Get a list of all players");
+        sender.sendMessage(ChatColor.GOLD + "/player groups" + ChatColor.WHITE + " Get a list of groups");
+        sender.sendMessage(ChatColor.GOLD + "/player info" + ChatColor.WHITE + " Get info about a player");
         sender.sendMessage(ChatColor.GOLD + "/player accounts" + ChatColor.WHITE + " View a player's alts");
         sender.sendMessage(ChatColor.GOLD + "/player setMain" + ChatColor.WHITE + " Set your main account");
     }
@@ -238,13 +241,13 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
         }
         ScoreboardManager.getInstance().updateScoreboards();
     }
-    
+
     private void playerSetRank(CommandSender sender, String strPlayer, String rank) {
         if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
+            sender.sendMessage(ChatColor.DARK_RED + "You must be an admin to use this command.");
             return;
         }
-        
+
         var player = DiplomacyPlayers.getInstance().get(strPlayer);
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Player not found.");

@@ -1,7 +1,6 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.base.Objects;
-import com.google.gson.internal.$Gson$Preconditions;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -72,6 +71,12 @@ public class DiplomacyPlayer {
     public void removeGroup(DiplomacyGroup group) {
         var list = this.getGroups();
         list.remove(group.getGroupID());
+        configSection.set("Groups", list);
+    }
+
+    public void removeGroup(String id) {
+        var list = this.getGroups();
+        list.remove(id);
         configSection.set("Groups", list);
     }
 

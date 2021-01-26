@@ -4,9 +4,7 @@ import de.themoep.inventorygui.GuiElementGroup;
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.events.*;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -271,12 +269,6 @@ public class Guis {
 //        // Create player elements
 //        loadPlayerElements();
 
-
-        // Start update task
-        if (updateTaskID == -1) {
-            updateTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Diplomacy.getInstance(), this::updateGuis, 1L, 3000L);
-        }
-
     }
 
     public void loadNationMenus() {
@@ -328,71 +320,6 @@ public class Guis {
 //            default -> null;
 //        };
 //    }
-
-    public InventoryGui getNations(String type) {
-        switch (type) {
-            case "reverseAlphabetically" -> {
-                if (rAlpNations == null) {
-                    rAlpNations = NationGuiFactory.createNations("reverseAlphabetically");
-                }
-                return rAlpNations;
-            }
-            case "balance" -> {
-                if (balNations == null) {
-                    balNations = NationGuiFactory.createNations("balance");
-                }
-                return balNations;
-            }
-            case "reverseBalance" -> {
-                if (rBalNations == null) {
-                    rBalNations = NationGuiFactory.createNations("reverseBalance");
-                }
-                return rBalNations;
-            }
-            case "territory" -> {
-                if (terNations == null) {
-                    terNations = NationGuiFactory.createNations("territory");
-                }
-                return terNations;
-            }
-            case "reverseTerritory" -> {
-                if (rTerNations == null) {
-                    rTerNations = NationGuiFactory.createNations("reverseTerritory");
-                }
-                return rTerNations;
-            }
-            case "population" -> {
-                if (popNations == null) {
-                    popNations = NationGuiFactory.createNations("population");
-                }
-                return popNations;
-            }
-            case "reversePopulation" -> {
-                if (rPopNations == null) {
-                    rPopNations = NationGuiFactory.createNations("reversePopulation");
-                }
-                return rPopNations;
-            }
-            case "age" -> {
-                if (ageNations == null) {
-                    ageNations = NationGuiFactory.createNations("age");
-                }
-                return ageNations;
-            }
-            case "reverseAge" -> {
-                if (rAgeNations == null) {
-                    rAgeNations = NationGuiFactory.createNations("reverseAge");
-                }
-                return rAgeNations;
-            }
-            default -> { // Includes "alphabetically"
-                if (alpNations == null) {
-                    alpNations = NationGuiFactory.createNations("alphabetically");
-                }
-                return alpNations;
-            }
-        }
-    }
 
 //    public InventoryGui getPlayers(String type) { todo fix playerMenu
 //        switch (type) {
@@ -470,151 +397,6 @@ public class Guis {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Last Updated:",
                 "" + ChatColor.GRAY + zoneTime.getHour() + ":" + formatter.format(zoneTime.getMinute()) + " " + label
         );
-    }
-
-    public void updateGuis() {
-        if (updateDynmap) {
-            OurServerListener.getInstance().requestUpdate();
-            updateDynmap = false;
-        }
-
-        System.out.println("Updating nations...");
-        // Update individual nation Chunks
-        for (var id : new ArrayList<>(updateTerritoryList)) {
-            var nation = Nations.getInstance().get(id);
-            if (nation != null) {
-                updateNation(nation, "territory");
-            }
-            updateTerritoryList.remove(id);
-        }
-
-        // Update individual nation population
-        for (var id : new ArrayList<>(updatePopulationList)) {
-            var nation = Nations.getInstance().get(id);
-            if (nation != null) {
-                updateNation(nation, "population");
-            }
-            updatePopulationList.remove(id);
-        }
-
-        updateTimeElement();
-        alpGroup.clearElements();
-        for (var id : alphabetically) {
-            alpGroup.addElement(nationElements.get(id));
-        }
-        getNations("alphabetically").addElement(getTimeElement());
-
-        rAlpGroup.clearElements();
-        for (int i = alphabetically.size() - 1; i >= 0; i--) {
-            rAlpGroup.addElement(nationElements.get(alphabetically.get(i)));
-        }
-        getNations("reverseAlphabetically").addElement(getTimeElement());
-
-        terGroup.clearElements();
-        for (var id : territory) {
-            terGroup.addElement(nationElements.get(id));
-        }
-        getNations("territory").addElement(getTimeElement());
-
-        rTerGroup.clearElements();
-        for (int i = territory.size() - 1; i >= 0; i--) {
-            rTerGroup.addElement(nationElements.get(territory.get(i)));
-        }
-        getNations("reverseTerritory").addElement(getTimeElement());
-
-        balGroup.clearElements();
-        for (var id : balance) {
-            balGroup.addElement(nationElements.get(id));
-        }
-        getNations("balance").addElement(getTimeElement());
-
-        rBalGroup.clearElements();
-        for (int i = balance.size() - 1; i >= 0; i--) {
-            rBalGroup.addElement(nationElements.get(balance.get(i)));
-        }
-        getNations("reverseBalance").addElement(getTimeElement());
-
-        popGroup.clearElements();
-        for (var id : population) {
-            popGroup.addElement(nationElements.get(id));
-        }
-        getNations("population").addElement(getTimeElement());
-
-        rPopGroup.clearElements();
-        for (int i = population.size() - 1; i >= 0; i--) {
-            rPopGroup.addElement(nationElements.get(population.get(i)));
-        }
-        getNations("reversePopulation").addElement(getTimeElement());
-
-        ageGroup.clearElements();
-        for (var id : age) {
-            ageGroup.addElement(nationElements.get(id));
-        }
-        getNations("age").addElement(getTimeElement());
-
-        rAgeGroup.clearElements();
-        for (int i = age.size() - 1; i >= 0; i--) {
-            rAgeGroup.addElement(nationElements.get(age.get(i)));
-        }
-        getNations("reverseAge").addElement(getTimeElement());
-
-
-//        System.out.println("Updating players..."); todo fix playerMenus
-//        // alphabetically
-//        alpGroupP.clearElements();
-//        for (var id : alphabeticallyP) {
-//            alpGroupP.addElement(playerElements.get(id));
-//        }
-//        getPlayers("alphabetically").addElement(getTimeElement());
-//
-//        // reverse alphabetically
-//        rAlpGroupP.clearElements();
-//        for (int i = alphabeticallyP.size() - 1; i >= 0; i--) {
-//            rAlpGroupP.addElement(playerElements.get(alphabeticallyP.get(i)));
-//        }
-//        getPlayers("reverseAlphabetically").addElement(getTimeElement());
-//
-//        // balance
-//        balGroupP.clearElements();
-//        for (var id : balanceP) {
-//            balGroupP.addElement(playerElements.get(id));
-//        }
-//        getPlayers("balance").addElement(getTimeElement());
-//
-//        // reverse balance
-//        rBalGroupP.clearElements();
-//        for (int i = balanceP.size() - 1; i >= 0; i--) {
-//            rBalGroupP.addElement(playerElements.get(balanceP.get(i)));
-//        }
-//        getPlayers("reverseBalance").addElement(getTimeElement());
-//
-//        // age
-//        ageGroupP.clearElements();
-//        for (var id : ageP) {
-//            ageGroupP.addElement(playerElements.get(id));
-//        }
-//        getPlayers("age").addElement(getTimeElement());
-//
-//        // reverse age
-//        rAgeGroupP.clearElements();
-//        for (int i = ageP.size() - 1; i >= 0; i--) {
-//            rAgeGroupP.addElement(playerElements.get(ageP.get(i)));
-//        }
-//        getPlayers("reverseAge").addElement(getTimeElement());
-//
-//        // nation
-//        nationGroupP.clearElements();
-//        for (var id : nationP) {
-//            nationGroupP.addElement(playerElements.get(id));
-//        }
-//        getPlayers("nation").addElement(getTimeElement());
-//
-//        // reverse nation
-//        rNationGroupP.clearElements();
-//        for (int i = nationP.size() - 1; i >= 0; i--) {
-//            rNationGroupP.addElement(playerElements.get(nationP.get(i)));
-//        }
-//        getPlayers("reverseAge").addElement(getTimeElement());
     }
 
     public StaticGuiElement getNationElement(Nation nation) {
@@ -797,15 +579,13 @@ public class Guis {
                 new ItemStack(Material.PLAYER_HEAD),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = NationGuiFactory.createMembers(nation, (Player) clicker, "alphabet", 0);//TODO change to getMembers
-                    InventoryGui.clearHistory(clicker);
-                    nGui.show(clicker, true);
+                    Nations.getInstance().listMembers((Player) clicker, nation, 1);
                     return true;
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Members",
                 ChatColor.BLUE + "Population: " + ChatColor.GRAY + nation.getMembers().size(),
                 " ",
-                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "view members"
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "List members"
         );
     }
 

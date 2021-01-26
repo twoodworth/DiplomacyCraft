@@ -38,6 +38,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationNeutralUsage = "/nation neutral <nation>";
     private static final String nationEnemyUsage = "/nation enemy <nation>";
     private static final String nationListUsage = "/nation list";
+    private static final String nationMembersUsage = "/nation members <nation> <page>";
+    private static final String nationEnemiesUsage = "/nation enemies <nation> <page>";
+    private static final String nationAlliesUsage = "/nation allies <nation> <page>";
+    private static final String nationGroupsUsage = "/nation groups <nation> <page>";
     private static final String nationInviteUsage = "/nation invite <player>";
     private static final String nationJoinUsage = "/nation join <nation>";
     private static final String nationDeclineJoinUsage = "/nation DeclineJoin <nation>";
@@ -180,8 +184,42 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 1) {
                 nationList(sender);
+            } else if (args.length == 2) {
+                nationListPage(sender, args[1]);
             } else {
                 sender.sendMessage(incorrectUsage + nationListUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("members")) {
+            if (args.length == 2) {
+                nationMembers(sender, args[1]);
+            } else if (args.length == 3) {
+                nationMembersPage(sender, args[1], args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationMembersUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("allies")) {
+            if (args.length == 2) {
+                nationAllyEnemy(sender, args[1], true);
+            } else if (args.length == 3) {
+                nationAllyEnemyPage(sender, args[1], true, args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationAlliesUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("enemies")) {
+            if (args.length == 2) {
+                nationAllyEnemy(sender, args[1], false);
+            } else if (args.length == 3) {
+                nationAllyEnemyPage(sender, args[1], false, args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationEnemiesUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("groups")) {
+            if (args.length == 2) {
+                nationGroups(sender, args[1]);
+            } else if (args.length == 3) {
+                nationGroupsPage(sender, args[1], args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationGroupsUsage);
             }
         } else if (args[0].equalsIgnoreCase("invite")) {
             if (args.length == 2) {
@@ -275,7 +313,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length != 0) {
             if (args.length == 1) {
-                return Arrays.asList(
+                var list = Arrays.asList(
                         "create",
                         "color",
                         "banner",
@@ -296,15 +334,27 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         "kick",
                         "open",
                         "close",
-                        "outlaw");
+                        "outlaw",
+                        "groups",
+                        "allies",
+                        "members",
+                        "enemies");
+                var list1 = new ArrayList<String>();
+                for (var val : list) {
+                    if (val.toLowerCase().contains(args[0].toLowerCase()))
+                        list1.add(val);
+                }
+                return list1;
             } else if (args[0].equalsIgnoreCase("create")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("color")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("info")) {
                 List<String> nations = new ArrayList<>();
-                for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
+                for (var nation : Nations.getInstance().getNations()) {
+                    if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        nations.add(nation.getName());
+                }
                 return nations;
             } else if (args[0].equalsIgnoreCase("rename")) {
                 return null;
@@ -313,7 +363,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("surrender")) {
                 List<String> nations = new ArrayList<>();
                 for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
+                    if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        nations.add(nation.getName());
                 return nations;
             } else if (args[0].equalsIgnoreCase("disband")) {
                 return null;
@@ -330,7 +381,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 } else if (args.length == 3) {
                     List<String> nations = new ArrayList<>();
                     for (var nation : Nations.getInstance().getNations())
-                        nations.add(nation.getName());
+                        if (nation.getName().toLowerCase().contains(args[2].toLowerCase()))
+                            nations.add(nation.getName());
                     return nations;
                 }
             } else if (args[0].equalsIgnoreCase("decline")) {
@@ -341,21 +393,38 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 } else if (args.length == 3) {
                     List<String> nations = new ArrayList<>();
                     for (var nation : Nations.getInstance().getNations())
-                        nations.add(nation.getName());
+                        if (nation.getName().toLowerCase().contains(args[2].toLowerCase()))
+                            nations.add(nation.getName());
                     return nations;
                 }
             } else if (args[0].equalsIgnoreCase("neutral")) {
-                List<String> nations = new ArrayList<>();
-                for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
-                return nations;
+                if (args.length == 2) {
+                    List<String> nations = new ArrayList<>();
+                    for (var nation : Nations.getInstance().getNations())
+                        if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            nations.add(nation.getName());
+                    return nations;
+                }
             } else if (args[0].equalsIgnoreCase("enemy")) {
-                List<String> nations = new ArrayList<>();
-                for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
-                return nations;
+                if (args.length == 2) {
+                    List<String> nations = new ArrayList<>();
+                    for (var nation : Nations.getInstance().getNations())
+                        if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            nations.add(nation.getName());
+                    return nations;
+                }
             } else if (args[0].equalsIgnoreCase("list")) {
                 return null;
+            } else if (args[0].equalsIgnoreCase("allies") || args[0].equalsIgnoreCase("enemies") || args[0].equalsIgnoreCase("groups") || args[0].equalsIgnoreCase("members")) {
+                if (args.length == 2) {
+                    List<String> nations = new ArrayList<>();
+                    for (var nation : Nations.getInstance().getNations())
+                        if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            nations.add(nation.getName());
+                    return nations;
+                } else {
+                    return null;
+                }
             } else if (args[0].equalsIgnoreCase("invite")) {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
@@ -363,7 +432,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
                         var nation = Nations.getInstance().get(diplomacyPlayer);
                         if (nation == null) {
-                            players.add(player.getName());
+                            if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                players.add(player.getName());
                         }
                     }
                     return players;
@@ -371,32 +441,41 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     return null;
                 }
             } else if (args[0].equalsIgnoreCase("join")) {
-                List<String> nations = new ArrayList<>();
-                for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
-                return nations;
+                if (args.length == 2) {
+                    List<String> nations = new ArrayList<>();
+                    for (var nation : Nations.getInstance().getNations())
+                        if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            nations.add(nation.getName());
+                    return nations;
+                }
             } else if (args[0].equalsIgnoreCase("declineJoin")) {
-                List<String> nations = new ArrayList<>();
-                for (var nation : Nations.getInstance().getNations())
-                    nations.add(nation.getName());
-                return nations;
+                if (args.length == 2) {
+                    List<String> nations = new ArrayList<>();
+                    for (var nation : Nations.getInstance().getNations())
+                        if (nation.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            nations.add(nation.getName());
+                    return nations;
+                }
             } else if (args[0].equalsIgnoreCase("leave")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("kick")) {
-                List<String> players = new ArrayList<>();
-                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-                var nation = Nations.getInstance().get(diplomacyPlayer);
-                if (nation != null) {
-                    for (var player : nation.getMembers()) {
-                        var permissions = nation.getMemberClass(player).getPermissions();
-                        if (permissions.get("CanBeKicked")) {
-                            players.add(player.getOfflinePlayer().getName());
+                if (args.length == 2) {
+                    List<String> players = new ArrayList<>();
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
+                    var nation = Nations.getInstance().get(diplomacyPlayer);
+                    if (nation != null) {
+                        for (var player : nation.getMembers()) {
+                            var permissions = nation.getMemberClass(player).getPermissions();
+                            if (permissions.get("CanBeKicked")) {
+                                if (player.getOfflinePlayer().getName().toLowerCase().contains(args[1].toLowerCase()))
+                                    players.add(player.getOfflinePlayer().getName());
+                            }
                         }
+                    } else {
+                        return null;
                     }
-                } else {
-                    return null;
+                    return players;
                 }
-                return players;
             } else if (args[0].equalsIgnoreCase("open")) {
                 return null;
             } else if (args[0].equalsIgnoreCase("close")) {
@@ -404,24 +483,26 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else if (args[0].equalsIgnoreCase("outlaw")) {
                 if (args.length == 2) {
                     return Arrays.asList("add", "remove");
-                } else if (args[1].equalsIgnoreCase("add")) {
+                } else if (args[1].equalsIgnoreCase("add") && args.length == 3) {
                     var players = new ArrayList<String>();
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     if (nation != null) {
                         for (var player : Bukkit.getOnlinePlayers()) {
-                            players.add(player.getName());
+                            if (player.getName().toLowerCase().contains(args[2].toLowerCase()))
+                                players.add(player.getName());
                         }
                         return players;
                     }
                     return null;
-                } else if (args[1].equalsIgnoreCase("remove")) {
+                } else if (args[1].equalsIgnoreCase("remove") && args.length == 3) {
                     var players = new ArrayList<String>();
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     if (nation != null) {
                         for (var player : Bukkit.getOnlinePlayers()) {
-                            players.add(player.getName());
+                            if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                players.add(player.getName());
                         }
                         return players;
                     }
@@ -443,6 +524,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "/nation rename" + ChatColor.WHITE + " Rename a nation");
         sender.sendMessage(ChatColor.GOLD + "/nation surrender" + ChatColor.WHITE + " Surrender your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation disband" + ChatColor.WHITE + " Disband your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation members" + ChatColor.WHITE + " View nation members");
         sender.sendMessage(ChatColor.GOLD + "/nation invite" + ChatColor.WHITE + " Invite a player to your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation join" + ChatColor.WHITE + " Join a nation");
         sender.sendMessage(ChatColor.GOLD + "/nation kick" + ChatColor.WHITE + " Kick a player from your nation");
@@ -475,6 +557,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "3" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
         sender.sendMessage(ChatColor.GOLD + "/nation outlaw" + ChatColor.WHITE + " Add/remove outlaws");
         sender.sendMessage(ChatColor.GOLD + "/nation color" + ChatColor.WHITE + " Set your nation's map color");
+        sender.sendMessage(ChatColor.GOLD + "/nation allies" + ChatColor.WHITE + " List a nation's allies");
+        sender.sendMessage(ChatColor.GOLD + "/nation enemies" + ChatColor.WHITE + " List a nation's enemies");
     }
 
     private void nationInfo(CommandSender sender, String strNation) {
@@ -1448,8 +1532,30 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var nGui = Guis.getInstance().getNations("alphabetically");
-        nGui.show((Player) sender);
+
+        Nations.getInstance().listNations((Player) sender, 1);
+    }
+
+    private void nationListPage(CommandSender sender, String strPage) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        int page;
+        try {
+            page = Integer.parseInt(strPage);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be an integer.");
+            return;
+        }
+
+        if (page < 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be greater than 0.");
+            return;
+        }
+
+        Nations.getInstance().listNations((Player) sender, page);
     }
 
     private void nationInvite(CommandSender sender, String strInvited) {
@@ -1616,6 +1722,143 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.AQUA + "You have joined " + ChatColor.GREEN + nation.getName() + ChatColor.AQUA + ".");
 
 
+    }
+
+    private void nationAllyEnemy(CommandSender sender, String strNation, boolean ally) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        if (ally) {
+            Nations.getInstance().listAllyNations((Player) sender, nation, 1);
+        } else {
+            Nations.getInstance().listEnemyNations((Player) sender, nation, 1);
+        }
+    }
+
+    private void nationAllyEnemyPage(CommandSender sender, String strNation, boolean ally, String strPage) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        int page;
+        try {
+            page = Integer.parseInt(strPage);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be an integer.");
+            return;
+        }
+
+        if (page < 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be greater than 0.");
+            return;
+        }
+
+        if (ally) {
+            Nations.getInstance().listAllyNations((Player) sender, nation, page);
+        } else {
+            Nations.getInstance().listEnemyNations((Player) sender, nation, page);
+        }
+    }
+
+    private void nationGroups(CommandSender sender, String strNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        Nations.getInstance().listGroups(nation, (Player) sender, 1);
+    }
+
+    private void nationGroupsPage(CommandSender sender, String strNation, String strPage) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        int page;
+        try {
+            page = Integer.parseInt(strPage);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be an integer.");
+            return;
+        }
+
+        if (page < 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be greater than 0.");
+            return;
+        }
+
+        Nations.getInstance().listGroups(nation, (Player) sender, page);
+    }
+
+    private void nationMembers(CommandSender sender, String strNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        Nations.getInstance().listMembers((Player) sender, nation, 1);
+    }
+
+    private void nationMembersPage(CommandSender sender, String strNation, String strPage) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        int page;
+        try {
+            page = Integer.parseInt(strPage);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be an integer.");
+            return;
+        }
+
+        if (page < 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be greater than 0.");
+            return;
+        }
+
+        Nations.getInstance().listMembers((Player) sender, nation, page);
     }
 
     private void nationDeclineJoin(CommandSender sender, String strNation) {

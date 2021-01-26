@@ -4,8 +4,6 @@ import me.tedwoodworth.diplomacy.chat.ChatCommand;
 import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
-import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
-import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -66,8 +64,6 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded tool events");
         LivesManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded life events");
-        OurServerListener.getInstance().registerEvents();
-        System.out.println("[Diplomacy] Loaded dynmap events");
         Nations.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded nation events");
         ChatManager.getInstance().registerEvents();
@@ -84,8 +80,6 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded Gui events");
         Guis.getInstance().loadNationMenus();
         System.out.println("[Diplomacy] Loaded nation menus");
-        DiplomacyDynmap.getInstance().load();
-        System.out.println("[Diplomacy] Loaded Diplomacy-dynmap");
         LivesManager.getInstance().startScheduler();
         ChatNotifications.getInstance().startScheduler();
         System.out.println("[Diplomacy] Loaded schedulers");

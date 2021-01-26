@@ -4,7 +4,6 @@ import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.groups.GroupGuiFactory;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
@@ -29,7 +28,6 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     private static final String groupRenameUsage = "/group rename <group> <name>";
     private static final String groupSurrenderUsage = "/group surrender <group> <nation>";
     private static final String groupDisbandUsage = "/group disband <group>";
-    private static final String groupListUsage = "/group list";
     private static final String groupAddUsage = "/group add <player> <group>";
     private static final String groupLeaveUsage = "/group leave <group>";
     private static final String groupKickUsage = "/group kick <player> <group>";
@@ -93,12 +91,6 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + groupDisbandUsage);
             }
-        } else if (args[0].equalsIgnoreCase("list")) {
-            if (args.length == 1) {
-                groupList(sender);
-            } else {
-                sender.sendMessage(incorrectUsage + groupListUsage);
-            }
         } else if (args[0].equalsIgnoreCase("add")) {
             if (args.length == 3) {
                 groupAdd(sender, args[1], args[2]);
@@ -157,13 +149,12 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length != 0) {
             if (args.length == 1) {
-                return Arrays.asList(
+                var list = Arrays.asList(
                         "create",
                         "info",
                         "rename",
                         "surrender",
                         "disband",
-                        "list",
                         "add",
                         "leave",
                         "kick",
@@ -172,45 +163,49 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                         "unclaim",
                         "promote",
                         "demote");
+                var list1 = new ArrayList<String>();
+                for (var val : list) {
+                    if (val.toLowerCase().contains(args[0].toLowerCase()))
+                        list1.add(val);
+                }
+                return list1;
             } else if (args[0].equalsIgnoreCase("create")) {
                 return null;
-            } else if (args[0].equalsIgnoreCase("info")) {
+            } else if (args[0].equalsIgnoreCase("info") && args.length == 2) {
                 List<String> groups = new ArrayList<>();
                 for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                    groups.add(group.getName());
+                    if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                        groups.add(group.getName());
                 }
                 return groups;
-            } else if (args[0].equalsIgnoreCase("rename")) {
-                if (args.length == 2) {
-                    List<String> groups = new ArrayList<>();
-                    for (var group : DiplomacyGroups.getInstance().getGroups()) {
+            } else if (args[0].equalsIgnoreCase("rename") && args.length == 2) {
+                List<String> groups = new ArrayList<>();
+                for (var group : DiplomacyGroups.getInstance().getGroups()) {
+                    if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
                         groups.add(group.getName());
-                    }
-                    return groups;
-                } else {
-                    return null;
                 }
-            } else if (args[0].equalsIgnoreCase("banner")) {
-                if (args.length == 2) {
-                    List<String> groups = new ArrayList<>();
-                    for (var group : DiplomacyGroups.getInstance().getGroups()) {
+                return groups;
+            } else if (args[0].equalsIgnoreCase("banner") && args.length == 2) {
+                List<String> groups = new ArrayList<>();
+                for (var group : DiplomacyGroups.getInstance().getGroups()) {
+                    if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
                         groups.add(group.getName());
-                    }
-                    return groups;
-                } else {
-                    return null;
                 }
+                return groups;
             } else if (args[0].equalsIgnoreCase("surrender")) {
                 if (args.length == 2) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            groups.add(group.getName());
                     }
                     return groups;
                 } else if (args.length == 3) {
                     List<String> nations = new ArrayList<>();
-                    for (var nation : Nations.getInstance().getNations())
-                        nations.add(nation.getName());
+                    for (var nation : Nations.getInstance().getNations()) {
+                        if (nation.getName().toLowerCase().contains(args[2].toLowerCase()))
+                            nations.add(nation.getName());
+                    }
                     return nations;
                 } else {
                     return null;
@@ -219,7 +214,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            groups.add(group.getName());
                     }
                     return groups;
                 } else {
@@ -229,7 +225,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            groups.add(group.getName());
                     }
                     return groups;
                 } else {
@@ -239,14 +236,16 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
                     for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                        if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
                         if (!(group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1])))) {
-                            groups.add(group.getName());
+                            if (group.getName().toLowerCase().contains(args[2].toLowerCase()))
+                                groups.add(group.getName());
                         }
                     }
                     return groups;
@@ -257,7 +256,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
                         if (group.getMembers().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()))) {
-                            groups.add(group.getName());
+                            if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                groups.add(group.getName());
                         }
                     }
                     return groups;
@@ -268,13 +268,16 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
                     for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                        if (player.getName().toLowerCase().contains(args[2].toLowerCase()))
+                            players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
-                        groups.add(group.getName());
+                        var name = group.getName();
+                        if (name.contains(args[2]))
+                            groups.add(group.getName());
                     }
                     return groups;
                 } else {
@@ -285,7 +288,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                     List<String> groups = new ArrayList<>();
                     for (var group : DiplomacyGroups.getInstance().getGroups()) {
                         if (group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()))) {
-                            groups.add(group.getName());
+                            if (group.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                groups.add(group.getName());
                         }
                     }
                     return groups;
@@ -298,7 +302,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
                     for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                        if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -307,7 +312,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                         var canPromote = group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()));
                         var isMember = DiplomacyPlayers.getInstance().get(args[1]) != null && group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1]));
                         if (canPromote && isMember) {
-                            groups.add(group.getName());
+                            if (group.getName().toLowerCase().contains(args[2].toLowerCase()))
+                                groups.add(group.getName());
                         }
                     }
                     return groups;
@@ -318,7 +324,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     List<String> players = new ArrayList<>();
                     for (var player : Bukkit.getOnlinePlayers()) {
-                        players.add(player.getName());
+                        if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            players.add(player.getName());
                     }
                     return players;
                 } else if (args.length == 3) {
@@ -327,7 +334,8 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                         var canDemote = group.getLeaders().contains(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()));
                         var isMember = DiplomacyPlayers.getInstance().get(args[1]) != null && group.getMembers().contains(DiplomacyPlayers.getInstance().get(args[1]));
                         if (canDemote && isMember) {
-                            groups.add(group.getName());
+                            if (group.getName().toLowerCase().contains(args[2].toLowerCase()))
+                                groups.add(group.getName());
                         }
                     }
                     return groups;
@@ -664,17 +672,6 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
             }
         }
         DiplomacyGroups.getInstance().removeGroup(group);
-    }
-
-    private void groupList(CommandSender sender) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        sender.sendMessage(ChatColor.GOLD + "Loading group list...");
-        var nGui = NationGuiFactory.createAllGroups("alphabet", 0);
-        nGui.show((Player) sender);
     }
 
     private void groupAdd(CommandSender sender, String strName, String strGroup) {
