@@ -39,6 +39,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationEnemyUsage = "/nation enemy <nation>";
     private static final String nationListUsage = "/nation list";
     private static final String nationMembersUsage = "/nation members <nation> <page>";
+    private static final String nationOutlawsUsage = "/nation outlaws <nation> <page>";
     private static final String nationEnemiesUsage = "/nation enemies <nation> <page>";
     private static final String nationAlliesUsage = "/nation allies <nation> <page>";
     private static final String nationGroupsUsage = "/nation groups <nation> <page>";
@@ -56,6 +57,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
     private static final String nationDepositUsage = "/nation deposit <amount>";
     private static final String nationWithdrawUsage = "/nation withdraw <amount>";
+    private static final String setClassUsage = "/nation setClass <player> <class>";
     private static final String nationColorUsage = "/nation color <0-255 (Red)> <0-255 (Green)> <0-255 (Blue)>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
@@ -143,6 +145,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + nationDisbandUsage);
             }
+        } else if (args[0].equalsIgnoreCase("setClass")) {
+            if (args.length == 3) {
+                setClass(sender, args[1], args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + setClassUsage);
+            }
         } else if (args[0].equalsIgnoreCase("ally")) {
             if (args.length == 2) {
                 nationAlly(sender, args[1]);
@@ -196,6 +204,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 nationMembersPage(sender, args[1], args[2]);
             } else {
                 sender.sendMessage(incorrectUsage + nationMembersUsage);
+            }
+        } else if (args[0].equalsIgnoreCase("outlaws")) {
+            if (args.length == 2) {
+                nationOutlaws(sender, args[1]);
+            } else if (args.length == 3) {
+                nationOutlawsPage(sender, args[1], args[2]);
+            } else {
+                sender.sendMessage(incorrectUsage + nationOutlawsUsage);
             }
         } else if (args[0].equalsIgnoreCase("allies")) {
             if (args.length == 2) {
@@ -338,6 +354,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         "groups",
                         "allies",
                         "members",
+                        "setClass",
+                        "outlaws",
                         "enemies");
                 var list1 = new ArrayList<String>();
                 for (var val : list) {
@@ -415,7 +433,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 }
             } else if (args[0].equalsIgnoreCase("list")) {
                 return null;
-            } else if (args[0].equalsIgnoreCase("allies") || args[0].equalsIgnoreCase("enemies") || args[0].equalsIgnoreCase("groups") || args[0].equalsIgnoreCase("members")) {
+            } else if (args[0].equalsIgnoreCase("allies")
+                    || args[0].equalsIgnoreCase("enemies")
+                    || args[0].equalsIgnoreCase("groups")
+                    || args[0].equalsIgnoreCase("members")
+                    || args[0].equalsIgnoreCase("outlaws")) {
                 if (args.length == 2) {
                     List<String> nations = new ArrayList<>();
                     for (var nation : Nations.getInstance().getNations())
@@ -437,6 +459,26 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                         }
                     }
                     return players;
+                } else {
+                    return null;
+                }
+            } else if (args[0].equalsIgnoreCase("setClass")) {
+                if (args.length == 2) {
+                    List<String> players = new ArrayList<>();
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            players.add(player.getName());
+                    }
+                    return players;
+                } else if (args.length == 3) {
+                    var nation = Nations.getInstance().get(DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId()));
+                    if (nation == null) return null;
+                    List<String> classes = new ArrayList<>();
+                    for (var nationClass : nation.getClasses()) {
+                        if (nationClass.getName().toLowerCase().contains(args[2].toLowerCase()))
+                            classes.add(nationClass.getName());
+                    }
+                    return classes;
                 } else {
                     return null;
                 }
@@ -523,11 +565,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "/nation create" + ChatColor.WHITE + " Create a nation");
         sender.sendMessage(ChatColor.GOLD + "/nation rename" + ChatColor.WHITE + " Rename a nation");
         sender.sendMessage(ChatColor.GOLD + "/nation surrender" + ChatColor.WHITE + " Surrender your nation");
-        sender.sendMessage(ChatColor.GOLD + "/nation disband" + ChatColor.WHITE + " Disband your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation members" + ChatColor.WHITE + " View nation members");
         sender.sendMessage(ChatColor.GOLD + "/nation invite" + ChatColor.WHITE + " Invite a player to your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation join" + ChatColor.WHITE + " Join a nation");
-        sender.sendMessage(ChatColor.GOLD + "/nation kick" + ChatColor.WHITE + " Kick a player from your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation leave" + ChatColor.WHITE + " Leave your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation setClass" + ChatColor.WHITE + " Set a player's class");
         sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 2 " + ChatColor.GOLD + "to read the next page.");
     }
 
@@ -537,7 +579,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "2" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
-        sender.sendMessage(ChatColor.GOLD + "/nation leave" + ChatColor.WHITE + " Leave your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation kick" + ChatColor.WHITE + " Kick a player from your nation");
+        sender.sendMessage(ChatColor.GOLD + "/nation disband" + ChatColor.WHITE + " Disband your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation deposit" + ChatColor.WHITE + " Deposit into your nation's balance");
         sender.sendMessage(ChatColor.GOLD + "/nation withdraw" + ChatColor.WHITE + " Withdraw from your nation's balance");
         sender.sendMessage(ChatColor.GOLD + "/nation ally" + ChatColor.WHITE + " Become allies with another nation");
@@ -545,7 +588,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "/nation enemy" + ChatColor.WHITE + " Become enemies with another nation");
         sender.sendMessage(ChatColor.GOLD + "/nation open" + ChatColor.WHITE + " Open your nation's borders");
         sender.sendMessage(ChatColor.GOLD + "/nation close" + ChatColor.WHITE + " Close your nation's borders");
-        sender.sendMessage(ChatColor.GOLD + "/nation banner" + ChatColor.WHITE + " Set your nation's banner");
         sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 3 " + ChatColor.GOLD + "to read the next page.");
     }
 
@@ -556,9 +598,11 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "3" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
         sender.sendMessage(ChatColor.GOLD + "/nation outlaw" + ChatColor.WHITE + " Add/remove outlaws");
+        sender.sendMessage(ChatColor.GOLD + "/nation outlaws" + ChatColor.WHITE + " View nation outlaws");
         sender.sendMessage(ChatColor.GOLD + "/nation color" + ChatColor.WHITE + " Set your nation's map color");
         sender.sendMessage(ChatColor.GOLD + "/nation allies" + ChatColor.WHITE + " List a nation's allies");
         sender.sendMessage(ChatColor.GOLD + "/nation enemies" + ChatColor.WHITE + " List a nation's enemies");
+        sender.sendMessage(ChatColor.GOLD + "/nation banner" + ChatColor.WHITE + " Set your nation's banner");
     }
 
     private void nationInfo(CommandSender sender, String strNation) {
@@ -1861,6 +1905,49 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         Nations.getInstance().listMembers((Player) sender, nation, page);
     }
 
+    private void nationOutlaws(CommandSender sender, String strNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        Nations.getInstance().listOutlaws((Player) sender, nation, 1);
+    }
+
+    private void nationOutlawsPage(CommandSender sender, String strNation, String strPage) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var nation = Nations.getInstance().get(strNation);
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
+            return;
+        }
+
+        int page;
+        try {
+            page = Integer.parseInt(strPage);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be an integer.");
+            return;
+        }
+
+        if (page < 1) {
+            sender.sendMessage(ChatColor.DARK_RED + "Page must be greater than 0.");
+            return;
+        }
+
+        Nations.getInstance().listOutlaws((Player) sender, nation, page);
+    }
+
     private void nationDeclineJoin(CommandSender sender, String strNation) {
 
         if (!(sender instanceof Player)) {
@@ -1905,6 +1992,84 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(ChatColor.AQUA + "You have declined the invite from " + ChatColor.BLUE + nation.getName() + ChatColor.AQUA + ".");
+    }
+
+    private void setClass(CommandSender sender, String strOtherPlayer, String strClass) {
+
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
+            return;
+        }
+
+        var player = (Player) sender;
+        var uuid = (player).getUniqueId();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
+        var nation = Nations.getInstance().get(diplomacyPlayer);
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not belong to a nation.");
+            return;
+        }
+
+        var otherPlayer = DiplomacyPlayers.getInstance().get(strOtherPlayer);
+        if (otherPlayer == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Player not found.");
+            return;
+        }
+
+        var otherNation = Nations.getInstance().get(otherPlayer);
+        if (otherNation == null) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getOfflinePlayer().getName() + " does not belong to a nation.");
+            return;
+        }
+
+        if (!Objects.equals(otherNation, nation)) {
+            sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getOfflinePlayer().getName() + " does not belong to your nation.");
+            return;
+        }
+
+        var nClass = nation.getNationClass(strClass);
+        if (nClass == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "Unknown class.");
+            return;
+        }
+
+        var otherClass = nation.getMemberClass(otherPlayer);
+        var otherID = Integer.parseInt(otherClass.getClassID());
+        var pClass = nation.getMemberClass(diplomacyPlayer);
+
+        var perms = pClass.getPermissions();
+        if (!perms.get("CanRemoveFromClass" + (otherID + 1))) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to remove a player from the class of \"" + otherClass.getName() + "\".");
+            return;
+        }
+
+        var nID = Integer.parseInt(nClass.getClassID());
+        if (!perms.get("CanSetClassTo" + (nID + 1))) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to set a player's class to \"" + nClass.getName() + "\".");
+            return;
+        }
+
+        var members = nation.getMembers();
+        if (otherID == 8) {
+            var leaders = 0;
+            for (var member : members) {
+                if (nation.getMemberClass(member).getClassID().equals("8")) leaders++;
+                if (leaders > 1) break;
+            }
+            if (leaders == 1) {
+                sender.sendMessage(ChatColor.DARK_RED + otherPlayer.getOfflinePlayer().getName() + " could not be demoted because there must be at least one member with the class of \"" + otherClass.getName() + "\"");
+                return;
+            }
+        }
+
+        nation.setMemberClass(otherPlayer, nClass);
+        for (var member : members) {
+            var testPlayer = member.getOfflinePlayer();
+            if (testPlayer.getPlayer() != null) {
+                testPlayer.getPlayer().sendMessage(ChatColor.AQUA + otherPlayer.getOfflinePlayer().getName() + "'s class has been set to " + nClass.getName());
+            }
+        }
     }
 
     private void nationLeave(CommandSender sender) {

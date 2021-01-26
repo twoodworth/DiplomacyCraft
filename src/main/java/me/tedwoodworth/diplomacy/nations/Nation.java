@@ -236,16 +236,6 @@ public class Nation {
         var uuid = diplomacyPlayer.getUUID();
         var classID = nationClass.getClassID();
         configSection.set("Members." + uuid.toString(), classID);
-        for (var otherDiplomacyPlayer : this.getMembers()) {
-            var player = otherDiplomacyPlayer.getOfflinePlayer();
-            if (player.isOnline()) {
-                if (Objects.equals(otherDiplomacyPlayer, diplomacyPlayer)) {
-                    player.getPlayer().sendMessage(ChatColor.AQUA + "Your class has been set to " + nationClass.getName() + ".");
-                } else {
-                    player.getPlayer().sendMessage(ChatColor.GREEN + diplomacyPlayer.getOfflinePlayer().getName() + ChatColor.AQUA + " had their class set to " + nationClass.getName() + ".");
-                }
-            }
-        }
     }
 
     @Nullable
@@ -359,9 +349,19 @@ public class Nation {
     }
 
     @Nullable
-    public NationClass getNationClass(String classID) {
+    public NationClass getNationClassFromID(String classID) {
         for (var nationClass : this.getClasses()) {
             if (nationClass.getClassID().equals(classID)) {
+                return nationClass;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public NationClass getNationClass(String name) {
+        for (var nationClass : this.getClasses()) {
+            if (nationClass.getName().equalsIgnoreCase(name)) {
                 return nationClass;
             }
         }

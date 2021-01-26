@@ -71,12 +71,18 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length != 0) {
             if (args.length == 1) {
-                return Arrays.asList(
+                var list = Arrays.asList(
                         "rename",
                         "prefix",
                         "clearPrefix",
                         "tax"
                 );
+                var list1 = new ArrayList<String>();
+                for (var val : list) {
+                    if (val.toLowerCase().contains(args[0].toLowerCase()))
+                        list1.add(val);
+                }
+                return list1;
             } else if (args[0].equalsIgnoreCase("rename")) {
                 if (args.length == 2) {
                     var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
@@ -85,7 +91,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
                         var list = new ArrayList<String>();
                         var classes = nation.getClasses();
                         for (var nationClass : classes) {
-                            list.add(nationClass.getName());
+                            if (nationClass.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                list.add(nationClass.getName());
                         }
                         return list;
                     }
@@ -99,7 +106,8 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
                         var list = new ArrayList<String>();
                         var classes = nation.getClasses();
                         for (var nationClass : classes) {
-                            list.add(nationClass.getName());
+                            if (nationClass.getName().toLowerCase().contains(args[1].toLowerCase()))
+                                list.add(nationClass.getName());
                         }
                         return list;
                     }

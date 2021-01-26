@@ -338,13 +338,18 @@ public class Nations {
                     .bold(true)
                     .create();
 
-            var rank = otherNation.getMemberClass(testPlayer).getName();
+
+            var rank = otherNation.getMemberClass(testPlayer).getPrefix();
             var playerText = new ComponentBuilder();
+            if (rank != null && !rank.equals("")) {
+                playerText
+                        .append(" " + rank)
+                        .color(net.md_5.bungee.api.ChatColor.GOLD)
+                        .bold(true);
+            }
+
             playerText
-                    .append(rank)
-                    .color(net.md_5.bungee.api.ChatColor.GOLD)
-                    .bold(true)
-                    .append(" " + testPlayer.getOfflinePlayer().getName())
+                    .append(testPlayer.getOfflinePlayer().getName())
                     .color(net.md_5.bungee.api.ChatColor.GOLD)
                     .bold(false)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/player info " + testPlayer.getOfflinePlayer().getName()))
@@ -364,6 +369,65 @@ public class Nations {
                     .color(net.md_5.bungee.api.ChatColor.GREEN)
                     .bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/nation members " + otherNation.getName() + " " + (page + 1)))
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(nextText)));
+
+        }
+
+        player.spigot().sendMessage(message.create());
+    }
+
+
+    public void listOutlaws(Player player, Nation otherNation, int page) {
+        var outlaws = new ArrayList<>(otherNation.getOutlaws());
+        if (outlaws.size() == 0) {
+            player.sendMessage(ChatColor.RED + "This nation does not have any outlaws.");
+            return;
+        }
+        var pages = outlaws.size() / 10;
+        if (outlaws.size() % 10 != 0) pages++;
+        var message = new ComponentBuilder();
+        message.append("\n" + otherNation.getName() + " Member List (page " + page + "/" + pages + ")")
+                .color(net.md_5.bungee.api.ChatColor.GREEN)
+                .bold(true);
+        for (int i = (page - 1) * 10; i < page * 10; i++) {
+            if (i >= outlaws.size()) break;
+            var nL = "\n";
+            if (i < 9) nL += "0";
+            message.append(nL + (i + 1) + " ")
+                    .color(net.md_5.bungee.api.ChatColor.GREEN)
+                    .bold(true);
+
+            var testPlayer = Bukkit.getOfflinePlayer(outlaws.get(i));
+
+
+            var hoverText = new ComponentBuilder()
+                    .append("[View Player Info]")
+                    .color(net.md_5.bungee.api.ChatColor.RED)
+                    .bold(true)
+                    .create();
+
+            var playerText = new ComponentBuilder();
+            playerText
+                    .append(" " + testPlayer.getName())
+                    .color(net.md_5.bungee.api.ChatColor.RED)
+                    .bold(false)
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/player info " + testPlayer.getName()))
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverText)));
+
+            message.append(playerText.create());
+        }
+
+        if (page < pages) {
+            var nextText = new ComponentBuilder()
+                    .append("[View Page " + (page + 1) + "]")
+                    .color(net.md_5.bungee.api.ChatColor.GREEN)
+                    .bold(true)
+                    .create();
+
+            message.append("\nGo to page " + (page + 1))
+                    .color(net.md_5.bungee.api.ChatColor.GREEN)
+                    .bold(true)
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/nation outlaws " + otherNation.getName() + " " + (page + 1)))
                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(nextText)));
 
         }

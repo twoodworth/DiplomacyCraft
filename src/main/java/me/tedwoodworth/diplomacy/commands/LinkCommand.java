@@ -85,9 +85,6 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 .append("\n")
                 .append("\n");
 
-        mapMessage.append("            North           ")
-                .color(net.md_5.bungee.api.ChatColor.RED)
-                .append("\n");
         for (int i = 0; i < 13; i++) {
             mapMessage.append("  ");
             for (int j = 0; j < 13; j++) {
@@ -171,6 +168,24 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 mapMessage.append(mapComponent.create());
                 chunkZ++;
             }
+            if (i == 0) {
+                mapMessage
+                        .append("  N")
+                        .color(net.md_5.bungee.api.ChatColor.RED);
+            } else if (i == 1) {
+                mapMessage.append(" W")
+                        .color(net.md_5.bungee.api.ChatColor.WHITE)
+                        .append("+")
+                        .bold(false)
+                        .color(net.md_5.bungee.api.ChatColor.GRAY)
+                        .append("E")
+                        .bold(true)
+                        .color(net.md_5.bungee.api.ChatColor.WHITE);
+            } else if (i == 2) {
+                mapMessage.append("  S")
+                        .color(net.md_5.bungee.api.ChatColor.WHITE);
+            }
+
             if (i < 12)
                 mapMessage.append("\n");
             chunkX++;
