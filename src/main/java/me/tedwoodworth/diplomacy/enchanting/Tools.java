@@ -4464,13 +4464,13 @@ public class Tools {
 
             if (last instanceof EntityDamageByEntityEvent) {
                 var killer = ((EntityDamageByEntityEvent) entity.getLastDamageCause()).getDamager();
-                if (killer == null || !(killer instanceof Player || (killer instanceof Tameable && ((Tameable) killer).isTamed()) || killer instanceof Projectile))
+                if ((killer == null || !(killer instanceof Player || (killer instanceof Tameable && ((Tameable) killer).isTamed()) || killer instanceof Projectile)) && !(entity instanceof HumanEntity))
                     return;
                 if (killer instanceof Projectile) {
                     var projectile = ((Projectile) killer);
                     var shooter = projectile.getShooter();
                     if (shooter instanceof Player) killer = ((Player) shooter);
-                    else return;
+                    else if (!(entity instanceof HumanEntity)) return;
                 }
             } //todo allow all deaths to drop in ecology update
 
@@ -5044,7 +5044,7 @@ public class Tools {
             }
 
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
-                if (entity != null) entity.remove();
+                if (entity != null && !(entity instanceof Player)) entity.remove();
             }, 40L);
         }
 
