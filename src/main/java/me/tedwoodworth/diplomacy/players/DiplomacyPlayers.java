@@ -41,7 +41,6 @@ public class DiplomacyPlayers {
     private final Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
     private final YamlConfiguration config;
     private ItemStack guideBook;
-    ArrayList<Material> badItems = new ArrayList<>();
 
     public static DiplomacyPlayers getInstance() {
         if (instance == null) {
@@ -52,12 +51,6 @@ public class DiplomacyPlayers {
 
     private DiplomacyPlayers() {
         config = YamlConfiguration.loadConfiguration(diplomacyPlayerConfigFile);
-
-        badItems.add(Material.FLINT_AND_STEEL);
-        badItems.add(Material.FIRE_CHARGE);
-        badItems.add(Material.END_CRYSTAL);
-        badItems.add(Material.PAINTING);
-        badItems.add(Material.ITEM_FRAME);
         save();
     }
 
@@ -595,6 +588,30 @@ public class DiplomacyPlayers {
             event.setCancelled(true);
         }
 
+
+        public boolean canBuildHere(Chunk chunk, Player player) {
+            // Return true if there is no nation
+            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            var nation = diplomacyChunk.getNation();
+            if (nation == null) return true;
+
+            // return true if there is a group and the player is in it
+            var group = diplomacyChunk.getGroup();
+            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            if (group != null && group.getMembers().contains(diplomacyPlayer)) return true;
+
+
+            // return false if the player is not part of the group (checked above) or nation
+            var playerNation = Nations.getInstance().get(diplomacyPlayer);
+            if (!Objects.equals(nation, playerNation)) return false;
+
+            // check if player has nation build permissions
+            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+            if (canBuildAnywhere) return true;
+            else return false;
+        }
+
         @EventHandler(ignoreCancelled = true)
         private void onPlayerInteract(PlayerInteractEvent event) {
             if (event.getClickedBlock() == null) {
@@ -602,85 +619,83 @@ public class DiplomacyPlayers {
             }
 
             var block = event.getClickedBlock();
+            var action = event.getAction();
 
-            // Disable using beacons
-            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.BEACON)) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Beacons are currently disabled.");
-                event.setCancelled(true);
-                return;
-            }
+            switch (action) {
+                case RIGHT_CLICK_BLOCK -> {
+                    var type = block.getType();
+                    switch (type) {
+                        case BEACON -> {
+                            event.getPlayer().sendMessage(ChatColor.RED + "Beacons are currently disabled.");
+                            event.setCancelled(true);
+                            return;
+                        }
+                        case ENCHANTING_TABLE -> {
+                            event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (enchantments obtained via crafting recipes, view #recipes in /discord)");
+                            event.setCancelled(true);
+                            return;
+                        }
+                        case RESPAWN_ANCHOR -> {
+                            if (block.getWorld().getEnvironment().equals(World.Environment.NETHER)) return;
 
-            // Disable using enchanting tables
-            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && block.getType().equals(Material.ENCHANTING_TABLE)) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (enchantments obtained via crafting recipes, view #recipes in /discord)");
-                event.setCancelled(true);
-                return;
-            }
+                            var player = event.getPlayer();
+                            var chunk = block.getChunk();
+                            if (canBuildHere(chunk, player)) return;
 
-            var chunk = event.getClickedBlock().getLocation().getChunk();
-            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-            var nation = diplomacyChunk.getNation();
+                            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                            event.setCancelled(true);
+                            return;
+                        }
+                        case ITEM_FRAME, COMPOSTER -> {
+                            var player = event.getPlayer();
+                            var chunk = block.getChunk();
+                            if (canBuildHere(chunk, player)) return;
 
-            if (nation == null) {
-                return;
-            }
+                            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                            event.setCancelled(true);
+                            return;
+                        }
+                        case BLACK_BED, BLUE_BED, BROWN_BED, CYAN_BED, GRAY_BED, GREEN_BED, LIGHT_BLUE_BED, LIME_BED, MAGENTA_BED, ORANGE_BED, PINK_BED,
+                                PURPLE_BED, RED_BED, WHITE_BED, YELLOW_BED, LIGHT_GRAY_BED -> {
+                            if (block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) return;
 
-            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
-            var player = event.getPlayer();
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                            var player = event.getPlayer();
+                            var chunk = block.getChunk();
+                            if (canBuildHere(chunk, player)) return;
 
-            // if there is a group and the player is part of it
-            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
-
-            // if there isn't a group and the player can build anywhere, and its the player's nation
-            var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                    return;
+                            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
                 }
-            }
+                case PHYSICAL -> {
+                    if (block.getType() == Material.FARMLAND) {
+                        var player = event.getPlayer();
+                        var chunk = block.getChunk();
+                        if (canBuildHere(chunk, player)) return;
 
+                        player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
+                        event.setCancelled(true);
+                        return;
+                    }
 
-            if (event.getItem() != null && badItems.contains(event.getItem().getType())) {
-                player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
-                event.setCancelled(true);
-            } else if (block != null) {
+                }
+                default -> {
+                    var item = event.getItem();
+                    if (item == null) return;
+                    var itemType = item.getType();
+                    switch (itemType) {
+                        case FLINT_AND_STEEL, FIRE_CHARGE, END_CRYSTAL, PAINTING, ITEM_FRAME -> {
+                            var player = event.getPlayer();
+                            var chunk = block.getChunk();
+                            if (canBuildHere(chunk, player)) return;
 
-                ArrayList<Material> beds = new ArrayList<>();
-                beds.add(Material.BLACK_BED);
-                beds.add(Material.BLUE_BED);
-                beds.add(Material.BROWN_BED);
-                beds.add(Material.BLUE_BED);
-                beds.add(Material.CYAN_BED);
-                beds.add(Material.GRAY_BED);
-                beds.add(Material.GREEN_BED);
-                beds.add(Material.LIGHT_BLUE_BED);
-                beds.add(Material.LIME_BED);
-                beds.add(Material.MAGENTA_BED);
-                beds.add(Material.ORANGE_BED);
-                beds.add(Material.PINK_BED);
-                beds.add(Material.PURPLE_BED);
-                beds.add(Material.RED_BED);
-                beds.add(Material.WHITE_BED);
-                beds.add(Material.YELLOW_BED);
-
-                if (block.getType().equals(Material.RESPAWN_ANCHOR) && !block.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
-                    event.setCancelled(true);
-                } else if (block.getType().equals(Material.ITEM_FRAME)) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
-                    event.setCancelled(true);
-                } else if (block.getType().equals(Material.COMPOSTER)) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
-                    event.setCancelled(true);
-                } else if (event.getAction().equals(Action.PHYSICAL) && block.getType().equals(Material.FARMLAND)) {
-                    player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
-                    event.setCancelled(true);
-                } else if (beds.contains(block.getType()) && !block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
-                    event.setCancelled(true);
+                            player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
                 }
             }
         }
