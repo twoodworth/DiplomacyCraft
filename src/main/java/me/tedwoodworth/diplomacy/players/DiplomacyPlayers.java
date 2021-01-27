@@ -813,27 +813,9 @@ public class DiplomacyPlayers {
             // Cancel xp drop
             event.setExpToDrop(0);
 
-            var chunk = event.getBlock().getLocation().getChunk();
-            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-            var nation = diplomacyChunk.getNation();
-            if (nation == null) return;
-
-            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
+            var chunk = event.getBlock().getChunk();
             var player = event.getPlayer();
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-
-            // if there is a group and the player is part of it
-            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
-
-            // if there isn't a group and the player can build anywhere, and its the player's nation
-            var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                    return;
-                }
-            }
+            if (canBuildHere(chunk, player)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");
             event.setCancelled(true);

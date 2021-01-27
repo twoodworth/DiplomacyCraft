@@ -5228,627 +5228,718 @@ public class Tools {
                 location.getWorld().dropItemNaturally(location, new ItemStack(block.getType()));
             }
 
+            var type = block.getType();
+            switch (type) {
+                case IRON_BLOCK -> {
+                    var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
+                    var purity = getBlockPurity(block);
+                    setBlockPurity(block, -2F);
+                    if (tool == Material.STONE_PICKAXE || tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE) {
+                        item = new ItemStack(block.getType());
+                        var purityArray = new float[1];
+                        purityArray[0] = purity;
+                        setPurity(item, purityArray);
+                        event.setDropItems(false);
+                        ItemStack finalItem = item;
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                () -> location.getWorld().dropItem(location, finalItem), 1L);
+                    }
+                }
+                case GOLD_BLOCK -> {
+                    var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
+                    var purity = getBlockPurity(block);
+                    setBlockPurity(block, -2F);
 
-            // Metal block
-            var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
-            if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
-                var purity = getBlockPurity(block);
-                setBlockPurity(block, -2F);
+                    if (tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE) {
+                        item = new ItemStack(block.getType());
+                        var purityArray = new float[1];
+                        purityArray[0] = purity;
+                        setPurity(item, purityArray);
+                        event.setDropItems(false);
+                        ItemStack finalItem = item;
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                () -> location.getWorld().dropItem(location, finalItem), 1L);
+                    }
+                }
+                case NETHERITE_BLOCK -> {
+                    var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
+                    var purity = getBlockPurity(block);
+                    setBlockPurity(block, -2F);
 
-                if ((block.getType() == Material.IRON_BLOCK && (tool == Material.STONE_PICKAXE || tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE))
-                        || (block.getType() == Material.GOLD_BLOCK && (tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE))
-                        || (block.getType() == Material.NETHERITE_BLOCK && (tool == Material.DIAMOND_PICKAXE) || (tool == Material.NETHERITE_PICKAXE))) {
-                    item = new ItemStack(block.getType());
-                    var purityArray = new float[1];
-                    purityArray[0] = purity;
-                    setPurity(item, purityArray);
+                    if (tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE) {
+                        item = new ItemStack(block.getType());
+                        var purityArray = new float[1];
+                        purityArray[0] = purity;
+                        setPurity(item, purityArray);
+                        event.setDropItems(false);
+                        ItemStack finalItem = item;
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                                () -> location.getWorld().dropItem(location, finalItem), 1L);
+                    }
+                }
+                case NETHER_GOLD_ORE -> {
+                    var tool = event.getPlayer().getEquipment().getItemInMainHand().getType();
+                    if (tool == Material.WOODEN_PICKAXE
+                            || tool == Material.STONE_PICKAXE
+                            || tool == Material.GOLDEN_PICKAXE
+                            || tool == Material.IRON_PICKAXE
+                            || tool == Material.DIAMOND_PICKAXE
+                            || tool == Material.NETHERITE_PICKAXE) {
+                        var amount = (int) (Math.random() * 5) + 2;
+                        var drop = new ItemStack(Material.GOLD_NUGGET, amount);
+                        generatePurity(drop, 0.5);
+                        event.setDropItems(false);
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                event.getBlock().getWorld().dropItem(location, drop), 1L);
+                    }
+                }
+                case GRAVEL -> {
                     event.setDropItems(false);
-                    ItemStack finalItem = item;
-                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
-                            () -> location.getWorld().dropItem(location, finalItem), 1L);
-                }
-            }
-
-
-            // Nether gold ore
-            if (event.getBlock().getType() == Material.NETHER_GOLD_ORE
-                    && (tool == Material.WOODEN_PICKAXE || tool == Material.STONE_PICKAXE || tool == Material.GOLDEN_PICKAXE || tool == Material.IRON_PICKAXE || tool == Material.DIAMOND_PICKAXE || tool == Material.NETHERITE_PICKAXE)) {
-                var amount = (int) (Math.random() * 5) + 2;
-                var drop = new ItemStack(Material.GOLD_NUGGET, amount);
-                generatePurity(drop, 0.5);
-                event.setDropItems(false);
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                        event.getBlock().getWorld().dropItem(location, drop), 1L);
-            }
-
-            // Gravel
-            if (event.getBlock().getType() == Material.GRAVEL) {
-                event.setDropItems(false);
-                if (item.getType() == Material.WOODEN_SHOVEL || item.getType() == Material.STONE_SHOVEL || item.getType() == Material.IRON_SHOVEL
-                        || item.getType() == Material.GOLDEN_SHOVEL || item.getType() == Material.DIAMOND_SHOVEL || item.getType() == Material.NETHERITE_SHOVEL) {
-                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GRAVEL)), 1L);
-                } else {
-                    if (isSifter(item)) {
-                        event.getPlayer().getWorld().playSound(event.getBlock().getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 1, (float) (Math.random() * 0.5));
-                        var meta = item.getItemMeta();
-                        var damage = ((Damageable) meta).getDamage();
-                        if (Math.random() < 1.0 / (1.0 + meta.getEnchantLevel(Enchantment.DURABILITY))) {
-                            var player = event.getPlayer();
-                            if (damage == 164) {
-                                player.getInventory().setItemInMainHand(air);
-                                player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
-                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
-                            } else {
-                                ((Damageable) meta).setDamage(damage + 1);
-                                item.setItemMeta(meta);
-                            }
-                        }
-                    }
-                    var level = 0;
-                    if (isSifter(item)) level = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
-
-                    // flints
-                    int flints;
-                    var r = Math.random();
-                    if (r < 0.3875) flints = 0;
-                    else if (r < 0.6125) flints = 1;
-                    else if (r < 0.8043) flints = 2;
-                    else if (r < 0.9234) flints = 3;
-                    else if (r < 0.9772) flints = 4;
-                    else if (r < 0.9949) flints = 5;
-                    else if (r < 0.9991) flints = 6;
-                    else if (r < 0.9999) flints = 7;
-                    else flints = 8;
-
-                    if (flints > 0) {
-                        var chance = 1.0;
-                        var drops = 0;
-                        if (level == 0) chance = 0.012;
-                        else if (level == 1) chance = 0.053;
-                        else if (level == 2) chance = 0.231;
-
-                        for (int i = 0; i < flints; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
-                            }
-                        }
-                        if (drops > 0) {
-                            int finalDrops = drops;
+                    var itemType = item.getType();
+                    switch (itemType) {
+                        case WOODEN_SHOVEL, STONE_SHOVEL, IRON_SHOVEL, GOLDEN_SHOVEL, DIAMOND_SHOVEL, NETHERITE_SHOVEL -> {
                             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.FLINT, finalDrops)), 1L);
+                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GRAVEL)), 1L);
                         }
-
-                    }
-                    // Coal
-                    if (level < 2) return;
-
-                    int coal;
-                    r = Math.random();
-                    if (r < 0.4867) coal = 0;
-                    else if (r < 0.7367) coal = 1;
-                    else if (r < 0.9032) coal = 2;
-                    else if (r < 0.9754) coal = 3;
-                    else if (r < 0.9958) coal = 4;
-                    else if (r < 0.9995) coal = 5;
-                    else coal = 6;
-
-                    if (coal > 0) {
-                        double chance;
-                        if (level == 2) chance = 0.012;
-                        else chance = 0.053;
-
-                        var drops = 0;
-
-                        for (int i = 0; i < coal; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                        default -> {
+                            if (isSifter(item)) {
+                                event.getPlayer().getWorld().playSound(event.getBlock().getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 1, (float) (Math.random() * 0.5));
+                                var meta = item.getItemMeta();
+                                var damage = ((Damageable) meta).getDamage();
+                                if (Math.random() < 1.0 / (1.0 + meta.getEnchantLevel(Enchantment.DURABILITY))) {
+                                    var player = event.getPlayer();
+                                    if (damage == 164) {
+                                        player.getInventory().setItemInMainHand(air);
+                                        player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
+                                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+                                    } else {
+                                        ((Damageable) meta).setDamage(damage + 1);
+                                        item.setItemMeta(meta);
+                                    }
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            var coalItem = new ItemStack(Material.COAL, drops);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, coalItem), 1L);
-                        }
-                    }
 
-                    // Gold dust
-                    if (level < 4) return;
+                            var level = 0;
+                            if (isSifter(item)) level = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
-                    int goldDust;
-                    r = Math.random();
-                    if (r < 0.4867) goldDust = 0;
-                    else if (r < 0.7367) goldDust = 1;
-                    else if (r < 0.9032) goldDust = 2;
-                    else if (r < 0.9754) goldDust = 3;
-                    else if (r < 0.9958) goldDust = 4;
-                    else if (r < 0.9995) goldDust = 5;
-                    else goldDust = 6;
+                            // flints
+                            int flints;
+                            var r = Math.random();
+                            if (r < 0.3875) flints = 0;
+                            else if (r < 0.6125) flints = 1;
+                            else if (r < 0.8043) flints = 2;
+                            else if (r < 0.9234) flints = 3;
+                            else if (r < 0.9772) flints = 4;
+                            else if (r < 0.9949) flints = 5;
+                            else if (r < 0.9991) flints = 6;
+                            else if (r < 0.9999) flints = 7;
+                            else flints = 8;
 
-                    if (goldDust > 0) {
-                        double chance;
-                        if (level == 4) chance = 0.012;
-                        else if (level == 5 || level == 6) chance = 0.053;
-                        else if (level == 7) chance = 0.231;
-                        else chance = 0.0;
+                            if (flints > 0) {
+                                var chance = 1.0;
+                                var drops = 0;
+                                if (level == 0) chance = 0.012;
+                                else if (level == 1) chance = 0.053;
+                                else if (level == 2) chance = 0.231;
 
-                        var drops = 0;
+                                for (int i = 0; i < flints; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+                                if (drops > 0) {
+                                    int finalDrops = drops;
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.FLINT, finalDrops)), 1L);
+                                }
 
-                        for (int i = 0; i < goldDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
                             }
-                        }
+                            // Coal
+                            if (level < 2) return;
 
-                        if (drops > 0) {
-                            var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
-                            goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
-                            var meta = goldDustItem.getItemMeta();
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            meta.setDisplayName(ChatColor.RESET + "Gold Dust");
-                            meta.setLocalizedName("Gold Dust");
-                            var lore = new ArrayList<String>();
-                            lore.add(DiplomacyRecipes.getInstance().GOLD_DUST_LORE);
-                            meta.setLore(lore);
-                            goldDustItem.setItemMeta(meta);
-                            goldDustItem.setAmount(drops);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, goldDustItem), 1L);
-                        }
-                    }
+                            int coal;
+                            r = Math.random();
+                            if (r < 0.4867) coal = 0;
+                            else if (r < 0.7367) coal = 1;
+                            else if (r < 0.9032) coal = 2;
+                            else if (r < 0.9754) coal = 3;
+                            else if (r < 0.9958) coal = 4;
+                            else if (r < 0.9995) coal = 5;
+                            else coal = 6;
 
-                    // Iron dust
-                    int ironDust;
-                    r = Math.random();
-                    if (r < 0.4681) ironDust = 0;
-                    else if (r < 0.6255) ironDust = 1;
-                    else if (r < 0.7642) ironDust = 2;
-                    else if (r < 0.8686) ironDust = 3;
-                    else if (r < 0.9357) ironDust = 4;
-                    else if (r < 0.9726) ironDust = 5;
-                    else if (r < 0.9898) ironDust = 6;
-                    else if (r < 0.9967) ironDust = 7;
-                    else if (r < 0.9990) ironDust = 8;
-                    else if (r < 0.9997) ironDust = 9;
-                    else ironDust = 10;
+                            if (coal > 0) {
+                                double chance;
+                                if (level == 2) chance = 0.012;
+                                else chance = 0.053;
 
-                    if (ironDust > 0) {
-                        double chance;
-                        if (level == 4) chance = 0.0109;
-                        else if (level == 5) chance = 0.021;
-                        else if (level == 6) chance = 0.053;
-                        else if (level == 7) chance = 0.231;
-                        else chance = 0.0;
+                                var drops = 0;
 
-                        var drops = 0;
+                                for (int i = 0; i < coal; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
 
-                        for (int i = 0; i < ironDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                                if (drops > 0) {
+                                    var coalItem = new ItemStack(Material.COAL, drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, coalItem), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            var ironDustItem = new ItemStack(Material.SUGAR);
-                            ironDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
-                            var meta = ironDustItem.getItemMeta();
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            meta.setDisplayName(ChatColor.RESET + "Iron Dust");
-                            meta.setLocalizedName("Iron Dust");
-                            var lore = new ArrayList<String>();
-                            lore.add(DiplomacyRecipes.getInstance().IRON_DUST_LORE);
-                            meta.setLore(lore);
-                            ironDustItem.setItemMeta(meta);
-                            ironDustItem.setAmount(drops);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, ironDustItem), 1L);
-                        }
-                    }
+                            // Gold dust
+                            if (level < 4) return;
 
-                    // Redstone dust
-                    int redstoneDust;
-                    r = Math.random();
-                    if (r < 0.5478) redstoneDust = 0;
-                    else if (r < 0.8212) redstoneDust = 1;
-                    else if (r < 0.9573) redstoneDust = 2;
-                    else if (r < 0.9941) redstoneDust = 3;
-                    else if (r < 0.9995) redstoneDust = 4;
-                    else redstoneDust = 5;
+                            int goldDust;
+                            r = Math.random();
+                            if (r < 0.4867) goldDust = 0;
+                            else if (r < 0.7367) goldDust = 1;
+                            else if (r < 0.9032) goldDust = 2;
+                            else if (r < 0.9754) goldDust = 3;
+                            else if (r < 0.9958) goldDust = 4;
+                            else if (r < 0.9995) goldDust = 5;
+                            else goldDust = 6;
 
-                    if (redstoneDust > 0) {
-                        double chance;
-                        if (level == 5) chance = 0.012;
-                        else if (level == 6) chance = 0.053;
-                        else chance = 0.231;
+                            if (goldDust > 0) {
+                                double chance;
+                                if (level == 4) chance = 0.012;
+                                else if (level == 5 || level == 6) chance = 0.053;
+                                else if (level == 7) chance = 0.231;
+                                else chance = 0.0;
 
-                        var drops = 0;
+                                var drops = 0;
 
-                        for (int i = 0; i < redstoneDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                                for (int i = 0; i < goldDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
+                                    goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
+                                    var meta = goldDustItem.getItemMeta();
+                                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                    meta.setDisplayName(ChatColor.RESET + "Gold Dust");
+                                    meta.setLocalizedName("Gold Dust");
+                                    var lore = new ArrayList<String>();
+                                    lore.add(DiplomacyRecipes.getInstance().GOLD_DUST_LORE);
+                                    meta.setLore(lore);
+                                    goldDustItem.setItemMeta(meta);
+                                    goldDustItem.setAmount(drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, goldDustItem), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            int finalDrops = drops;
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.REDSTONE, finalDrops)), 1L);
+                            // Iron dust
+                            int ironDust;
+                            r = Math.random();
+                            if (r < 0.4681) ironDust = 0;
+                            else if (r < 0.6255) ironDust = 1;
+                            else if (r < 0.7642) ironDust = 2;
+                            else if (r < 0.8686) ironDust = 3;
+                            else if (r < 0.9357) ironDust = 4;
+                            else if (r < 0.9726) ironDust = 5;
+                            else if (r < 0.9898) ironDust = 6;
+                            else if (r < 0.9967) ironDust = 7;
+                            else if (r < 0.9990) ironDust = 8;
+                            else if (r < 0.9997) ironDust = 9;
+                            else ironDust = 10;
+
+                            if (ironDust > 0) {
+                                double chance;
+                                if (level == 4) chance = 0.0109;
+                                else if (level == 5) chance = 0.021;
+                                else if (level == 6) chance = 0.053;
+                                else if (level == 7) chance = 0.231;
+                                else chance = 0.0;
+
+                                var drops = 0;
+
+                                for (int i = 0; i < ironDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    var ironDustItem = new ItemStack(Material.SUGAR);
+                                    ironDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
+                                    var meta = ironDustItem.getItemMeta();
+                                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                    meta.setDisplayName(ChatColor.RESET + "Iron Dust");
+                                    meta.setLocalizedName("Iron Dust");
+                                    var lore = new ArrayList<String>();
+                                    lore.add(DiplomacyRecipes.getInstance().IRON_DUST_LORE);
+                                    meta.setLore(lore);
+                                    ironDustItem.setItemMeta(meta);
+                                    ironDustItem.setAmount(drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, ironDustItem), 1L);
+                                }
+                            }
+
+                            // Redstone dust
+                            int redstoneDust;
+                            r = Math.random();
+                            if (r < 0.5478) redstoneDust = 0;
+                            else if (r < 0.8212) redstoneDust = 1;
+                            else if (r < 0.9573) redstoneDust = 2;
+                            else if (r < 0.9941) redstoneDust = 3;
+                            else if (r < 0.9995) redstoneDust = 4;
+                            else redstoneDust = 5;
+
+                            if (redstoneDust > 0) {
+                                double chance;
+                                if (level == 5) chance = 0.012;
+                                else if (level == 6) chance = 0.053;
+                                else chance = 0.231;
+
+                                var drops = 0;
+
+                                for (int i = 0; i < redstoneDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    int finalDrops = drops;
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.REDSTONE, finalDrops)), 1L);
+                                }
+                            }
+
                         }
                     }
                 }
-            } else if (event.getBlock().getType() == Material.SOUL_SAND) {
-                event.setDropItems(false);
-                if (item.getType() == Material.WOODEN_SHOVEL || item.getType() == Material.STONE_SHOVEL || item.getType() == Material.IRON_SHOVEL
-                        || item.getType() == Material.GOLDEN_SHOVEL || item.getType() == Material.DIAMOND_SHOVEL || item.getType() == Material.NETHERITE_SHOVEL) {
-                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.SOUL_SAND)), 1L);
-                } else {
-                    if (isSifter(item)) {
-                        event.getPlayer().getWorld().playSound(event.getBlock().getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 1, (float) (Math.random() * 0.5));
-                        var meta = item.getItemMeta();
-                        var damage = ((Damageable) meta).getDamage();
-                        if (Math.random() < 1.0 / (1.0 + meta.getEnchantLevel(Enchantment.DURABILITY))) {
-                            var player = event.getPlayer();
-                            if (damage == 164) {
-                                player.getInventory().setItemInMainHand(air);
-                                player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
-                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
-                            } else {
-                                ((Damageable) meta).setDamage(damage + 1);
-                                item.setItemMeta(meta);
-                            }
-                        }
-                    }
-                    var level = 0;
-                    if (isSifter(item)) level = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
-
-                    // Soul Soil
-                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.SOUL_SOIL)), 1L);
-
-
-                    var r = Math.random();
-                    if (r < 0.05)
-                        event.getPlayer().playSound(event.getBlock().getLocation(), Sound.AMBIENT_SOUL_SAND_VALLEY_MOOD, 1, (float) Math.random());
-
-                    // Status effect for messing with the dead
-                    int l;
-                    int t;
-                    r = Math.random();
-                    if (r < 0.9416) l = -1;
-                    else if (r < 0.9805) l = 0;
-                    else if (r < 0.9956) l = 1;
-                    else if (r < 0.9994) l = 2;
-                    else if (r < 0.9999) l = 3;
-                    else l = 4;
-
-                    r = Math.random();
-                    if (r < 0.9416) t = 1 + (int) (Math.random() * 20 * 10);
-                    else if (r < 0.9805) t = 1 + (int) (Math.random() * 20 * 60);
-                    else if (r < 0.9956) t = 1 + (int) (Math.random() * 20 * 60 * 5);
-                    else if (r < 0.9994) t = 1 + (int) (Math.random() * 20 * 60 * 30);
-                    else if (r < 0.9999) t = 1 + (int) (Math.random() * 20 * 60 * 60 * 6);
-                    else t = 1 + (int) (Math.random() * 20 * 60 * 60 * 24 * 2);
-
-
-                    r = (Math.random() * 6);
-                    PotionEffectType type = switch (((int) r)) {
-                        case 0 -> SLOW;
-                        case 1 -> SLOW_DIGGING;
-                        case 2 -> WEAKNESS;
-                        case 3 -> CONFUSION;
-                        case 4 -> BLINDNESS;
-                        case 5 -> HUNGER;
-                        default -> null;
-                    };
-                    if (l > -1 && type != null)
-                        event.getPlayer().addPotionEffect(new PotionEffect(type, t, l, true, false, false));
-
-                    // Charcoal
-                    if (level < 1) return;
-
-                    int coal;
-                    r = Math.random();
-                    if (r < 0.4867) coal = 0;
-                    else if (r < 0.7367) coal = 1;
-                    else if (r < 0.9032) coal = 2;
-                    else if (r < 0.9754) coal = 3;
-                    else if (r < 0.9958) coal = 4;
-                    else if (r < 0.9995) coal = 5;
-                    else coal = 6;
-
-                    if (coal > 0) {
-                        double chance;
-                        if (level == 1) chance = 0.012;
-                        else if (level == 2) chance = 0.053;
-                        else chance = 0.231;
-
-                        var drops = 0;
-
-                        for (int i = 0; i < coal; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
-                            }
-                        }
-
-                        if (drops > 0) {
-                            var coalItem = new ItemStack(Material.CHARCOAL, drops);
+                case SOUL_SAND -> {
+                    event.setDropItems(false);
+                    var itemType = item.getType();
+                    switch (itemType) {
+                        case WOODEN_SHOVEL, STONE_SHOVEL, IRON_SHOVEL, GOLDEN_SHOVEL, DIAMOND_SHOVEL, NETHERITE_SHOVEL -> {
                             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, coalItem), 1L);
+                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.SOUL_SAND)), 1L);
                         }
-                    }
-
-                    // Gold nugget
-                    if (level < 3) return;
-
-                    int goldNugget;
-                    r = Math.random();
-                    if (r < 0.4867) goldNugget = 0;
-                    else if (r < 0.7367) goldNugget = 1;
-                    else if (r < 0.9032) goldNugget = 2;
-                    else if (r < 0.9754) goldNugget = 3;
-                    else if (r < 0.9958) goldNugget = 4;
-                    else if (r < 0.9995) goldNugget = 5;
-                    else goldNugget = 6;
-
-                    if (goldNugget > 0) {
-                        double chance;
-                        if (level == 3) chance = 0.012;
-                        else chance = 0.053;
-
-                        var drops = 0;
-
-                        for (int i = 0; i < goldNugget; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                        default -> {
+                            if (isSifter(item)) {
+                                event.getPlayer().getWorld().playSound(event.getBlock().getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 1, (float) (Math.random() * 0.5));
+                                var meta = item.getItemMeta();
+                                var damage = ((Damageable) meta).getDamage();
+                                if (Math.random() < 1.0 / (1.0 + meta.getEnchantLevel(Enchantment.DURABILITY))) {
+                                    var player = event.getPlayer();
+                                    if (damage == 164) {
+                                        player.getInventory().setItemInMainHand(air);
+                                        player.playEffect(EntityEffect.BREAK_EQUIPMENT_MAIN_HAND);
+                                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+                                    } else {
+                                        ((Damageable) meta).setDamage(damage + 1);
+                                        item.setItemMeta(meta);
+                                    }
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            int finalDrops = drops;
+                            var level = 0;
+                            if (isSifter(item)) level = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
+
+                            // Soul Soil
                             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, generatePurity(new ItemStack(Material.GOLD_NUGGET, finalDrops), 0.436)), 1L);
-                        }
-                    }
+                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.SOUL_SOIL)), 1L);
 
-                    // Gold dust
-                    if (level < 4) return;
 
-                    int goldDust;
-                    r = Math.random();
-                    if (r < 0.4867) goldDust = 0;
-                    else if (r < 0.7367) goldDust = 1;
-                    else if (r < 0.9032) goldDust = 2;
-                    else if (r < 0.9754) goldDust = 3;
-                    else if (r < 0.9958) goldDust = 4;
-                    else if (r < 0.9995) goldDust = 5;
-                    else goldDust = 6;
+                            var r = Math.random();
+                            if (r < 0.05)
+                                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.AMBIENT_SOUL_SAND_VALLEY_MOOD, 1, (float) Math.random());
 
-                    if (goldDust > 0) {
-                        double chance;
-                        if (level == 4) chance = 0.012;
-                        else if (level == 5 || level == 6) chance = 0.053;
-                        else if (level == 7) chance = 0.231;
-                        else chance = 0.0;
+                            // Status effect for messing with the dead
+                            int l;
+                            int t;
+                            r = Math.random();
+                            if (r < 0.9416) l = -1;
+                            else if (r < 0.9805) l = 0;
+                            else if (r < 0.9956) l = 1;
+                            else if (r < 0.9994) l = 2;
+                            else if (r < 0.9999) l = 3;
+                            else l = 4;
 
-                        var drops = 0;
+                            r = Math.random();
+                            if (r < 0.9416) t = 1 + (int) (Math.random() * 20 * 10);
+                            else if (r < 0.9805) t = 1 + (int) (Math.random() * 20 * 60);
+                            else if (r < 0.9956) t = 1 + (int) (Math.random() * 20 * 60 * 5);
+                            else if (r < 0.9994) t = 1 + (int) (Math.random() * 20 * 60 * 30);
+                            else if (r < 0.9999) t = 1 + (int) (Math.random() * 20 * 60 * 60 * 6);
+                            else t = 1 + (int) (Math.random() * 20 * 60 * 60 * 24 * 2);
 
-                        for (int i = 0; i < goldDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+
+                            r = (Math.random() * 6);
+                            PotionEffectType potionType = switch (((int) r)) {
+                                case 0 -> SLOW;
+                                case 1 -> SLOW_DIGGING;
+                                case 2 -> WEAKNESS;
+                                case 3 -> CONFUSION;
+                                case 4 -> BLINDNESS;
+                                case 5 -> HUNGER;
+                                default -> null;
+                            };
+                            if (l > -1 && potionType != null)
+                                event.getPlayer().addPotionEffect(new PotionEffect(potionType, t, l, true, false, false));
+
+                            // Charcoal
+                            if (level < 1) return;
+
+                            int coal;
+                            r = Math.random();
+                            if (r < 0.4867) coal = 0;
+                            else if (r < 0.7367) coal = 1;
+                            else if (r < 0.9032) coal = 2;
+                            else if (r < 0.9754) coal = 3;
+                            else if (r < 0.9958) coal = 4;
+                            else if (r < 0.9995) coal = 5;
+                            else coal = 6;
+
+                            if (coal > 0) {
+                                double chance;
+                                if (level == 1) chance = 0.012;
+                                else if (level == 2) chance = 0.053;
+                                else chance = 0.231;
+
+                                var drops = 0;
+
+                                for (int i = 0; i < coal; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    var coalItem = new ItemStack(Material.CHARCOAL, drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, coalItem), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
-                            goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
-                            var meta = goldDustItem.getItemMeta();
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            meta.setDisplayName(ChatColor.RESET + "Gold Dust");
-                            meta.setLocalizedName("Gold Dust");
-                            var lore = new ArrayList<String>();
-                            lore.add(DiplomacyRecipes.getInstance().GOLD_DUST_LORE);
-                            meta.setLore(lore);
-                            goldDustItem.setItemMeta(meta);
-                            goldDustItem.setAmount(drops);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, goldDustItem), 1L);
-                        }
-                    }
+                            // Gold nugget
+                            if (level < 3) return;
 
-                    // Glowstone dust
-                    if (level < 5) return;
+                            int goldNugget;
+                            r = Math.random();
+                            if (r < 0.4867) goldNugget = 0;
+                            else if (r < 0.7367) goldNugget = 1;
+                            else if (r < 0.9032) goldNugget = 2;
+                            else if (r < 0.9754) goldNugget = 3;
+                            else if (r < 0.9958) goldNugget = 4;
+                            else if (r < 0.9995) goldNugget = 5;
+                            else goldNugget = 6;
 
-                    int glowstoneDust;
-                    r = Math.random();
-                    if (r < 0.4681) glowstoneDust = 0;
-                    else if (r < 0.6255) glowstoneDust = 1;
-                    else if (r < 0.7642) glowstoneDust = 2;
-                    else if (r < 0.8686) glowstoneDust = 3;
-                    else if (r < 0.9357) glowstoneDust = 4;
-                    else if (r < 0.9726) glowstoneDust = 5;
-                    else if (r < 0.9898) glowstoneDust = 6;
-                    else if (r < 0.9967) glowstoneDust = 7;
-                    else if (r < 0.9990) glowstoneDust = 8;
-                    else if (r < 0.9997) glowstoneDust = 9;
-                    else glowstoneDust = 10;
+                            if (goldNugget > 0) {
+                                double chance;
+                                if (level == 3) chance = 0.012;
+                                else chance = 0.053;
 
-                    if (glowstoneDust > 0) {
-                        double chance;
-                        if (level == 5) chance = 0.012;
-                        else if (level == 6) chance = 0.053;
-                        else if (level == 7) chance = 0.231;
-                        else chance = 0.0;
+                                var drops = 0;
 
-                        var drops = 0;
+                                for (int i = 0; i < goldNugget; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
 
-                        for (int i = 0; i < glowstoneDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                                if (drops > 0) {
+                                    int finalDrops = drops;
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, generatePurity(new ItemStack(Material.GOLD_NUGGET, finalDrops), 0.436)), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            int finalDrops = drops;
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GLOWSTONE_DUST, finalDrops)), 1L);
-                        }
-                    }
+                            // Gold dust
+                            if (level < 4) return;
 
-                    //  Gunpowder
-                    if (level < 6) return;
+                            int goldDust;
+                            r = Math.random();
+                            if (r < 0.4867) goldDust = 0;
+                            else if (r < 0.7367) goldDust = 1;
+                            else if (r < 0.9032) goldDust = 2;
+                            else if (r < 0.9754) goldDust = 3;
+                            else if (r < 0.9958) goldDust = 4;
+                            else if (r < 0.9995) goldDust = 5;
+                            else goldDust = 6;
 
-                    int gunPowder;
-                    r = Math.random();
-                    if (r < 0.4681) gunPowder = 0;
-                    else if (r < 0.6255) gunPowder = 1;
-                    else if (r < 0.7642) gunPowder = 2;
-                    else if (r < 0.8686) gunPowder = 3;
-                    else if (r < 0.9357) gunPowder = 4;
-                    else if (r < 0.9726) gunPowder = 5;
-                    else if (r < 0.9898) gunPowder = 6;
-                    else if (r < 0.9967) gunPowder = 7;
-                    else if (r < 0.9990) gunPowder = 8;
-                    else if (r < 0.9997) gunPowder = 9;
-                    else gunPowder = 10;
+                            if (goldDust > 0) {
+                                double chance;
+                                if (level == 4) chance = 0.012;
+                                else if (level == 5 || level == 6) chance = 0.053;
+                                else if (level == 7) chance = 0.231;
+                                else chance = 0.0;
 
-                    if (gunPowder > 0) {
-                        double chance;
-                        if (level == 6) chance = 0.012;
-                        else chance = 0.123;
+                                var drops = 0;
 
-                        var drops = 0;
+                                for (int i = 0; i < goldDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
 
-                        for (int i = 0; i < gunPowder; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                                if (drops > 0) {
+                                    var goldDustItem = new ItemStack(Material.GLOWSTONE_DUST);
+                                    goldDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
+                                    var meta = goldDustItem.getItemMeta();
+                                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                    meta.setDisplayName(ChatColor.RESET + "Gold Dust");
+                                    meta.setLocalizedName("Gold Dust");
+                                    var lore = new ArrayList<String>();
+                                    lore.add(DiplomacyRecipes.getInstance().GOLD_DUST_LORE);
+                                    meta.setLore(lore);
+                                    goldDustItem.setItemMeta(meta);
+                                    goldDustItem.setAmount(drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, goldDustItem), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            int finalDrops = drops;
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GUNPOWDER, finalDrops)), 1L);
-                        }
-                    }
+                            // Glowstone dust
+                            if (level < 5) return;
 
-                    // Ancient dust
-                    int ancientDust;
-                    r = Math.random();
-                    if (r < 0.5478) ancientDust = 0;
-                    else if (r < 0.8212) ancientDust = 1;
-                    else if (r < 0.9573) ancientDust = 2;
-                    else if (r < 0.9941) ancientDust = 3;
-                    else if (r < 0.9995) ancientDust = 4;
-                    else ancientDust = 5;
+                            int glowstoneDust;
+                            r = Math.random();
+                            if (r < 0.4681) glowstoneDust = 0;
+                            else if (r < 0.6255) glowstoneDust = 1;
+                            else if (r < 0.7642) glowstoneDust = 2;
+                            else if (r < 0.8686) glowstoneDust = 3;
+                            else if (r < 0.9357) glowstoneDust = 4;
+                            else if (r < 0.9726) glowstoneDust = 5;
+                            else if (r < 0.9898) glowstoneDust = 6;
+                            else if (r < 0.9967) glowstoneDust = 7;
+                            else if (r < 0.9990) glowstoneDust = 8;
+                            else if (r < 0.9997) glowstoneDust = 9;
+                            else glowstoneDust = 10;
 
-                    if (ancientDust > 0) {
-                        double chance;
-                        if (level == 6) chance = 0.012;
-                        else chance = 0.053;
+                            if (glowstoneDust > 0) {
+                                double chance;
+                                if (level == 5) chance = 0.012;
+                                else if (level == 6) chance = 0.053;
+                                else if (level == 7) chance = 0.231;
+                                else chance = 0.0;
 
-                        var drops = 0;
+                                var drops = 0;
 
-                        for (int i = 0; i < ancientDust; i++) {
-                            if (Math.random() < chance) {
-                                drops++;
+                                for (int i = 0; i < glowstoneDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    int finalDrops = drops;
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GLOWSTONE_DUST, finalDrops)), 1L);
+                                }
                             }
-                        }
 
-                        if (drops > 0) {
-                            var ancientDustItem = new ItemStack(Material.REDSTONE);
-                            ancientDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
-                            var meta = ancientDustItem.getItemMeta();
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            meta.setDisplayName(ChatColor.RESET + "Ancient Dust");
-                            meta.setLocalizedName("Ancient Dust");
-                            var lore = new ArrayList<String>();
-                            lore.add(DiplomacyRecipes.getInstance().NETHERITE_DUST_LORE);
-                            meta.setLore(lore);
-                            ancientDustItem.setItemMeta(meta);
-                            ancientDustItem.setAmount(drops);
-                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                                    event.getBlock().getWorld().dropItem(location, ancientDustItem), 1L);
+                            //  Gunpowder
+                            if (level < 6) return;
+
+                            int gunPowder;
+                            r = Math.random();
+                            if (r < 0.4681) gunPowder = 0;
+                            else if (r < 0.6255) gunPowder = 1;
+                            else if (r < 0.7642) gunPowder = 2;
+                            else if (r < 0.8686) gunPowder = 3;
+                            else if (r < 0.9357) gunPowder = 4;
+                            else if (r < 0.9726) gunPowder = 5;
+                            else if (r < 0.9898) gunPowder = 6;
+                            else if (r < 0.9967) gunPowder = 7;
+                            else if (r < 0.9990) gunPowder = 8;
+                            else if (r < 0.9997) gunPowder = 9;
+                            else gunPowder = 10;
+
+                            if (gunPowder > 0) {
+                                double chance;
+                                if (level == 6) chance = 0.012;
+                                else chance = 0.123;
+
+                                var drops = 0;
+
+                                for (int i = 0; i < gunPowder; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    int finalDrops = drops;
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, new ItemStack(Material.GUNPOWDER, finalDrops)), 1L);
+                                }
+                            }
+
+                            // Ancient dust
+                            int ancientDust;
+                            r = Math.random();
+                            if (r < 0.5478) ancientDust = 0;
+                            else if (r < 0.8212) ancientDust = 1;
+                            else if (r < 0.9573) ancientDust = 2;
+                            else if (r < 0.9941) ancientDust = 3;
+                            else if (r < 0.9995) ancientDust = 4;
+                            else ancientDust = 5;
+
+                            if (ancientDust > 0) {
+                                double chance;
+                                if (level == 6) chance = 0.012;
+                                else chance = 0.053;
+
+                                var drops = 0;
+
+                                for (int i = 0; i < ancientDust; i++) {
+                                    if (Math.random() < chance) {
+                                        drops++;
+                                    }
+                                }
+
+                                if (drops > 0) {
+                                    var ancientDustItem = new ItemStack(Material.REDSTONE);
+                                    ancientDustItem.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
+                                    var meta = ancientDustItem.getItemMeta();
+                                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                    meta.setDisplayName(ChatColor.RESET + "Ancient Dust");
+                                    meta.setLocalizedName("Ancient Dust");
+                                    var lore = new ArrayList<String>();
+                                    lore.add(DiplomacyRecipes.getInstance().NETHERITE_DUST_LORE);
+                                    meta.setLore(lore);
+                                    ancientDustItem.setItemMeta(meta);
+                                    ancientDustItem.setAmount(drops);
+                                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                                            event.getBlock().getWorld().dropItem(location, ancientDustItem), 1L);
+                                }
+                            }
                         }
                     }
                 }
             }
-
 
             // Blade Dulling
-            if (tools.contains(item.getType())) {
-                var player = event.getPlayer();
-                var equipment = player.getEquipment();
-                if (equipment == null) return;
-                var hand = equipment.getItemInMainHand();
-                var meta = hand.getItemMeta();
-                if (meta == null || !tools.contains(hand.getType())) return;
-                var r = Math.random();
-                var unbreaking = 0;
-                if (meta.hasEnchant(Enchantment.DURABILITY))
-                    unbreaking += meta.getEnchantLevel(Enchantment.DURABILITY);
-                var durability = hand.getType().getMaxDurability();
+            var toolType = item.getType();
+            switch (toolType) {
+                case WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE -> {
+                    var meta = item.getItemMeta();
+                    if (meta == null) return;
+                    if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
+                        int unbreaking;
+                        if (meta.hasEnchant(Enchantment.DURABILITY))
+                            unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                        else
+                            unbreaking = 0;
+                        var r = Math.random();
+                        var durability = toolType.getMaxDurability();
 
-                if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
-                    var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
-                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
-                        meta.removeEnchant(Enchantment.DAMAGE_ALL);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                        var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
+                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                            meta.removeEnchant(Enchantment.DAMAGE_ALL);
+                            meta.removeEnchant(Enchantment.DIG_SPEED);
+                            if (level > 1) {
+                                meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                                meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                            }
+                            item.setItemMeta(meta);
+                            event.getPlayer().getEquipment().setItemInMainHand(item);
                         }
-                        hand.setItemMeta(meta);
                     }
                 }
-                if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
-                    var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
-                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
-                        meta.removeEnchant(Enchantment.DIG_SPEED);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                case WOODEN_SWORD, STONE_SWORD, IRON_SWORD, GOLDEN_SWORD, DIAMOND_SWORD, NETHERITE_SWORD -> {
+                    if (isHuntingKnife(item)) {
+                        var meta = item.getItemMeta();
+                        if (meta == null) return;
+                        if (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS)) {
+                            int unbreaking;
+                            if (meta.hasEnchant(Enchantment.DURABILITY))
+                                unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                            else
+                                unbreaking = 0;
+                            var r = Math.random();
+                            var durability = toolType.getMaxDurability();
+                            var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
+                            if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                                meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
+                                if (level > 1) {
+                                    meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
+                                }
+                                item.setItemMeta(meta);
+                                event.getPlayer().getEquipment().setItemInMainHand(item);
+                            }
                         }
-                        hand.setItemMeta(meta);
+                    } else {
+                        var meta = item.getItemMeta();
+                        if (meta == null) return;
+                        if (meta.hasEnchant(Enchantment.DAMAGE_ALL)) {
+                            int unbreaking;
+                            if (meta.hasEnchant(Enchantment.DURABILITY))
+                                unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                            else
+                                unbreaking = 0;
+                            var r = Math.random();
+                            var durability = toolType.getMaxDurability();
+                            var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
+                            if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                                meta.removeEnchant(Enchantment.DAMAGE_ALL);
+                                meta.removeEnchant(Enchantment.SWEEPING_EDGE);
+                                if (level > 1) {
+                                    meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                                }
+                                if (level > 3) {
+                                    meta.addEnchant(Enchantment.SWEEPING_EDGE, (level - 1) / 2, true);
+                                }
+                                item.setItemMeta(meta);
+                                event.getPlayer().getEquipment().setItemInMainHand(item);
+                            }
+                        }
                     }
                 }
-                if (meta.hasEnchant(Enchantment.LOOT_BONUS_MOBS)) {
-                    var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
-                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
-                        meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
-                        }
-                        hand.setItemMeta(meta);
-                    }
-                }
-                if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
-                    var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
-                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
-                        meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
-                        }
-                        hand.setItemMeta(meta);
-                    }
-                }
-                if (meta.hasEnchant(Enchantment.IMPALING)) {
-                    var level = meta.getEnchantLevel(Enchantment.IMPALING);
-                    if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
-                        meta.removeEnchant(Enchantment.IMPALING);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.IMPALING, level - 1, true);
-                        }
-                        hand.setItemMeta(meta);
-                    }
-                }
-                equipment.setItemInMainHand(hand);
-            }
+                case WOODEN_PICKAXE, STONE_PICKAXE, IRON_PICKAXE, GOLDEN_PICKAXE, DIAMOND_PICKAXE, NETHERITE_PICKAXE,
+                        WOODEN_SHOVEL, STONE_SHOVEL, IRON_SHOVEL, GOLDEN_SHOVEL, DIAMOND_SHOVEL, NETHERITE_SHOVEL -> {
+                    var meta = item.getItemMeta();
+                    if (meta == null) return;
+                    if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
+                        int unbreaking;
+                        if (meta.hasEnchant(Enchantment.DURABILITY))
+                            unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                        else
+                            unbreaking = 0;
+                        var r = Math.random();
+                        var durability = toolType.getMaxDurability();
 
-            // Metal drops
-            if (event.isDropItems()) {
-                var drops = block.getDrops();
-                for (var drop : drops) {
-                    if (isMetal(drop) && !hasPurity(drop)) {
-                        generatePurity(drop, 1.0);
+                        var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
+                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                            meta.removeEnchant(Enchantment.DIG_SPEED);
+                            if (level > 1) {
+                                meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
+                            }
+                            item.setItemMeta(meta);
+                            event.getPlayer().getEquipment().setItemInMainHand(item);
+                        }
+                    }
+                }
+                case TRIDENT -> {
+                    var meta = item.getItemMeta();
+                    if (meta == null) return;
+                    if (meta.hasEnchant(Enchantment.IMPALING)) {
+                        int unbreaking;
+                        if (meta.hasEnchant(Enchantment.DURABILITY))
+                            unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                        else
+                            unbreaking = 0;
+                        var r = Math.random();
+                        var durability = toolType.getMaxDurability();
+
+                        var level = meta.getEnchantLevel(Enchantment.IMPALING);
+                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                            meta.removeEnchant(Enchantment.IMPALING);
+                            if (level > 1) {
+                                meta.addEnchant(Enchantment.IMPALING, level - 1, true);
+                            }
+                            item.setItemMeta(meta);
+                            event.getPlayer().getEquipment().setItemInMainHand(item);
+                        }
                     }
                 }
             }
@@ -7771,8 +7862,6 @@ public class Tools {
                 var combined = getCombinedPurity(entityStack, targetStack);
                 target.setItemStack(combined[0]);
                 entity.remove();
-                event.setCancelled(true);
-
             }
         }
 
