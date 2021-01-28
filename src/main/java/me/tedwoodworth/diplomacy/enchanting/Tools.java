@@ -4865,7 +4865,6 @@ public class Tools {
                             for (int i = 0; i < 9; i++) {
                                 if (Math.random() < squared) {
                                     ItemStack arrow;
-
                                     if (entity.getType() == EntityType.STRAY && Math.random() < 0.2) {
                                         arrow = new ItemStack(Material.TIPPED_ARROW);
                                         var meta = arrow.getItemMeta();
@@ -5210,8 +5209,7 @@ public class Tools {
         private void onBlockBreak(BlockBreakEvent event) {
             var item = event.getPlayer().getInventory().getItemInMainHand();
 
-            var location = event.getBlock().getLocation();
-            location.setY(location.getY() + 0.5);
+            var location = event.getBlock().getLocation().add(0.5, 0.5, 0.5);
 
             // Containers
             var block = event.getBlock();
@@ -6573,18 +6571,21 @@ public class Tools {
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         private void onBlockPlace(BlockPlaceEvent event) {
             var block = event.getBlock();
-            if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.GOLD_BLOCK || block.getType() == Material.NETHERITE_BLOCK) {
-                var item = event.getItemInHand();
-                var purity = getPurity(item);
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
-                        () -> setBlockPurity(block, purity[0]), 1L);
+            var type = block.getType();
+            switch (type) {
+                case IRON_BLOCK, GOLD_BLOCK, NETHERITE_BLOCK -> {
+                    var item = event.getItemInHand();
+                    var purity = getPurity(item);
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                            () -> setBlockPurity(block, purity[0]), 1L);
 
-                var hand = event.getHand();
-                var nItem = dropItemFromPurity(item)[0];
+                    var hand = event.getHand();
+                    var nItem = dropItemFromPurity(item)[0];
 
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
-                        () -> event.getPlayer().getEquipment().setItem(hand, nItem), 1L);
+                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
+                            () -> event.getPlayer().getEquipment().setItem(hand, nItem), 1L);
 
+                }
             }
         }
 
