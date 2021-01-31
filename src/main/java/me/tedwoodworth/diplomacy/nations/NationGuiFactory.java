@@ -57,7 +57,6 @@ public class NationGuiFactory {
                     click -> {
                         var clicker = click.getEvent().getWhoClicked();
                         var nGui = Guis.getInstance().getNationMenu(nation);
-                        InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                         return true;
                     },
@@ -84,7 +83,6 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     var nGui = createPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
-                    InventoryGui.clearHistory(clicker);
                     nGui.show(clicker, true);
                     return true;
                 },
@@ -143,7 +141,6 @@ public class NationGuiFactory {
                     click -> {
                         var clicker = click.getEvent().getWhoClicked();
                         var nGui = Guis.getInstance().getNationMenu(nation);
-                        InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                         return true;
                     },
@@ -194,7 +191,6 @@ public class NationGuiFactory {
                     click -> {
                         var clicker = click.getEvent().getWhoClicked();
                         var nGui = ClassGuiFactory.createPlayerClassSettings(diplomacyPlayer, (Player) clicker);
-                        InventoryGui.clearHistory(clicker);
                         nGui.show(clicker, true);
                         return true;
                     },
@@ -277,7 +273,6 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     var nGui = createMenu((Player) clicker);
-                    InventoryGui.clearHistory(clicker);
                     nGui.show(clicker, true);
                     return true;
                 },
@@ -317,7 +312,6 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     var nGui = ClassGuiFactory.create(nation, (Player) clicker);
-                    InventoryGui.clearHistory(clicker);
                     nGui.show(clicker, true);
                     return true;
                 },
@@ -338,7 +332,6 @@ public class NationGuiFactory {
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     var nGui = createPlayer(founder);
-                    InventoryGui.clearHistory(clicker);
                     nGui.show(clicker, true);
                     return true;
                 },

@@ -55,6 +55,7 @@ public class Diplomacy extends JavaPlugin {
         PlayerCommand.register(getCommand("player"));
         GuideCommand.register(getCommand("guide"));
         TogglePickupCommand.register(getCommand("ta"));
+        RecipeCommand.register(getCommand("recipes"));
         System.out.println("[Diplomacy] Loaded commands");
         DiplomacyConfig.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded config events");
@@ -80,6 +81,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded Gui events");
         Guis.getInstance().loadNationMenus();
         System.out.println("[Diplomacy] Loaded nation menus");
+        Guis.getInstance().loadRecipeMenus();
+        System.out.println("[Diplomacy] Loaded recipe menus");
         LivesManager.getInstance().startScheduler();
         ChatNotifications.getInstance().startScheduler();
         System.out.println("[Diplomacy] Loaded schedulers");

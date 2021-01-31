@@ -148,4 +148,9 @@ commands:
     aliases: [ta]
     usage: "Usage: /<command>"
 
+  recipes:
+    description: View custom recipes.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

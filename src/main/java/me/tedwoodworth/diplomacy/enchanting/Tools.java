@@ -7,6 +7,7 @@ import me.tedwoodworth.diplomacy.data.FloatArrayPersistentDataType;
 import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
@@ -111,6 +112,15 @@ public class Tools {
         return instance;
     }
 
+    public boolean isGuiItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
+
+        var meta = itemStack.getItemMeta();
+        return meta != null
+                && meta.getLore() != null
+                && meta.getLore().contains(Guis.getInstance().GUI_METAL_LORE);
+    }
+
     public boolean isClassItem(ItemStack itemStack) {
         if (itemStack == null) return false;
 
@@ -163,7 +173,7 @@ public class Tools {
         if (itemStack == null) return false;
 
         var type = itemStack.getType();
-        return isPlate(itemStack) ||
+        return (isPlate(itemStack) ||
                 type == Material.GOLD_NUGGET ||
                 (type == Material.GOLD_BLOCK && !isClassItem(itemStack)) ||
                 type == Material.GOLD_INGOT ||
@@ -172,7 +182,8 @@ public class Tools {
                 (type == Material.IRON_BLOCK && !isClassItem(itemStack)) ||
                 type == Material.NETHERITE_SCRAP ||
                 (type == Material.NETHERITE_INGOT && !isMagnet(itemStack)) ||
-                (type == Material.NETHERITE_BLOCK && !isClassItem(itemStack));
+                (type == Material.NETHERITE_BLOCK && !isClassItem(itemStack))
+        ) && !isGuiItem(itemStack);
 
     }
 
@@ -9231,7 +9242,11 @@ public class Tools {
                 return;
             }
             applyScienceUpdateRestrictions(item);
-            drop.setItemStack(item);
+            if (item.getType() == Material.AIR) {
+                drop.remove();
+            } else {
+                drop.setItemStack(item);
+            }
 
             var entity = event.getEntity();
             if (isMetal(item) && !(entity instanceof Player)) {

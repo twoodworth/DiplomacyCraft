@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
+import de.themoep.inventorygui.InventoryGui;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
@@ -23,6 +24,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -453,6 +455,12 @@ public class DiplomacyPlayers {
                     }
                 }
             }
+        }
+
+        @EventHandler
+        private void onInventoryClose(InventoryCloseEvent event) {
+            var player = event.getPlayer();
+            InventoryGui.clearHistory(player);
         }
 
         @EventHandler(ignoreCancelled = true)
