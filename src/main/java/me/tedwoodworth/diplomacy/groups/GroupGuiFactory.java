@@ -43,6 +43,7 @@ public class GroupGuiFactory {
                 "        k"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
         gui.setFiller(new ItemStack(Material.GREEN_STAINED_GLASS_PANE));
 
         gui.addElement(new StaticGuiElement('l',
@@ -189,6 +190,7 @@ public class GroupGuiFactory {
                 "  z{|}~ E"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
         gui.setFiller(new ItemStack(Material.GREEN_STAINED_GLASS_PANE));
 
         var alphabetical = new ItemStack(Material.WHITE_BANNER);

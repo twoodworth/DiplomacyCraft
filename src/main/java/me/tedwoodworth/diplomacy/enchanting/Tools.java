@@ -1690,7 +1690,9 @@ public class Tools {
                 for (var item : inventory.getMatrix()) {
                     if (item == null || item.getType() == Material.AIR) continue;
                     if (tools.contains(item.getType())) {
-                        if (!isChisel(item)) {
+                        if (!isChisel(item)
+                                || !item.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS)
+                                || item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) < 8) {
                             inventory.setResult(air);
                             return;
                         } else {
@@ -1719,7 +1721,9 @@ public class Tools {
                 for (var item : inventory.getMatrix()) {
                     if (item == null || item.getType() == Material.AIR) continue;
                     if (tools.contains(item.getType())) {
-                        if (!isChisel(item)) {
+                        if (!isChisel(item)
+                                || !item.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS)
+                                || item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) < 8) {
                             inventory.setResult(air);
                             return;
                         } else {
@@ -2337,6 +2341,11 @@ public class Tools {
             }
 
             if (isSlurried(result)) {
+                var purity = getPurity(result);
+                if (purity[0] > 0.25118864f) {
+                    inventory.setResult(air);
+                    return;
+                }
                 var rMeta = result.getItemMeta();
                 if (rMeta == null || rMeta.getLore() == null) {
                     inventory.setResult(air);
@@ -5380,7 +5389,8 @@ public class Tools {
                             if (coal > 0) {
                                 double chance;
                                 if (level == 2) chance = 0.012;
-                                else chance = 0.053;
+                                else if (level == 3) chance = 0.053;
+                                else chance = 0.2;
 
                                 var drops = 0;
 
@@ -5644,8 +5654,8 @@ public class Tools {
 
                             if (goldNugget > 0) {
                                 double chance;
-                                if (level == 3) chance = 0.012;
-                                else chance = 0.053;
+                                if (level == 3) chance = 0.013;
+                                else chance = 0.055;
 
                                 var drops = 0;
 
@@ -5677,9 +5687,9 @@ public class Tools {
 
                             if (goldDust > 0) {
                                 double chance;
-                                if (level == 4) chance = 0.012;
-                                else if (level == 5 || level == 6) chance = 0.053;
-                                else if (level == 7) chance = 0.231;
+                                if (level == 4) chance = 0.015;
+                                else if (level == 5 || level == 6) chance = 0.057;
+                                else if (level == 7) chance = 0.239;
                                 else chance = 0.0;
 
                                 var drops = 0;
@@ -5765,7 +5775,7 @@ public class Tools {
 
                             if (gunPowder > 0) {
                                 double chance;
-                                if (level == 6) chance = 0.012;
+                                if (level == 6) chance = 0.011;
                                 else chance = 0.123;
 
                                 var drops = 0;
@@ -5843,13 +5853,13 @@ public class Tools {
                         var durability = toolType.getMaxDurability();
 
                         var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
-                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        if (level <= 1) break;
+                        if (r < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                            event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                             meta.removeEnchant(Enchantment.DAMAGE_ALL);
                             meta.removeEnchant(Enchantment.DIG_SPEED);
-                            if (level > 1) {
-                                meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
-                                meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
-                            }
+                            meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
+                            meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
                             item.setItemMeta(meta);
                             event.getPlayer().getEquipment().setItemInMainHand(item);
                         }
@@ -5868,11 +5878,11 @@ public class Tools {
                             var r = Math.random();
                             var durability = toolType.getMaxDurability();
                             var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_MOBS);
-                            if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                            if (level <= 1) break;
+                            if (r < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                                event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                                 meta.removeEnchant(Enchantment.LOOT_BONUS_MOBS);
-                                if (level > 1) {
-                                    meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
-                                }
+                                meta.addEnchant(Enchantment.LOOT_BONUS_MOBS, level - 1, true);
                                 item.setItemMeta(meta);
                                 event.getPlayer().getEquipment().setItemInMainHand(item);
                             }
@@ -5889,12 +5899,12 @@ public class Tools {
                             var r = Math.random();
                             var durability = toolType.getMaxDurability();
                             var level = meta.getEnchantLevel(Enchantment.DAMAGE_ALL);
-                            if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                            if (level <= 1) break;
+                            if (r < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                                event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                                 meta.removeEnchant(Enchantment.DAMAGE_ALL);
                                 meta.removeEnchant(Enchantment.SWEEPING_EDGE);
-                                if (level > 1) {
-                                    meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
-                                }
+                                meta.addEnchant(Enchantment.DAMAGE_ALL, level - 1, true);
                                 if (level > 3) {
                                     meta.addEnchant(Enchantment.SWEEPING_EDGE, (level - 1) / 2, true);
                                 }
@@ -5918,7 +5928,9 @@ public class Tools {
                         var durability = toolType.getMaxDurability();
 
                         var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
-                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        if (level <= 1) break;
+                        if (r < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                            event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                             meta.removeEnchant(Enchantment.DIG_SPEED);
                             if (level > 1) {
                                 meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);
@@ -5941,7 +5953,9 @@ public class Tools {
                         var durability = toolType.getMaxDurability();
 
                         var level = meta.getEnchantLevel(Enchantment.IMPALING);
-                        if (r < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (unbreaking + 1)) {
+                        if (level <= 1) break;
+                        if (r < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                            event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                             meta.removeEnchant(Enchantment.IMPALING);
                             if (level > 1) {
                                 meta.addEnchant(Enchantment.IMPALING, level - 1, true);
@@ -6772,11 +6786,14 @@ public class Tools {
                 if (meta.hasEnchant(Enchantment.IMPALING)) {
                     var level = meta.getEnchantLevel(Enchantment.IMPALING);
                     var durability = Material.TRIDENT.getMaxDurability();
-                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.9) / 10.0 - 1) / (6)) {
+                    var unbreaking = 0;
+                    if (meta.hasEnchant(Enchantment.DURABILITY))
+                        unbreaking = meta.getEnchantLevel(Enchantment.DURABILITY);
+                    if (level > 1 && Math.random() < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                        event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
+
                         meta.removeEnchant(Enchantment.IMPALING);
-                        if (level > 1) {
-                            meta.addEnchant(Enchantment.IMPALING, level - 1, true);
-                        }
+                        meta.addEnchant(Enchantment.IMPALING, level - 1, true);
                         stack.setItemMeta(meta);
                         item.setItemStack(stack);
                     }
@@ -7056,7 +7073,9 @@ public class Tools {
 
                 if (meta.hasEnchant(Enchantment.LOOT_BONUS_BLOCKS)) {
                     var level = meta.getEnchantLevel(Enchantment.LOOT_BONUS_BLOCKS);
-                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
+                    if (level > 1 && Math.random() < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                        event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
+
                         meta.removeEnchant(Enchantment.LOOT_BONUS_BLOCKS);
                         if (level > 1) {
                             meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, level - 1, true);
@@ -7247,7 +7266,8 @@ public class Tools {
 
                 if (meta.hasEnchant(Enchantment.DIG_SPEED)) {
                     var level = meta.getEnchantLevel(Enchantment.DIG_SPEED);
-                    if (Math.random() < Math.pow(durability + 1, Math.pow(level, 0.75) / 10.0 - 1) / (unbreaking + 1)) {
+                    if (level > 1 && Math.random() < (level + 1.0) / (2.0 * (1 + unbreaking) * (durability + 1))) {
+                        event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHAIN_STEP, 1, 1);
                         meta.removeEnchant(Enchantment.DIG_SPEED);
                         if (level > 1) {
                             meta.addEnchant(Enchantment.DIG_SPEED, level - 1, true);

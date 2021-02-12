@@ -43,6 +43,7 @@ public class ClassGuiFactory {
                 "        l"
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setCloseAction(close -> false);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
         if (playerNation != null) {
             if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {
@@ -486,6 +487,7 @@ public class ClassGuiFactory {
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setCloseAction(close -> false);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
         if (playerNation != null) {
             if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {
@@ -1800,6 +1802,7 @@ public class ClassGuiFactory {
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setCloseAction(close -> false);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
         if (playerNation != null) {
             if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {
@@ -2885,6 +2888,7 @@ public class ClassGuiFactory {
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setCloseAction(close -> false);
         var glass = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
         if (playerNation != null) {
             if (Objects.equals(nation, playerNation) || nation.getAllyNationIDs().contains(playerNation.getNationID())) {

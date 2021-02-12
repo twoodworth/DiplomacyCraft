@@ -3,13 +3,11 @@ package me.tedwoodworth.diplomacy.players;
 import com.google.common.collect.ImmutableMap;
 import de.themoep.inventorygui.InventoryGui;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.DiplomacyRecipes;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
-import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.Nations;
-import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
+import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -30,6 +28,7 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -455,12 +454,6 @@ public class DiplomacyPlayers {
                     }
                 }
             }
-        }
-
-        @EventHandler
-        private void onInventoryClose(InventoryCloseEvent event) {
-            var player = event.getPlayer();
-            InventoryGui.clearHistory(player);
         }
 
         @EventHandler(ignoreCancelled = true)

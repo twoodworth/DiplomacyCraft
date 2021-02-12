@@ -27,12 +27,25 @@ public class NationGuiFactory {
 
         var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Menu";
         String[] guiSetup = {
-                "   abc   ",
+                "    f    ",
+                "   rea   ",
                 "         ",
-                "   efg  E",
         };
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), player, title, guiSetup);
+        gui.setCloseAction(close -> false);
         gui.setFiller(new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+
+        gui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.KNOWLEDGE_BOOK),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = Guis.getInstance().getRecipeMenu(Guis.getInstance().RECIPES_KEY);
+                    nGui.show(clicker);
+                    return true;
+                },
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Custom Recipes",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View custom recipes")
+        );
 
         gui.addElement(new StaticGuiElement('a',
                 new ItemStack(Material.BLUE_BANNER),
@@ -89,16 +102,6 @@ public class NationGuiFactory {
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "You",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View your player info"
         ));
-
-        gui.addElement(new StaticGuiElement('E',
-                new ItemStack(Material.BARRIER),
-                click -> {
-                    gui.close();
-                    return true;
-                },
-                "" + ChatColor.RED + ChatColor.BOLD + "Escape",
-                ChatColor.GRAY + "Click to escape"
-        ));
         return gui;
     }
 
@@ -114,6 +117,7 @@ public class NationGuiFactory {
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
         gui.setFiller(new ItemStack(Material.BLUE_STAINED_GLASS_PANE));
 
         var head = new ItemStack(Material.PLAYER_HEAD);
@@ -244,6 +248,7 @@ public class NationGuiFactory {
 
         // Create gui & set filler
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
         gui.setFiller(new ItemStack(Material.YELLOW_STAINED_GLASS_PANE));
 
         // Nation name element

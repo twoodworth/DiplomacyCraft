@@ -344,6 +344,7 @@ public class DiplomacyRecipes {
         meta.setDisplayName(ChatColor.RESET + "Wooden Sifter");
         meta.setLocalizedName("Wooden Sifter");
         meta.setLore(sifterLore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         sifter.setItemMeta(meta);
         sifter.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 1);
 
@@ -531,7 +532,7 @@ public class DiplomacyRecipes {
         bootLayer.setIngredient('B', new RecipeChoice.MaterialChoice(Tools.getInstance().boots));
         Diplomacy.getInstance().getServer().addRecipe(bootLayer);
 
-        var grenade = new ItemStack(FIREWORK_STAR);
+        var grenade = new ItemStack(FIREWORK_STAR, 2);
         grenade.addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 1);
         var grenadeMeta = grenade.getItemMeta();
         grenadeMeta.setDisplayName(ChatColor.RESET + "Grenade");
