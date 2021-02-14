@@ -4482,7 +4482,7 @@ public class Tools {
             var entity = event.getEntity();
             var last = entity.getLastDamageCause();
 
-            if (last instanceof EntityDamageByEntityEvent) {
+            if (last instanceof EntityDamageByEntityEvent && !(Entities.getInstance().getDropItems(entity))) {
                 var killer = ((EntityDamageByEntityEvent) entity.getLastDamageCause()).getDamager();
                 if ((killer == null || !(killer instanceof Player || (killer instanceof Tameable && ((Tameable) killer).isTamed()) || killer instanceof Projectile)) && !(entity instanceof HumanEntity))
                     return;
@@ -9279,6 +9279,9 @@ public class Tools {
                     event.setCancelled(true);
                     return;
                 }
+            } else {
+                Entities.getInstance().setDropItems(entity, true);
+                entity.setRemoveWhenFarAway(false);
             }
 
             if (itemPickupList.contains(drop)) {

@@ -1,14 +1,17 @@
 package me.tedwoodworth.diplomacy.entities;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.entity.SlimeSplitEvent;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -19,6 +22,7 @@ import java.util.Set;
 public class Entities {
     private static Entities instance = null;
     public final NamespacedKey entityLootKey = new NamespacedKey(Diplomacy.getInstance(), "lootKey");
+    public final NamespacedKey entityDropKey = new NamespacedKey(Diplomacy.getInstance(), "dropKey");
     private int healTaskID = -1;
     private Set<Entity> splitSlimes = new HashSet<>();
 
@@ -57,6 +61,23 @@ public class Entities {
                     }
                 }
             }
+        }
+    }
+
+    public void setDropItems(LivingEntity entity, boolean dropItems) {
+        if (entity instanceof Player) throw new IllegalArgumentException("Error: Does not apply to players");
+        var container = entity.getPersistentDataContainer();
+        container.set(entityDropKey, BooleanPersistentDataType.instance, dropItems);
+    }
+
+    public boolean getDropItems(LivingEntity entity) {
+        if (entity instanceof Player) throw new IllegalArgumentException("Error: Does not apply to players");
+        var container = entity.getPersistentDataContainer();
+        if (!container.has(entityDropKey, BooleanPersistentDataType.instance)) {
+            container.set(entityDropKey, BooleanPersistentDataType.instance, false);
+            return false;
+        } else {
+            return container.get(entityDropKey, BooleanPersistentDataType.instance);
         }
     }
 
