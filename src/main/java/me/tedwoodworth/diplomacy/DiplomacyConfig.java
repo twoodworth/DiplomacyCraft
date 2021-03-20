@@ -73,6 +73,16 @@ public class DiplomacyConfig {
         return Long.parseLong(interval);
     }
 
+    public String getResetWorldPassword() {
+        var password = diplomacyConfig.getString("reset-world-password");
+        if (password == null) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
+            diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
+            password = "password312";
+        }
+        return password;
+    }
+
     public void save() {
         try {
             diplomacyConfig.save(diplomacyConfigFile);

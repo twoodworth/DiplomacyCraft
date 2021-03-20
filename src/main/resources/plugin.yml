@@ -153,4 +153,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  resetWorld:
+    description: Resets the world.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

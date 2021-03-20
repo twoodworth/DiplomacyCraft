@@ -56,6 +56,7 @@ public class Diplomacy extends JavaPlugin {
         GuideCommand.register(getCommand("guide"));
         TogglePickupCommand.register(getCommand("ta"));
         RecipeCommand.register(getCommand("recipes"));
+        ResetWorldCommand.register(getCommand("resetWorld"));
         System.out.println("[Diplomacy] Loaded commands");
         DiplomacyConfig.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded config events");
