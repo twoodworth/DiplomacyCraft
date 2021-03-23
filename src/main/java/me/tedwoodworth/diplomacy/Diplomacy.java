@@ -6,6 +6,10 @@ import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.entities.Entities;
+import me.tedwoodworth.diplomacy.geology.GeoData;
+import me.tedwoodworth.diplomacy.geology.RandomBlockTicker;
+import me.tedwoodworth.diplomacy.geology.RandomSubchunkTicker;
+import me.tedwoodworth.diplomacy.geology.SubChunk;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
@@ -60,6 +64,7 @@ public class Diplomacy extends JavaPlugin {
         TogglePickupCommand.register(getCommand("ta"));
         RecipeCommand.register(getCommand("recipes"));
         ResetWorldCommand.register(getCommand("resetWorld"));
+        GeoCommand.register(getCommand("geo"));
         System.out.println("[Diplomacy] Loaded commands");
         DiplomacyConfig.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded config events");
@@ -109,12 +114,19 @@ public class Diplomacy extends JavaPlugin {
         if (!setupEconomy()) {
             throw new RuntimeException("Unable to set up vault economy.");
         }
+
+        RandomBlockTicker.getInstance();
+        System.out.println("[Diplomacy] Initialized random block ticker");
+
+        RandomSubchunkTicker.getInstance();
+        System.out.println("[Diplomacy] Initialized random subchunk ticker");
     }
 
     private void fillWorld(World world, int radius, int currentX, int currentZ, int count, double total) {
         var percent = (100 * count) / total;
         System.out.println("Generating new world: " + String.format("%.2f%%", percent));
         var chunk = world.getChunkAt(currentX, currentZ);
+        GeoData.getInstance().getSubchunkTemperature(new SubChunk(chunk, 0));
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
@@ -147,6 +159,7 @@ public class Diplomacy extends JavaPlugin {
         }
 
     }
+
 
     private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {

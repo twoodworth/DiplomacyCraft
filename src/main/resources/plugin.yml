@@ -158,4 +158,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  geo:
+    description: Manages geo stuff.
+    aliases: []
+    usage: "Usage: /<command>"
+
 
