@@ -63,6 +63,24 @@ public class DiplomacyConfig {
         return diplomacyConfig.getStringList("messages");
     }
 
+    public int getWorldSize() {
+        var size = diplomacyConfig.getInt("world-size");
+        if (size == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
+            diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
+            size = (int) Bukkit.getWorld("world").getWorldBorder().getSize();
+            diplomacyConfig.set("world-size", 64);
+            return size;
+        }
+        return size;
+    }
+
+    public void setWorldSize(int size) {
+        Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
+        diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
+        diplomacyConfig.set("world-size", size);
+    }
+
     public long getMessageInterval() {
         var interval = diplomacyConfig.getString("message-interval");
         if (interval == null) {

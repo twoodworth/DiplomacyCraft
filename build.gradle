@@ -7,6 +7,7 @@ group 'me.tedwoodworth.diplomacy'
 version '1.0-SNAPSHOT'
 
 repositories {
+
     mavenCentral()
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = 'https://repo.minebench.de/' }

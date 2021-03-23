@@ -1,13 +1,20 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import com.google.gson.JsonObject;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyConfig;
+import me.tedwoodworth.diplomacy.FileUtils;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.AccountManager;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.util.FileUtil;
+import org.json.simple.JSONObject;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +28,7 @@ public class ResetWorldCommand implements CommandExecutor, TabCompleter {
 
         pluginCommand.setExecutor(resetWorldCommand);
         pluginCommand.setTabCompleter(resetWorldCommand);
+
     }
 
     @Override
@@ -35,9 +43,7 @@ public class ResetWorldCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        var list = new ArrayList<String>();
-        list.add("resetWorld");
-        return list;
+        return new ArrayList<>();
     }
 
     private void resetWorld(CommandSender sender, String password, String strDiameter) {
@@ -68,100 +74,62 @@ public class ResetWorldCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (diameter < 16) {
-            sender.sendMessage(ChatColor.DARK_RED + "Diameter too small. Cannot be smaller than 16");
+        if (diameter < 64) {
+            sender.sendMessage(ChatColor.DARK_RED + "Diameter too small. Cannot be smaller than 64");
             return;
         }
 
-        // must be multiple of 16
-        var remainder = diameter % 16;
+        // must be multiple of 32
+        var remainder = diameter % 32;
         if (remainder != 0) {
             diameter = diameter - remainder;
-            sender.sendMessage(ChatColor.GREEN + "Diameter rounded to " + diameter + " (must be a multiple of 16)");
+            sender.sendMessage(ChatColor.GREEN + "Diameter rounded to " + diameter + " (must be a multiple of 32)");
         }
 
-        WorldCreator wc1 = new WorldCreator("tempWorld");
-        wc1.environment(World.Environment.NORMAL);
-        wc1.type(WorldType.NORMAL);
-        wc1.createWorld();
+        Bukkit.broadcastMessage(ChatColor.GREEN + "World is being reset. All nations will be removed, lives set back to 20, and a fresh planet generated.");
+        System.out.println("Preparing new world...");
 
-        var tempWorld = Bukkit.getWorld("tempWorld");
-
-        for (var p : Bukkit.getOnlinePlayers()) {
-            p.teleport(new Location(tempWorld, 0, 63, 0));
-            p.kickPlayer("World being rest");
-        }
-
-        Bukkit.unloadWorld("world", true);
         var container = Bukkit.getWorldContainer();
-        var path = container.getAbsolutePath();
-        var index = path.indexOf(".");
-        var builder = new StringBuilder(path);
-        builder.deleteCharAt(index);
-        path = builder.toString();
-        System.out.println("Path: " + path + "world");
-        var worldFolder = new File(path + "world");
-        recursiveDelete(worldFolder);
+        var nWorldDir = new File(container.getAbsolutePath() + "newWorld");
+        nWorldDir.mkdir();
+        var resource = getClass().getClassLoader().getResource("Default/.newWorld");
+        FileUtils.copyResourcesRecursively(resource, nWorldDir);
 
-        Bukkit.unloadWorld("tempWorld", false);
-        worldFolder = new File(path + "tempWorld");
-        recursiveDelete(worldFolder);
+        DiplomacyConfig.getInstance().setWorldSize(diameter);
 
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            testPlayer.kickPlayer("World being reset");
+        }
 
-        WorldCreator wc = new WorldCreator("world");
-        wc.environment(World.Environment.NORMAL);
-        wc.type(WorldType.FLAT);
-        wc.generatorSettings("minecraft:air;minecraft:the_void");
-        wc.createWorld();
+        // remove all nations
+        System.out.println("Removing nations...");
+        var nations = Nations.getInstance().getNations();
+        for (var nation : new ArrayList<>(nations)) {
+            Nations.getInstance().removeNation(nation);
+        }
+        var offlinePlayers = Bukkit.getOfflinePlayers();
 
-        var world = Bukkit.getWorld("world");
-        var border = world.getWorldBorder();
-        border.setCenter(0, 0);
-        border.setSize(diameter);
+        // reset all lives
+        System.out.println("Resetting Lives...");
 
-        var chunks = (int) (border.getSize() / 16.0);
-        fillWorld(world, chunks / 2, chunks / 2 * (-1), chunks / 2 * (-1), 0, Math.pow(chunks, 2));
+        var am = AccountManager.getInstance();
+        var eco = Diplomacy.getEconomy();
+        for (var offlinePlayer : offlinePlayers) {
+            eco.withdrawPlayer(offlinePlayer, eco.getBalance(offlinePlayer));
 
-    }
-
-    private void fillWorld(World world, int radius, int currentX, int currentZ, int count, double total) {
-        var percent = (100 * count) / total;
-        System.out.println("Generating new world: " + String.format("%.0f%%", percent));
-        var chunk = world.getChunkAt(currentX, currentZ);
-        for (int y = 0; y < 32; y++) {
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    var block = chunk.getBlock(x, y, z);
-                    block.setType(Material.LAVA);
-                    block.setBiome(Biome.THE_VOID);
-                }
+            var uuid = offlinePlayer.getUniqueId();
+            var account = am.getAccount(uuid);
+            if (account != null) {
+                account.setLives(20);
             }
         }
-        currentZ++;
-        if (currentZ == radius) {
-            currentZ = radius * (-1);
-            currentX++;
-        }
-        if (currentX < radius) {
-            int finalCurrentX = currentX;
-            int finalCurrentZ = currentZ;
-            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> fillWorld(world, radius, finalCurrentX, finalCurrentZ, count + 1, total), 1L);
 
-        } else {
-            Bukkit.getServer().reload();
-        }
-
-    }
-
-    private void recursiveDelete(File file) {
-        if (file.isDirectory()) {
-            var contents = file.listFiles();
-            for (var content : contents) {
-                recursiveDelete(content);
-            }
-        }
-        if (file.delete() == false) {
-            System.out.println("a file failed to delete");
-        }
+        System.out.println();
+        System.out.println();
+        System.out.println("!!! -------------------------------> BEFORE STARTING UP THE SERVER, DELETE THE FOLDER \"world\"");
+        System.out.println("!!! -------------------------------> AND RENAME THE FOLDER \".newWorld\" TO WORLD.");
+        System.out.println();
+        System.out.println();
+        Bukkit.getServer().shutdown();
     }
 }

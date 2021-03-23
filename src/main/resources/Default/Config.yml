@@ -8,3 +8,4 @@ messages:
   - "The server is currently in alpha. Please report any bugs in the discord."
 message-interval: 120
 reset-world-password: "password312"
+world-size: 64

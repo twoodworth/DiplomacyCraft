@@ -16,6 +16,9 @@ import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -92,10 +95,57 @@ public class Diplomacy extends JavaPlugin {
         Entities.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded entity events");
 
+        // check if world is new
+        var world = Bukkit.getWorld("world");
+        var border = world.getWorldBorder();
+        if (border.getSize() < 16) {
+            var size = DiplomacyConfig.getInstance().getWorldSize();
+            border.setSize(size);
+            var chunks = (int) (size / 16.0);
+            fillWorld(Bukkit.getWorld("world"), chunks / 2, chunks / 2 * (-1), chunks / 2 * (-1), 0, Math.pow(chunks, 2));
+        }
 
+        // setup economy
         if (!setupEconomy()) {
             throw new RuntimeException("Unable to set up vault economy.");
         }
+    }
+
+    private void fillWorld(World world, int radius, int currentX, int currentZ, int count, double total) {
+        var percent = (100 * count) / total;
+        System.out.println("Generating new world: " + String.format("%.2f%%", percent));
+        var chunk = world.getChunkAt(currentX, currentZ);
+        for (int y = 0; y < 32; y++) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    var block = chunk.getBlock(x, y, z);
+                    block.setType(Material.LAVA);
+                }
+            }
+        }
+
+        for (int y = 32; y < world.getMaxHeight(); y++) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    var block = chunk.getBlock(x, y, z);
+                    block.setType(Material.AIR);
+                }
+            }
+        }
+        currentZ++;
+        if (currentZ == radius) {
+            currentZ = radius * (-1);
+            currentX++;
+        }
+        if (currentX < radius) {
+            int finalCurrentX = currentX;
+            int finalCurrentZ = currentZ;
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> fillWorld(world, radius, finalCurrentX, finalCurrentZ, count + 1, total), 1L);
+
+        } else {
+            System.out.println("Generating new world: 100%");
+        }
+
     }
 
     private boolean setupEconomy() {
