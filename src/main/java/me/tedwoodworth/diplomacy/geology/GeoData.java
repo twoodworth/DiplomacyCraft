@@ -15,7 +15,9 @@ public class GeoData {
     private static GeoData instance = null;
     public final NamespacedKey tempKey = new NamespacedKey(Diplomacy.getInstance(), "temp");
     public final World WORLD = Bukkit.getWorld("world");
-    public final int MAX_XZ = (int) (WORLD.getWorldBorder().getSize()) / 2;
+    public final int WORLD_SIZE = (int) WORLD.getWorldBorder().getSize();
+    public final int MAX_XZ = (WORLD_SIZE) / 2 - 1;
+    public final int MIN_XZ = (-WORLD_SIZE) / 2;
     public final int MAX_Y = WORLD.getMaxHeight();
     public int tickSpeed = 1;
 
@@ -61,30 +63,30 @@ public class GeoData {
     public Block getRelativeBlock(BlockFace relative, Block block) {
         switch (relative) {
             case UP -> {
-                if (block.getLocation().getY() == MAX_Y)
+                if (block.getY() == MAX_Y - 1)
                     return null;
             }
             case DOWN -> {
-                if (block.getLocation().getY() == 0)
+                if (block.getY() == 0)
                     return null;
             }
             case NORTH -> {
-                if (block.getLocation().getZ() == -MAX_XZ) {
+                if (block.getZ() == MIN_XZ) {
                     return (new Location(WORLD, block.getX(), block.getY(), MAX_XZ)).getBlock();
                 }
             }
             case SOUTH -> {
-                if (block.getLocation().getZ() == MAX_XZ) {
-                    return (new Location(WORLD, block.getX(), block.getY(), -MAX_XZ)).getBlock();
+                if (block.getZ() == MAX_XZ) {
+                    return (new Location(WORLD, block.getX(), block.getY(), MIN_XZ)).getBlock();
                 }
             }
             case EAST -> {
-                if (block.getLocation().getX() == MAX_XZ) {
-                    return (new Location(WORLD, -MAX_XZ, block.getY(), block.getZ())).getBlock();
+                if (block.getX() == MAX_XZ) {
+                    return (new Location(WORLD, MIN_XZ, block.getY(), block.getZ())).getBlock();
                 }
             }
             case WEST -> {
-                if (block.getLocation().getX() == -MAX_XZ) {
+                if (block.getX() == MIN_XZ) {
                     return (new Location(WORLD, MAX_XZ, block.getY(), block.getZ())).getBlock();
                 }
             }

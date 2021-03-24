@@ -64,7 +64,7 @@ public class SubChunk {
                 }
             }
             case NORTH -> {
-                if (chunk.getZ() == -GeoData.getInstance().MAX_XZ / 16) {
+                if (chunk.getZ() == GeoData.getInstance().MIN_XZ / 16) {
                     var block = chunk.getBlock(0, 0, 0);
                     var nChunk = GeoData.getInstance().getRelativeBlock(BlockFace.NORTH, block).getChunk();
                     return new SubChunk(nChunk, subSection);
@@ -94,7 +94,7 @@ public class SubChunk {
                 }
             }
             case WEST -> {
-                if (chunk.getX() == -GeoData.getInstance().MAX_XZ / 16) {
+                if (chunk.getX() == GeoData.getInstance().MIN_XZ / 16) {
                     var block = chunk.getBlock(0, 0, 0);
                     var nChunk = GeoData.getInstance().getRelativeBlock(BlockFace.WEST, block).getChunk();
                     return new SubChunk(nChunk, subSection);

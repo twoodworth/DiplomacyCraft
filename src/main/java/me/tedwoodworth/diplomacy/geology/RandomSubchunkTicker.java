@@ -70,7 +70,8 @@ public class RandomSubchunkTicker {
                             geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (geoData.getSubchunkTemperature(subchunk) * 3 + 500) / 4);
+//                        geoData.setSubchunkTemperature(subchunk, (geoData.getSubchunkTemperature(subchunk) * 3 + 500) / 4);
+                        // todo add sub-world in which this will be applied
                     }
                 }
                 case 2 -> {
@@ -148,9 +149,11 @@ public class RandomSubchunkTicker {
 
     private SubChunk getRandomSubchunk() {
         return new SubChunk(
-                (int) ((Math.random() * geoData.MAX_XZ * 2) - geoData.MAX_XZ) / 16,
-                (int) (Math.random() * geoData.MAX_Y) / 16,
-                (int) ((Math.random() * geoData.MAX_XZ * 2) - geoData.MAX_XZ) / 16
+                geoData.WORLD.getBlockAt(
+                        (int) (Math.random() * geoData.WORLD_SIZE) + geoData.MIN_XZ,
+                        (int) (Math.random() * geoData.MAX_Y),
+                        (int) (Math.random() * geoData.WORLD_SIZE) + geoData.MIN_XZ
+                )
         );
     }
 

@@ -126,7 +126,22 @@ public class Diplomacy extends JavaPlugin {
         var percent = (100 * count) / total;
         System.out.println("Generating new world: " + String.format("%.2f%%", percent));
         var chunk = world.getChunkAt(currentX, currentZ);
-        GeoData.getInstance().getSubchunkTemperature(new SubChunk(chunk, 0));
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 0), 500);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 1), 475);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 2), 450);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 3), 440);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 4), 430);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 5), 420);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 6), 410);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 7), 400);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 8), 390);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 9), 380);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 10), 370);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 11), 360);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 12), 350);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 13), 340);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 14), 330);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 15), 320);
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
