@@ -41,15 +41,16 @@ public class RandomSubchunkTicker {
                         if (geoData.receivesSunlight(subchunk)) {
                             var temp3 = geoData.getSunTemperature(subchunk);
                             if (temp3 > temp2 && temp3 > temp1) {
-                                geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                                geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                             } else {
-                                geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                                geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                             }
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (geoData.getSubchunkTemperature(subchunk) * 3 + 200) / 4);
+                        geoData.setSubchunkTemperature(subchunk, (geoData.getSubchunkTemperature(subchunk) * 2 + 200) / 3);
+                        //todo preserve/lose energy based on quantity of carbon dioxide
                     }
                 }
                 case 1 -> {
@@ -62,15 +63,18 @@ public class RandomSubchunkTicker {
                         if (geoData.receivesSunlight(subchunk)) {
                             var temp3 = geoData.getSunTemperature(subchunk);
                             if (temp3 > temp2 && temp3 > temp1) {
-                                geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                                geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                             } else {
-                                geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                                geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                             }
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                         }
                     } else {
-//                        geoData.setSubchunkTemperature(subchunk, (geoData.getSubchunkTemperature(subchunk) * 3 + 500) / 4);
+                        var temp = geoData.getSubchunkTemperature(subchunk);
+                        if (temp < 500) {
+                            geoData.setSubchunkTemperature(subchunk, 500);
+                        }
                         // todo add sub-world in which this will be applied
                     }
                 }
@@ -83,12 +87,12 @@ public class RandomSubchunkTicker {
                     if (geoData.receivesSunlight(subchunk)) {
                         var temp3 = geoData.getSunTemperature(subchunk);
                         if (temp3 > temp2 && temp3 > temp1) {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                        geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                     }
                 }
                 case 3 -> {
@@ -100,12 +104,12 @@ public class RandomSubchunkTicker {
                     if (geoData.receivesSunlight(subchunk)) {
                         var temp3 = geoData.getSunTemperature(subchunk);
                         if (temp3 > temp2 && temp3 > temp1) {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                        geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                     }
                 }
                 case 4 -> {
@@ -117,12 +121,12 @@ public class RandomSubchunkTicker {
                     if (geoData.receivesSunlight(subchunk)) {
                         var temp3 = geoData.getSunTemperature(subchunk);
                         if (temp3 > temp2 && temp3 > temp1) {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                        geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                     }
                 }
                 case 5 -> {
@@ -134,12 +138,12 @@ public class RandomSubchunkTicker {
                     if (geoData.receivesSunlight(subchunk)) {
                         var temp3 = geoData.getSunTemperature(subchunk);
                         if (temp3 > temp2 && temp3 > temp1) {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2 + temp3) / 9);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1 + temp3) / 4);
                         } else {
-                            geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                            geoData.setSubchunkTemperature(subchunk, (temp2 * 2 + temp1) / 3);
                         }
                     } else {
-                        geoData.setSubchunkTemperature(subchunk, (temp1 * 7 + temp2) / 8);
+                        geoData.setSubchunkTemperature(subchunk, (temp2 * 7 + temp1) / 8);
                     }
                 }
             }

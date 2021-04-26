@@ -32,6 +32,16 @@ public class RandomBlockTicker {
     }
 
 
+    //todo plate shifting
+    // each block will have a angle (0 - 2pi) and speed (0-1) associated with it
+    // On a random tick, solid blocks have a 1 / (338688000 * speed * 100) chance of shifting.
+    // upon shifting, the block will have its x and z components of its angle determined, each with a max value of 1.
+    // for each component, if Math.random() is less than the absolute value of the component, the block will move in that direction.
+    // if Math.random() is greater for both directions, then nothing will happen.
+    // The same thing will then happen 1 tick later for the block that will be in the location that the current block is taking.
+    // this will keep happening until the next block belongs to a different plate or the next block is air/water/lava.
+    // if the next block is a different plate, the current and next block will be compared. If the next block is more dense, it (and
+    // all the blocks below it) will get pushed down. If less dense, it will get pushed up. If equal, it is a 50/50 chance
     private void onRandomBlockTick() {
         for (int i = 0; i < BLOCKS_PER_TICK * geoData.tickSpeed; i++) {
             var block = getRandomBlock();
@@ -163,7 +173,11 @@ public class RandomBlockTicker {
                 case LAVA -> {
                     //todo lava ignites something
                     var temp = geoData.getSubchunkTemperature(new SubChunk(block));
-                    if (temp < 473) {
+                    if (temp < 470) {
+                        if (temp < 280) {
+                            block.setType(Material.OBSIDIAN);
+                            break;
+                        }
                         var up = geoData.getRelativeBlock(BlockFace.UP, block);
                         var down = geoData.getRelativeBlock(BlockFace.DOWN, block);
                         var north = geoData.getRelativeBlock(BlockFace.NORTH, block);
@@ -179,17 +193,19 @@ public class RandomBlockTicker {
                         if (east.getType() != Material.LAVA) count++;
                         if (west.getType() != Material.LAVA) count++;
 
-                        if (count > 1) count *= 20000;
-                        if (Math.random() < count / 200000.0)
+                        if (count > 1) {
                             block.setType(Material.MAGMA_BLOCK);
+                        } else if (count == 1) {
+                            if (Math.random() < Math.pow(1 - (temp / 473.0), 2)) block.setType(Material.MAGMA_BLOCK);
+                        }
                     }
 
                 }
                 case MAGMA_BLOCK -> {
                     var temp = geoData.getSubchunkTemperature(new SubChunk(block));
-                    if (temp > 473) {
+                    if (temp > 490) {
                         block.setType(Material.LAVA);
-                    } else if (temp < 468) {
+                    } else if (temp < 460) {
                         var up = geoData.getRelativeBlock(BlockFace.UP, block);
                         var down = geoData.getRelativeBlock(BlockFace.DOWN, block);
                         var north = geoData.getRelativeBlock(BlockFace.NORTH, block);
@@ -197,142 +213,41 @@ public class RandomBlockTicker {
                         var east = geoData.getRelativeBlock(BlockFace.EAST, block);
                         var west = geoData.getRelativeBlock(BlockFace.WEST, block);
 
-                        var iron = 0;
-                        var gold = 0;
-                        var stone = 0;
-                        var andesite = 0;
-                        var diorite = 0;
-                        var granite = 0;
-                        var blackstone = 0;
-                        var air = false;
-                        var lava = false;
+                        var list = new ArrayList<>();
+                        if (up == null) list.add(null);
+                        else list.add(up.getType());
+                        if (down == null) list.add(null);
+                        else list.add(down.getType());
+                        list.add(north.getType());
+                        list.add(south.getType());
+                        list.add(east.getType());
+                        list.add(west.getType());
 
-                        if (up != null) {
-                            var v = up.getType();
-                            switch (v) {
-                                case IRON_ORE -> iron++;
-                                case GOLD_ORE -> gold++;
-                                case STONE -> stone++;
-                                case ANDESITE -> andesite++;
-                                case DIORITE -> diorite++;
-                                case BLACKSTONE -> blackstone++;
-                                case GRANITE -> granite++;
-                                case AIR -> air = true;
-                                case LAVA -> lava = true;
-                            }
-                        }
-                        if (down != null) {
-                            var v = down.getType();
-                            switch (v) {
-                                case IRON_ORE -> iron++;
-                                case GOLD_ORE -> gold++;
-                                case STONE -> stone++;
-                                case ANDESITE -> andesite++;
-                                case DIORITE -> diorite++;
-                                case BLACKSTONE -> blackstone++;
-                                case GRANITE -> granite++;
-                                case AIR -> air = true;
-                                case LAVA -> lava = true;
-                            }
-                        }
-                        var v = north.getType();
-                        switch (v) {
-                            case IRON_ORE -> iron += 8;
-                            case GOLD_ORE -> gold += 8;
-                            case STONE -> stone += 8;
-                            case ANDESITE -> andesite += 8;
-                            case DIORITE -> diorite += 8;
-                            case BLACKSTONE -> blackstone += 8;
-                            case GRANITE -> granite += 8;
-                            case AIR -> air = true;
-                            case LAVA -> lava = true;
-                        }
-                        v = south.getType();
-                        switch (v) {
-                            case IRON_ORE -> iron += 8;
-                            case GOLD_ORE -> gold += 8;
-                            case STONE -> stone += 8;
-                            case ANDESITE -> andesite += 8;
-                            case DIORITE -> diorite += 8;
-                            case BLACKSTONE -> blackstone += 8;
-                            case GRANITE -> granite += 8;
-                            case AIR -> air = true;
-                            case LAVA -> lava = true;
-                        }
-                        v = east.getType();
-                        switch (v) {
-                            case IRON_ORE -> iron += 8;
-                            case GOLD_ORE -> gold += 8;
-                            case STONE -> stone += 8;
-                            case ANDESITE -> andesite += 8;
-                            case DIORITE -> diorite += 8;
-                            case BLACKSTONE -> blackstone += 8;
-                            case GRANITE -> granite += 8;
-                            case AIR -> air = true;
-                            case LAVA -> lava = true;
-                        }
-                        v = west.getType();
-                        switch (v) {
-                            case IRON_ORE -> iron += 8;
-                            case GOLD_ORE -> gold += 8;
-                            case STONE -> stone += 8;
-                            case ANDESITE -> andesite += 8;
-                            case DIORITE -> diorite += 8;
-                            case BLACKSTONE -> blackstone += 8;
-                            case GRANITE -> granite += 8;
-                            case AIR -> air = true;
-                            case LAVA -> lava = true;
-                        }
-                        if (lava) break;
-                        if (Math.random() < 0.6) {
-                            var r = Math.random();
-                            if (r < (iron) / 34.0 ) block.setType(Material.IRON_ORE);
-                            else if (r < (iron + gold) / 34.0) block.setType(Material.GOLD_ORE);
-                            else if (r < (iron + gold + blackstone) / 34.0) block.setType(Material.BLACKSTONE);
-                            else if (r < (iron + gold + blackstone + andesite) / 34.0) block.setType(Material.ANDESITE);
-                            else if (r < (iron + gold + blackstone + andesite + stone) / 34.0) block.setType(Material.STONE);
-                            else if (r < (iron + gold + blackstone + andesite + stone + diorite) / 34.0) block.setType(Material.DIORITE);
-                            else if (r < (iron + gold + blackstone + andesite + stone + diorite + granite) / 34.0) block.setType(Material.GRANITE);
-                            else {
-                                if (air) {
-                                    r = Math.random();
-                                    if (r < 0.00015) block.setType(Material.GOLD_ORE);
-                                    else if (r < 0.0004) block.setType(Material.IRON_ORE);
-                                    else if (r < 0.04) block.setType(Material.ANDESITE);
-                                    else if (r < 0.055) block.setType(Material.STONE);
-                                    else {
-                                        block.setType(Material.BLACKSTONE);
-                                    }
-                                } else {
-                                    r = Math.random();
-                                    if (r < 0.00001) block.setType(Material.GOLD_ORE);
-                                    else if (r < 0.00002) block.setType(Material.IRON_ORE);
-                                    else if (r < 0.25) block.setType(Material.STONE);
-                                    else if (r < 0.5) block.setType(Material.GRANITE);
-                                    else {
-                                        block.setType(Material.DIORITE);
-                                    }
-                                }
-                            }
-                        } else if (air) {
-                            var r = Math.random();
-                            if (r < 0.00015) block.setType(Material.GOLD_ORE);
-                            else if (r < 0.0004) block.setType(Material.IRON_ORE);
-                            else if (r < 0.04) block.setType(Material.ANDESITE);
-                            else if (r < 0.055) block.setType(Material.STONE);
-                            else {
+
+                        if (list.contains(Material.LAVA)) break;
+
+                        var magmacount = 0;
+                        for (var item : list) if (item == Material.MAGMA_BLOCK) magmacount++;
+
+                        if (list.contains(Material.AIR)) {
+                            if (magmacount >= 3) {
                                 block.setType(Material.BLACKSTONE);
+                            } else {
+                                block.setType(Material.ANDESITE);
                             }
+                        } else if (list.contains(Material.BLACKSTONE) || list.contains(Material.OBSIDIAN)) {
+                            if (Math.random() < 0.3) block.setType(Material.BLACKSTONE);
+                            else block.setType(Material.ANDESITE);
+                        } else if (list.contains(Material.ANDESITE) && Math.random() < 0.43) {
+                            block.setType(Material.ANDESITE);
                         } else {
-                            var r = Math.random();
-                            if (r < 0.00001) block.setType(Material.GOLD_ORE);
-                            else if (r < 0.00002) block.setType(Material.IRON_ORE);
-                            else if (r < 0.25) block.setType(Material.STONE);
-                            else if (r < 0.5) block.setType(Material.GRANITE);
-                            else {
-                                block.setType(Material.DIORITE);
-                            }
+                            block.setType(Material.DIORITE);
                         }
+                    }
+                }
+                case OBSIDIAN, BLACKSTONE, ANDESITE, DIORITE -> {
+                    if (geoData.getSubchunkTemperature(new SubChunk(block)) > 480) {
+                        block.setType(Material.MAGMA_BLOCK);
                     }
                 }
                 case REDSTONE_ORE -> {

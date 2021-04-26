@@ -6,10 +6,7 @@ import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.entities.Entities;
-import me.tedwoodworth.diplomacy.geology.GeoData;
-import me.tedwoodworth.diplomacy.geology.RandomBlockTicker;
-import me.tedwoodworth.diplomacy.geology.RandomSubchunkTicker;
-import me.tedwoodworth.diplomacy.geology.SubChunk;
+import me.tedwoodworth.diplomacy.geology.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
@@ -99,6 +96,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded recipes");
         Entities.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded entity events");
+        FluidDynamics.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded fluid dynamics events");
 
         // check if world is new
         var world = Bukkit.getWorld("world");
@@ -126,23 +125,23 @@ public class Diplomacy extends JavaPlugin {
         var percent = (100 * count) / total;
         System.out.println("Generating new world: " + String.format("%.2f%%", percent));
         var chunk = world.getChunkAt(currentX, currentZ);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 0), 500);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 1), 475);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 2), 450);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 3), 440);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 4), 430);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 5), 420);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 6), 410);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 7), 400);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 8), 390);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 9), 380);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 10), 370);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 11), 360);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 12), 350);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 13), 340);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 14), 330);
-        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 15), 320);
-        for (int y = 0; y < 32; y++) {
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 0), 900);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 1), 850);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 2), 800);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 3), 750);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 4), 700);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 5), 650);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 6), 600);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 7), 550);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 8), 500);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 9), 480);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 10), 460);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 11), 440);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 12), 420);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 13), 400);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 14), 380);
+        GeoData.getInstance().setSubchunkTemperature(new SubChunk(chunk, 15), 360);
+        for (int y = 0; y < 128; y++) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     var block = chunk.getBlock(x, y, z);
@@ -151,7 +150,7 @@ public class Diplomacy extends JavaPlugin {
             }
         }
 
-        for (int y = 32; y < world.getMaxHeight(); y++) {
+        for (int y = 128; y < world.getMaxHeight(); y++) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     var block = chunk.getBlock(x, y, z);

@@ -10,7 +10,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-
+    // todo mining sub-world and maybe a nether-like sub-world
 public class GeoData {
     private static GeoData instance = null;
     public final NamespacedKey tempKey = new NamespacedKey(Diplomacy.getInstance(), "temp");
