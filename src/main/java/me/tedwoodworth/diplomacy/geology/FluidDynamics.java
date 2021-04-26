@@ -233,30 +233,31 @@ public class FluidDynamics {
 
     private class EventListener implements Listener {
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-        void onLiquidFlow(BlockFromToEvent event) {
-            var block = event.getBlock();
-            var type = block.getType();
-            if (type == Material.WATER) {
-                event.setCancelled(true);
-                liquidFlow(block, Material.WATER);
-            } else if (type == Material.LAVA) {
-                event.setCancelled(true);
-                liquidFlow(block, Material.LAVA);
-            }
-        }
-
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-        void onFluidLevelChange(FluidLevelChangeEvent event) {
-            event.setCancelled(true);
-        }
-
-        @EventHandler
-        void onBlockBreak(BlockBreakEvent event) {
-            var block = event.getBlock();
-            var scheduler = Bukkit.getScheduler();
-            scheduler.runTaskLater(Diplomacy.getInstance(), () -> liquidFlow(block, Material.WATER), 10L);
-            scheduler.runTaskLater(Diplomacy.getInstance(), () -> liquidFlow(block, Material.LAVA), 20L);
-        }
+        //todo enable fluid dynamics
+//        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+//        void onLiquidFlow(BlockFromToEvent event) {
+//            var block = event.getBlock();
+//            var type = block.getType();
+//            if (type == Material.WATER) {
+//                event.setCancelled(true);
+//                liquidFlow(block, Material.WATER);
+//            } else if (type == Material.LAVA) {
+//                event.setCancelled(true);
+//                liquidFlow(block, Material.LAVA);
+//            }
+//        }
+//
+//        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+//        void onFluidLevelChange(FluidLevelChangeEvent event) {
+//            event.setCancelled(true);
+//        }
+//
+//        @EventHandler
+//        void onBlockBreak(BlockBreakEvent event) {
+//            var block = event.getBlock();
+//            var scheduler = Bukkit.getScheduler();
+//            scheduler.runTaskLater(Diplomacy.getInstance(), () -> liquidFlow(block, Material.WATER), 10L);
+//            scheduler.runTaskLater(Diplomacy.getInstance(), () -> liquidFlow(block, Material.LAVA), 20L);
+//        }
     }
 }
