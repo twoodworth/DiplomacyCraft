@@ -1,10 +1,8 @@
 package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
-import de.themoep.inventorygui.InventoryGui;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.DiplomacyRecipes;
-import me.tedwoodworth.diplomacy.enchanting.Tools;
+import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.*;
@@ -20,15 +18,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -249,11 +244,9 @@ public class DiplomacyPlayers {
 
     private class EventListener implements Listener {
 
-
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
             save();
-            AccountManager.getInstance().save();
         }
 
         @EventHandler
@@ -475,36 +468,6 @@ public class DiplomacyPlayers {
 
             player.sendMessage(ChatColor.RED + "You cannot build here.");
             event.setCancelled(true);
-        }
-
-        @EventHandler
-        private void onEntityDeath(EntityDeathEvent event) {
-            event.setDroppedExp(0);
-        }
-
-        @EventHandler
-        private void onFurnaceExtract(FurnaceExtractEvent event) {
-            event.setExpToDrop(0);
-        }
-
-        @EventHandler
-        private void onEntityBreed(EntityBreedEvent event) {
-            event.setExperience(0);
-        }
-
-        private void onPlayerFish(PlayerFishEvent event) {
-            event.setExpToDrop(0);
-        }
-
-        @EventHandler
-        private void onPlayerExpChange(PlayerExpChangeEvent event) {
-            event.setAmount(0);
-            event.getPlayer().setExp(0);
-        }
-
-        @EventHandler
-        private void onExpBottle(ExpBottleEvent event) {
-            event.setExperience(0);
         }
 
         @EventHandler
@@ -755,8 +718,6 @@ public class DiplomacyPlayers {
 
         @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
-            // Cancel xp drop
-            event.setExpToDrop(0);
 
             var chunk = event.getBlock().getChunk();
             var player = event.getPlayer();
@@ -769,52 +730,11 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
-            player.setTotalExperience(0);
-            player.setLevel(0);
 
-            var account = AccountManager.getInstance().getAccount(player.getUniqueId());
-            var main = account.getMain();
-            if (!main.equals(player.getUniqueId())) {
-                var name = Bukkit.getOfflinePlayer(main).getName();
-                event.setJoinMessage(event.getJoinMessage() + " (alt of " + name + ")");
-            }
             ScoreboardManager.getInstance().updateScoreboards();
             if (!player.hasPlayedBefore()) {
                 player.getInventory().addItem(getGuideBook());
                 player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 8));
-            }
-        }
-
-        @EventHandler
-        private void onPlayerQuit(PlayerQuitEvent event) {
-            if (event.getPlayer().isBanned()) {
-                var uuid = event.getPlayer().getUniqueId();
-                var account = AccountManager.getInstance().getAccount(uuid);
-                for (var testUUID : account.getPlayerIDs()) {
-                    if (uuid.equals(testUUID)) continue;
-                    var testPlayer = Bukkit.getPlayer(testUUID);
-                    if (testPlayer != null) {
-                        testPlayer.kickPlayer("You have been kicked because one of your other accounts has been banned.");
-                    }
-                }
-            }
-        }
-
-        @EventHandler
-        private void onPlayerLogin(PlayerLoginEvent event) {
-            var ip = event.getAddress();
-            var uuid = event.getPlayer().getUniqueId();
-            var instance = AccountManager.getInstance();
-            var account = instance.getAccount(uuid, ip);
-            if (!instance.getExcluded().contains(uuid)) {
-                for (var testUUID : account.getPlayerIDs()) {
-                    if (testUUID.equals(uuid)) continue;
-                    var offlinePlayer = Bukkit.getOfflinePlayer(testUUID);
-                    if (offlinePlayer.isBanned()) {
-                        event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "You cannot join because " +
-                                "one of your alts is banned.");
-                    }
-                }
             }
         }
 
@@ -828,7 +748,7 @@ public class DiplomacyPlayers {
             var entity = event.getEntity();
             if (entity instanceof Item) {
                 var item = (Item) entity;
-                if (Tools.getInstance().isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
+                if (Items.getInstance().isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
                     event.setCancelled(true);
                     return;
                 }

@@ -163,4 +163,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  admin:
+    description: Admin-only commands.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

@@ -3,7 +3,6 @@ package me.tedwoodworth.diplomacy.nations;
 import de.themoep.inventorygui.*;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyRecipes;
-import me.tedwoodworth.diplomacy.enchanting.Tools;
 import me.tedwoodworth.diplomacy.events.*;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
@@ -17,8 +16,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1496,12 +1493,8 @@ public class Guis {
         result.setItemMeta(meta);
         itemGui.addElement(new StaticGuiElement('r',
                 result,
-                ChatColor.AQUA + "Grenade",
-                DiplomacyRecipes.getInstance().GRENADE_LORE,
-                DiplomacyRecipes.getInstance().GRENADE_LORE_2,
-                DiplomacyRecipes.getInstance().GRENADE_LORE_3,
-                " ",
-                ChatColor.RED + "Grenade will explode 4-6 seconds after thrown.")
+                ChatColor.AQUA + "Grenade"
+                )
         );
         recipeMenus.put(GRENADE_KEY, itemGui);
 
@@ -1751,7 +1744,7 @@ public class Guis {
                 " B  T  M ",
                 "         ",
                 "     aaa ",
-                "  n  ara ",
+                " b i ara ",
                 "     aaa ",
                 "         ",
         };
@@ -1763,18 +1756,19 @@ public class Guis {
         itemGui.addElement(lodestoneElement);
         itemGui.addElement(menuElement);
         itemGui.addElement(stickElement);
-        itemGui.addElement(new StaticGuiElement('n',
+        itemGui.addElement(new StaticGuiElement('i',
                         new ItemStack(Material.IRON_INGOT),
-                        click -> {
-                            var gui = recipeMenus.get(REFINED_IRON_INGOT_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Iron Ingot",
-                        ChatColor.GRAY + "- Can be refined",
-                        ChatColor.GRAY + "- Must have a purity of at least " + Tools.getInstance().p7,
-                        GUI_METAL_LORE,
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View refined ingot recipe"
+                        click -> true,
+                        ChatColor.WHITE + "Iron Ingot"
+                )
+        );
+        itemGui.addElement(new StaticGuiElement('b',
+                        new ItemStack(Material.EXPERIENCE_BOTTLE, 15),
+                        click -> true,
+                        ChatColor.YELLOW + "Bottle of Life",
+                        ChatColor.GRAY + "- Must be held in the off-hand",
+                        ChatColor.GRAY + "- Must have at least 15",
+                        ChatColor.GRAY + "- Obtained by logging on and/or voting each day"
                 )
         );
         var enchantedItem = new ItemStack(Material.IRON_INGOT);
@@ -1796,7 +1790,7 @@ public class Guis {
                 " B  T  M ",
                 "         ",
                 "     aaa ",
-                "  n  ara ",
+                " b i ara ",
                 "     aaa ",
                 "         ",
         };
@@ -1808,11 +1802,19 @@ public class Guis {
         itemGui.addElement(lodestoneElement);
         itemGui.addElement(menuElement);
         itemGui.addElement(stickElement);
-        itemGui.addElement(new StaticGuiElement('n',
+        itemGui.addElement(new StaticGuiElement('i',
                         new ItemStack(Material.NETHERITE_INGOT),
-                        ChatColor.WHITE + "Netherite Ingot",
-                        ChatColor.GRAY + "- Must have a purity of at least " + Tools.getInstance().p7,
-                        GUI_METAL_LORE
+                        click -> true,
+                        ChatColor.WHITE + "Netherite Ingot"
+                )
+        );
+        itemGui.addElement(new StaticGuiElement('b',
+                        new ItemStack(Material.EXPERIENCE_BOTTLE, 28),
+                        click -> true,
+                        ChatColor.YELLOW + "Bottle of Life",
+                        ChatColor.GRAY + "- Must be held in the off-hand",
+                        ChatColor.GRAY + "- Must have at least 28",
+                        ChatColor.GRAY + "- Obtained by logging on and/or voting each day"
                 )
         );
         enchantedItem = enchantedItem.clone();
@@ -2286,504 +2288,6 @@ public class Guis {
         );
         recipeMenus.put(NETHERITE_ROD_KEY, itemGui);
 
-        // Iron slurry
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Iron Slurry";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " bcd aaa ",
-                " efg ara ",
-                " hhh aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.SUGAR);
-        itemGui.addElement(new StaticGuiElement('b',
-                        enchantedItem,
-                        click -> {
-                            var gui = recipeMenus.get(SIFTER_DROPS_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.AQUA + "Iron Dust",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View sifter drops"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('c',
-                        new ItemStack(Material.GRAVEL),
-                        ChatColor.WHITE + "Gravel"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('d',
-                        new ItemStack(Material.BONE_MEAL),
-                        ChatColor.WHITE + "Bone Meal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('e',
-                        new ItemStack(Material.CHARCOAL),
-                        ChatColor.WHITE + "Charcoal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('f',
-                        new ItemStack(Material.CLAY),
-                        ChatColor.WHITE + "Clay Ball"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('g',
-                        new ItemStack(Material.SAND),
-                        ChatColor.WHITE + "Sand"
-                )
-        );
-
-        var potion = new ItemStack(Material.POTION);
-        meta = potion.getItemMeta();
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        var data = new PotionData(PotionType.WATER);
-        ((PotionMeta) meta).setBasePotionData(data);
-        potion.setItemMeta(meta);
-
-        itemGui.addElement(new StaticGuiElement('h',
-                        potion,
-                        ChatColor.WHITE + "Water Bottle"
-                )
-        );
-
-        potion = potion.clone();
-        potion.setAmount(3);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(130, 107, 92));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('r',
-                        potion,
-                        ChatColor.WHITE + "Iron Slurry"
-                )
-        );
-        recipeMenus.put(IRON_SLURRY_KEY, itemGui);
-
-        // Gold slurry
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Gold Slurry";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " bcd aaa ",
-                " efg ara ",
-                " hhh aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.GLOWSTONE_DUST);
-        itemGui.addElement(new StaticGuiElement('b',
-                        enchantedItem,
-                        click -> {
-                            var gui = recipeMenus.get(SIFTER_DROPS_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.AQUA + "Gold Dust",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View sifter drops"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('c',
-                        new ItemStack(Material.GRAVEL),
-                        ChatColor.WHITE + "Gravel"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('d',
-                        new ItemStack(Material.BONE_MEAL),
-                        ChatColor.WHITE + "Bone Meal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('e',
-                        new ItemStack(Material.CHARCOAL),
-                        ChatColor.WHITE + "Charcoal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('f',
-                        new ItemStack(Material.CLAY),
-                        ChatColor.WHITE + "Clay Ball"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('g',
-                        new ItemStack(Material.SAND),
-                        ChatColor.WHITE + "Sand"
-                )
-        );
-
-        potion = new ItemStack(Material.POTION);
-        meta = potion.getItemMeta();
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        data = new PotionData(PotionType.WATER);
-        ((PotionMeta) meta).setBasePotionData(data);
-        potion.setItemMeta(meta);
-
-        itemGui.addElement(new StaticGuiElement('h',
-                        potion,
-                        ChatColor.WHITE + "Water Bottle"
-                )
-        );
-
-        potion = potion.clone();
-        potion.setAmount(3);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(199, 160, 62));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('r',
-                        potion,
-                        ChatColor.WHITE + "Gold Slurry"
-                )
-        );
-        recipeMenus.put(GOLD_SLURRY_KEY, itemGui);
-
-        // Netherite slurry
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Netherite Slurry";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " bcd aaa ",
-                " efg ara ",
-                " hhh aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.REDSTONE);
-        itemGui.addElement(new StaticGuiElement('b',
-                        enchantedItem,
-                        click -> {
-                            var gui = recipeMenus.get(SIFTER_DROPS_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.AQUA + "Ancient Dust",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View sifter drops"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('c',
-                        new ItemStack(Material.GRAVEL),
-                        ChatColor.WHITE + "Gravel"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('d',
-                        new ItemStack(Material.BONE_MEAL),
-                        ChatColor.WHITE + "Bone Meal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('e',
-                        new ItemStack(Material.CHARCOAL),
-                        ChatColor.WHITE + "Charcoal"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('f',
-                        new ItemStack(Material.CLAY),
-                        ChatColor.WHITE + "Clay Ball"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('g',
-                        new ItemStack(Material.SAND),
-                        ChatColor.WHITE + "Sand"
-                )
-        );
-
-        potion = new ItemStack(Material.POTION);
-        meta = potion.getItemMeta();
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        data = new PotionData(PotionType.WATER);
-        ((PotionMeta) meta).setBasePotionData(data);
-        potion.setItemMeta(meta);
-
-        itemGui.addElement(new StaticGuiElement('h',
-                        potion,
-                        ChatColor.WHITE + "Water Bottle"
-                )
-        );
-
-        potion = potion.clone();
-        potion.setAmount(3);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(50, 0, 10));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('r',
-                        potion,
-                        ChatColor.WHITE + "Netherite Slurry"
-                )
-        );
-        recipeMenus.put(NETHERITE_SLURRY_KEY, itemGui);
-
-        // Slurried Iron Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Slurried Iron Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " aaa aaa ",
-                " sia ara ",
-                " aaa aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        potion = potion.clone();
-        potion.setAmount(1);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(130, 107, 92));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('s',
-                        potion,
-                        click -> {
-                            var gui = recipeMenus.get(IRON_SLURRY_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Iron Slurry",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.IRON_INGOT),
-                        click -> {
-                            var gui = recipeMenus.get(REFINED_IRON_INGOT_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Iron Ingot",
-                        ChatColor.GRAY + "Must have a purity of at least " + Tools.getInstance().p1,
-                        GUI_METAL_LORE,
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View refined ingot recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('r',
-                        new ItemStack(Material.BRICK),
-                        ChatColor.WHITE + "Slurried Iron Ingot",
-                        " ",
-                        ChatColor.GRAY + "Purity equal to purity of ingot used"
-                )
-        );
-        recipeMenus.put(SLURRIED_IRON_KEY, itemGui);
-
-        // Slurried Gold Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Slurried Gold Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " aaa aaa ",
-                " sia ara ",
-                " aaa aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        potion = potion.clone();
-        potion.setAmount(1);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(199, 160, 62));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('s',
-                        potion,
-                        click -> {
-                            var gui = recipeMenus.get(GOLD_SLURRY_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Gold Slurry",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.GOLD_INGOT),
-                        click -> {
-                            var gui = recipeMenus.get(REFINED_GOLD_INGOT_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Gold Ingot",
-                        ChatColor.GRAY + "Must have a purity of at least " + Tools.getInstance().p1,
-                        GUI_METAL_LORE,
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View refined ingot recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('r',
-                        new ItemStack(Material.BRICK),
-                        ChatColor.WHITE + "Slurried Gold Ingot",
-                        " ",
-                        ChatColor.GRAY + "Purity equal to purity of ingot used"
-                )
-        );
-        recipeMenus.put(SLURRIED_GOLD_KEY, itemGui);
-
-        // Slurried Netherite Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Slurried Netherite Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                " aaa aaa ",
-                " sia ara ",
-                " aaa aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(craftingTableElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-        potion = potion.clone();
-        potion.setAmount(1);
-        meta = potion.getItemMeta();
-        ((PotionMeta) meta).setColor(Color.fromRGB(50, 0, 10));
-        potion.setItemMeta(meta);
-        itemGui.addElement(new StaticGuiElement('s',
-                        potion,
-                        click -> {
-                            var gui = recipeMenus.get(NETHERITE_SLURRY_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Netherite Slurry",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.NETHERITE_INGOT),
-                        ChatColor.WHITE + "Netherite Ingot",
-                        GUI_METAL_LORE,
-                        ChatColor.GRAY + "Must have a purity of at least " + Tools.getInstance().p1
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('r',
-                        new ItemStack(Material.BRICK),
-                        ChatColor.WHITE + "Slurried Netherite Ingot",
-                        " ",
-                        ChatColor.GRAY + "Purity equal to purity of ingot used"
-                )
-        );
-        recipeMenus.put(SLURRIED_NETHERITE_KEY, itemGui);
-
-        // Unbreaking Iron Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Unbreaking Iron Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                "     aaa ",
-                " i b ara ",
-                "     aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(anvilElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.BRICK),
-                        click -> {
-                            var gui = recipeMenus.get(SLURRIED_IRON_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Slurried Iron Ingot",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View Recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('b',
-                        new ItemStack(Material.BLAZE_POWDER),
-                        ChatColor.WHITE + "Blaze Powder"
-                )
-        );
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.IRON_INGOT);
-        itemGui.addElement(new StaticGuiElement('r',
-                        enchantedItem,
-                        ChatColor.AQUA + "Iron Ingot",
-                        GUI_METAL_LORE,
-                        ChatColor.GRAY + "Unbreaking level will equal the number of bars of",
-                        ChatColor.GRAY + "purity that the ingot has."
-                )
-        );
-        recipeMenus.put(UNBREAKING_IRON_KEY, itemGui);
-
         // Rename Item
         title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Item Rename";
         guiSetup = new String[]{
@@ -2824,110 +2328,6 @@ public class Guis {
                 )
         );
         recipeMenus.put(RENAME_KEY, itemGui);
-
-        // Unbreaking Gold Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Unbreaking Gold Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                "     aaa ",
-                " i b ara ",
-                "     aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(anvilElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.BRICK),
-                        click -> {
-                            var gui = recipeMenus.get(SLURRIED_GOLD_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Slurried Gold Ingot",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View Recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('b',
-                        new ItemStack(Material.BLAZE_POWDER),
-                        ChatColor.WHITE + "Blaze Powder"
-                )
-        );
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.GOLD_INGOT);
-        itemGui.addElement(new StaticGuiElement('r',
-                        enchantedItem,
-                        ChatColor.AQUA + "Gold Ingot",
-                        GUI_METAL_LORE,
-                        ChatColor.GRAY + "Unbreaking level will equal the number of bars of",
-                        ChatColor.GRAY + "purity that the ingot has."
-                )
-        );
-        recipeMenus.put(UNBREAKING_GOLD_KEY, itemGui);
-
-        // Unbreaking Netherite Ingot
-        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Unbreaking Netherite Ingot";
-        guiSetup = new String[]{
-                " B  T  M ",
-                "         ",
-                "     aaa ",
-                " i b ara ",
-                "     aaa ",
-                "         ",
-        };
-        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        itemGui.setCloseAction(close -> false);
-        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        itemGui.addElement(airElement);
-        itemGui.addElement(backElement);
-        itemGui.addElement(anvilElement);
-        itemGui.addElement(menuElement);
-        itemGui.addElement(stickElement);
-
-
-        itemGui.addElement(new StaticGuiElement('i',
-                        new ItemStack(Material.BRICK),
-                        click -> {
-                            var gui = recipeMenus.get(SLURRIED_NETHERITE_KEY);
-                            gui.show(click.getEvent().getWhoClicked());
-                            return true;
-                        },
-                        ChatColor.WHITE + "Slurried Netherite Ingot",
-                        " ",
-                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View Recipe"
-                )
-        );
-
-        itemGui.addElement(new StaticGuiElement('b',
-                        new ItemStack(Material.BLAZE_POWDER),
-                        ChatColor.WHITE + "Blaze Powder"
-                )
-        );
-
-        enchantedItem = enchantedItem.clone();
-        enchantedItem.setType(Material.NETHERITE_INGOT);
-        itemGui.addElement(new StaticGuiElement('r',
-                        enchantedItem,
-                        ChatColor.AQUA + "Netherite Ingot",
-                        GUI_METAL_LORE,
-                        ChatColor.GRAY + "Unbreaking level will equal the number of bars of",
-                        ChatColor.GRAY + "purity that the ingot has."
-                )
-        );
-        recipeMenus.put(UNBREAKING_NETHERITE_KEY, itemGui);
-
-
     }
 
     private void createItemMenu() {

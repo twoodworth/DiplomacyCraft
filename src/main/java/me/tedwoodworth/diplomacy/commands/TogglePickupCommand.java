@@ -1,6 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.enchanting.Tools;
+import me.tedwoodworth.diplomacy.Items.Items;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -44,12 +44,12 @@ public class TogglePickupCommand implements CommandExecutor, TabCompleter {
 
         var player = (Player) sender;
         var container = player.getPersistentDataContainer();
-        var pickup = Tools.getInstance().getAutoPickup(player);
+        var pickup = Items.getInstance().getAutoPickup(player);
         if (pickup) {
             player.sendMessage(ChatColor.RED + "Automatic pickup disabled");
         } else {
             player.sendMessage(ChatColor.GREEN + "Automatic pickup enabled.");
         }
-        Tools.getInstance().toggleAutoPickup(player);
+        Items.getInstance().toggleAutoPickup(player);
     }
 }

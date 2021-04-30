@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.enchanting;
+package me.tedwoodworth.diplomacy.Items;
 
 public class PersistentDataUtil {
 

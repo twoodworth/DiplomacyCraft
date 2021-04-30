@@ -5,7 +5,6 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyConfig;
 import me.tedwoodworth.diplomacy.FileUtils;
 import me.tedwoodworth.diplomacy.nations.Nations;
-import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
@@ -89,6 +88,7 @@ public class ResetWorldCommand implements CommandExecutor, TabCompleter {
         Bukkit.broadcastMessage(ChatColor.GREEN + "World is being reset. All nations will be removed, lives set back to 20, and a fresh planet generated.");
         System.out.println("Preparing new world...");
 
+        // overworld
         var container = Bukkit.getWorldContainer();
         var nWorldDir = new File(container.getAbsolutePath() + "newWorld");
         nWorldDir.mkdir();
@@ -112,15 +112,14 @@ public class ResetWorldCommand implements CommandExecutor, TabCompleter {
         // reset all lives
         System.out.println("Resetting Lives...");
 
-        var am = AccountManager.getInstance();
         var eco = Diplomacy.getEconomy();
         for (var offlinePlayer : offlinePlayers) {
             eco.withdrawPlayer(offlinePlayer, eco.getBalance(offlinePlayer));
 
             var uuid = offlinePlayer.getUniqueId();
-            var account = am.getAccount(uuid);
-            if (account != null) {
-                account.setLives(20);
+                var dp = DiplomacyPlayers.getInstance().get(uuid);
+            if (dp != null) {
+                dp.setLives(20);
             }
         }
 

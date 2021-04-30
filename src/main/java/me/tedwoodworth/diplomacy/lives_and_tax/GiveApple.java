@@ -5,11 +5,11 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 
 import java.util.List;
 
-public class GiveLive implements Runnable {
+public class GiveApple implements Runnable {
 
     private List<DiplomacyPlayer> players;
 
-    GiveLive() {
+    GiveApple() {
         this.players = DiplomacyPlayers.getInstance().getPlayers();
     }
 
@@ -18,7 +18,7 @@ public class GiveLive implements Runnable {
         for (var diplomacyPlayer : players) {
             diplomacyPlayer.setJoinedToday(false);
             if (diplomacyPlayer.getOfflinePlayer().isOnline() && !diplomacyPlayer.getJoinedToday()) {
-                LivesManager.getInstance().giveLive(diplomacyPlayer);
+                LivesManager.getInstance().giveApple(diplomacyPlayer.getOfflinePlayer().getPlayer(), "playing today");
             }
         }
 

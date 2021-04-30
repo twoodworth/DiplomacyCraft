@@ -1,6 +1,5 @@
 package me.tedwoodworth.diplomacy.nations;
 
-import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -68,14 +67,6 @@ public class ScoreboardManager {
                 outlawPrefix = "";
             prefix.append(outlawPrefix);
 
-            // Get alt Prefix
-            String altPrefix;
-            var uuid = testPlayer.getUniqueId();
-            if (!AccountManager.getInstance().getAccount(uuid).getMain().equals(uuid))
-                altPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Alt" + ChatColor.GRAY + "] ";
-            else
-                altPrefix = "";
-            prefix.append(altPrefix);
             team.setPrefix(prefix.toString() + ChatColor.WHITE);
             team.addEntry(testPlayer.getName());
         }

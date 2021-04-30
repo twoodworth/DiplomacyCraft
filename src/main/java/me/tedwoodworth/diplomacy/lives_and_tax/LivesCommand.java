@@ -1,7 +1,7 @@
 package me.tedwoodworth.diplomacy.lives_and_tax;
 
-import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -15,8 +15,6 @@ import java.util.Objects;
 public class LivesCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";
     private static final String livesUsage = "/lives";
-    private static final String giveLivesUsage = "/giveLives <player> <amount>";
-    private static final String addLifeUsage = "/addLife <player>";
 
     public static void register(PluginCommand pluginCommand) {
         var livesCommand = new LivesCommand();
@@ -30,20 +28,10 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("lives")) {
             if (args.length == 0) {
                 lives(sender);
+            } else if (args.length > 1 && args[0].equalsIgnoreCase("giveApple")) {
+                giveApple(sender, args);
             } else {
                 sender.sendMessage(incorrectUsage + livesUsage);
-            }
-        } else if (command.getName().equalsIgnoreCase("giveLives")) {
-            if (args.length == 2) {
-                giveLives(sender, args[0], args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + giveLivesUsage);
-            }
-        } else if (command.getName().equalsIgnoreCase("addLife")) {
-            if (args.length == 1) {
-                addLife(sender, args[0]);
-            } else {
-                sender.sendMessage(incorrectUsage + addLifeUsage);
             }
         }
         return true;
@@ -67,30 +55,24 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
-    private void addLife(CommandSender sender, String strPlayer) {
-        if ((sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "Players cannot use this command.");
+    // lives giveApple <player> <reason>
+    private void giveApple(CommandSender sender, String[] args) {
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.DARK_RED + "Insufficient permission.");
             return;
         }
 
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(strPlayer);
-        if (diplomacyPlayer == null) {
-            sender.sendMessage("Player not found");
+        var player = Bukkit.getPlayer(args[1]);
+        if (player == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown player.");
             return;
         }
 
-        var uuid = diplomacyPlayer.getUUID();
-        var account = AccountManager.getInstance().getAccount(uuid);
-        account.setLives(account.getLives() + 1);
-
-        for (var testUUID : account.getPlayerIDs()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
-            testDiplomacyPlayer.setLives(account.getLives());
-            var player = testDiplomacyPlayer.getOfflinePlayer().getPlayer();
-            if (player != null) {
-                player.sendMessage(ChatColor.AQUA + "You have received 1 life for voting.");
-            }
+        StringBuilder message = new StringBuilder();
+        for (int i = 2; i < args.length; i++) {
+            message.append(" ").append(args[i]);
         }
+        LivesManager.getInstance().giveApple(player, message.toString());
     }
 
     private void lives(CommandSender sender) {
@@ -107,74 +89,5 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
             label = " life.";
         }
         sender.sendMessage(ChatColor.AQUA + "You have " + lives + label);
-        player.sendMessage(ChatColor.AQUA + "The next day starts in " + LivesManager.getInstance().getStringTimeUntil() + ".");
-    }
-
-    private void giveLives(CommandSender sender, String strPlayer, String strAmount) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-
-        var recipient = DiplomacyPlayers.getInstance().get(strPlayer);
-        if (recipient == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
-            return;
-        }
-
-        var amount = 0;
-        try {
-            amount = Integer.parseInt(strAmount);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
-            return;
-        }
-
-        if (amount < 1) {
-            sender.sendMessage(ChatColor.DARK_RED + "Amount must be greater than 0.");
-            return;
-        }
-
-        var player = (Player) sender;
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-        var lives = diplomacyPlayer.getLives();
-
-        if (Objects.equals(diplomacyPlayer, recipient)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You cannot give yourself lives.");
-            return;
-        }
-
-        var uuid = player.getUniqueId();
-        var account = AccountManager.getInstance().getAccount(uuid);
-
-        if (account.getPlayerIDs().contains(recipient.getUUID())) {
-            sender.sendMessage(ChatColor.RED + "You cannot give lives to a linked alt account.");
-            return;
-        }
-
-        if (lives - amount == 0) {
-            sender.sendMessage(ChatColor.DARK_RED + "You cannot give another player your last life.");
-            return;
-        }
-
-        if (amount > lives) {
-            sender.sendMessage(ChatColor.DARK_RED + "You don't have enough lives.");
-            return;
-        }
-
-        diplomacyPlayer.setLives(lives - amount);
-        recipient.setLives(recipient.getLives() + amount);
-
-        var label = " lives.";
-        if (amount == 1) {
-            label = " life.";
-        }
-
-        sender.sendMessage(ChatColor.AQUA + "You have given " + recipient.getOfflinePlayer().getName() + " " + amount + label);
-
-        if (recipient.getOfflinePlayer().isOnline()) {
-            recipient.getOfflinePlayer().getPlayer().sendMessage(ChatColor.AQUA + player.getName() + " has given you " + amount + label);
-        }
     }
 }

@@ -2,7 +2,6 @@ package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
-import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -44,24 +43,6 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
                 playerInfo(sender, args[1]);
             } else {
                 sender.sendMessage(incorrectUsage + playerInfoUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("accounts")) {
-            if (args.length == 2) {
-                playerAccounts(sender, args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + playerAccountsUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("setMain")) {
-            if (args.length == 2) {
-                playerSetMain(sender, args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + playerSetMainUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("exclude")) {
-            if (args.length == 2) {
-                playerExclude(sender, args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + playerUsage);
             }
         } else if (args[0].equalsIgnoreCase("setRank")) {
             if (args.length == 3) {
@@ -148,98 +129,6 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
 //
 //        var nGui = Guis.getInstance().getPlayers("alphabetically");
 //        nGui.show((Player) sender);
-    }
-
-    private void playerAccounts(CommandSender sender, String strPlayer) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        var player = DiplomacyPlayers.getInstance().get(strPlayer);
-
-        if (player == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
-            return;
-        }
-
-        var account = AccountManager.getInstance().getAccount(player.getUUID());
-        var mainUUID = account.getMain();
-        var main = Bukkit.getOfflinePlayer(mainUUID).getName();
-
-        sender.sendMessage(ChatColor.DARK_GREEN + "Alts:");
-        for (var uuid : account.getPlayerIDs()) {
-            if (uuid.equals(mainUUID)) continue;
-            sender.sendMessage(ChatColor.GREEN + Bukkit.getOfflinePlayer(uuid).getName());
-        }
-        sender.sendMessage(ChatColor.DARK_GREEN + "Main:\n" + ChatColor.GREEN + main);
-    }
-
-    private void playerExclude(CommandSender sender, String strPlayer) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
-            return;
-        }
-
-        var player = DiplomacyPlayers.getInstance().get(strPlayer);
-
-        if (player == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
-            return;
-        }
-
-        var uuid = player.getUUID();
-        var account = AccountManager.getInstance().getAccount(uuid);
-        if (account.getPlayerIDs().size() == 1) {
-            sender.sendMessage(ChatColor.DARK_RED + "This player is not linked to any other accounts.");
-            return;
-        }
-
-        var excluded = AccountManager.getInstance().getExcluded();
-        if (excluded.contains(uuid)) {
-            sender.sendMessage(ChatColor.DARK_RED + "Player is already excluded.");
-            return;
-        }
-
-        AccountManager.getInstance().createExcludeAccount(uuid);
-        sender.sendMessage(ChatColor.GREEN + "Player successfully excluded.");
-    }
-
-    private void playerSetMain(CommandSender sender, String strPlayer) {
-        var player = DiplomacyPlayers.getInstance().get(strPlayer);
-
-        if (player == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "Unknown player.");
-            return;
-        }
-
-        var account = AccountManager.getInstance().getAccount(player.getUUID());
-
-        var main = account.getMain();
-        var newMain = player.getUUID();
-
-        if (main.equals(newMain)) {
-            sender.sendMessage(ChatColor.RED + "That account is already your main account.");
-            return;
-        }
-
-        if (!account.getPlayerIDs().contains(newMain)) {
-            sender.sendMessage(ChatColor.RED + "That player is not linked to your account.");
-            return;
-        }
-
-        account.setMain(newMain);
-        for (var testUUID : account.getPlayerIDs()) {
-            var testPlayer = Bukkit.getPlayer(testUUID);
-            if (testPlayer == null) continue;
-            testPlayer.sendMessage(ChatColor.DARK_GREEN + "Main account has been set to " + Bukkit.getOfflinePlayer(newMain).getName());
-        }
-        ScoreboardManager.getInstance().updateScoreboards();
     }
 
     private void playerSetRank(CommandSender sender, String strPlayer, String rank) {

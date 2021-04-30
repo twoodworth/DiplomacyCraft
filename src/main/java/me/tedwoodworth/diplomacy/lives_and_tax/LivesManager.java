@@ -1,7 +1,8 @@
 package me.tedwoodworth.diplomacy.lives_and_tax;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.players.AccountManager;
+import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
+import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class LivesManager {
 
     private static LivesManager instance = null;
-    private Map<DiplomacyPlayer, GiveLive> giveLiveMap = new HashMap<>();
+    private Map<DiplomacyPlayer, GiveApple> giveLiveMap = new HashMap<>();
 
     public static LivesManager getInstance() {
         if (instance == null) {
@@ -47,7 +48,7 @@ public class LivesManager {
 
         // Gives lives.
         var scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new GiveLive(),
+        scheduler.scheduleAtFixedRate(new GiveApple(),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
@@ -80,20 +81,15 @@ public class LivesManager {
         Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
     }
 
-    void giveLive(DiplomacyPlayer diplomacyPlayer) {
-        var uuid = diplomacyPlayer.getUUID();
-        var account = AccountManager.getInstance().getAccount(uuid);
-        account.setLives(account.getLives() + 1);
-        for (var testUUID : account.getPlayerIDs()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
-            testDiplomacyPlayer.setLives(account.getLives());
-            testDiplomacyPlayer.setJoinedToday(true);
-            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
-                if (testDiplomacyPlayer.getOfflinePlayer().getPlayer() != null) {
-                    testDiplomacyPlayer.getOfflinePlayer().getPlayer().sendMessage(ChatColor.AQUA + "You have gained 1 life for logging on today.");
+    void giveApple(Player player, String reason) {
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                player.sendMessage(ChatColor.AQUA + "You have recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.AQUA + " for" + reason + ".");
+                var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
+                var extra = player.getInventory().addItem(apple);
+                if (extra.size() > 0) {
+                    player.getWorld().dropItem(player.getLocation(), apple);
                 }
-            }, 100);
-        }
+        }, 100);
     }
 
 
@@ -126,7 +122,8 @@ public class LivesManager {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             if (!diplomacyPlayer.getJoinedToday()) {
-                giveLive(diplomacyPlayer);
+                giveApple(player, "playing today");
+                diplomacyPlayer.setJoinedToday(true);
             }
         }
 
@@ -144,36 +141,28 @@ public class LivesManager {
         private void onPlayerDeath(PlayerDeathEvent event) {
             var player = (Player) event.getEntity();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            var uuid = diplomacyPlayer.getUUID();
-            var account = AccountManager.getInstance().getAccount(uuid);
-            for (var testUUID : account.getPlayerIDs()) {
-                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testUUID);
-                testDiplomacyPlayer.setLives(testDiplomacyPlayer.getLives() - 1);
+            diplomacyPlayer.setLives(diplomacyPlayer.getLives() - 1);
 
-                if (testDiplomacyPlayer.getLives() == 0) {
-                    var name = player.getName();
-                    Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                            player.kickPlayer(
-                                    "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
-                                            net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
-                                            net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
-                                            net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
-                                            net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
-                            ), 1);
-                    for (var testPlayer : Bukkit.getOnlinePlayers()) {
-                        testPlayer.sendMessage("" + ChatColor.RED + ChatColor.BOLD + name + " ran out of lives.");
-                    }
-                    return;
+            if (diplomacyPlayer.getLives() == 0) {
+                var name = player.getName();
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
+                        player.kickPlayer(
+                                "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
+                                        net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
+                                        net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
+                        ), 1);
+                for (var testPlayer : Bukkit.getOnlinePlayers()) {
+                    testPlayer.sendMessage("" + ChatColor.RED + ChatColor.BOLD + name + " ran out of lives.");
                 }
-                var testPlayer = Bukkit.getPlayer(testUUID);
-                if (testPlayer != null) {
-                    var label = " lives ";
-                    if (diplomacyPlayer.getLives() == 1) {
-                        label = " life ";
-                    }
-                    testPlayer.sendMessage(ChatColor.AQUA + "You now have " + diplomacyPlayer.getLives() + label + "left.");
-                }
+                return;
             }
+            var label = " lives ";
+            if (diplomacyPlayer.getLives() == 1) {
+                label = " life ";
+            }
+            player.sendMessage(ChatColor.AQUA + "You now have " + diplomacyPlayer.getLives() + label + "left.");
         }
     }
 }

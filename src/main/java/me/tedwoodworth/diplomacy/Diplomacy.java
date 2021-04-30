@@ -1,25 +1,25 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
+import me.tedwoodworth.diplomacy.Items.CustomItemRecipes;
+import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.chat.ChatCommand;
 import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
-import me.tedwoodworth.diplomacy.enchanting.Tools;
+import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.entities.Entities;
-import me.tedwoodworth.diplomacy.geology.*;
+//import me.tedwoodworth.diplomacy.geology.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Guis;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
-import me.tedwoodworth.diplomacy.players.AccountManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -61,14 +61,19 @@ public class Diplomacy extends JavaPlugin {
         TogglePickupCommand.register(getCommand("ta"));
         RecipeCommand.register(getCommand("recipes"));
         ResetWorldCommand.register(getCommand("resetWorld"));
-        GeoCommand.register(getCommand("geo"));
+        AdminCommand.register(getCommand("admin"));
+//        GeoCommand.register(getCommand("geo"));
         System.out.println("[Diplomacy] Loaded commands");
         DiplomacyConfig.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded config events");
         SpawnManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded spawning events");
-        Tools.getInstance().registerEvents();
-        System.out.println("[Diplomacy] Loaded tool events");
+        CustomItemGenerator.getInstance();
+        CustomItemRecipes.getInstance().registerEvents();
+        CustomItems.getInstance();
+        System.out.println("[Diplomacy] Loaded custom recipe events");
+        Items.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded item events");
         LivesManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded life events");
         Nations.getInstance().registerEvents();
@@ -77,8 +82,6 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded chat events");
         DiplomacyPlayers.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded player events");
-        AccountManager.getInstance().registerEvents();
-        System.out.println("[Diplomacy] Loaded account events");
         ContestManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded contest events");
         DiplomacyGroups.getInstance().registerEvents();
@@ -96,8 +99,9 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded recipes");
         Entities.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded entity events");
-        FluidDynamics.getInstance().registerEvents();
-        System.out.println("[Diplomacy] Loaded fluid dynamics events");
+//        FluidDynamics.getInstance().registerEvents();
+//        System.out.println("[Diplomacy] Loaded fluid dynamics events");
+
 
         // check if world is new
         var world = Bukkit.getWorld("world");
