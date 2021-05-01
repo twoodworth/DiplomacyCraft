@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -28,15 +29,41 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+
+/*
+    prot ingredients:
+        1: iron ingot 6%  // 2
+        2: iron block 12% // 3
+        3: 3 iron blocks 18% // 6
+        4: diamond 24% // 10
+        5: diamond block 31% // 17
+        6: 3 diamond blocks 38% // 28
+        7: netherite scrap 45% // 48
+        8: netherite ingot 52% // 82
+        9: netherite block 66% // 237
+        10: 3 netherite blocks 80% // 685
+ */
+
 public class GuardManager {
     public static GuardManager instance = null;
     private final Set<Entity> guards = new HashSet<>();
     private final Set<Player> interactSet = new HashSet<>();
+
+    // all guards
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
-    private final NamespacedKey TARGET_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_target");
+
+    // sniper
+    private final NamespacedKey SNIPER_STRENGTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
+    private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
+    private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
+
+    // all but basic guards
     private final NamespacedKey RADIUS_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_radius");
+    private final NamespacedKey RESISTANCE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_protection");
+
+    // healer
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
@@ -131,7 +158,7 @@ public class GuardManager {
         SNOWMAKER // pummels snowballs at target
     }
 
-    private String getTypePrefix(Entity entity) {
+    public String getTypePrefix(Entity entity) {
         var type = getType(entity);
         return switch (type) {
             case BASIC -> ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE;
@@ -162,11 +189,11 @@ public class GuardManager {
         // max health
         container.set(MAX_HEALTH_KEY, PersistentDataType.SHORT, (short)0);
 
-        // radius
-        container.set(RADIUS_KEY, PersistentDataType.DOUBLE, 0.0);
+        // resistance
+        container.set(RESISTANCE_KEY, PersistentDataType.SHORT, (short)0);
 
         entity.setCustomNameVisible(true);
-        entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 Health");
+        entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 HP");
         ((EnderCrystal) entity).setShowingBottom(false);
         guards.add(entity);
     }
@@ -201,6 +228,12 @@ public class GuardManager {
                 setRadius(entity, 24);
                 setHealerRate(entity, (short)0);
             }
+            case SNIPER -> {
+                setRadius(entity, 40);
+                setSniperPower(entity, (short)0);
+                setSniperStrength(entity, (short)0);
+                setSniperVelocity(entity, (short)0);
+            }
         }
         setHealth(entity, getHealth(entity));
         return true;
@@ -213,7 +246,7 @@ public class GuardManager {
     public void setHealth(Entity entity, double health) {
         entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
         var strHealth = String.format("%.2f", health);
-        entity.setCustomName(getTypePrefix(entity) + strHealth + " Health");
+        entity.setCustomName(getTypePrefix(entity) + strHealth + " HP");
     }
 
 
@@ -244,26 +277,57 @@ public class GuardManager {
 
     }
 
+    public short getShortResistance(Entity entity) {
+        return entity.getPersistentDataContainer().get(RESISTANCE_KEY, PersistentDataType.SHORT);
+    }
+
+    public double getResistance(Entity entity) {
+        var id = entity.getPersistentDataContainer().get(RESISTANCE_KEY, PersistentDataType.SHORT);
+        return switch (id) {
+            default -> 1.0;
+            case 1 -> 0.94;
+            case 2 -> 0.88;
+            case 3 -> 0.82;
+            case 4 -> 0.76;
+            case 5 -> 0.69;
+            case 6 -> 0.62;
+            case 7 -> 0.55;
+            case 8 -> 0.48;
+            case 9 -> 0.34;
+            case 10 -> 0.2;
+        };
+    }
+
+
+    public void setResistance(Entity entity, short resistance) {
+        entity.getPersistentDataContainer().set(RESISTANCE_KEY, PersistentDataType.SHORT, resistance);
+    }
+
     public double getMaxHealth(Entity entity) {
         var id = entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
         return switch (id) {
             default -> 20.0;
-            case 1 -> 35.0;
-            case 2 -> 61.0;
-            case 3 -> 107.0;
-            case 4 -> 188.0;
-            case 5 -> 350.0;
-            case 6 -> 574.0;
-            case 7 -> 1005.0;
-            case 8 -> 1759.0;
-            case 9 -> 5388.0;
-            case 10 -> 16500.0;
+            case 1 -> 35.0; // 6
+            case 2 -> 61.0; // 10
+            case 3 -> 107.0; // 17
+            case 4 -> 188.0; // 29
+            case 5 -> 350.0; //50
+            case 6 -> 574.0; // 85
+            case 7 -> 1005.0; // 145
+            case 8 -> 1759.0; // 246
+            case 9 -> 5388.0; // 712
+            case 10 -> 16500.0; // 2056
         };
+    }
+
+    public short getShortMaxHealth(Entity entity) {
+        return entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
     }
 
     public void setMaxHealth(Entity entity, short rate) {
         entity.getPersistentDataContainer().set(MAX_HEALTH_KEY, PersistentDataType.SHORT, rate);
     }
+
     public double getRadius(Entity entity) {
         return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.DOUBLE);
     }
@@ -272,12 +336,58 @@ public class GuardManager {
         entity.getPersistentDataContainer().set(RADIUS_KEY, PersistentDataType.DOUBLE, radius);
     }
 
+
+//    private final NamespacedKey SNIPER_STRENGTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
+//    private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
+//    private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
+
+    public short getSniperStrength(Entity entity) {
+        return entity.getPersistentDataContainer().get(SNIPER_STRENGTH_KEY, PersistentDataType.SHORT);
+    }
+
+    public void setSniperStrength(Entity entity, short strength) {
+        entity.getPersistentDataContainer().set(SNIPER_STRENGTH_KEY, PersistentDataType.SHORT, strength);
+    }
+
+    public short getSniperVelocity(Entity entity) {
+        return entity.getPersistentDataContainer().get(SNIPER_VELOCITY_KEY, PersistentDataType.SHORT);
+    }
+
+    public void setSniperVelocity(Entity entity, short velocity) {
+        entity.getPersistentDataContainer().set(SNIPER_VELOCITY_KEY, PersistentDataType.SHORT, velocity);
+    }
+
+    public short getSniperPower(Entity entity) {
+        return entity.getPersistentDataContainer().get(SNIPER_POWER_KEY, PersistentDataType.SHORT);
+    }
+
+    public void setSniperPower(Entity entity, short power) {
+        entity.getPersistentDataContainer().set(SNIPER_POWER_KEY, PersistentDataType.SHORT, power);
+    }
+
     private Type getEnum(int id) {
         var array = Type.values();
         if (array.length > id) {
             return array[id];
         } else {
             throw new IndexOutOfBoundsException("Error: Guard type ID " + id + " is out of bounds");
+        }
+    }
+
+
+    public void sendGuardNotification(Entity guard, String message) {
+        var nation = getNation(guard);
+        for (var player : Bukkit.getOnlinePlayers()) {
+            var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            var pNation = Nations.getInstance().get(dp);
+            if (Objects.equals(pNation, nation)) {
+                // check nation permissions
+                var permissions = pNation.getMemberClass(dp).getPermissions();
+                var canSee = permissions.get("CanSeeGuardNotifications");
+                if (canSee) {
+                    player.sendMessage(message);
+                }
+            }
         }
     }
 
@@ -365,7 +475,6 @@ public class GuardManager {
             var entity = event.getRightClicked();
             var player = event.getPlayer();
             if (isGuard(entity)) {
-                interactSet.add(player);
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> interactSet.remove(player), 5L);
                 var type = getType(entity);
                 switch (type) {
@@ -385,6 +494,10 @@ public class GuardManager {
                         if (!playerNation.equals(guardNation)) {
                             return;
                         }
+                        // check if outlaw
+                        if (guardNation.getOutlaws().contains(player.getUniqueId())) {
+                            return;
+                        }
 
                         // check nation permissions
                         var permissions = playerNation.getMemberClass(dp).getPermissions();
@@ -393,6 +506,7 @@ public class GuardManager {
                             player.sendMessage(ChatColor.RED + "You do not have permission to manage guard crystals.");
                             return;
                         }
+                        interactSet.add(player);
                         var menu = GuardGuis.getInstance().generateGui(entity);
                         menu.show(player);
                     }
@@ -426,6 +540,14 @@ public class GuardManager {
                 if (!canDamageGuard(damager, entity)) {
                     return;
                 }
+                if (damager instanceof Projectile) {
+                    if (damager instanceof Trident) {
+                        ((Trident) damager).setBounce(true);
+                    } else {
+                        damager.remove();
+                    }
+                }
+                damage = damage * getResistance(entity);
                 var health = getHealth(entity);
                 health = health - damage;
                 var loc = entity.getLocation();
@@ -449,26 +571,14 @@ public class GuardManager {
                 } else {
                     setHealth(entity, health);
                     var message = getDamageMessage(damager, entity);
-                    var nation = getNation(entity);
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                        var pNation = Nations.getInstance().get(dp);
-                        if (Objects.equals(pNation, nation)) {
-                            // check nation permissions
-                            var permissions = pNation.getMemberClass(dp).getPermissions();
-                            var canSee = permissions.get("CanSeeGuardNotifications");
-                            if (canSee) {
-                                player.sendMessage(message);
-                            }
-                        }
-                    }
+                    sendGuardNotification(entity, message);
                 }
             }
         }
 
         public String getKillMessage(Entity damager, Entity guard) {
             var loc = guard.getLocation();
-            var message = "" + ChatColor.BOLD + ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + getTypePrefix(guard) + ChatColor.DARK_GREEN + "Guard killed by " + ChatColor.RED;
+            var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard killed by " + ChatColor.RED;
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof  Player) message += ((Player) shooter).getName();
@@ -482,7 +592,7 @@ public class GuardManager {
         }
         public String getDamageMessage(Entity damager, Entity guard) {
             var loc = guard.getLocation();
-            var message = "" + ChatColor.BOLD + ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + getTypePrefix(guard) + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
+            var message = ChatColor.RED +  "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof  Player) message += ((Player) shooter).getName();
@@ -493,7 +603,7 @@ public class GuardManager {
                 message += damager.getName();
             }
             var strHealth =String.format("%.2f", getHealth(guard));
-            message += " " + ChatColor.DARK_GREEN + "(" + strHealth + " Health)";
+            message += " " + ChatColor.DARK_GREEN + "(" + strHealth + " HP)";
             return message;
         }
 

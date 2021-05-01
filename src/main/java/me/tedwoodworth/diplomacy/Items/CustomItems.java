@@ -3,11 +3,14 @@ package me.tedwoodworth.diplomacy.Items;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class CustomItems {
     private static CustomItems instance = null;
+
     public enum CustomID {
         MAGICAL_DUST,
         APPLE_OF_LIFE,
@@ -21,6 +24,96 @@ public class CustomItems {
             instance = new CustomItems();
         }
         return instance;
+    }
+
+    public boolean contains(PlayerInventory inventory, CustomID customID) {
+        var contents = inventory.getContents();
+        for (var content : contents) {
+            if (content != null && CustomItemGenerator.getInstance().isCustomItem(content) && getEnum(CustomItemGenerator.getInstance().getCustomID(content)) == customID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean contains(PlayerInventory inventory, CustomID customID, int amount) {
+        var contents = inventory.getContents();
+        int count = 0;
+        for (var content : contents) {
+            if (content != null && CustomItemGenerator.getInstance().isCustomItem(content) && getEnum(CustomItemGenerator.getInstance().getCustomID(content)) == customID) {
+                count += content.getAmount();
+            }
+        }
+        return (count >= amount);
+    }
+
+    public boolean contains(PlayerInventory inventory, Material material) {
+        var contents = inventory.getContents();
+        for (var content : contents) {
+            if (content != null && content.getType() == material && !CustomItemGenerator.getInstance().isCustomItem(content)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean contains(PlayerInventory inventory, Material material, int amount) {
+        var contents = inventory.getContents();
+        int count = 0;
+        for (var content : contents) {
+            if (content != null && content.getType() == material && !CustomItemGenerator.getInstance().isCustomItem(content)) {
+                count += content.getAmount();
+            }
+        }
+        return (count >= amount);
+    }
+
+    public void removeItems(PlayerInventory inventory, Material material, int amount) {
+        var size = inventory.getSize();
+        for (int i = 0; i < size; i++) {
+            if (amount == 0) {
+                return;
+            }
+            var item = inventory.getItem(i);
+            if (item == null || item.getType() != material || CustomItemGenerator.getInstance().isCustomItem(item)) {
+                continue;
+            }
+            var itemAmount = item.getAmount();
+            if (itemAmount <= amount) {
+                amount -= itemAmount;
+                inventory.setItem(i, new ItemStack(Material.AIR));
+            } else {
+                var remainder = itemAmount - amount;
+                item.setAmount(remainder);
+                inventory.setItem(i, item);
+                amount = 0;
+            }
+
+        }
+    }
+
+    public void removeCustomItems(PlayerInventory inventory, CustomID customID, int amount) {
+        var size = inventory.getSize();
+        for (int i = 0; i < size; i++) {
+            if (amount == 0) {
+                return;
+            }
+            var item = inventory.getItem(i);
+            if (item == null || !CustomItemGenerator.getInstance().isCustomItem(item) || getEnum(CustomItemGenerator.getInstance().getCustomID(item)) != customID) {
+                continue;
+            }
+            var itemAmount = item.getAmount();
+            if (itemAmount <= amount) {
+                amount -= itemAmount;
+                inventory.setItem(i, new ItemStack(Material.AIR));
+            } else {
+                var remainder = itemAmount - amount;
+                item.setAmount(remainder);
+                inventory.setItem(i, item);
+                amount = 0;
+            }
+
+        }
     }
 
     public CustomID getEnum(int id) {
