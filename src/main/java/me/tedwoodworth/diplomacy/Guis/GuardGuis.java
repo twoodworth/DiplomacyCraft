@@ -102,7 +102,7 @@ public class GuardGuis {
                         },
                         ChatColor.DARK_GREEN + "Sniper - Click to upgrade",
                         ChatColor.GRAY + "Shoots powerful arrows with a large attack radius",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Bow (Undamaged)",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -164,7 +164,7 @@ public class GuardGuis {
                         },
                         ChatColor.DARK_GRAY + "Gunner - Click to upgrade",
                         ChatColor.GRAY + "Rapidly fires arrows at targets",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Crossbow (Undamaged)",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -232,7 +232,7 @@ public class GuardGuis {
                         },
                         ChatColor.RED + "Flamethrower - Click to upgrade",
                         ChatColor.GRAY + "Shoots flames at nearby targets",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Blaze powder",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -300,7 +300,7 @@ public class GuardGuis {
                         },
                         ChatColor.DARK_RED + "Grenader - Click to upgrade",
                         ChatColor.GRAY + "Fires grenades at targets",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Grenade",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -374,7 +374,7 @@ public class GuardGuis {
                         },
                         ChatColor.LIGHT_PURPLE + "Healer - Click to upgrade",
                         ChatColor.GRAY + "Heals nearby guard crystals",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Ghast Tear",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -440,9 +440,9 @@ public class GuardGuis {
                             }
                             return true;
                         },
-                        ChatColor.DARK_AQUA + "Tank - Click to upgrade",
+                        ChatColor.DARK_PURPLE + "Tank - Click to upgrade",
                         ChatColor.GRAY + "Does not attack, but is highly resistant to attacks",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Shulker Shell",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -510,7 +510,7 @@ public class GuardGuis {
                         },
                         ChatColor.YELLOW + "Teleporter - Click to upgrade",
                         ChatColor.GRAY + "Allows players to teleport to other teleporter crystals",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Ender Pearl",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -578,7 +578,7 @@ public class GuardGuis {
                         },
                         ChatColor.GOLD + "Generator - Click to upgrade",
                         ChatColor.GRAY + "Magically generates resources",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Nether Star",
                         ChatColor.GRAY + "- 2x Magic Dust"
@@ -646,7 +646,7 @@ public class GuardGuis {
                         },
                         ChatColor.AQUA + "Snowmaker - Click to upgrade",
                         ChatColor.GRAY + "Launches a barrage of snowballs to slow and push away targets",
-                        "",
+                        " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Snowball",
                         ChatColor.GRAY + "- 2x Magic Dust"

@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.Set;
 public class GuardManager {
     public static GuardManager instance = null;
     private final Set<Entity> guards = new HashSet<>();
+    private final Set<Player> interactSet = new HashSet<>();
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
@@ -40,21 +42,6 @@ public class GuardManager {
     private final int GUARD_HEAL_DELAY = 10;
 
 
-    /*
-        Max health upgrades:
-        Default: 20
-        1: 28 (9 dust)
-        2: 39 (14 dust)
-        3: 55 (20 dust)
-        4: 77 (30 dust)
-        5: 108 (46 dust)
-        *tank only*
-        6: 151 (68 dust)
-        7: 211 (103 dust)
-        8: 295 (154 dust)
-        9: 579 (346 dust)
-        10: 810 (779 dust)
-     */
 
     public static GuardManager getInstance() {
         if (instance == null) {
@@ -73,7 +60,7 @@ public class GuardManager {
     }
 
     private void onGuardTick(int i) {
-        var healList = new HashSet<Entity>();
+        var healMap = new HashMap<Entity, Integer>();
         for (var guard : guards) {
             if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) {
                 var health = getHealth(guard);
@@ -97,7 +84,7 @@ public class GuardManager {
                         var lowestHealth = 0.0;
                         var lowestMax = 0.0;
                         for (var entity : nearby) {
-                            if (isGuard(entity) && Objects.equals(nation, getNation(entity)) && !healList.contains(entity)) {
+                            if (isGuard(entity) && Objects.equals(nation, getNation(entity)) && !(healMap.containsKey(entity) && healMap.get(entity) == 3)) {
                                 var health = getHealth(entity);
                                 var max = getMaxHealth(entity);
                                 var temp = health / max;
@@ -112,7 +99,11 @@ public class GuardManager {
                         if (lowest != null) {
                             ((EnderCrystal) guard).setBeamTarget(lowest.getLocation());
                             setHealth(lowest, Math.min(lowestMax, lowestHealth + (GUARD_HEAL_DELAY * getHealerRate(guard))));
-                            healList.add(lowest);
+                            if (healMap.containsKey(lowest)) {
+                                healMap.replace(lowest, healMap.get(lowest) + 1);
+                            } else {
+                                healMap.put(lowest, 1);
+                            }
                         } else {
                             ((EnderCrystal) guard).setBeamTarget(null);
                         }
@@ -143,13 +134,13 @@ public class GuardManager {
     private String getTypePrefix(Entity entity) {
         var type = getType(entity);
         return switch (type) {
-            case BASIC -> ChatColor.GRAY + "[Basic] " + ChatColor.WHITE;
+            case BASIC -> ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE;
             case SNIPER -> ChatColor.DARK_GREEN + "[Sniper] " + ChatColor.WHITE;
             case GUNNER -> ChatColor.DARK_GRAY + "[Gunner] " + ChatColor.WHITE;
             case FLAMETHROWER -> ChatColor.RED + "[FLamethrower] " + ChatColor.WHITE;
             case GRENADER -> ChatColor.DARK_RED + "[Grenader] " + ChatColor.WHITE;
             case HEALER -> ChatColor.LIGHT_PURPLE + "[Healer] " + ChatColor.WHITE;
-            case TANK -> ChatColor.DARK_AQUA + "[Tank] " + ChatColor.WHITE;
+            case TANK -> ChatColor.DARK_PURPLE + "[Tank] " + ChatColor.WHITE;
             case TELEPORTER -> ChatColor.YELLOW + "[Teleporter] " + ChatColor.WHITE;
             case GENERATOR -> ChatColor.GOLD + "[Generator] " + ChatColor.WHITE;
             case SNOWMAKER -> ChatColor.AQUA + "[Snowmaker] " + ChatColor.WHITE;
@@ -169,13 +160,13 @@ public class GuardManager {
         container.set(HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
 
         // max health
-        container.set(MAX_HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
+        container.set(MAX_HEALTH_KEY, PersistentDataType.SHORT, (short)0);
 
         // radius
         container.set(RADIUS_KEY, PersistentDataType.DOUBLE, 0.0);
 
         entity.setCustomNameVisible(true);
-        entity.setCustomName(ChatColor.GRAY + "[Basic] " + ChatColor.WHITE + "20.00 Health");
+        entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 Health");
         ((EnderCrystal) entity).setShowingBottom(false);
         guards.add(entity);
     }
@@ -219,6 +210,13 @@ public class GuardManager {
         return entity.getPersistentDataContainer().get(HEALTH_KEY, PersistentDataType.DOUBLE);
     }
 
+    public void setHealth(Entity entity, double health) {
+        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
+        var strHealth = String.format("%.2f", health);
+        entity.setCustomName(getTypePrefix(entity) + strHealth + " Health");
+    }
+
+
     public Nation getNation(Entity entity) {
         return DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
     }
@@ -247,15 +245,25 @@ public class GuardManager {
     }
 
     public double getMaxHealth(Entity entity) {
-        return entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.DOUBLE);
+        var id = entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
+        return switch (id) {
+            default -> 20.0;
+            case 1 -> 35.0;
+            case 2 -> 61.0;
+            case 3 -> 107.0;
+            case 4 -> 188.0;
+            case 5 -> 350.0;
+            case 6 -> 574.0;
+            case 7 -> 1005.0;
+            case 8 -> 1759.0;
+            case 9 -> 5388.0;
+            case 10 -> 16500.0;
+        };
     }
 
-    public void setHealth(Entity entity, double health) {
-        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
-        var strHealth = String.format("%.2f", health);
-        entity.setCustomName(getTypePrefix(entity) + strHealth + " Health");
+    public void setMaxHealth(Entity entity, short rate) {
+        entity.getPersistentDataContainer().set(MAX_HEALTH_KEY, PersistentDataType.SHORT, rate);
     }
-
     public double getRadius(Entity entity) {
         return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.DOUBLE);
     }
@@ -291,6 +299,11 @@ public class GuardManager {
         private void onInteract(PlayerInteractEvent event) {
             var type = event.getAction();
             var player = event.getPlayer();
+            if (interactSet.contains(player)) {
+                event.setCancelled(true);
+                interactSet.remove(player);
+                return;
+            }
             var hand = event.getHand();
             var equipment = player.getEquipment();
             var item = equipment.getItem(hand);
@@ -352,9 +365,12 @@ public class GuardManager {
             var entity = event.getRightClicked();
             var player = event.getPlayer();
             if (isGuard(entity)) {
+                interactSet.add(player);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> interactSet.remove(player), 5L);
                 var type = getType(entity);
                 switch (type) {
                     case TELEPORTER -> {
+
                     }
                     default -> {
                         // check if in nation
@@ -411,16 +427,74 @@ public class GuardManager {
                     return;
                 }
                 var health = getHealth(entity);
-                System.out.println("Crystal damage: " + damage);
                 health = health - damage;
                 var loc = entity.getLocation();
                 loc.getWorld().playSound(loc, Sound.BLOCK_NETHERITE_BLOCK_HIT, 2, 1);
                 if (health <= 0.0) {
+                    var message = getKillMessage(damager, entity);
+                    var nation = getNation(entity);
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        var pNation = Nations.getInstance().get(dp);
+                        if (Objects.equals(pNation, nation)) {
+                            // check nation permissions
+                            var permissions = pNation.getMemberClass(dp).getPermissions();
+                            var canSee = permissions.get("CanSeeGuardNotifications");
+                            if (canSee) {
+                                player.sendMessage(message);
+                            }
+                        }
+                    }
                     killGuard(entity);
                 } else {
                     setHealth(entity, health);
+                    var message = getDamageMessage(damager, entity);
+                    var nation = getNation(entity);
+                    for (var player : Bukkit.getOnlinePlayers()) {
+                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        var pNation = Nations.getInstance().get(dp);
+                        if (Objects.equals(pNation, nation)) {
+                            // check nation permissions
+                            var permissions = pNation.getMemberClass(dp).getPermissions();
+                            var canSee = permissions.get("CanSeeGuardNotifications");
+                            if (canSee) {
+                                player.sendMessage(message);
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        public String getKillMessage(Entity damager, Entity guard) {
+            var loc = guard.getLocation();
+            var message = "" + ChatColor.BOLD + ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + getTypePrefix(guard) + ChatColor.DARK_GREEN + "Guard killed by " + ChatColor.RED;
+            if (damager instanceof Projectile) {
+                var shooter = ((Projectile) damager).getShooter();
+                if (shooter instanceof  Player) message += ((Player) shooter).getName();
+            } else if (damager instanceof Item) {
+                var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
+                if (shooter instanceof  Player) message += shooter.getName();
+            } else if (damager instanceof Player) {
+                message += damager.getName();
+            }
+            return message;
+        }
+        public String getDamageMessage(Entity damager, Entity guard) {
+            var loc = guard.getLocation();
+            var message = "" + ChatColor.BOLD + ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + getTypePrefix(guard) + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
+            if (damager instanceof Projectile) {
+                var shooter = ((Projectile) damager).getShooter();
+                if (shooter instanceof  Player) message += ((Player) shooter).getName();
+            } else if (damager instanceof Item) {
+                var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
+                if (shooter instanceof  Player) message += shooter.getName();
+            } else if (damager instanceof Player) {
+                message += damager.getName();
+            }
+            var strHealth =String.format("%.2f", getHealth(guard));
+            message += " " + ChatColor.DARK_GREEN + "(" + strHealth + " Health)";
+            return message;
         }
 
         public boolean canDamageGuard(Entity damager, Entity guard) {
