@@ -30,6 +30,7 @@ public class Items {
     private final ItemStack air = new ItemStack(Material.AIR);
     private final Set<Player> grenadeDropList = new HashSet<>();
     private final Set<Item> itemPickupList = new HashSet<>();
+    public final Map<Item, Entity> grenadeThrowerMap = new HashMap<>();
 
     public final List<Material> helmets = new ArrayList<>();
     public final List<Material> chestplates = new ArrayList<>();
@@ -239,6 +240,10 @@ public class Items {
             }
         }
 
+        private void guardThrowGrenade(Entity guard, Player target) {
+
+        }
+
         private void throwGrenade(Player player, boolean isOverhand, long explodeTime) {
             if (player.isSneaking() && explodeTime != 0) {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
@@ -265,6 +270,7 @@ public class Items {
             velocity.setZ(velocity.getZ() + (Math.random() - 0.5) * 0.025);
 
             var drop = player.getWorld().dropItem(loc, grenade);
+            grenadeThrowerMap.put(drop, player);
             drop.setVelocity(velocity);
             drop.setPickupDelay(1000);
             grenadeTick(drop, 0, explodeTime, player);
@@ -382,6 +388,7 @@ public class Items {
             return false;
         }
 
+
         private void grenadeTick(Item item, long curTime, long explodeTime, Player player) {
             if (curTime == explodeTime) {
                 var diplomacyChunk = new DiplomacyChunk(item.getLocation().getChunk());
@@ -389,6 +396,7 @@ public class Items {
                 breakBlocks = diplomacyChunk.getNation() == null;
                 item.getWorld().createExplosion(item.getLocation(), 3.85F, false, false, item);
                 item.getWorld().createExplosion(item.getLocation(), 0.75F, false, breakBlocks, item);
+                grenadeThrowerMap.remove(item);
                 item.remove();
                 return;
             }

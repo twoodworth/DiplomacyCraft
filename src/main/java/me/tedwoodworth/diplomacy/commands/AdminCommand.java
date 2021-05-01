@@ -2,18 +2,29 @@ package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
+import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
+import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.*;
 
 public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String adminUsage = "/admin <command>";
-    private static final String getItemUsage = "/admin getItem <ID>";
+    private static final String giveUsage = "/admin give <player> <item> <amount>";
+    private static final String setChunkNation = "/admin setChunkNation <nation>";
+    private static final String removeChunkNation = "/admin removeChunkNation";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -32,12 +43,30 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             if (args.length == 0) {
                 sender.sendMessage(incorrectUsage + adminUsage);
             } else if (args.length == 1) {
-                if (args[0].equalsIgnoreCase("getItem")) {
-                    sender.sendMessage(incorrectUsage + getItemUsage);
+                if (args[0].equalsIgnoreCase("give")) {
+                    sender.sendMessage(incorrectUsage + giveUsage);
+                } else if (args[0].equalsIgnoreCase("removeChunkNation")) {
+                    removeChunkNation(sender);
                 }
             } else if (args.length == 2) {
-                if (args[0].equalsIgnoreCase("getItem")) {
-                    getItem(sender, args[1]);
+                if (args[0].equalsIgnoreCase("give")) {
+                    sender.sendMessage(incorrectUsage + giveUsage);
+                } else if (args[0].equalsIgnoreCase("setChunkNation")) {
+                    setChunkNation(sender, args[1]);
+                } else {
+                    sender.sendMessage(incorrectUsage);
+                }
+            } else if (args.length == 3) {
+                if (args[0].equalsIgnoreCase("give")) {
+                    give(sender, args[1], args[2], "64");
+                } else {
+                    sender.sendMessage(incorrectUsage);
+                }
+            } else if (args.length == 4) {
+                if (args[0].equalsIgnoreCase("give")) {
+                    give(sender, args[1], args[2], args[3]);
+                } else {
+                    sender.sendMessage(incorrectUsage);
                 }
             }
         }
@@ -45,34 +74,199 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+        if (!sender.isOp()) {
+            return null;
+        } else {
+            if (args.length > 0) {
+                if (args.length == 1) {
+                    return Arrays.asList(
+                            "give",
+                            "setChunkNation",
+                            "removeChunkNation"
+                    );
+                } else if (args.length == 2) {
+                    if (args[0].equalsIgnoreCase("give")) {
+                        var online = Bukkit.getOnlinePlayers();
+                        var list = new ArrayList<String>();
+                        for (var player : online) {
+                            list.add(player.getName());
+                        }
+                        return list;
+                    } else if (args[0].equalsIgnoreCase("setChunkNation")) {
+                        var list = new ArrayList<String>();
+                        for (var nation : Nations.getInstance().getNations()) {
+                            list.add(nation.getName());
+                        }
+                        return list;
+                    }
+                } else if (args.length == 3) {
+                    if (args[0].equalsIgnoreCase("give")) {
+                        return Arrays.asList(
+                                "apple_of_life",
+                                "guard_crystal",
+                                "grenade",
+                                "magical_dust"
+
+                        );
+                    }
+                }
+            }
+        }
         return null;
     }
 
-    private void getItem(CommandSender sender, String strID) {
+    private void removeChunkNation(CommandSender sender) {
         if (!(sender instanceof Player)) {
             sender.sendMessage("Error: Must be a player to use this command.");
             return;
         }
-        int id;
+
+        var chunk = ((Player) sender).getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var nation = diplomacyChunk.getNation();
+
+        if (nation == null) {
+            sender.sendMessage(ChatColor.RED + "Chunk does not belong to any nation.");
+            return;
+        }
+
+
+        nation.removeChunk(diplomacyChunk);
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, set));
+
+        if (diplomacyChunk.getGroup() != null) {
+            diplomacyChunk.getGroup().removeChunk(diplomacyChunk);
+        }
+
+        sender.sendMessage(ChatColor.AQUA + "Plot abandoned.");
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var playerChunk = testPlayer.getLocation().getChunk();
+            if (diplomacyChunk.getChunk().equals(playerChunk)) {
+                testPlayer.sendTitle(ChatColor.GRAY + "Wilderness", null, 5, 40, 10);
+            }
+        }
+
+
+    }
+
+
+    private void setChunkNation(CommandSender sender, String strNation) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Error: Must be a player to use this command.");
+            return;
+        }
+
+        var chunk = ((Player) sender).getLocation().getChunk();
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var nation = diplomacyChunk.getNation();
+
+        var nNation = Nations.getInstance().get(strNation);
+        if (nNation == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown nation");
+            return;
+        }
+
+        if (Objects.equals(nation, nNation)) {
+            sender.sendMessage(ChatColor.RED + "Chunk already belongs to that nation.");
+            return;
+        }
+
+        if (nation != null) {
+            nation.removeChunk(diplomacyChunk);
+        }
+        nNation.addChunk(diplomacyChunk);
+        var set = new HashSet<DiplomacyChunk>();
+        set.add(diplomacyChunk);
+        Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(nNation, set));
+
+        if (nation != null) {
+            Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, set));
+        }
+
+        if (nation != null) {
+            if (nation.getGroups() != null) {
+                for (var group : nation.getGroups()) {
+                    if (group.getChunks().contains(diplomacyChunk)) {
+                        group.removeChunk(diplomacyChunk);
+                    }
+                }
+            }
+        }
+
+        sender.sendMessage(ChatColor.AQUA + "Plot given to '" + nNation.getName() + "'.");
+
+        for (var testPlayer : Bukkit.getOnlinePlayers()) {
+            var playerChunk = testPlayer.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
+                Nation testNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testNation == null) {
+                    testPlayer.sendTitle(ChatColor.BLUE + nNation.getName(), null, 5, 40, 10);
+                } else if (nNation.getEnemyNationIDs().contains(testNation.getNationID())) {
+                    testPlayer.sendTitle(ChatColor.RED + nNation.getName(), null, 5, 40, 10);
+                } else if (nNation.getAllyNationIDs().contains(testNation.getNationID()) || nNation.equals(nation)) {
+                    testPlayer.sendTitle(ChatColor.GREEN + nNation.getName(), null, 5, 40, 10);
+                } else {
+                    testPlayer.sendTitle(ChatColor.BLUE + nNation.getName(), null, 5, 40, 10);
+                }
+            }
+        }
+
+    }
+
+    private void give(CommandSender sender, String strPlayer, String strItem, String strAmount) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Error: Must be a player to use this command.");
+            return;
+        }
+
+        var player = Bukkit.getPlayer(strPlayer);
+        if (player == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown player.");
+            return;
+        }
+
+        int amount;
         try {
-            id = Integer.parseInt(strID);
+            amount = Integer.parseInt(strAmount);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "ID must be an integer.");
-            return;
-        }
-        var length = CustomItems.CustomID.values().length;
-
-        if (id >= length) {
-            sender.sendMessage(ChatColor.RED + "Invalid ID. Must be from 0 to " + (length - 1));
+            sender.sendMessage(ChatColor.RED + "Amount must be an integer.");
             return;
         }
 
-        var item = CustomItemGenerator.getInstance().getCustomItem(id, 1);
-        var inv = ((Player) sender).getInventory();
+        if (amount < 1) {
+            sender.sendMessage(ChatColor.RED + "Amount must be at least 1.");
+            return;
+        }
+
+        if (amount > 64) {
+            sender.sendMessage(ChatColor.RED + "Amount cannot exceed 64.");
+            return;
+        }
+
+        ItemStack item;
+        if (strItem.equalsIgnoreCase("apple_of_life")) {
+            item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, amount);
+        } else if (strItem.equalsIgnoreCase("guard_crystal")) {
+            item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GUARD_CRYSTAL, amount);
+        } else if (strItem.equalsIgnoreCase("grenade")) {
+            item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, amount);
+        } else if (strItem.equalsIgnoreCase("magical_dust")) {
+            item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, amount);
+        } else {
+            sender.sendMessage(ChatColor.RED + "Unknown item.");
+            return;
+        }
+
+        player.sendMessage(ChatColor.GREEN + "You have been given " + amount + " of " + strItem + " by an admin.");
+        var inv = player.getInventory();
         var extra = inv.addItem(item);
         if (extra.size() > 0) {
-            ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), extra.get(0));
+            player.getWorld().dropItem(((Player) sender).getLocation(), extra.get(0));
         }
     }
 }

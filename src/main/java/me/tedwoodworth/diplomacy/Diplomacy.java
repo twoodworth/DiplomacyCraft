@@ -11,6 +11,7 @@ import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.entities.Entities;
 //import me.tedwoodworth.diplomacy.geology.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Guis;
@@ -99,6 +100,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded recipes");
         Entities.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded entity events");
+        GuardManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded guard events");
 //        FluidDynamics.getInstance().registerEvents();
 //        System.out.println("[Diplomacy] Loaded fluid dynamics events");
 

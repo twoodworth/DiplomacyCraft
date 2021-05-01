@@ -242,6 +242,53 @@ public class DiplomacyPlayers {
         this.guideBook = guideBook;
     }
 
+    public boolean canBuildHere(Chunk chunk, Player player) {
+        // Return true if there is no nation
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var nation = diplomacyChunk.getNation();
+        if (nation == null) return true;
+
+        // return true if there is a group and the player is in it
+        var group = diplomacyChunk.getGroup();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        if (group != null && group.getMembers().contains(diplomacyPlayer)) return true;
+
+
+        // return false if the player is not part of the group (checked above) or nation
+        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+        if (!Objects.equals(nation, playerNation)) return false;
+
+        // check if player has nation build permissions
+        var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+        var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+        if (canBuildAnywhere) return true;
+        else return false;
+    }
+
+    public boolean canPlaceGuards(Chunk chunk, Player player) {
+
+        // Return false if there is no nation
+        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+        var nation = diplomacyChunk.getNation();
+        if (nation == null) return true;
+
+        // return true if there is a group and the player is in it
+        var group = diplomacyChunk.getGroup();
+        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        if (group != null && group.getMembers().contains(diplomacyPlayer)) return true;
+
+
+        // return false if the player is not part of the group (checked above) or nation
+        var playerNation = Nations.getInstance().get(diplomacyPlayer);
+        if (!Objects.equals(nation, playerNation)) return false;
+
+        // check if player has nation build permissions
+        var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
+        var canBuildAnywhere = permissions.get("CanBuildAnywhere");
+        if (canBuildAnywhere) return true;
+        else return false;
+    }
+
     private class EventListener implements Listener {
 
         @EventHandler
@@ -494,30 +541,6 @@ public class DiplomacyPlayers {
 
             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
             event.setCancelled(true);
-        }
-
-
-        public boolean canBuildHere(Chunk chunk, Player player) {
-            // Return true if there is no nation
-            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-            var nation = diplomacyChunk.getNation();
-            if (nation == null) return true;
-
-            // return true if there is a group and the player is in it
-            var group = diplomacyChunk.getGroup();
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            if (group != null && group.getMembers().contains(diplomacyPlayer)) return true;
-
-
-            // return false if the player is not part of the group (checked above) or nation
-            var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (!Objects.equals(nation, playerNation)) return false;
-
-            // check if player has nation build permissions
-            var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-            var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-            if (canBuildAnywhere) return true;
-            else return false;
         }
 
         @EventHandler(ignoreCancelled = true)
