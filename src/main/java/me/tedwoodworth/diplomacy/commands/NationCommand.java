@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
 import me.tedwoodworth.diplomacy.events.NationJoinEvent;
 import me.tedwoodworth.diplomacy.events.NationLeaveEvent;

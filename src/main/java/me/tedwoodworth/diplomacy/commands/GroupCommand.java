@@ -3,7 +3,7 @@ package me.tedwoodworth.diplomacy.commands;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.groups.GroupGuiFactory;
+import me.tedwoodworth.diplomacy.Guis.GroupGuiFactory;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;

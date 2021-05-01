@@ -4,7 +4,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.entities.Entities;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
-import me.tedwoodworth.diplomacy.nations.Guis;
+import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -50,15 +50,6 @@ public class Items {
             instance = new Items();
         }
         return instance;
-    }
-
-    public boolean isGuiItem(ItemStack itemStack) {
-        if (itemStack == null) return false;
-
-        var meta = itemStack.getItemMeta();
-        return meta != null
-                && meta.getLore() != null
-                && meta.getLore().contains(Guis.getInstance().GUI_METAL_LORE);
     }
 
     public boolean isClassItem(ItemStack itemStack) {

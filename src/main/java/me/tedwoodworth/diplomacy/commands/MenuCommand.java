@@ -1,6 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
+import me.tedwoodworth.diplomacy.Guis.NationGuiFactory;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;

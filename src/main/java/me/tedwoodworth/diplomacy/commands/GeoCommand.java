@@ -2,7 +2,7 @@
 //
 //import me.tedwoodworth.diplomacy.geology.GeoData;
 //import me.tedwoodworth.diplomacy.geology.SubChunk;
-//import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
+//import me.tedwoodworth.diplomacy.Guis.NationGuiFactory;
 //import org.bukkit.ChatColor;
 //import org.bukkit.command.*;
 //import org.bukkit.entity.Player;

@@ -1,9 +1,10 @@
 package me.tedwoodworth.diplomacy;
 
+import me.tedwoodworth.diplomacy.Guis.RecipeGuis;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItemRecipes;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
-import me.tedwoodworth.diplomacy.chat.ChatCommand;
+import me.tedwoodworth.diplomacy.commands.ChatCommand;
 import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
@@ -14,7 +15,7 @@ import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
-import me.tedwoodworth.diplomacy.nations.Guis;
+import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -91,7 +92,7 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded Gui events");
         Guis.getInstance().loadNationMenus();
         System.out.println("[Diplomacy] Loaded nation menus");
-        Guis.getInstance().loadRecipeMenus();
+        RecipeGuis.getInstance().loadRecipeMenus();
         System.out.println("[Diplomacy] Loaded recipe menus");
         LivesManager.getInstance().startScheduler();
         ChatNotifications.getInstance().startScheduler();

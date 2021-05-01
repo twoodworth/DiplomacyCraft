@@ -1,7 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.nations.Guis;
-import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
+import me.tedwoodworth.diplomacy.Guis.Guis;
+import me.tedwoodworth.diplomacy.Guis.RecipeGuis;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -44,7 +44,7 @@ public class RecipeCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var gui = Guis.getInstance().getRecipeMenu(Guis.getInstance().RECIPES_KEY);
+        var gui = RecipeGuis.getInstance().getRecipeMenu(RecipeGuis.getInstance().RECIPES_KEY);
         gui.show((Player) sender);
     }
 }

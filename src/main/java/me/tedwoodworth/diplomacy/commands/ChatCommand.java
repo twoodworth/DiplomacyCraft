@@ -1,5 +1,6 @@
-package me.tedwoodworth.diplomacy.chat;
+package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.ChatColor;

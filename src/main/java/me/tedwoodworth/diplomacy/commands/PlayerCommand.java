@@ -1,6 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.nations.NationGuiFactory;
+import me.tedwoodworth.diplomacy.Guis.NationGuiFactory;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;

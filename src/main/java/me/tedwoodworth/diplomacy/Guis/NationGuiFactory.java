@@ -1,8 +1,12 @@
-package me.tedwoodworth.diplomacy.nations;
+package me.tedwoodworth.diplomacy.Guis;
 
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.Guis.ClassGuiFactory;
+import me.tedwoodworth.diplomacy.Guis.Guis;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -39,7 +43,7 @@ public class NationGuiFactory {
                 new ItemStack(Material.KNOWLEDGE_BOOK),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var nGui = Guis.getInstance().getRecipeMenu(Guis.getInstance().RECIPES_KEY);
+                    var nGui = RecipeGuis.getInstance().getRecipeMenu(RecipeGuis.getInstance().RECIPES_KEY);
                     nGui.show(clicker);
                     return true;
                 },

@@ -32,7 +32,7 @@ public class CustomItems {
         }
     }
 
-    private ItemStack addEnchant(ItemStack item) {
+    public ItemStack addEnchant(ItemStack item) {
         item.addUnsafeEnchantment(Enchantment.LUCK, 1);
         var meta = item.getItemMeta();
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

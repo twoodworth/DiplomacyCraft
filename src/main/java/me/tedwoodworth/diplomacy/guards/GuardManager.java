@@ -1,12 +1,13 @@
 package me.tedwoodworth.diplomacy.guards;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.Guis.GuardGuis;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
-import me.tedwoodworth.diplomacy.lives_and_tax.LivesManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
@@ -16,19 +17,44 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class GuardManager {
     public static GuardManager instance = null;
-    private NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
-    private NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
+    private final Set<Entity> guards = new HashSet<>();
+    private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
+    private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
+    private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
+    private final NamespacedKey TARGET_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_target");
+    private final NamespacedKey RADIUS_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_radius");
+    private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
+    private final int GUARD_TICK_DELAY = 2;
+    private final int GUARD_HEAL_DELAY = 10;
+
+
+    /*
+        Max health upgrades:
+        Default: 20
+        1: 28 (9 dust)
+        2: 39 (14 dust)
+        3: 55 (20 dust)
+        4: 77 (30 dust)
+        5: 108 (46 dust)
+        *tank only*
+        6: 151 (68 dust)
+        7: 211 (103 dust)
+        8: 295 (154 dust)
+        9: 579 (346 dust)
+        10: 810 (779 dust)
+     */
 
     public static GuardManager getInstance() {
         if (instance == null) {
@@ -37,34 +63,130 @@ public class GuardManager {
         return instance;
     }
 
+    private GuardManager() {
+        for (var entity : Bukkit.getWorld("world").getEntities()) {
+            if (isGuard(entity)) {
+                guards.add(entity);
+            }
+        }
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
+    }
+
+    private void onGuardTick(int i) {
+        var healList = new HashSet<Entity>();
+        for (var guard : guards) {
+            if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) {
+                var health = getHealth(guard);
+                var max = getMaxHealth(guard);
+                if (health < max) {
+                    setHealth(guard, Math.min(health + GUARD_HEAL_DELAY / 1200.0, max));
+                }
+            }
+            var type = getType(guard);
+            switch (type) {
+                case FLAMETHROWER -> {
+                    // launch fire items, if they collide (like grenades) deal tiny fire damage and light player on fire
+                }
+                case HEALER -> {
+                    if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) { // only 1/10 ticks
+                        var radius = getRadius(guard);
+                        var nearby = guard.getNearbyEntities(radius, radius, radius);
+                        var nation = getNation(guard);
+                        var percent = 1.0;
+                        Entity lowest = null;
+                        var lowestHealth = 0.0;
+                        var lowestMax = 0.0;
+                        for (var entity : nearby) {
+                            if (isGuard(entity) && Objects.equals(nation, getNation(entity)) && !healList.contains(entity)) {
+                                var health = getHealth(entity);
+                                var max = getMaxHealth(entity);
+                                var temp = health / max;
+                                if (temp < percent) {
+                                    percent = temp;
+                                    lowest = entity;
+                                    lowestHealth = health;
+                                    lowestMax = max;
+                                }
+                            }
+                        }
+                        if (lowest != null) {
+                            ((EnderCrystal) guard).setBeamTarget(lowest.getLocation());
+                            setHealth(lowest, Math.min(lowestMax, lowestHealth + (GUARD_HEAL_DELAY * getHealerRate(guard))));
+                            healList.add(lowest);
+                        } else {
+                            ((EnderCrystal) guard).setBeamTarget(null);
+                        }
+                    }
+                }
+            }
+        }
+        if (i == 6000 / GUARD_TICK_DELAY) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), GUARD_TICK_DELAY);
+        } else {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(i + 1), GUARD_TICK_DELAY);
+        }
+    }
+
     public enum Type {
-        DEFAULT, // does nothing
+        BASIC, // does nothing
         SNIPER, // shoots strong arrows far at a slow rate
-        MACHINE_GUNNER, // shoots weaker arrows at a fast rate, less accurate
+        GUNNER, // shoots weaker arrows at a fast rate, less accurate
         FLAMETHROWER, // shoots very weak fire arrows
-        GRENADE_LAUNCHER, // shoots grenades
+        GRENADER, // shoots grenades
         HEALER, // heals nearby crystals
         TANK, // higher max health, higher armor
         TELEPORTER, // allows players to teleport to other teleporters
-        GENERATOR // slowly generates resources
+        GENERATOR, // slowly generates resources
+        SNOWMAKER // pummels snowballs at target
     }
+
+    private String getTypePrefix(Entity entity) {
+        var type = getType(entity);
+        return switch (type) {
+            case BASIC -> ChatColor.GRAY + "[Basic] " + ChatColor.WHITE;
+            case SNIPER -> ChatColor.DARK_GREEN + "[Sniper] " + ChatColor.WHITE;
+            case GUNNER -> ChatColor.DARK_GRAY + "[Gunner] " + ChatColor.WHITE;
+            case FLAMETHROWER -> ChatColor.RED + "[FLamethrower] " + ChatColor.WHITE;
+            case GRENADER -> ChatColor.DARK_RED + "[Grenader] " + ChatColor.WHITE;
+            case HEALER -> ChatColor.LIGHT_PURPLE + "[Healer] " + ChatColor.WHITE;
+            case TANK -> ChatColor.DARK_AQUA + "[Tank] " + ChatColor.WHITE;
+            case TELEPORTER -> ChatColor.YELLOW + "[Teleporter] " + ChatColor.WHITE;
+            case GENERATOR -> ChatColor.GOLD + "[Generator] " + ChatColor.WHITE;
+            case SNOWMAKER -> ChatColor.AQUA + "[Snowmaker] " + ChatColor.WHITE;
+        };
+    }
+
     public void spawnGuard(Location loc) {
         loc.setX(loc.getX() + 0.5);
         loc.setZ(loc.getZ() + 0.5);
         var entity = Bukkit.getWorld("world").spawnEntity(loc, EntityType.ENDER_CRYSTAL);
         var container = entity.getPersistentDataContainer();
+
+        // type
         container.set(TYPE_KEY, PersistentDataType.INTEGER, 0);
+
+        // health
         container.set(HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
+
+        // max health
+        container.set(MAX_HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
+
+        // radius
+        container.set(RADIUS_KEY, PersistentDataType.DOUBLE, 0.0);
+
         entity.setCustomNameVisible(true);
-        entity.setCustomName("20.00 Health");
+        entity.setCustomName(ChatColor.GRAY + "[Basic] " + ChatColor.WHITE + "20.00 Health");
         ((EnderCrystal) entity).setShowingBottom(false);
+        guards.add(entity);
     }
 
     public void killGuard(Entity entity) {
         var loc = entity.getLocation();
+        guards.remove(entity);
         entity.remove();
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-        loc.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, loc, 4);
+        loc.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, loc, 4);
+        loc.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, loc, 4);
     }
 
     public boolean isGuard(Entity entity) {
@@ -72,21 +194,88 @@ public class GuardManager {
         return container.has(TYPE_KEY, PersistentDataType.INTEGER);
     }
 
+    public Type getType(Entity entity) {
+        var id = entity.getPersistentDataContainer().get(TYPE_KEY, PersistentDataType.INTEGER);
+        return getEnum(id);
+    }
+
+    public boolean setType(Entity entity, Type type) {
+        var curType = getType(entity);
+        if (curType == type) return false;
+
+        var id = type.ordinal();
+        entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.INTEGER, id);
+        switch (type) {
+            case HEALER -> {
+                setRadius(entity, 24);
+                setHealerRate(entity, (short)0);
+            }
+        }
+        setHealth(entity, getHealth(entity));
+        return true;
+    }
+
     public double getHealth(Entity entity) {
         return entity.getPersistentDataContainer().get(HEALTH_KEY, PersistentDataType.DOUBLE);
     }
 
-    public void setHealth(Entity entity, double health) {
-        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
-        var strHealth = String.format("%.2f",health);
-        entity.setCustomName(strHealth + " Health");
+    public Nation getNation(Entity entity) {
+        return DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
     }
 
+    public double getHealerRate(Entity entity) {
+        var id = entity.getPersistentDataContainer().get(HEALER_RATE_KEY, PersistentDataType.SHORT);
+        return switch (id) {
+            default -> 4.0 / 1200.0;
+            case 1 -> 6.0 / 1200.0;
+            case 2 -> 9.0 / 1200.0;
+            case 3 -> 13.5 / 1200.0;
+            case 4 -> 20.25 / 1200.0;
+            case 5 -> 30.375 / 1200.0;
+            case 6 -> 45.5624 / 1200.0;
+            case 7 -> 68.3436 / 1200.0;
+            case 8 -> 101.0756 / 1200.0;
+            case 9 -> 230.66 / 1200.0;
+            case 10 -> 518.98400 / 1200.0;
+        };
+    }
+
+
+    public void setHealerRate(Entity entity, short rate) {
+        entity.getPersistentDataContainer().set(HEALER_RATE_KEY, PersistentDataType.SHORT, rate);
+
+    }
+
+    public double getMaxHealth(Entity entity) {
+        return entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.DOUBLE);
+    }
+
+    public void setHealth(Entity entity, double health) {
+        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
+        var strHealth = String.format("%.2f", health);
+        entity.setCustomName(getTypePrefix(entity) + strHealth + " Health");
+    }
+
+    public double getRadius(Entity entity) {
+        return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.DOUBLE);
+    }
+
+    public void setRadius(Entity entity, double radius) {
+        entity.getPersistentDataContainer().set(RADIUS_KEY, PersistentDataType.DOUBLE, radius);
+    }
+
+    private Type getEnum(int id) {
+        var array = Type.values();
+        if (array.length > id) {
+            return array[id];
+        } else {
+            throw new IndexOutOfBoundsException("Error: Guard type ID " + id + " is out of bounds");
+        }
+    }
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new GuardManager.EventListener(), Diplomacy.getInstance());
     }
-
 
     private class EventListener implements Listener {
 
@@ -161,8 +350,39 @@ public class GuardManager {
         @EventHandler
         private void onInteractEntity(PlayerInteractEntityEvent event) {
             var entity = event.getRightClicked();
+            var player = event.getPlayer();
             if (isGuard(entity)) {
-                // if perms, show guard menu
+                var type = getType(entity);
+                switch (type) {
+                    case TELEPORTER -> {
+                    }
+                    default -> {
+                        // check if in nation
+                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        var playerNation = Nations.getInstance().get(dp);
+                        if (playerNation == null) { // not in nation
+                            return;
+                        }
+
+                        // check if in correct nation
+                        var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
+                        if (!playerNation.equals(guardNation)) {
+                            return;
+                        }
+
+                        // check nation permissions
+                        var permissions = playerNation.getMemberClass(dp).getPermissions();
+                        var canManageGuards = permissions.get("CanManageGuards");
+                        if (!canManageGuards) {
+                            player.sendMessage(ChatColor.RED + "You do not have permission to manage guard crystals.");
+                            return;
+                        }
+                        var menu = GuardGuis.getInstance().generateGui(entity);
+                        menu.show(player);
+                    }
+                }
+
+
             }
         }
 
@@ -216,11 +436,11 @@ public class GuardManager {
                 if (shooter instanceof Player) {
                     var dp = DiplomacyPlayers.getInstance().get(((Player) shooter).getUniqueId());
                     var nation = Nations.getInstance().get(dp);
-                    if (nation != null && nation.equals(guardNation)) {
+                    if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
                         if (nation.getOutlaws().contains(((Player) shooter).getUniqueId())) {
                             return true;
                         } else {
-                            ((Player) shooter).sendMessage(ChatColor.RED + "You cannot damage your own guard crystal.");
+                            ((Player) shooter).sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
                             return false;
                         }
                     } else {
@@ -234,11 +454,11 @@ public class GuardManager {
                 if (shooter instanceof Player) {
                     var dp = DiplomacyPlayers.getInstance().get(shooter.getUniqueId());
                     var nation = Nations.getInstance().get(dp);
-                    if (nation != null && nation.equals(guardNation)) {
+                    if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
                         if (nation.getOutlaws().contains(shooter.getUniqueId())) {
                             return true;
                         } else {
-                            shooter.sendMessage(ChatColor.RED + "You cannot damage your own guard crystal.");
+                            shooter.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
                             return false;
                         }
                     } else {
@@ -247,14 +467,14 @@ public class GuardManager {
                 } else {
                     return false;
                 }
-            }else if (damager instanceof Player) {
+            } else if (damager instanceof Player) {
                 var dp = DiplomacyPlayers.getInstance().get(damager.getUniqueId());
                 var nation = Nations.getInstance().get(dp);
-                if (nation != null && nation.equals(guardNation)) {
+                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
                     if (nation.getOutlaws().contains(damager.getUniqueId())) {
                         return true;
                     } else {
-                        damager.sendMessage(ChatColor.RED + "You cannot damage your own guard crystal.");
+                        damager.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
                         return false;
                     }
                 } else {

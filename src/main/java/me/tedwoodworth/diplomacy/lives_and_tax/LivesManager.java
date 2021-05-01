@@ -83,7 +83,7 @@ public class LivesManager {
 
     void giveApple(Player player, String reason) {
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
-                player.sendMessage(ChatColor.AQUA + "You have recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.AQUA + " for" + reason + ".");
+                player.sendMessage(ChatColor.AQUA + "You have recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.AQUA + " for " + reason + ".");
                 var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
                 var extra = player.getInventory().addItem(apple);
                 if (extra.size() > 0) {
