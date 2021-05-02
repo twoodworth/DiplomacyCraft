@@ -7,10 +7,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -34,6 +31,178 @@ public class GuardGuis {
             case YELLOW_STAINED_GLASS_PANE -> ChatColor.YELLOW;
             default -> ChatColor.RED;
         };
+    }
+
+    private StaticGuiElement getNotifyDamageElement(Entity guard) {
+        Material material;
+        ChatColor color;
+        var isOn = GuardManager.getInstance().getNotifyDamage(guard);
+        if (isOn) {
+            material = Material.EMERALD_BLOCK;
+            color = ChatColor.GREEN;
+        } else {
+            material = Material.REDSTONE_BLOCK;
+            color = ChatColor.RED;
+        }
+
+        var e = new StaticGuiElement(
+                'A',
+                new ItemStack(material),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    GuardManager.getInstance().setNotifyDamage(guard, !isOn);
+                    ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
+                    var nGui = generateGui(guard);
+                    nGui.show(clicker);
+                    return true;
+                },
+                color + "Send Damage Notifications",
+                ChatColor.GRAY + "When enabled, this guard will notify nation members with",
+                ChatColor.GRAY + "the permission 'CanSeeGuardNotifications' whenever it is damaged."
+        );
+        return e;
+    }
+
+    private StaticGuiElement getAttackTrespassers(Entity guard) {
+        Material material;
+        ChatColor color;
+        var isOn = GuardManager.getInstance().getAttackTrespassers(guard);
+        if (isOn) {
+            material = Material.EMERALD_BLOCK;
+            color = ChatColor.GREEN;
+        } else {
+            material = Material.REDSTONE_BLOCK;
+            color = ChatColor.RED;
+        }
+
+        var e = new StaticGuiElement(
+                'B',
+                new ItemStack(material),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    GuardManager.getInstance().setAttackTrespassers(guard, !isOn);
+                    ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
+                    var nGui = generateGui(guard);
+                    nGui.show(clicker);
+                    return true;
+                },
+                color + "Attack Trespassers",
+                ChatColor.GRAY + "When enabled, this guard will attack any trespasser it sees, regardless of",
+                ChatColor.GRAY + "who that trespasser is / what nation they are from.",
+                " ",
+                ChatColor.GRAY + "A trespasser is a player who is inside territory that they do not have permission",
+                ChatColor.GRAY + "to build in. This setting is intended for very high security places."
+        );
+        return e;
+    }
+
+    private StaticGuiElement getAttackNeutral(Entity guard) {
+        Material material;
+        ChatColor color;
+        var isOn = GuardManager.getInstance().getAttackNeutral(guard);
+        if (isOn) {
+            material = Material.EMERALD_BLOCK;
+            color = ChatColor.GREEN;
+        } else {
+            material = Material.REDSTONE_BLOCK;
+            color = ChatColor.RED;
+        }
+
+        var e = new StaticGuiElement(
+                'C',
+                new ItemStack(material),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    GuardManager.getInstance().setAttackNeutral(guard, !isOn);
+                    ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
+                    var nGui = generateGui(guard);
+                    nGui.show(clicker);
+                    return true;
+                },
+                color + "Attack Neutral Players",
+                ChatColor.GRAY + "When enabled, this guard will attack any player from a neutral nation that it sees."
+        );
+        return e;
+    }
+
+    private StaticGuiElement getAttackAllies(Entity guard) {
+        Material material;
+        ChatColor color;
+        var isOn = GuardManager.getInstance().getAttackAllies(guard);
+        if (isOn) {
+            material = Material.EMERALD_BLOCK;
+            color = ChatColor.GREEN;
+        } else {
+            material = Material.REDSTONE_BLOCK;
+            color = ChatColor.RED;
+        }
+
+        var e = new StaticGuiElement(
+                'D',
+                new ItemStack(material),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    GuardManager.getInstance().setAttackAllies(guard, !isOn);
+                    ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
+                    var nGui = generateGui(guard);
+                    nGui.show(clicker);
+                    return true;
+                },
+                color + "Attack Allied Players",
+                ChatColor.GRAY + "When enabled, this guard will attack any player from an allied nation that it sees."
+        );
+        return e;
+    }
+
+    private StaticGuiElement getAttackNewbies(Entity guard) {
+        Material material;
+        ChatColor color;
+        var isOn = GuardManager.getInstance().getAttackNewbies(guard);
+        if (isOn) {
+            material = Material.EMERALD_BLOCK;
+            color = ChatColor.GREEN;
+        } else {
+            material = Material.REDSTONE_BLOCK;
+            color = ChatColor.RED;
+        }
+
+        var name = GuardManager.getInstance().getNation(guard).getClasses().get(0).getName();
+
+        var e = new StaticGuiElement(
+                'E',
+                new ItemStack(material),
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    GuardManager.getInstance().setAttackAllies(guard, !isOn);
+                    ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
+                    var nGui = generateGui(guard);
+                    nGui.show(clicker);
+                    return true;
+                },
+                color + "Attack Players of the '" + name + "' Class",
+                ChatColor.GRAY + "When enabled, this guard will attack any player from the nation with the",
+                ChatColor.GRAY + "'" + name + "' class. This setting is intended for nations with open doors,",
+                ChatColor.GRAY + "where players can join without permission and be assigned to the lowest",
+                ChatColor.GRAY + "class."
+        );
+        return e;
+    }
+
+    private StaticGuiElement getSelfDestructElement(Entity guard, InventoryGui gui) {
+        return new StaticGuiElement(
+                'J',
+                CustomItems.getInstance().addEnchant(new ItemStack(Material.TNT)),
+                click -> {
+                    var loc = guard.getLocation();
+                    var clicker = click.getEvent().getWhoClicked();
+                    var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard self-destructed by " + clicker.getName();
+                    GuardManager.getInstance().sendGuardNotification(guard, message);
+                    GuardManager.getInstance().killGuard(guard);
+                    gui.close();
+                    return true;
+                },
+                "" + ChatColor.BOLD + ChatColor.RED + "Self Destruct: Click to destroy this crystal"
+        );
     }
 
     private GuiElementGroup[] getTankMaxHealthGroups(Entity guard) {
@@ -1871,14 +2040,16 @@ public class GuardGuis {
                 // Crate setup
                 String[] guiSetup = {
                         "abcdefghi",
-                        "         ",
-                        "    j    "
+                        "    A    ",
+                        "    J    "
                 };
 
                 InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
                 gui.setCloseAction(close -> false);
                 gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
 
+                gui.addElement(getSelfDestructElement(guard, gui));
+                gui.addElement(getNotifyDamageElement(guard));
                 // add sniper
                 gui.addElement(new StaticGuiElement(
                         'a',
@@ -2488,22 +2659,6 @@ public class GuardGuis {
                         ChatColor.GRAY + "- 1x Snowball",
                         ChatColor.GRAY + "- 2x Magic Dust"
                 ));
-
-                // add kill button
-                gui.addElement(new StaticGuiElement(
-                        'j',
-                        CustomItems.getInstance().addEnchant(new ItemStack(Material.TNT)),
-                        click -> {
-                            var loc = guard.getLocation();
-                            var clicker = click.getEvent().getWhoClicked();
-                            var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard self-destructed by " + clicker.getName();
-                            GuardManager.getInstance().sendGuardNotification(guard, message);
-                            GuardManager.getInstance().killGuard(guard);
-                            gui.close();
-                            return true;
-                        },
-                        "" + ChatColor.BOLD + ChatColor.RED + "Self Destruct: Click to destroy this crystal"
-                ));
                 return gui;
             }
             case SNIPER -> {
@@ -2513,11 +2668,11 @@ public class GuardGuis {
 
                 // Crate setup
                 String[] guiSetup = {
-                        "mprsavtu ",
-                        "mprsavtu ",
-                        "mprsavtu ",
-                        "mprsavtu ",
-                        "mprsavtu ",
+                        "mprsavtuA",
+                        "mprsavtuB",
+                        "mprsavtuC",
+                        "mprsavtuD",
+                        "mprsavtuE",
                         "mprsavtuJ"
                 };
 
@@ -2534,7 +2689,13 @@ public class GuardGuis {
                 var power = getSniperPowerGroups(guard);
                 gui.addElement(power[0]); // arrow power
                 gui.addElement(power[1]); // arrow power2
-                // arrow power
+                gui.addElement(getNotifyDamageElement(guard)); // guard notify damage
+                gui.addElement(getAttackTrespassers(guard)); // tresspassers
+                gui.addElement(getAttackAllies(guard)); // allies
+                gui.addElement(getAttackNeutral(guard)); // neutral
+                gui.addElement(getAttackNewbies(guard)); // newbies
+                gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
+
                 return gui;
             }
             default -> {

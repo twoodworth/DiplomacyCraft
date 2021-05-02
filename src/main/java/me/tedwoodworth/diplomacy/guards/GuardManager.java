@@ -7,9 +7,11 @@ import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -49,6 +51,7 @@ public class GuardManager {
     private final Set<Entity> guards = new HashSet<>();
     private final Set<Player> interactSet = new HashSet<>();
     private HashMap<Player, String> guardDamage = new HashMap<>();
+    private HashMap<DiplomacyPlayer, HashSet<Nation>> autoOutlaw = new HashMap<>();
 
     // Math stuff
     private final double GRAVITY_CONSTANT = 0.05;
@@ -58,6 +61,13 @@ public class GuardManager {
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
+    private final NamespacedKey NOTIFY_DAMAGE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_notify_damage");
+
+    // attacking guards
+    private final NamespacedKey ATTACK_TRESPASSERS = new NamespacedKey(Diplomacy.getInstance(), "guard_tresspassers");
+    private final NamespacedKey ATTACK_NEUTRAL = new NamespacedKey(Diplomacy.getInstance(), "guard_neutral");
+    private final NamespacedKey ATTACK_ALLIES = new NamespacedKey(Diplomacy.getInstance(), "guard_allies");
+    private final NamespacedKey ATTACK_NEWBIES = new NamespacedKey(Diplomacy.getInstance(), "guard_newbies");
 
     // sniper
     private final NamespacedKey SNIPER_ACCURACY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
@@ -139,7 +149,7 @@ public class GuardManager {
                             double distance = Double.MAX_VALUE;
                             Location loc = null;
                             for (var entity : nearby) {
-                                if (entity instanceof Player && canDamageGuard(entity, guard) && Objects.equals(gNation, getNation(entity))) {
+                                if (entity instanceof Player && canAttackPlayer((Player) entity, guard) && Objects.equals(gNation, getNation(entity))) {
                                     var pLoc = ((Player) entity).getEyeLocation();
                                     pLoc.setY(pLoc.getY() - 0.5);
                                     var d = gLoc.distanceSquared(pLoc);
@@ -255,6 +265,13 @@ public class GuardManager {
         // resistance
         container.set(RESISTANCE_KEY, PersistentDataType.SHORT, (short) 0);
 
+        // preferences
+        container.set(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance, true);
+        container.set(ATTACK_TRESPASSERS, BooleanPersistentDataType.instance, false);
+        container.set(ATTACK_NEUTRAL, BooleanPersistentDataType.instance, true);
+        container.set(ATTACK_ALLIES, BooleanPersistentDataType.instance, false);
+        container.set(ATTACK_NEWBIES, BooleanPersistentDataType.instance, false);
+
         entity.setCustomNameVisible(true);
         entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 HP");
         ((EnderCrystal) entity).setShowingBottom(false);
@@ -266,8 +283,8 @@ public class GuardManager {
         guards.remove(entity);
         entity.remove();
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+        loc.getWorld().playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1, 1);
         loc.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, loc, 4);
-        loc.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, loc, 4);
     }
 
     public boolean isGuard(Entity entity) {
@@ -280,6 +297,46 @@ public class GuardManager {
         return getEnum(id);
     }
 
+    public void setNotifyDamage(Entity entity, boolean notifyDamage) {
+        entity.getPersistentDataContainer().set(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance, notifyDamage);
+    }
+
+    public boolean getNotifyDamage(Entity entity) {
+        return entity.getPersistentDataContainer().get(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance);
+    }
+
+    public void setAttackTrespassers(Entity entity, boolean attackTrespasser) {
+        entity.getPersistentDataContainer().set(ATTACK_TRESPASSERS, BooleanPersistentDataType.instance, attackTrespasser);
+    }
+
+    public boolean getAttackTrespassers(Entity entity) {
+        return entity.getPersistentDataContainer().get(ATTACK_TRESPASSERS, BooleanPersistentDataType.instance);
+    }
+
+    public void setAttackNeutral(Entity entity, boolean attackNeutral) {
+        entity.getPersistentDataContainer().set(ATTACK_NEUTRAL, BooleanPersistentDataType.instance, attackNeutral);
+    }
+
+    public boolean getAttackNeutral(Entity entity) {
+        return entity.getPersistentDataContainer().get(ATTACK_NEUTRAL, BooleanPersistentDataType.instance);
+    }
+
+    public void setAttackAllies(Entity entity, boolean attackAllies) {
+        entity.getPersistentDataContainer().set(ATTACK_ALLIES, BooleanPersistentDataType.instance, attackAllies);
+    }
+
+    public boolean getAttackAllies(Entity entity) {
+        return entity.getPersistentDataContainer().get(ATTACK_ALLIES, BooleanPersistentDataType.instance);
+    }
+
+    public void setAttackNewbies(Entity entity, boolean attackNewbies) {
+        entity.getPersistentDataContainer().set(ATTACK_NEWBIES, BooleanPersistentDataType.instance, attackNewbies);
+    }
+
+    public boolean getAttackNewbies(Entity entity) {
+        return entity.getPersistentDataContainer().get(ATTACK_NEWBIES, BooleanPersistentDataType.instance);
+    }
+
     public boolean setType(Entity entity, Type type) {
         var curType = getType(entity);
         if (curType == type) return false;
@@ -290,6 +347,7 @@ public class GuardManager {
             case HEALER -> {
                 setRadius(entity, (short) 0);
                 setHealerRate(entity, (short) 0);
+
             }
             case SNIPER -> {
                 setRadius(entity, (short) 0);
@@ -596,62 +654,81 @@ public class GuardManager {
         }
     }
 
-    public boolean canDamageGuard(Entity damager, Entity guard) {
-        var loc = guard.getLocation();
-        var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk()).getNation();
-        if (guardNation == null) {
-            guard.remove();
-            return false;
+    public boolean canGetAutoOutlawed(Player player, Entity guard) {
+        // if ((from other nation || if does not have canManageGuards) && !isOutlawed)
+        var nation = getNation(guard);
+        var uuid = player.getUniqueId();
+        var isOutlawed = nation.getOutlaws().contains(uuid);
+        if (isOutlawed) return false;
+        var dp = DiplomacyPlayers.getInstance().get(uuid);
+        var pNation = Nations.getInstance().get(dp);
+        if (!Objects.equals(nation, pNation)) return true;
+
+        // check nation permissions
+        var permissions = pNation.getMemberClass(dp).getPermissions();
+        var canManageGuards = permissions.get("CanManageGuards");
+        return !canManageGuards;
+    }
+
+    public boolean canAttackEntity(Entity entity, Entity guard) {
+        if (!(entity instanceof Player)) return false;
+        return canAttackPlayer((Player) entity, guard);
+    }
+
+    public boolean canAttackPlayer(Player damager, Entity guard) {
+
+        // 1. can always attack outlaws, enemies, and nomads
+        // 2. if tresspassing and can attack tresspassers, will attack, regardless of other settings
+        // 3. if not tresspassing or can't attack tresspassers:
+        // if ally: check attack allies
+        // if neutral: check attack neutral
+        // if newbie: check attack newbie
+
+        var dp = DiplomacyPlayers.getInstance().get(((Player) damager).getUniqueId());
+        var nation = Nations.getInstance().get(dp);
+        var guardNation = getNation(guard);
+        if (nation == null || (guardNation.getEnemyNationIDs().contains(nation.getNationID())) || (guardNation.getOutlaws().contains(damager.getUniqueId()))) {
+            return true;
         }
-        if (damager instanceof Projectile) {
-            var projectile = ((Projectile) damager);
-            var shooter = projectile.getShooter();
-            if (shooter instanceof Player) {
-                var dp = DiplomacyPlayers.getInstance().get(((Player) shooter).getUniqueId());
-                var nation = Nations.getInstance().get(dp);
-                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                    if (nation.getOutlaws().contains(((Player) shooter).getUniqueId())) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                return false;
-            }
-        } else if (damager instanceof Item) {
-            var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
-            if (shooter instanceof Player) {
-                var dp = DiplomacyPlayers.getInstance().get(shooter.getUniqueId());
-                var nation = Nations.getInstance().get(dp);
-                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                    if (nation.getOutlaws().contains(shooter.getUniqueId())) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                return false;
-            }
-        } else if (damager instanceof Player) {
-            var dp = DiplomacyPlayers.getInstance().get(damager.getUniqueId());
-            var nation = Nations.getInstance().get(dp);
-            if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                if (nation.getOutlaws().contains(damager.getUniqueId())) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
+
+        var chunk = damager.getLocation().getChunk();
+        var canBuild = DiplomacyPlayers.getInstance().canBuildHere(chunk, damager);
+        var attackTresspassers = getAttackTrespassers(guard);
+        var isNationChunk = Objects.equals(guardNation, DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation());
+        if (!canBuild && attackTresspassers && isNationChunk) {
+            return true;
+        }
+
+        var allied = guardNation.getAllyNationIDs().contains(nation.getNationID());
+        var attackAllies = getAttackAllies(guard);
+        if (allied && attackAllies) {
+            return true;
+        }
+
+        var attackNeutral = getAttackNeutral(guard);
+        var same = guardNation.equals(nation);
+        if (!allied && !same && attackNeutral) {
+            return true;
+        }
+
+        if (same) {
+            var nClass = guardNation.getMemberClass(dp);
+            var attackNewbies = getAttackNewbies(guard);
+            if (nClass.getClassID().equalsIgnoreCase("0") && attackNewbies) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    public Entity getTrueDamager(Entity damager) {
+        if (damager instanceof Projectile) {
+            return (Entity) ((Projectile) damager).getShooter();
+        } else if (damager instanceof Item) {
+            return Items.getInstance().grenadeThrowerMap.get(damager);
         } else {
-            return false;
+            return damager;
         }
     }
 
@@ -746,7 +823,7 @@ public class GuardManager {
             var hit = event.getHitEntity();
             if (hit != null && trackedArrows.containsKey(entity) && hit instanceof Player) {
                 var guard = trackedArrows.get(entity);
-                if (!canDamageGuard(hit, guard)) {
+                if (!canAttackPlayer((Player) hit, guard)) {
                     entity.setBounce(true);
                 }
             }
@@ -821,9 +898,8 @@ public class GuardManager {
             var damager = event.getDamager();
             if (isGuard(entity)) {
                 event.setCancelled(true);
-                if (!canDamageGuard(damager, entity)) {
-                    return;
-                }
+
+                var trueDamager = getTrueDamager(damager);
                 if (damager instanceof Projectile) {
                     if (damager instanceof Trident) {
                         ((Trident) damager).setBounce(true);
@@ -831,33 +907,55 @@ public class GuardManager {
                         damager.remove();
                     }
                 }
-                damage = damage * getResistance(entity);
-                var health = getHealth(entity);
-                health = health - damage;
-                var loc = entity.getLocation();
-                loc.getWorld().playSound(loc, Sound.BLOCK_NETHERITE_BLOCK_HIT, 2, 1);
-                if (health <= 0.0) {
-                    var message = getKillMessage(damager, entity);
-                    var nation = getNation(entity);
-                    for (var player : Bukkit.getOnlinePlayers()) {
-                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                        var pNation = Nations.getInstance().get(dp);
-                        if (Objects.equals(pNation, nation)) {
-                            // check nation permissions
-                            var permissions = pNation.getMemberClass(dp).getPermissions();
-                            var canSee = permissions.get("CanSeeGuardNotifications");
-                            if (canSee) {
-                                player.sendMessage(message);
-                            }
+
+                if (trueDamager instanceof Player) {
+                    var player = ((Player) damager);
+                    damage = damage * getResistance(entity);
+                    var health = getHealth(entity);
+                    health = health - damage;
+                    var loc = entity.getLocation();
+                    loc.getWorld().playSound(loc, Sound.BLOCK_NETHERITE_BLOCK_HIT, 2, 1);
+                    if (health <= 0.0) {
+                        var message = getKillMessage(player, entity);
+                        sendGuardNotification(entity, message);
+                        killGuard(entity);
+                    } else {
+                        setHealth(entity, health);
+                        if (getNotifyDamage(entity)) {
+                            var message = getDamageMessage(player, entity);
+                            sendGuardNotification(entity, message);
                         }
                     }
-                    killGuard(entity);
+                    if (canGetAutoOutlawed(player, entity)) {
+                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        autoOutlaw.putIfAbsent(dp, new HashSet<>());
+                        var nation = getNation(entity);
+                        if (autoOutlaw.get(dp).contains(nation)) {
+                            nation.addOutlaw(dp.getOfflinePlayer());
+                            autoOutlaw.get(dp).remove(nation);
+                            for (var member : nation.getMembers()) {
+                                var op = member.getOfflinePlayer();
+                                if (op.getPlayer() != null) {
+                                    var p = op.getPlayer();
+                                    p.sendMessage(ChatColor.AQUA + player.getName() + " has been automatically outlawed for attacking guard crystals.");
+                                }
+                            }
+                            player.sendMessage(ChatColor.AQUA + "You have been automatically outlawed by " + nation.getName() + " for attacking their guard crystals.");
+                        } else {
+                            autoOutlaw.get(dp).add(nation);
+                            player.sendMessage(ChatColor.RED + "Warning: If you attack " + nation.getName() + "'s guard crystals again (in the next 30 seconds), they will automatically outlaw you.");
+                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                                var contained = autoOutlaw.get(dp).remove(nation);
+                                if (contained && dp.getOfflinePlayer().getPlayer() != null) {
+                                    dp.getOfflinePlayer().getPlayer().sendMessage(ChatColor.RED + "Warning for attacking " + nation.getName() + "'s guard crystals has worn off.");
+                                }
+                            }, 600L);
+                        }
+                    }
                 } else {
-                    setHealth(entity, health);
-                    var message = getDamageMessage(damager, entity);
-                    sendGuardNotification(entity, message);
+                    return;
                 }
-            }  else {
+            } else {
                 if (damager instanceof Arrow && isGuardArrow(damager) && entity instanceof Player) {
                     event.setDamage(((Arrow) damager).getDamage());
                     guardDamage.remove(entity);
