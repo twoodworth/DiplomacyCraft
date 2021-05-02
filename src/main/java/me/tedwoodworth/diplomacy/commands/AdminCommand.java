@@ -139,7 +139,6 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         var world = ((Player) sender).getWorld();
         var arrow = world.spawnArrow(((Player) sender).getEyeLocation(), ((Player) sender).getEyeLocation().getDirection(), speed, spread);
-        GuardManager.getInstance().trackNewArrow(arrow);
     }
 
     private void removeChunkNation(CommandSender sender) {
