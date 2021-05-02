@@ -38,7 +38,7 @@ public class GuardGuis {
 
     private GuiElementGroup[] getTankMaxHealthGroups(Entity guard) {
         var sMaxHealth = GuardManager.getInstance().getShortMaxHealth(guard);
-        var materials = new Material[5];
+        var materials = new Material[10];
         for (int i = 0; i < sMaxHealth; i++) {
             materials[i] = Material.LIME_STAINED_GLASS_PANE;
         }
@@ -67,9 +67,9 @@ public class GuardGuis {
                     if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 6)) {
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 5)) {
                             CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 6);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 5);
                             GuardManager.getInstance().setMaxHealth(guard, (short)1);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 15.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -84,7 +84,7 @@ public class GuardGuis {
                 " ",
                 ChatColor.BLUE + "Cost:",
                 ChatColor.GRAY + "- 1x Golden Apple",
-                ChatColor.GRAY + "- 6x Magic Dust"
+                ChatColor.GRAY + "- 5x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -94,9 +94,9 @@ public class GuardGuis {
                     if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 10)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 10);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 1) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 7)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 7);
                             GuardManager.getInstance().setMaxHealth(guard, (short)2);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 26.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -107,11 +107,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[1]) + "Max Health II",
-                ChatColor.GRAY + "Increase max health to 61 HP (requires Max Health I)",
+                ChatColor.GRAY + "Increase max health to 61 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 2x Golden Apple",
-                ChatColor.GRAY + "- 10x Magic Dust"
+                ChatColor.GRAY + "- 1x Golden Apple",
+                ChatColor.GRAY + "- 7x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -121,9 +121,9 @@ public class GuardGuis {
                     if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 3) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 9)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 9);
                             GuardManager.getInstance().setMaxHealth(guard, (short)3);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 46.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -134,11 +134,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[2]) + "Max Health III",
-                ChatColor.GRAY + "Increase max health to 107 HP (requires Max Health II)",
+                ChatColor.GRAY + "Increase max health to 107 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Golden Apple",
-                ChatColor.GRAY + "- 17x Magic Dust"
+                ChatColor.GRAY + "- 2x Golden Apple",
+                ChatColor.GRAY + "- 9x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -148,9 +148,9 @@ public class GuardGuis {
                     if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 4) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 29)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 4);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 29);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 12)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 12);
                             GuardManager.getInstance().setMaxHealth(guard, (short)4);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 81.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -161,11 +161,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[3]) + "Max Health IV",
-                ChatColor.GRAY + "Increase max health to 188 HP (requires Max Health III)",
+                ChatColor.GRAY + "Increase max health to 188 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 4x Golden Apple",
-                ChatColor.GRAY + "- 29x Magic Dust"
+                ChatColor.GRAY + "- 2x Golden Apple",
+                ChatColor.GRAY + "- 12x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -175,9 +175,9 @@ public class GuardGuis {
                     if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 5) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 50)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 5);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 50);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 3) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
                             GuardManager.getInstance().setMaxHealth(guard, (short)5);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 162.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -188,11 +188,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[4]) + "Max Health V",
-                ChatColor.GRAY + "Increase max health to 350 HP (requires Max Health IV)",
+                ChatColor.GRAY + "Increase max health to 350 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 5x Golden Apple",
-                ChatColor.GRAY + "- 50x Magic Dust"
+                ChatColor.GRAY + "- 3x Golden Apple",
+                ChatColor.GRAY + "- 17x Magic Dust"
         ));
         var groups = new GuiElementGroup[2];
         groups[0] = group;
@@ -207,9 +207,9 @@ public class GuardGuis {
                     if (materials[5] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 7) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 85)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 7);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 85);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 4) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 22)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 4);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 22);
                             GuardManager.getInstance().setMaxHealth(guard, (short)6);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 224.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -220,11 +220,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[5]) + "Max Health VI",
-                ChatColor.GRAY + "Increase max health to 574 HP (requires Max Health V)",
+                ChatColor.GRAY + "Increase max health to 574 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 7x Golden Apple",
-                ChatColor.GRAY + "- 85x Magic Dust"
+                ChatColor.GRAY + "- 4x Golden Apple",
+                ChatColor.GRAY + "- 22x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -234,9 +234,9 @@ public class GuardGuis {
                     if (materials[6] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 9) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 145)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 9);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 145);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 5) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 30)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 5);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 30);
                             GuardManager.getInstance().setMaxHealth(guard, (short)7);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 431.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -247,11 +247,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[6]) + "Max Health VII",
-                ChatColor.GRAY + "Increase max health to 1005 HP (requires Max Health VI)",
+                ChatColor.GRAY + "Increase max health to 1005 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 9x Golden Apple",
-                ChatColor.GRAY + "- 145x Magic Dust"
+                ChatColor.GRAY + "- 5x Golden Apple",
+                ChatColor.GRAY + "- 30x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -261,9 +261,9 @@ public class GuardGuis {
                     if (materials[7] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 12) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 246)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 12);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 246);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 6) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 41)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 6);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 41);
                             GuardManager.getInstance().setMaxHealth(guard, (short)8);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 754.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -274,11 +274,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[7]) + "Max Health VIII",
-                ChatColor.GRAY + "Increase max health to 1759 HP (requires Max Health VII)",
+                ChatColor.GRAY + "Increase max health to 1759 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 12x Golden Apple",
-                ChatColor.GRAY + "- 246x Magic Dust"
+                ChatColor.GRAY + "- 6x Golden Apple",
+                ChatColor.GRAY + "- 41x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -288,9 +288,9 @@ public class GuardGuis {
                     if (materials[8] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 20) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 712)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 20);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 712);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 8) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 74)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 8);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 74);
                             GuardManager.getInstance().setMaxHealth(guard, (short)9);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 3629.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -301,11 +301,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[8]) + "Max Health IX",
-                ChatColor.GRAY + "Increase max health to 5388 HP (requires Max Health VIII)",
+                ChatColor.GRAY + "Increase max health to 5388 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 20x Golden Apple",
-                ChatColor.GRAY + "- 712x Magic Dust"
+                ChatColor.GRAY + "- 8x Golden Apple",
+                ChatColor.GRAY + "- 74x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -315,9 +315,9 @@ public class GuardGuis {
                     if (materials[9] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 32) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 2056)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 32);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 2056);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 10) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 183)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 10);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 183);
                             GuardManager.getInstance().setMaxHealth(guard, (short)10);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 11112.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -328,11 +328,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[8]) + "Max Health X",
-                ChatColor.GRAY + "Increase max health to 16500 HP (requires Max Health IX)",
+                ChatColor.GRAY + "Increase max health to 16500 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 32x Golden Apple",
-                ChatColor.GRAY + "- 2056x Magic Dust"
+                ChatColor.GRAY + "- 10x Golden Apple",
+                ChatColor.GRAY + "- 183x Magic Dust"
         ));
         groups[1] = group2;
 
@@ -370,9 +370,9 @@ public class GuardGuis {
                     if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 6)) {
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 5)) {
                             CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 6);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 5);
                             GuardManager.getInstance().setMaxHealth(guard, (short)1);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 15.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -387,7 +387,7 @@ public class GuardGuis {
                 " ",
                 ChatColor.BLUE + "Cost:",
                 ChatColor.GRAY + "- 1x Golden Apple",
-                ChatColor.GRAY + "- 6x Magic Dust"
+                ChatColor.GRAY + "- 5x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -397,9 +397,9 @@ public class GuardGuis {
                     if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 10)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 10);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 1) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 7)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 7);
                             GuardManager.getInstance().setMaxHealth(guard, (short)2);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 26.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -410,11 +410,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[1]) + "Max Health II",
-                ChatColor.GRAY + "Increase max health to 61 HP (requires Max Health I)",
+                ChatColor.GRAY + "Increase max health to 61 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 2x Golden Apple",
-                ChatColor.GRAY + "- 10x Magic Dust"
+                ChatColor.GRAY + "- 1x Golden Apple",
+                ChatColor.GRAY + "- 7x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -424,9 +424,9 @@ public class GuardGuis {
                     if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 3) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 9)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 9);
                             GuardManager.getInstance().setMaxHealth(guard, (short)3);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 46.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -437,11 +437,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[2]) + "Max Health III",
-                ChatColor.GRAY + "Increase max health to 107 HP (requires Max Health II)",
+                ChatColor.GRAY + "Increase max health to 107 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Golden Apple",
-                ChatColor.GRAY + "- 17x Magic Dust"
+                ChatColor.GRAY + "- 2x Golden Apple",
+                ChatColor.GRAY + "- 9x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -451,9 +451,9 @@ public class GuardGuis {
                     if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 4) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 29)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 4);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 29);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 2) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 12)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 12);
                             GuardManager.getInstance().setMaxHealth(guard, (short)4);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 81.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -464,11 +464,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[3]) + "Max Health IV",
-                ChatColor.GRAY + "Increase max health to 188 HP (requires Max Health III)",
+                ChatColor.GRAY + "Increase max health to 188 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 4x Golden Apple",
-                ChatColor.GRAY + "- 29x Magic Dust"
+                ChatColor.GRAY + "- 2x Golden Apple",
+                ChatColor.GRAY + "- 12x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -478,9 +478,9 @@ public class GuardGuis {
                     if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 5) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 50)) {
-                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 5);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 50);
+                        if (CustomItems.getInstance().contains(inv, Material.GOLDEN_APPLE, 3) &&  CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GOLDEN_APPLE, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
                             GuardManager.getInstance().setMaxHealth(guard, (short)5);
                             GuardManager.getInstance().setHealth(guard, GuardManager.getInstance().getHealth(guard) + 162.0);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -491,11 +491,11 @@ public class GuardGuis {
                     return true;
                 },
                 getColor(materials[4]) + "Max Health V",
-                ChatColor.GRAY + "Increase max health to 350 HP (requires Max Health IV)",
+                ChatColor.GRAY + "Increase max health to 350 HP",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 5x Golden Apple",
-                ChatColor.GRAY + "- 50x Magic Dust"
+                ChatColor.GRAY + "- 3x Golden Apple",
+                ChatColor.GRAY + "- 17x Magic Dust"
         ));
         return group;
     }
@@ -530,9 +530,9 @@ public class GuardGuis {
                     if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 2)) {
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 4)) {
                             CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 4);
                             GuardManager.getInstance().setResistance(guard, (short)1);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -546,7 +546,7 @@ public class GuardGuis {
                 " ",
                 ChatColor.BLUE + "Cost:",
                 ChatColor.GRAY + "- 1x Iron Ingot",
-                ChatColor.GRAY + "- 2x Magic Dust"
+                ChatColor.GRAY + "- 4x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -556,9 +556,9 @@ public class GuardGuis {
                     if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 3)) {
-                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 3);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 5)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 5);
                             GuardManager.getInstance().setResistance(guard, (short)2);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -571,8 +571,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 12%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Iron Block",
-                ChatColor.GRAY + "- 3x Magic Dust"
+                ChatColor.GRAY + "- 3x Iron Ingot",
+                ChatColor.GRAY + "- 5x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -582,9 +582,9 @@ public class GuardGuis {
                     if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 6)) {
-                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 6);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 7)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 7);
                             GuardManager.getInstance().setResistance(guard, (short)3);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -597,8 +597,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 18%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Iron Block",
-                ChatColor.GRAY + "- 6x Magic Dust"
+                ChatColor.GRAY + "- 1x Iron Block",
+                ChatColor.GRAY + "- 7x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -608,9 +608,9 @@ public class GuardGuis {
                     if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 10)) {
-                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 10);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 9)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 9);
                             GuardManager.getInstance().setResistance(guard, (short)4);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -623,8 +623,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 24%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Diamond",
-                ChatColor.GRAY + "- 10x Magic Dust"
+                ChatColor.GRAY + "- 3x Iron Block",
+                ChatColor.GRAY + "- 9x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -634,9 +634,9 @@ public class GuardGuis {
                     if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
-                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND_BLOCK, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 11)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 11);
                             GuardManager.getInstance().setResistance(guard, (short)5);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -649,16 +649,469 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 31%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Diamond Block",
-                ChatColor.GRAY + "- 17x Magic Dust"
+                ChatColor.GRAY + "- 1x Diamond",
+                ChatColor.GRAY + "- 11x Magic Dust"
         ));
 
 
         return group;
     }
 
-    private GuiElementGroup[] getTankProtGroups(Entity guard) {
-        var sMaxHealth = GuardManager.getInstance().getShortMaxHealth(guard);
+    private GuiElementGroup[] getSniperRadiusGroup(Entity guard) {
+        var radius = GuardManager.getInstance().getShortRadius(guard);
+        var materials = new Material[10];
+        for (int i = 0; i < radius; i++) {
+            materials[i] = Material.LIME_STAINED_GLASS_PANE;
+        }
+        for (int i = radius; i < materials.length; i++) {
+            if (i == radius) {
+                materials[i] = Material.YELLOW_STAINED_GLASS_PANE;
+            } else {
+                materials[i] = Material.RED_STAINED_GLASS_PANE;
+            }
+        }
+        var group = new GuiElementGroup('r');
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(Material.ENDER_EYE),
+                click -> true,
+                ChatColor.GOLD + "Scope Upgrades (I-V)",
+                ChatColor.GRAY + "Increases how far the sniper can see",
+                ChatColor.GRAY + "Click the yellow panel to upgrade"
+        ));
+
+        group.addElement(new StaticGuiElement( // todo spyglass & 1.17
+                'g',
+                new ItemStack(materials[0]),
+                click -> {
+                    if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.GLASS_PANE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 6)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GLASS_PANE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 6);
+                            GuardManager.getInstance().setRadius(guard, (short)1);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[0]) + "Scope I",
+                ChatColor.GRAY + "Increases attack range to 16 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Glass Pane",
+                ChatColor.GRAY + "- 6x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[1]),
+                click -> {
+                    if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 9)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 9);
+                            GuardManager.getInstance().setRadius(guard, (short)2);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[1]) + "Scope II",
+                ChatColor.GRAY + "Increases attack range to 24 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Iron Ingot",
+                ChatColor.GRAY + "- 9x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[2]),
+                click -> {
+                    if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.GLASS_PANE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 12)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GLASS_PANE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 12);
+                            GuardManager.getInstance().setRadius(guard, (short)3);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[2]) + "Scope III",
+                ChatColor.GRAY + "Increases attack range to 32 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Glass Pane",
+                ChatColor.GRAY + "- 12x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[3]),
+                click -> {
+                    if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 15)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 15);
+                            GuardManager.getInstance().setRadius(guard, (short)4);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[3]) + "Scope IV",
+                ChatColor.GRAY + "Increases attack range to 40 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Iron Ingot",
+                ChatColor.GRAY + "- 15x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[4]),
+                click -> {
+                    if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.GLASS_PANE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 18)) {
+                            CustomItems.getInstance().removeItems(inv, Material.GLASS_PANE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 18);
+                            GuardManager.getInstance().setRadius(guard, (short)5);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[4]) + "Scope V",
+                ChatColor.GRAY + "Increases attack range to 48 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Glass Pane",
+                ChatColor.GRAY + "- 18x Magic Dust"
+        ));
+
+        var group2 = new GuiElementGroup('s');
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(Material.ENDER_EYE),
+                click -> true,
+                ChatColor.GOLD + "Scope Upgrades (VI-X)",
+                ChatColor.GRAY + "Increases how far the sniper can see",
+                ChatColor.GRAY + "Click the yellow panel to upgrade"
+        ));
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[5]),
+                click -> {
+                    if (materials[5] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 24)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 24);
+                            GuardManager.getInstance().setRadius(guard, (short)6);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[5]) + "Scope VI",
+                ChatColor.GRAY + "Increases attack range to 64 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Diamond",
+                ChatColor.GRAY + "- 24x Magic Dust"
+        ));
+
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[6]),
+                click -> {
+                    if (materials[6] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.QUARTZ) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 30)) {
+                            CustomItems.getInstance().removeItems(inv, Material.QUARTZ, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 30);
+                            GuardManager.getInstance().setRadius(guard, (short)7);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[6]) + "Scope VII",
+                ChatColor.GRAY + "Increases attack range to 80 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Nether Quartz",
+                ChatColor.GRAY + "- 30x Magic Dust"
+        ));
+
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[7]),
+                click -> {
+                    if (materials[7] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 48)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 48);
+                            GuardManager.getInstance().setRadius(guard, (short)8);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[7]) + "Scope VIII",
+                ChatColor.GRAY + "Increases attack range to 180 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Diamond",
+                ChatColor.GRAY + "- 48x Magic Dust"
+        ));
+
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[8]),
+                click -> {
+                    if (materials[8] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.QUARTZ) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 96)) {
+                            CustomItems.getInstance().removeItems(inv, Material.QUARTZ, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 96);
+                            GuardManager.getInstance().setRadius(guard, (short)9);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[8]) + "Scope IX",
+                ChatColor.GRAY + "Increases attack range to 256 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Quartz",
+                ChatColor.GRAY + "- 96x Magic Dust"
+        ));
+
+        group2.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[9]),
+                click -> {
+                    if (materials[9] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 150)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 150);
+                            GuardManager.getInstance().setRadius(guard, (short)10);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[7]) + "Scope X",
+                ChatColor.GRAY + "Increases attack range to 400 blocks",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Diamond",
+                ChatColor.GRAY + "- 150x Magic Dust"
+        ));
+        var groups = new GuiElementGroup[2];
+        groups[0] = group;
+        groups[1] = group2;
+        return groups;
+    }
+
+
+    private GuiElementGroup getSniperAccuracyGroup(Entity guard) {
+        var sAccuracy = GuardManager.getInstance().getShortSniperAccuracy(guard);
+        var materials = new Material[5];
+        for (int i = 0; i < sAccuracy; i++) {
+            materials[i] = Material.LIME_STAINED_GLASS_PANE;
+        }
+        for (int i = sAccuracy; i < materials.length; i++) {
+            if (i == sAccuracy) {
+                materials[i] = Material.YELLOW_STAINED_GLASS_PANE;
+            } else {
+                materials[i] = Material.RED_STAINED_GLASS_PANE;
+            }
+        }
+        var group = new GuiElementGroup('a');
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(Material.TARGET),
+                click -> true,
+                ChatColor.GOLD + "Accuracy Upgrades",
+                ChatColor.GRAY + "Increases sniper accuracy",
+                ChatColor.GRAY + "Click the yellow panel to upgrade"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[0]),
+                click -> {
+                    if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.STICK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 4)) {
+                            CustomItems.getInstance().removeItems(inv, Material.STICK, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 4);
+                            GuardManager.getInstance().setSniperAccuracy(guard, (short)1);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[0]) + "Accuracy I",
+                ChatColor.GRAY + "Increases accuracy",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 3x Stick",
+                ChatColor.GRAY + "- 4x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[1]),
+                click -> {
+                    if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.REDSTONE) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 12)) {
+                            CustomItems.getInstance().removeItems(inv, Material.REDSTONE, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 12);
+                            GuardManager.getInstance().setSniperAccuracy(guard, (short)2);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[1]) + "Accuracy II",
+                ChatColor.GRAY + "Increases accuracy",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Redstone",
+                ChatColor.GRAY + "- 12x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[2]),
+                click -> {
+                    if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.TARGET) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 31)) {
+                            CustomItems.getInstance().removeItems(inv, Material.TARGET, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 31);
+                            GuardManager.getInstance().setSniperAccuracy(guard, (short)3);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[2]) + "Accuracy III",
+                ChatColor.GRAY + "Increases accuracy",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Target",
+                ChatColor.GRAY + "- 31x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[3]),
+                click -> {
+                    if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 62)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 62);
+                            GuardManager.getInstance().setSniperAccuracy(guard, (short)4);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[3]) + "Accuracy IV",
+                ChatColor.GRAY + "Increases accuracy",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 3x Iron Ingot",
+                ChatColor.GRAY + "- 62x Magic Dust"
+        ));
+
+        group.addElement(new StaticGuiElement(
+                'g',
+                new ItemStack(materials[4]),
+                click -> {
+                    if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
+                        var clicker = click.getEvent().getWhoClicked();
+                        var inv = clicker.getInventory();
+                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 120)) {
+                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_INGOT, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 120);
+                            GuardManager.getInstance().setSniperAccuracy(guard, (short)5);
+                            ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                            var nGui = GuardGuis.getInstance().generateGui(guard);
+                            nGui.show(clicker);
+                        }
+                    }
+                    return true;
+                },
+                getColor(materials[4]) + "Accuracy V",
+                ChatColor.GRAY + "Increases accuracy",
+                " ",
+                ChatColor.BLUE + "Cost:",
+                ChatColor.GRAY + "- 1x Netherite Ingot",
+                ChatColor.GRAY + "- 120x Magic Dust"
+        ));
+        return group;
+    }
+
+    private GuiElementGroup[] getTankResistanceGroups(Entity guard) {
+        var sMaxHealth = GuardManager.getInstance().getShortResistance(guard);
         var materials = new Material[10];
         for (int i = 0; i < sMaxHealth; i++) {
             materials[i] = Material.LIME_STAINED_GLASS_PANE;
@@ -687,9 +1140,9 @@ public class GuardGuis {
                     if (materials[0] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 2)) {
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 4)) {
                             CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 2);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 4);
                             GuardManager.getInstance().setResistance(guard, (short)1);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -703,7 +1156,7 @@ public class GuardGuis {
                 " ",
                 ChatColor.BLUE + "Cost:",
                 ChatColor.GRAY + "- 1x Iron Ingot",
-                ChatColor.GRAY + "- 2x Magic Dust"
+                ChatColor.GRAY + "- 4x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -713,9 +1166,9 @@ public class GuardGuis {
                     if (materials[1] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 3)) {
-                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 3);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_INGOT, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 5)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_INGOT, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 5);
                             GuardManager.getInstance().setResistance(guard, (short)2);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -728,8 +1181,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 12%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Iron Block",
-                ChatColor.GRAY + "- 3x Magic Dust"
+                ChatColor.GRAY + "- 3x Iron Ingot",
+                ChatColor.GRAY + "- 5x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -739,9 +1192,9 @@ public class GuardGuis {
                     if (materials[2] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 6)) {
-                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 6);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 7)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 7);
                             GuardManager.getInstance().setResistance(guard, (short)3);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -754,8 +1207,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 18%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Iron Block",
-                ChatColor.GRAY + "- 6x Magic Dust"
+                ChatColor.GRAY + "- 1x Iron Block",
+                ChatColor.GRAY + "- 7x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -765,9 +1218,9 @@ public class GuardGuis {
                     if (materials[3] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 10)) {
-                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 10);
+                        if (CustomItems.getInstance().contains(inv, Material.IRON_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 9)) {
+                            CustomItems.getInstance().removeItems(inv, Material.IRON_BLOCK, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 9);
                             GuardManager.getInstance().setResistance(guard, (short)4);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -780,8 +1233,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 24%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Diamond",
-                ChatColor.GRAY + "- 10x Magic Dust"
+                ChatColor.GRAY + "- 3x Iron Block",
+                ChatColor.GRAY + "- 9x Magic Dust"
         ));
 
         group.addElement(new StaticGuiElement(
@@ -791,9 +1244,9 @@ public class GuardGuis {
                     if (materials[4] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 17)) {
-                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND_BLOCK, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 17);
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 11)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 11);
                             GuardManager.getInstance().setResistance(guard, (short)5);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -806,8 +1259,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 31%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Diamond Block",
-                ChatColor.GRAY + "- 17x Magic Dust"
+                ChatColor.GRAY + "- 1x Diamond",
+                ChatColor.GRAY + "- 11x Magic Dust"
         ));
 
         var groups = new GuiElementGroup[2];
@@ -821,9 +1274,9 @@ public class GuardGuis {
                     if (materials[5] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 28)) {
-                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND_BLOCK, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 28);
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 14)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 14);
                             GuardManager.getInstance().setResistance(guard, (short)6);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -836,8 +1289,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 38%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Diamond Block",
-                ChatColor.GRAY + "- 28x Magic Dust"
+                ChatColor.GRAY + "- 3x Diamond",
+                ChatColor.GRAY + "- 14x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -847,9 +1300,9 @@ public class GuardGuis {
                     if (materials[6] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_SCRAP) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 48)) {
-                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_SCRAP, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 48);
+                        if (CustomItems.getInstance().contains(inv, Material.DIAMOND_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 19)) {
+                            CustomItems.getInstance().removeItems(inv, Material.DIAMOND_BLOCK, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 19);
                             GuardManager.getInstance().setResistance(guard, (short)7);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -862,8 +1315,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 45%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Netherite Scrap",
-                ChatColor.GRAY + "- 48x Magic Dust"
+                ChatColor.GRAY + "- 1x Diamond Block",
+                ChatColor.GRAY + "- 19x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -873,9 +1326,9 @@ public class GuardGuis {
                     if (materials[7] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 82)) {
-                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_INGOT, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 82);
+                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_SCRAP) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 24)) {
+                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_SCRAP, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 24);
                             GuardManager.getInstance().setResistance(guard, (short)8);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -888,8 +1341,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 52%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Netherite Ingot",
-                ChatColor.GRAY + "- 82x Magic Dust"
+                ChatColor.GRAY + "- 1x Netherite Scrap",
+                ChatColor.GRAY + "- 24x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -899,9 +1352,9 @@ public class GuardGuis {
                     if (materials[8] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_BLOCK) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 237)) {
-                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_BLOCK, 1);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 237);
+                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_INGOT) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 41)) {
+                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_INGOT, 1);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 41);
                             GuardManager.getInstance().setResistance(guard, (short)9);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -914,8 +1367,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 66%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 1x Netherite Block",
-                ChatColor.GRAY + "- 237x Magic Dust"
+                ChatColor.GRAY + "- 1x Netherite Ingot",
+                ChatColor.GRAY + "- 41x Magic Dust"
         ));
 
         group2.addElement(new StaticGuiElement(
@@ -925,9 +1378,9 @@ public class GuardGuis {
                     if (materials[9] == Material.YELLOW_STAINED_GLASS_PANE) {
                         var clicker = click.getEvent().getWhoClicked();
                         var inv = clicker.getInventory();
-                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_BLOCK, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 685)) {
-                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_BLOCK, 3);
-                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 685);
+                        if (CustomItems.getInstance().contains(inv, Material.NETHERITE_INGOT, 3) && CustomItems.getInstance().contains(inv, CustomItems.CustomID.MAGICAL_DUST, 70)) {
+                            CustomItems.getInstance().removeItems(inv, Material.NETHERITE_INGOT, 3);
+                            CustomItems.getInstance().removeCustomItems(inv, CustomItems.CustomID.MAGICAL_DUST, 70);
                             GuardManager.getInstance().setResistance(guard, (short)10);
                             ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             var nGui = GuardGuis.getInstance().generateGui(guard);
@@ -940,8 +1393,8 @@ public class GuardGuis {
                 ChatColor.GRAY + "Increases damage resistance to 80%",
                 " ",
                 ChatColor.BLUE + "Cost:",
-                ChatColor.GRAY + "- 3x Netherite Block",
-                ChatColor.GRAY + "- 685x Magic Dust"
+                ChatColor.GRAY + "- 3x Netherite Ingot",
+                ChatColor.GRAY + "- 70x Magic Dust"
         ));
 
         groups[1] = group2;
@@ -1597,12 +2050,12 @@ public class GuardGuis {
 
                 // Crate setup
                 String[] guiSetup = {
-                        "mp       ",
-                        "mp       ",
-                        "mp       ",
-                        "mp       ",
-                        "mp       ",
-                        "mp      J"
+                        "mprsa    ",
+                        "mprsa    ",
+                        "mprsa    ",
+                        "mprsa    ",
+                        "mprsa    ",
+                        "mprsa   J"
                 };
 
                 InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
@@ -1610,8 +2063,11 @@ public class GuardGuis {
                 gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
                 gui.addElement(getMaxHealthGroup(guard)); // max health
                 gui.addElement(getResistanceGroup(guard)); // resistance
-
-                // arrow velocity & radius
+                var scopes = getSniperRadiusGroup(guard);
+                gui.addElement(scopes[0]); // radius
+                gui.addElement(scopes[1]); // radius2
+                gui.addElement(getSniperAccuracyGroup(guard)); // arrow accuracy
+                // arrow velocity
                 // arrow power
                 return gui;
             }

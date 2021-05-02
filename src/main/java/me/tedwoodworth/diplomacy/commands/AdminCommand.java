@@ -1,9 +1,11 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -12,6 +14,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +26,9 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String adminUsage = "/admin <command>";
     private static final String giveUsage = "/admin give <player> <item> <amount>";
-    private static final String setChunkNation = "/admin setChunkNation <nation>";
-    private static final String removeChunkNation = "/admin removeChunkNation";
+    private static final String setChunkNationUsage = "/admin setChunkNation <nation>";
+    private static final String removeChunkNationUsage = "/admin removeChunkNation";
+    private static final String fireArrowUsage = "/admin fireArrow <speed> <spread>";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -42,31 +46,31 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         } else {
             if (args.length == 0) {
                 sender.sendMessage(incorrectUsage + adminUsage);
-            } else if (args.length == 1) {
+            } else {
                 if (args[0].equalsIgnoreCase("give")) {
-                    sender.sendMessage(incorrectUsage + giveUsage);
+                    if (args.length == 3) {
+                        give(sender, args[1], args[2], "64");
+                    } else {
+                        sender.sendMessage(incorrectUsage + giveUsage);
+                    }
                 } else if (args[0].equalsIgnoreCase("removeChunkNation")) {
-                    removeChunkNation(sender);
-                }
-            } else if (args.length == 2) {
-                if (args[0].equalsIgnoreCase("give")) {
-                    sender.sendMessage(incorrectUsage + giveUsage);
+                    if (args.length == 1) {
+                        removeChunkNation(sender);
+                    } else {
+                        sender.sendMessage(incorrectUsage + removeChunkNationUsage);
+                    }
                 } else if (args[0].equalsIgnoreCase("setChunkNation")) {
-                    setChunkNation(sender, args[1]);
-                } else {
-                    sender.sendMessage(incorrectUsage);
-                }
-            } else if (args.length == 3) {
-                if (args[0].equalsIgnoreCase("give")) {
-                    give(sender, args[1], args[2], "64");
-                } else {
-                    sender.sendMessage(incorrectUsage);
-                }
-            } else if (args.length == 4) {
-                if (args[0].equalsIgnoreCase("give")) {
-                    give(sender, args[1], args[2], args[3]);
-                } else {
-                    sender.sendMessage(incorrectUsage);
+                    if (args.length == 2) {
+                        setChunkNation(sender, args[1]);
+                    } else {
+                        sender.sendMessage(incorrectUsage + setChunkNationUsage);
+                    }
+                } else if (args[0].equalsIgnoreCase("fireArrow")) {
+                    if (args.length == 3) {
+                        fireArrow(sender, args[1], args[2]);
+                    } else {
+                        sender.sendMessage(incorrectUsage + fireArrowUsage);
+                    }
                 }
             }
         }
@@ -83,7 +87,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     return Arrays.asList(
                             "give",
                             "setChunkNation",
-                            "removeChunkNation"
+                            "removeChunkNation",
+                            "fireArrow"
                     );
                 } else if (args.length == 2) {
                     if (args[0].equalsIgnoreCase("give")) {
@@ -114,6 +119,27 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             }
         }
         return null;
+    }
+
+    private void fireArrow(CommandSender sender, String strSpeed, String strSpread) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Error: Must be a player to use this command.");
+            return;
+        }
+
+        float speed;
+        float spread;
+        try {
+            speed = Float.parseFloat(strSpeed);
+            spread = Float.parseFloat(strSpread);
+        } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.RED + "Error: Velocity must be a number");
+            return;
+        }
+
+        var world = ((Player) sender).getWorld();
+        var arrow = world.spawnArrow(((Player) sender).getEyeLocation(), ((Player) sender).getEyeLocation().getDirection(), speed, spread);
+        GuardManager.getInstance().trackNewArrow(arrow);
     }
 
     private void removeChunkNation(CommandSender sender) {

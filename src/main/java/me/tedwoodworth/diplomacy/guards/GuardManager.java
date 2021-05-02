@@ -22,12 +22,10 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.BoundingBox;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 /*
@@ -49,13 +47,17 @@ public class GuardManager {
     private final Set<Entity> guards = new HashSet<>();
     private final Set<Player> interactSet = new HashSet<>();
 
+    // Math stuff
+    private final double GRAVITY_CONSTANT = 0.05;
+    private final double DRAG = 0.01;
+
     // all guards
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
 
     // sniper
-    private final NamespacedKey SNIPER_STRENGTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
+    private final NamespacedKey SNIPER_ACCURACY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
     private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
     private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
 
@@ -67,7 +69,7 @@ public class GuardManager {
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
-
+    private final int SNIPER_DELAY = 100;
 
 
     public static GuardManager getInstance() {
@@ -86,6 +88,23 @@ public class GuardManager {
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
     }
 
+    private double adjustHeight(Location guardLoc, Location targetLoc, float speed) {
+        var tempLoc = new Location(guardLoc.getWorld(), targetLoc.getX(), guardLoc.getY(), targetLoc.getZ());
+        var ds = guardLoc.distanceSquared(tempLoc);
+        var d = Math.sqrt(ds);
+        var tempD = guardLoc.distance(targetLoc);
+        var avgSpeed = speed - tempD / 200.0; // adjust for drag
+        var speedSquared = Math.pow(avgSpeed, 2);
+        var y = targetLoc.getY() - guardLoc.getY();
+        var a = Math.pow(speedSquared, 2) - GRAVITY_CONSTANT * (GRAVITY_CONSTANT * ds + 2 * y * speedSquared);
+        a = Math.sqrt(a);
+        a = Math.min(speedSquared + a, speedSquared - a);
+        a = a / (GRAVITY_CONSTANT * d);
+        var pitch = Math.atan(a);
+        y = Math.tan(pitch) * d;
+        return y + guardLoc.getY() - 0.03 * tempD; // -0.5 to aim for the body instead of the eyes since it doesnt make a difference in damage
+    }
+
     private void onGuardTick(int i) {
         var healMap = new HashMap<Entity, Integer>();
         for (var guard : guards) {
@@ -100,6 +119,41 @@ public class GuardManager {
             switch (type) {
                 case FLAMETHROWER -> {
                     // launch fire items, if they collide (like grenades) deal tiny fire damage and light player on fire
+
+                }
+                case SNIPER -> {
+                    if (i % (SNIPER_DELAY / GUARD_TICK_DELAY) == 0) {
+                        var radius = getRadius(guard);
+                        var speed = getSniperSpeed(guard);
+                        var squared = Math.pow(speed, 2);
+                        var nearby = guard.getNearbyEntities(radius, radius, radius);
+                        var gLoc = guard.getLocation();
+                        var gNation = getNation(guard);
+                        Player closest = null;
+                        double distance = Double.MAX_VALUE;
+                        Location loc = null;
+                        for (var entity : nearby) {
+                            if (entity instanceof Player && canDamageGuard(entity, guard) && Objects.equals(gNation, getNation(entity))) {
+                                var pLoc = ((Player) entity).getEyeLocation();
+                                pLoc.setY(pLoc.getY() - 0.5);
+                                var d = gLoc.distanceSquared(pLoc);
+                                if (d < distance && squared > d / 10000.0) {
+                                    distance = d;
+                                    closest = (Player) entity;
+                                    loc = pLoc;
+                                }
+                            }
+                        }
+
+                        if (closest != null) {
+                            var y = adjustHeight(gLoc, loc, speed);
+                            loc.setY(y);
+                            var vec = loc.toVector().subtract(gLoc.toVector()).normalize();
+                            var arrow = guard.getWorld().spawnArrow(gLoc, vec, speed, getSniperAccuracy(guard));
+                            arrow.setDamage(2.0); //todo get sniper power
+                            trackNewArrow(arrow);
+                        }
+                    }
                 }
                 case HEALER -> {
                     if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) { // only 1/10 ticks
@@ -187,10 +241,10 @@ public class GuardManager {
         container.set(HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
 
         // max health
-        container.set(MAX_HEALTH_KEY, PersistentDataType.SHORT, (short)0);
+        container.set(MAX_HEALTH_KEY, PersistentDataType.SHORT, (short) 0);
 
         // resistance
-        container.set(RESISTANCE_KEY, PersistentDataType.SHORT, (short)0);
+        container.set(RESISTANCE_KEY, PersistentDataType.SHORT, (short) 0);
 
         entity.setCustomNameVisible(true);
         entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 HP");
@@ -225,14 +279,14 @@ public class GuardManager {
         entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.INTEGER, id);
         switch (type) {
             case HEALER -> {
-                setRadius(entity, 24);
-                setHealerRate(entity, (short)0);
+                setRadius(entity, (short) 0);
+                setHealerRate(entity, (short) 0);
             }
             case SNIPER -> {
-                setRadius(entity, 40);
-                setSniperPower(entity, (short)0);
-                setSniperStrength(entity, (short)0);
-                setSniperVelocity(entity, (short)0);
+                setRadius(entity, (short) 0);
+                setSniperPower(entity, (short) 0);
+                setSniperAccuracy(entity, (short) 0);
+                setSniperVelocity(entity, (short) 0);
             }
         }
         setHealth(entity, getHealth(entity));
@@ -258,16 +312,16 @@ public class GuardManager {
         var id = entity.getPersistentDataContainer().get(HEALER_RATE_KEY, PersistentDataType.SHORT);
         return switch (id) {
             default -> 4.0 / 1200.0;
-            case 1 -> 6.0 / 1200.0;
-            case 2 -> 9.0 / 1200.0;
-            case 3 -> 13.5 / 1200.0;
-            case 4 -> 20.25 / 1200.0;
-            case 5 -> 30.375 / 1200.0;
-            case 6 -> 45.5624 / 1200.0;
-            case 7 -> 68.3436 / 1200.0;
-            case 8 -> 101.0756 / 1200.0;
-            case 9 -> 230.66 / 1200.0;
-            case 10 -> 518.98400 / 1200.0;
+            case 1 -> 6.0 / 1200.0; // 4
+            case 2 -> 9.0 / 1200.0; // 5
+            case 3 -> 13.5 / 1200.0; // 7
+            case 4 -> 20.25 / 1200.0; // 10
+            case 5 -> 30.375 / 1200.0; // 13
+            case 6 -> 45.5624 / 1200.0; // 18
+            case 7 -> 68.3436 / 1200.0; // 24
+            case 8 -> 101.0756 / 1200.0; // 32
+            case 9 -> 230.66 / 1200.0; // 59
+            case 10 -> 518.98400 / 1200.0; // 109
         };
     }
 
@@ -285,16 +339,16 @@ public class GuardManager {
         var id = entity.getPersistentDataContainer().get(RESISTANCE_KEY, PersistentDataType.SHORT);
         return switch (id) {
             default -> 1.0;
-            case 1 -> 0.94;
-            case 2 -> 0.88;
-            case 3 -> 0.82;
-            case 4 -> 0.76;
-            case 5 -> 0.69;
-            case 6 -> 0.62;
-            case 7 -> 0.55;
-            case 8 -> 0.48;
-            case 9 -> 0.34;
-            case 10 -> 0.2;
+            case 1 -> 0.94; // 4 / iron ingot
+            case 2 -> 0.88; // 5 / 3x iron ingot
+            case 3 -> 0.82; // 7 / iron block
+            case 4 -> 0.76; // 9 / 3x iron block
+            case 5 -> 0.69; // 11 / diamond
+            case 6 -> 0.62; // 14 / 3x diamond
+            case 7 -> 0.55; // 19 / diamond block
+            case 8 -> 0.48; // 24 / 1x netherite scrap
+            case 9 -> 0.34; // 41 / 1x netherite
+            case 10 -> 0.2; // 70 / 3x netherite
         };
     }
 
@@ -307,16 +361,16 @@ public class GuardManager {
         var id = entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
         return switch (id) {
             default -> 20.0;
-            case 1 -> 35.0; // 6
-            case 2 -> 61.0; // 10
-            case 3 -> 107.0; // 17
-            case 4 -> 188.0; // 29
-            case 5 -> 350.0; //50
-            case 6 -> 574.0; // 85
-            case 7 -> 1005.0; // 145
-            case 8 -> 1759.0; // 246
-            case 9 -> 5388.0; // 712
-            case 10 -> 16500.0; // 2056
+            case 1 -> 35.0; // 5
+            case 2 -> 61.0; // 7
+            case 3 -> 107.0; // 9
+            case 4 -> 188.0; // 12
+            case 5 -> 350.0; // 17
+            case 6 -> 574.0; // 22
+            case 7 -> 1005.0; // 30
+            case 8 -> 1759.0; // 41
+            case 9 -> 5388.0; // 74
+            case 10 -> 16500.0; // 183
         };
     }
 
@@ -328,12 +382,87 @@ public class GuardManager {
         entity.getPersistentDataContainer().set(MAX_HEALTH_KEY, PersistentDataType.SHORT, rate);
     }
 
-    public double getRadius(Entity entity) {
-        return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.DOUBLE);
+    public short getShortRadius(Entity entity) {
+        return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.SHORT);
     }
 
-    public void setRadius(Entity entity, double radius) {
-        entity.getPersistentDataContainer().set(RADIUS_KEY, PersistentDataType.DOUBLE, radius);
+    public double getRadius(Entity entity) {
+        var id = entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.SHORT);
+        var type = getType(entity);
+        switch (type) {
+            case GUNNER, GRENADER -> {
+                return switch (id) {
+                    default -> 8.0;
+                    case 1 -> 10.0;
+                    case 2 -> 12.0;
+                    case 3 -> 16.0;
+                    case 4 -> 24.0;
+                    case 5 -> 32.0;
+                };
+            }
+            case HEALER -> {
+                return switch (id) {
+                    default -> 16.0;
+                    case 1 -> 20.0;
+                    case 2 -> 24.0;
+                    case 3 -> 28.0;
+                    case 4 -> 32.0;
+                    case 5 -> 36.0;
+                    case 6 -> 40.0;
+                    case 7 -> 44.0;
+                    case 8 -> 48.0;
+                    case 9 -> 56.0;
+                    case 10 -> 64.0;
+                };
+            }
+            case SNIPER -> {
+                return switch (id) {
+                    default -> 8.0; // no scope
+                    case 1 -> 16.0; // 2x scope / 6 dust // glass
+                    case 2 -> 24.0; // 3x scope / 9 dust // iron ingot
+                    case 3 -> 32.0; // 4x scope / 12 dust // glass
+                    case 4 -> 40.0; // 5x scope / 15 dust // iron ingot
+                    case 5 -> 48.0; // 6x scope / 18 dust // glass
+                    case 6 -> 64.0; // 8x scope / 24 dust // diamond
+                    case 7 -> 80.0; // 10x scope / 30 dust // quartz
+                    case 8 -> 180.0; // 16x scope / 48 dust // diamond
+                    case 9 -> 256.0; // 32x scope / 96 dust // quartz
+                    case 10 -> 400.0; // 50x scope / 150 dust // diamond
+                };
+            }
+            case FLAMETHROWER, SNOWMAKER -> {
+                return switch (id) {
+                    default -> 4;
+                    case 1 -> 5;
+                    case 2 -> 6;
+                    case 3 -> 7;
+                    case 4 -> 9;
+                    case 5 -> 12;
+                };
+            }
+            case TELEPORTER -> { // radius (2), regeneration speed, defense, max health
+                return switch (id) { // world size: 9984 x 9984
+                    default -> 250;
+                    case 1 -> 500;
+                    case 2 -> 750;
+                    case 3 -> 1000;
+                    case 4 -> 1250;
+                    case 5 -> 1500;
+                    case 6 -> 2000;
+                    case 7 -> 2500;
+                    case 8 -> 3000;
+                    case 9 -> 4000;
+                    case 10 -> 5000;
+                };
+            }
+            default -> {
+                return 0.0;
+            }
+        }
+    }
+
+    public void setRadius(Entity entity, short radius) {
+        entity.getPersistentDataContainer().set(RADIUS_KEY, PersistentDataType.SHORT, radius);
     }
 
 
@@ -341,16 +470,40 @@ public class GuardManager {
 //    private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
 //    private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
 
-    public short getSniperStrength(Entity entity) {
-        return entity.getPersistentDataContainer().get(SNIPER_STRENGTH_KEY, PersistentDataType.SHORT);
+    public float getSniperAccuracy(Entity entity) {
+        var shrt = entity.getPersistentDataContainer().get(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT);
+        return switch (shrt) {
+            default -> 3.0F;
+            case 1 -> 2.0F; // 4 / 3 sticks
+            case 2 -> 1.5F; // 12 / redstone
+            case 3 -> 1F; // 31 / target
+            case 4 -> 0.5F; // 62 / iron ingot
+            case 5 -> 0.1F; // 120 / 3 iron ingots
+        };
     }
 
-    public void setSniperStrength(Entity entity, short strength) {
-        entity.getPersistentDataContainer().set(SNIPER_STRENGTH_KEY, PersistentDataType.SHORT, strength);
+    public short getShortSniperAccuracy(Entity entity) {
+        return entity.getPersistentDataContainer().get(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT);
     }
 
-    public short getSniperVelocity(Entity entity) {
+    public void setSniperAccuracy(Entity entity, short accuracy) {
+        entity.getPersistentDataContainer().set(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT, accuracy);
+    }
+
+    public short getShortSniperVelocity(Entity entity) {
         return entity.getPersistentDataContainer().get(SNIPER_VELOCITY_KEY, PersistentDataType.SHORT);
+    }
+
+    public float getSniperSpeed(Entity entity) {
+        var s = getShortSniperVelocity(entity);
+        return switch (s) {
+            default -> 3F;
+            case 1 -> 3.5F;
+            case 2 -> 4F;
+            case 3 -> 4.75F;
+            case 4 -> 6F;
+            case 5 -> 8F;
+        };
     }
 
     public void setSniperVelocity(Entity entity, short velocity) {
@@ -393,6 +546,85 @@ public class GuardManager {
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new GuardManager.EventListener(), Diplomacy.getInstance());
+    }
+
+    private HashSet<Arrow> trackedArrows = new HashSet<>();
+
+    public void trackNewArrow(Arrow arrow) {
+        trackedArrows.add(arrow);
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> trackArrow(arrow), 1L);
+    }
+
+    private void trackArrow(Arrow arrow) {
+        var loc = arrow.getLocation();
+        var chunk = loc.getChunk();
+        chunk.load();
+
+        if (trackedArrows.contains(arrow)) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> trackArrow(arrow), 1L);
+        }
+    }
+
+    public boolean canDamageGuard(Entity damager, Entity guard) {
+        var loc = guard.getLocation();
+        var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk()).getNation();
+        if (guardNation == null) {
+            guard.remove();
+            return false;
+        }
+        if (damager instanceof Projectile) {
+            var projectile = ((Projectile) damager);
+            var shooter = projectile.getShooter();
+            if (shooter instanceof Player) {
+                var dp = DiplomacyPlayers.getInstance().get(((Player) shooter).getUniqueId());
+                var nation = Nations.getInstance().get(dp);
+                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
+                    if (nation.getOutlaws().contains(((Player) shooter).getUniqueId())) {
+                        return true;
+                    } else {
+                        ((Player) shooter).sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        } else if (damager instanceof Item) {
+            var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
+            if (shooter instanceof Player) {
+                var dp = DiplomacyPlayers.getInstance().get(shooter.getUniqueId());
+                var nation = Nations.getInstance().get(dp);
+                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
+                    if (nation.getOutlaws().contains(shooter.getUniqueId())) {
+                        return true;
+                    } else {
+                        shooter.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        } else if (damager instanceof Player) {
+            var dp = DiplomacyPlayers.getInstance().get(damager.getUniqueId());
+            var nation = Nations.getInstance().get(dp);
+            if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
+                if (nation.getOutlaws().contains(damager.getUniqueId())) {
+                    return true;
+                } else {
+                    damager.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     private class EventListener implements Listener {
@@ -469,6 +701,14 @@ public class GuardManager {
                 }
             }
         }
+
+
+        @EventHandler
+        private void arrowHit(ProjectileHitEvent event) {
+            var entity = event.getEntity();
+            trackedArrows.remove(entity);
+        }
+
 
         @EventHandler
         private void onInteractEntity(PlayerInteractEntityEvent event) {
@@ -581,92 +821,31 @@ public class GuardManager {
             var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard killed by " + ChatColor.RED;
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
-                if (shooter instanceof  Player) message += ((Player) shooter).getName();
+                if (shooter instanceof Player) message += ((Player) shooter).getName();
             } else if (damager instanceof Item) {
                 var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
-                if (shooter instanceof  Player) message += shooter.getName();
+                if (shooter instanceof Player) message += shooter.getName();
             } else if (damager instanceof Player) {
                 message += damager.getName();
             }
-            return message;
-        }
-        public String getDamageMessage(Entity damager, Entity guard) {
-            var loc = guard.getLocation();
-            var message = ChatColor.RED +  "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
-            if (damager instanceof Projectile) {
-                var shooter = ((Projectile) damager).getShooter();
-                if (shooter instanceof  Player) message += ((Player) shooter).getName();
-            } else if (damager instanceof Item) {
-                var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
-                if (shooter instanceof  Player) message += shooter.getName();
-            } else if (damager instanceof Player) {
-                message += damager.getName();
-            }
-            var strHealth =String.format("%.2f", getHealth(guard));
-            message += " " + ChatColor.DARK_GREEN + "(" + strHealth + " HP)";
             return message;
         }
 
-        public boolean canDamageGuard(Entity damager, Entity guard) {
+        public String getDamageMessage(Entity damager, Entity guard) {
             var loc = guard.getLocation();
-            var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk()).getNation();
-            if (guardNation == null) {
-                guard.remove();
-                return false;
-            }
+            var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
             if (damager instanceof Projectile) {
-                var projectile = ((Projectile) damager);
-                var shooter = projectile.getShooter();
-                if (shooter instanceof Player) {
-                    var dp = DiplomacyPlayers.getInstance().get(((Player) shooter).getUniqueId());
-                    var nation = Nations.getInstance().get(dp);
-                    if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                        if (nation.getOutlaws().contains(((Player) shooter).getUniqueId())) {
-                            return true;
-                        } else {
-                            ((Player) shooter).sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
-                            return false;
-                        }
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
+                var shooter = ((Projectile) damager).getShooter();
+                if (shooter instanceof Player) message += ((Player) shooter).getName();
             } else if (damager instanceof Item) {
                 var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
-                if (shooter instanceof Player) {
-                    var dp = DiplomacyPlayers.getInstance().get(shooter.getUniqueId());
-                    var nation = Nations.getInstance().get(dp);
-                    if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                        if (nation.getOutlaws().contains(shooter.getUniqueId())) {
-                            return true;
-                        } else {
-                            shooter.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
-                            return false;
-                        }
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
+                if (shooter instanceof Player) message += shooter.getName();
             } else if (damager instanceof Player) {
-                var dp = DiplomacyPlayers.getInstance().get(damager.getUniqueId());
-                var nation = Nations.getInstance().get(dp);
-                if (nation != null && (nation.equals(guardNation) || nation.getAllyNationIDs().contains(guardNation.getNationID()))) {
-                    if (nation.getOutlaws().contains(damager.getUniqueId())) {
-                        return true;
-                    } else {
-                        damager.sendMessage(ChatColor.RED + "You cannot damage this guard crystal.");
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                return false;
+                message += damager.getName();
             }
+            var strHealth = String.format("%.2f", getHealth(guard));
+            message += " " + ChatColor.DARK_GREEN + "(" + strHealth + " HP)";
+            return message;
         }
     }
 }
