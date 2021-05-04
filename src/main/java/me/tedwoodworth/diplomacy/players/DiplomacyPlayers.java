@@ -497,16 +497,6 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler(ignoreCancelled = true)
-        private void onInventoryClick(InventoryClickEvent event) {
-            var item = event.getCurrentItem();
-            if (item != null && item.getType().equals(Material.ENCHANTED_BOOK)) {
-                event.setCancelled(true);
-                event.setCurrentItem(new ItemStack(Material.AIR));
-                event.getWhoClicked().sendMessage(ChatColor.RED + "Enchanted books are disabled, and have been removed from your inventory.");
-            }
-        }
-
-        @EventHandler(ignoreCancelled = true)
         private void onBlockPlaceEvent(BlockPlaceEvent event) {
             var chunk = event.getBlock().getLocation().getChunk();
             var player = event.getPlayer();

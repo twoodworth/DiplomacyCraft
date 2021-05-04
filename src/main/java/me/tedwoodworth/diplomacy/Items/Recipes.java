@@ -1,7 +1,6 @@
-package me.tedwoodworth.diplomacy;
+package me.tedwoodworth.diplomacy.Items;
 
-import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
-import me.tedwoodworth.diplomacy.Items.CustomItems;
+import me.tedwoodworth.diplomacy.Diplomacy;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.*;
@@ -10,13 +9,13 @@ import java.util.ArrayList;
 
 import static org.bukkit.Material.*;
 
-public class DiplomacyRecipes {
-    private static DiplomacyRecipes instance = null;
+public class Recipes {
+    private static Recipes instance = null;
     public ArrayList<Material> choices = new ArrayList<>();
 
-    public static DiplomacyRecipes getInstance() {
+    public static Recipes getInstance() {
         if (instance == null) {
-            instance = new DiplomacyRecipes();
+            instance = new Recipes();
         }
         return instance;
     }
@@ -66,9 +65,14 @@ public class DiplomacyRecipes {
 
         // magical dust
         var dust = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
-        var dustRecipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "magical_dust"), dust);
+        var dustRecipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "magical_dust_crafting"), dust);
         dustRecipe.addIngredient(GOLDEN_APPLE);
         Diplomacy.getInstance().getServer().addRecipe(dustRecipe);
+
+        // magical dust (furnace)
+        var dust2 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1);
+        var dustRecipe2 = new FurnaceRecipe(new NamespacedKey(Diplomacy.getInstance(), "magical_dust_smelting"), dust2, ENCHANTED_BOOK, 5.25F, 200);
+        Diplomacy.getInstance().getServer().addRecipe(dustRecipe2);
 
         // bottle of xp
         var xp = new ItemStack(EXPERIENCE_BOTTLE);

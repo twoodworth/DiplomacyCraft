@@ -2161,6 +2161,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2229,6 +2232,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2297,6 +2303,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2371,6 +2380,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2439,6 +2451,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2507,6 +2522,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2575,6 +2593,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2643,6 +2664,9 @@ public class GuardGuis {
                                             }
                                         }
                                     }
+                                    var nGui = generateGui(guard);
+                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
                                 }
@@ -2665,6 +2689,50 @@ public class GuardGuis {
 
                 // title
                 var title = "" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Sniper Guard Crystal";
+
+                // Crate setup
+                String[] guiSetup = {
+                        "mprsavtuA",
+                        "mprsavtuB",
+                        "mprsavtuC",
+                        "mprsavtuD",
+                        "mprsavtuE",
+                        "mprsavtuJ"
+                };
+
+                InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+                gui.setCloseAction(close -> false);
+                gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+                gui.addElement(getMaxHealthGroup(guard)); // max health
+                gui.addElement(getResistanceGroup(guard)); // resistance
+                var scopes = getSniperRadiusGroup(guard);
+                gui.addElement(scopes[0]); // radius
+                gui.addElement(scopes[1]); // radius2
+                gui.addElement(getSniperPrecisionGroup(guard)); // arrow precision
+                gui.addElement(getSniperVelocityGroup(guard)); // arrow velocity
+                var power = getSniperPowerGroups(guard);
+                gui.addElement(power[0]); // arrow power
+                gui.addElement(power[1]); // arrow power2
+                gui.addElement(getNotifyDamageElement(guard)); // guard notify damage
+                gui.addElement(getAttackTrespassers(guard)); // tresspassers
+                gui.addElement(getAttackAllies(guard)); // allies
+                gui.addElement(getAttackNeutral(guard)); // neutral
+                gui.addElement(getAttackNewbies(guard)); // newbies
+                gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
+
+                return gui;
+            }
+            case GUNNER -> {
+                // upgrades:
+                // max health (1st row)
+                // resistance (2nd row)
+                // radius (3rd row)
+                // precision (4th row)
+                // power (5th row)
+                // firing rate (6th row)
+                // 
+                // title
+                var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Gunner Guard Crystal";
 
                 // Crate setup
                 String[] guiSetup = {

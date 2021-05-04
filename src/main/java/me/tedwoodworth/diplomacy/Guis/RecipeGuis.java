@@ -2,9 +2,12 @@ package me.tedwoodworth.diplomacy.Guis;
 
 import de.themoep.inventorygui.*;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
+import me.tedwoodworth.diplomacy.Items.CustomItems;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,12 +20,16 @@ public class RecipeGuis {
     private final Map<String, InventoryGui> recipeMenus = new HashMap<>();
 
     public final String RECIPES_KEY = "recipes";
-    public final String ITEMS_KEY = "items";
     public final String CHAIN_HELMET_KEY = "chain_helmet";
     public final String CHAIN_CHESTPLATE_KEY = "chain_chestplate";
     public final String CHAIN_LEGGINGS_KEY = "chain_leggings";
     public final String CHAIN_BOOTS_KEY = "chain_boots";
     public final String GRENADE_KEY = "grenade";
+    public final String MAGICAL_DUST_FURNACE_KEY = "magical_dust_furnace";
+    public final String MAGICAL_DUST_CRAFTING_KEY = "magical_dust_crafting";
+    public final String APPLE_OF_LIFE_KEY = "apple_of_life";
+    public final String EXPERIENCE_BOTTLE_KEY = "experience_bottle";
+    public final String GUARD_CRYSTAL_KEY = "guard_crystal";
 
 
     public static RecipeGuis getInstance() {
@@ -36,52 +43,6 @@ public class RecipeGuis {
     }
 
     public void loadRecipeMenus() {
-        // Main Recipe menu
-        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Recipes";
-
-        // Crate setup
-        String[] guiSetup = {
-                "         ",
-                "   c e   ",
-                "         "
-        };
-
-        // Create gui & set filler
-        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
-        gui.setCloseAction(close -> false);
-        gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-
-        // add itemElement
-        var itemElement = new StaticGuiElement(
-                'c',
-                new ItemStack(Material.CRAFTING_TABLE),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var nGui = recipeMenus.get(ITEMS_KEY);
-                    nGui.show(clicker);
-                    return true;
-                },
-                "" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Item Recipes",
-                " ",
-                "" + ChatColor.RESET + ChatColor.BLUE + "Click to view"
-        );
-        gui.addElement(itemElement);
-
-        // add enchantElement
-        var enchantElement = new StaticGuiElement(
-                'e',
-                new ItemStack(Material.ENCHANTING_TABLE),
-                click -> {
-                    return true;
-                }, //todo view enchantment recipes
-                "" + ChatColor.AQUA + ChatColor.BOLD + "Enchantment Recipes",
-                " ",
-                "" + ChatColor.RESET + ChatColor.RED + "Currently under maintenence",
-                ChatColor.GRAY + "Visit #recipes in /discord to view custom enchantment recipes"
-        );
-        gui.addElement(enchantElement);
-
-        recipeMenus.put(RECIPES_KEY, gui);
 
         // item menu
         createItemMenu();
@@ -101,6 +62,12 @@ public class RecipeGuis {
                 click -> true,
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Crafting Table",
                 ChatColor.GRAY + "Item created in a crafting table"
+        );
+        var furnaceElement = new StaticGuiElement('T',
+                new ItemStack(Material.FURNACE),
+                click -> true,
+                "" + ChatColor.YELLOW + ChatColor.BOLD + "Furnace",
+                ChatColor.GRAY + "Item created in a furnace"
         );
         var smithingTableElement = new StaticGuiElement('T',
                 new ItemStack(Material.SMITHING_TABLE),
@@ -122,7 +89,7 @@ public class RecipeGuis {
                 new ItemStack(Material.KNOWLEDGE_BOOK),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    var menu = recipeMenus.get(ITEMS_KEY);
+                    var menu = recipeMenus.get(RECIPES_KEY);
                     menu.show(clicker);
                     return true;
                 },
@@ -283,7 +250,221 @@ public class RecipeGuis {
                 )
         );
         recipeMenus.put(GRENADE_KEY, itemGui);
+
+        // Apple of life
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Apple of Life";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " fdd aaa ",
+                " ddd ara ",
+                " daa aaa ",
+                "         ",
+        };
+        var magicalDust1 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1);
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('f',
+                new ItemStack(Material.APPLE),
+                ChatColor.WHITE + "Apple")
+        );
+        itemGui.addElement(new StaticGuiElement('d',
+                magicalDust1,
+                click -> {
+                    var e = click.getEvent();
+                    var type = e.getClick();
+                    var clicker = e.getWhoClicked();
+                    if (type == ClickType.LEFT) {
+                        var nGui = recipeMenus.get(MAGICAL_DUST_FURNACE_KEY);
+                        nGui.show(click.getEvent().getWhoClicked());
+                    } else if (type == ClickType.RIGHT) {
+                        var nGui = recipeMenus.get(MAGICAL_DUST_CRAFTING_KEY);
+                        nGui.show(click.getEvent().getWhoClicked());
+                    }
+                    return true;
+                },
+                ChatColor.GOLD + "Magical Dust",
+                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View smelting recipe",
+                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "View crafting recipe")
+        );
+        var appleOfLife = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
+        itemGui.addElement(new StaticGuiElement('r',
+                        appleOfLife,
+                        ChatColor.GOLD + "Apple of Life"
+                )
+        );
+        recipeMenus.put(APPLE_OF_LIFE_KEY, itemGui);
+
+
+        // Magical dust (crafting)
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Magical Dust (Crafting Table)";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " aaa aaa ",
+                " afa ara ",
+                " aaa aaa ",
+                "         ",
+        };
+        var magicalDust2 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('f',
+                appleOfLife,
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = recipeMenus.get(APPLE_OF_LIFE_KEY);
+                    nGui.show(clicker);
+                    return true;
+                },
+                ChatColor.GOLD + "Apple of Life",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                magicalDust2,
+                ChatColor.GOLD + "Magical Dust"
+                )
+        );
+        recipeMenus.put(MAGICAL_DUST_CRAFTING_KEY, itemGui);
+
+
+        // Magical dust (furnace)
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Magical Dust (Furnace)";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                "         ",
+                "   f r   ",
+                "         ",
+                "         ",
+        };
+
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(furnaceElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('f',
+                new ItemStack(Material.ENCHANTED_BOOK),
+                ChatColor.YELLOW + "Enchanted Book (Any enchantment)"
+                )
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                        magicalDust1,
+                        ChatColor.GOLD + "Magical Dust"
+                )
+        );
+        recipeMenus.put(MAGICAL_DUST_FURNACE_KEY, itemGui);
+
+
+        // bottle of xp
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Bottle o' Enchanting";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " bdd aaa ",
+                " dda ara ",
+                " aaa aaa ",
+                "         ",
+        };
+
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('b',
+                        new ItemStack(Material.GLASS_BOTTLE),
+                        ChatColor.WHITE + "Glass Bottle"
+                )
+        );
+        itemGui.addElement(new StaticGuiElement('d',
+                magicalDust1,
+                click -> {
+                    var e = click.getEvent();
+                    var type = e.getClick();
+                    var clicker = e.getWhoClicked();
+                    if (type == ClickType.LEFT) {
+                        var nGui = recipeMenus.get(MAGICAL_DUST_FURNACE_KEY);
+                        nGui.show(clicker);
+                    } else if (type == ClickType.RIGHT) {
+                        var nGui = recipeMenus.get(MAGICAL_DUST_CRAFTING_KEY);
+                        nGui.show(clicker);
+                    }
+                    return true;
+                },
+                ChatColor.GOLD + "Magical Dust",
+                ChatColor.BLUE + "Left Click: " + ChatColor.GRAY + "View smelting recipe",
+                ChatColor.BLUE + "Right Click: " + ChatColor.GRAY + "View crafting recipe")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                        new ItemStack(Material.EXPERIENCE_BOTTLE),
+                        ChatColor.YELLOW + "Bottle o' Enchanting"
+                )
+        );
+        recipeMenus.put(EXPERIENCE_BOTTLE_KEY, itemGui);
+
+        // guard crystal
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Guard Crystal";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " ggg aaa ",
+                " gfg ara ",
+                " gdg aaa ",
+                "         ",
+        };
+
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('g',
+                        new ItemStack(Material.GLASS),
+                        ChatColor.WHITE + "Glass"
+                )
+        );
+        itemGui.addElement(new StaticGuiElement('f',
+                appleOfLife,
+                click -> {
+                    var clicker = click.getEvent().getWhoClicked();
+                    var nGui = recipeMenus.get(APPLE_OF_LIFE_KEY);
+                    nGui.show(clicker);
+                    return true;
+                },
+                ChatColor.GOLD + "Apple of Life",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe")
+        );
+        itemGui.addElement(new StaticGuiElement('d',
+                new ItemStack(Material.DIAMOND),
+                ChatColor.WHITE + "Diamond")
+        );
+        var guardCrystal = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GUARD_CRYSTAL, 1);
+        itemGui.addElement(new StaticGuiElement('r',
+                        guardCrystal,
+                        ChatColor.GREEN + "Guard Crystal"
+                )
+        );
+        recipeMenus.put(GUARD_CRYSTAL_KEY, itemGui);
     }
+
 
     private void createItemMenu() {
         var title = "" + ChatColor.DARK_GREEN + ChatColor.BOLD + "Item Recipes";
@@ -313,7 +494,7 @@ public class RecipeGuis {
 
         // create return to menu
         var menuElement = new StaticGuiElement('M',
-                new ItemStack(Material.PAINTING),
+                new ItemStack(Material.KNOWLEDGE_BOOK),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
                     var nGui = recipeMenus.get(RECIPES_KEY);
@@ -419,12 +600,8 @@ public class RecipeGuis {
         );
         itemGroup.addElement(element);
 
-        item = new ItemStack(Material.FIREWORK_STAR);
-        meta = item.getItemMeta();
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        item.setItemMeta(meta);
-        item.addUnsafeEnchantment(Enchantment.OXYGEN, 1);
+        // add grenade element
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, 1);
         element = new StaticGuiElement(
                 'i',
                 item,
@@ -440,8 +617,94 @@ public class RecipeGuis {
         );
         itemGroup.addElement(element);
 
+        // add apple of life element
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
+        element = new StaticGuiElement(
+                'j',
+                item,
+                click -> {
+                    var gui = recipeMenus.get(APPLE_OF_LIFE_KEY);
+                    gui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.GOLD + "Apple of Life",
+                ChatColor.GRAY + "A magical fruit which provides +1 life when consumed",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add magical dust element (furnace)
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1);
+        element = new StaticGuiElement(
+                'k',
+                item,
+                click -> {
+                    var gui = recipeMenus.get(MAGICAL_DUST_FURNACE_KEY);
+                    gui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.GOLD + "Magical Dust (Furnace Recipe)",
+                ChatColor.GRAY + "Magic in its purest physical form",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add magical dust element (crafting)
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
+        element = new StaticGuiElement(
+                'l',
+                item,
+                click -> {
+                    var gui = recipeMenus.get(MAGICAL_DUST_CRAFTING_KEY);
+                    gui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.GOLD + "Magical Dust (Crafting Table Recipe)",
+                ChatColor.GRAY + "Magic in its purest physical form",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add experience bottle element
+        item = new ItemStack(Material.EXPERIENCE_BOTTLE);
+        element = new StaticGuiElement(
+                'm',
+                item,
+                click -> {
+                    var gui = recipeMenus.get(EXPERIENCE_BOTTLE_KEY);
+                    gui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.YELLOW + "Bottle o' Enchanting",
+                ChatColor.GRAY + "A magical bottle which provides orbs of experience when thrown.",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+
+        // add guard crystal
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GUARD_CRYSTAL, 1);
+        element = new StaticGuiElement(
+                'n',
+                item,
+                click -> {
+                    var gui = recipeMenus.get(GUARD_CRYSTAL_KEY);
+                    gui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.GREEN + "Guard Crystal",
+                ChatColor.GRAY + "A magical crystal which is used primarily to defend territory from intruders",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
         itemGui.addElement(itemGroup);
-        recipeMenus.put(ITEMS_KEY, itemGui);
+        recipeMenus.put(RECIPES_KEY, itemGui);
     }
 
     public InventoryGui getRecipeMenu(String key) {

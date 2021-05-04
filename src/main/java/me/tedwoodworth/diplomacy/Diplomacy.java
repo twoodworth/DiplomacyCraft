@@ -1,14 +1,11 @@
 package me.tedwoodworth.diplomacy;
 
 import me.tedwoodworth.diplomacy.Guis.RecipeGuis;
-import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
-import me.tedwoodworth.diplomacy.Items.CustomItemRecipes;
-import me.tedwoodworth.diplomacy.Items.CustomItems;
+import me.tedwoodworth.diplomacy.Items.*;
 import me.tedwoodworth.diplomacy.commands.ChatCommand;
 import me.tedwoodworth.diplomacy.chat.ChatManager;
 import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
-import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.entities.Entities;
 //import me.tedwoodworth.diplomacy.geology.*;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -97,7 +94,7 @@ public class Diplomacy extends JavaPlugin {
         LivesManager.getInstance().startScheduler();
         ChatNotifications.getInstance().startScheduler();
         System.out.println("[Diplomacy] Loaded schedulers");
-        DiplomacyRecipes.getInstance().loadRecipes();
+        Recipes.getInstance().loadRecipes();
         System.out.println("[Diplomacy] Loaded recipes");
         Entities.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded entity events");

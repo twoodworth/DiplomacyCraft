@@ -3,8 +3,6 @@ package me.tedwoodworth.diplomacy.Guis;
 import de.themoep.inventorygui.InventoryGui;
 import de.themoep.inventorygui.StaticGuiElement;
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.Guis.ClassGuiFactory;
-import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
