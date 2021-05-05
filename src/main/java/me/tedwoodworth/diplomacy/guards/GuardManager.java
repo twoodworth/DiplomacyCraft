@@ -30,6 +30,8 @@ import org.bukkit.util.BoundingBox;
 
 import java.util.*;
 
+import static java.lang.Double.NaN;
+
 
 /*
     prot ingredients:
@@ -83,7 +85,7 @@ public class GuardManager {
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
-    private final int SNIPER_DELAY = 100;
+    private final int SNIPER_DELAY = 80;
 
 
     public static GuardManager getInstance() {
@@ -94,9 +96,20 @@ public class GuardManager {
     }
 
     private GuardManager() {
-        for (var entity : Bukkit.getWorld("world").getEntities()) {
-            if (isGuard(entity)) {
-                guards.add(entity);
+        for (var nation : Nations.getInstance().getNations()) {
+            var dChunks = nation.getChunks();
+            for (var dChunk : dChunks) {
+                var chunk = dChunk.getChunk();
+                chunk.setForceLoaded(true);
+                chunk.load();
+                var entities = chunk.getEntities();
+                for (var entity : entities) {
+                    if (isGuard(entity)) {
+                        System.out.println("Guard entity type: " + entity.getType().getKey());
+                        guards.add(entity);
+                    }
+                }
+                chunk.setForceLoaded(false);
             }
         }
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
@@ -111,13 +124,32 @@ public class GuardManager {
         var avgSpeed = speed - tempD / 200.0; // adjust for drag
         var speedSquared = Math.pow(avgSpeed, 2);
         var y = targetLoc.getY() - guardLoc.getY();
-        var a = Math.pow(speedSquared, 2) - GRAVITY_CONSTANT * (GRAVITY_CONSTANT * ds + 2 * y * speedSquared);
+        var a = Math.max(0, Math.pow(speedSquared, 2) - GRAVITY_CONSTANT * (GRAVITY_CONSTANT * ds + 2 * y * speedSquared));
         a = Math.sqrt(a);
         a = Math.min(speedSquared + a, speedSquared - a);
         a = a / (GRAVITY_CONSTANT * d);
         var pitch = Math.atan(a);
         y = Math.tan(pitch) * d;
-        return y + guardLoc.getY() - 0.00008 * tempSD; // Further adjust for distance
+        var ydiff = guardLoc.getY() - targetLoc.getY();
+        var coef = 0.0;
+
+
+//        //
+//        default -> 2F; // 40 bps
+//        case 1 -> 3F; // 50% (60 bps) / bamboo // 4 dust
+//        case 2 -> 4.5F; // 50% more (90 bps) / iron // 7 dust
+//        case 3 -> 6.75F; // 50% more (135 bps) / redstone // 12 dust
+//        case 4 -> 10F; // 50% more (200 bps) / piston // 38 dust
+//        case 5 -> 15F; // 50% more (300 bps) / gun powder x32 // 115 dust
+        if (speed > 3.5) {
+            ydiff *= 1.01;
+        } else if (speed > 2.5) { // speed = 3.0
+            ydiff *= 1.01;
+            coef = 0.00015;
+        } else { // speed = 2.0
+            coef = 0.0012;
+        }
+        return y + targetLoc.getY() - coef * tempSD + ydiff; // Further adjust for distance todo adjust for y height
     }
 
     private void onGuardTick(int i) {
@@ -162,15 +194,19 @@ public class GuardManager {
                             }
 
                             if (closest != null) {
-                                var y = adjustHeight(gLoc, loc, speed);
-                                loc.setY(y);
                                 var vec = loc.toVector().subtract(gLoc.toVector()).normalize();
-                                var arrow = guard.getWorld().spawnArrow(gLoc, vec, speed, getSniperPrecision(guard));
+                                var aLoc = new Location(gLoc.getWorld(), gLoc.getX() + vec.getX(), gLoc.getY() + vec.getY(), gLoc.getZ() + vec.getZ());
+                                var y = adjustHeight(aLoc, loc, speed);
+                                loc.setY(y);
+                                System.out.println("Y height: " + loc.getY());
+                                vec = loc.toVector().subtract(aLoc.toVector()).normalize();
+                                var arrow = guard.getWorld().spawnArrow(aLoc, vec, speed, getSniperPrecision(guard));
                                 arrow.setDamage(getPower(guard, true));
                                 arrow.getPersistentDataContainer().set(GUARD_ARROW_KEY, BooleanPersistentDataType.instance, true);
                                 trackNewArrow(arrow, guard);
+                                System.out.println("Guard ID#" + guard.getEntityId() + " fired an arrow."); //todo remove
                             }
-                        }, (long) (Math.random() * (SNIPER_DELAY * 0.6)));
+                        }, (long) (Math.random() * (SNIPER_DELAY * 0.4)));
                     }
                 }
                 case HEALER -> {
@@ -246,7 +282,7 @@ public class GuardManager {
         };
     }
 
-    public void spawnGuard(Location loc) {
+    public Entity spawnGuard(Location loc) {
         loc.setX(loc.getX() + 0.5);
         loc.setZ(loc.getZ() + 0.5);
         var entity = loc.getWorld().spawnEntity(loc, EntityType.ENDER_CRYSTAL);
@@ -276,10 +312,17 @@ public class GuardManager {
         entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 HP");
         ((EnderCrystal) entity).setShowingBottom(false);
         guards.add(entity);
+        return entity;
     }
 
     public void killGuard(Entity entity) {
         var loc = entity.getLocation();
+        var container = entity.getPersistentDataContainer();
+        var keys = container.getKeys();
+        for (var key : keys) {
+            container.remove(key);
+        }
+        System.out.println("Guard ID#" + entity.getEntityId() + " killed."); //todo remove
         guards.remove(entity);
         entity.remove();
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
@@ -373,6 +416,10 @@ public class GuardManager {
 
     public Nation getNation(Entity entity) {
         return DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
+    }
+
+    public short getShortHealerRate(Entity entity) {
+        return entity.getPersistentDataContainer().get(HEALER_RATE_KEY, PersistentDataType.SHORT);
     }
 
     public double getHealerRate(Entity entity) {
@@ -485,16 +532,16 @@ public class GuardManager {
             case SNIPER -> {
                 return switch (id) {
                     default -> 8.0; // no scope
-                    case 1 -> 16.0; // 2x scope / 6 dust // glass
-                    case 2 -> 24.0; // 3x scope / 9 dust // iron ingot
-                    case 3 -> 32.0; // 4x scope / 12 dust // glass
-                    case 4 -> 40.0; // 5x scope / 15 dust // iron ingot
-                    case 5 -> 48.0; // 6x scope / 18 dust // glass
-                    case 6 -> 64.0; // 8x scope / 24 dust // diamond
-                    case 7 -> 80.0; // 10x scope / 30 dust // quartz
-                    case 8 -> 180.0; // 16x scope / 48 dust // diamond
-                    case 9 -> 256.0; // 32x scope / 96 dust // quartz
-                    case 10 -> 400.0; // 50x scope / 150 dust // diamond
+                    case 1 -> 12.5; // 4 dust // glass
+                    case 2 -> 17.0; // 5 dust // iron ingot
+                    case 3 -> 21.5; // 7 dust // glass
+                    case 4 -> 26.0; // 9 dust // iron ingot
+                    case 5 -> 30.5; // 11 dust // glass
+                    case 6 -> 35.0; // 15 dust // diamond
+                    case 7 -> 38.5; // 19 dust // quartz
+                    case 8 -> 43.0; // 25 dust // diamond
+                    case 9 -> 52.0; // 42 dust // quartz
+                    case 10 -> 63.0; // 72 dust // diamond
                 };
             }
             case FLAMETHROWER, SNOWMAKER -> {
@@ -622,7 +669,7 @@ public class GuardManager {
         for (var player : Bukkit.getOnlinePlayers()) {
             var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var pNation = Nations.getInstance().get(dp);
-            if (Objects.equals(pNation, nation)) {
+            if (Objects.equals(pNation, nation) && pNation != null) {
                 // check nation permissions
                 var permissions = pNation.getMemberClass(dp).getPermissions();
                 var canSee = permissions.get("CanSeeGuardNotifications");
@@ -645,10 +692,6 @@ public class GuardManager {
     }
 
     private void trackArrow(Arrow arrow) {
-        var loc = arrow.getLocation();
-        var chunk = loc.getChunk();
-        chunk.load();
-
         if (trackedArrows.containsKey(arrow)) {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> trackArrow(arrow), 1L);
         }
@@ -901,19 +944,24 @@ public class GuardManager {
 
                 var trueDamager = getTrueDamager(damager);
                 if (damager instanceof Projectile) {
-                    if (damager instanceof Trident) {
-                        ((Trident) damager).setBounce(true);
-                    } else {
-                        damager.remove();
+                    if (!isGuardArrow(damager)) {
+                        if (damager instanceof Trident) {
+                        } else {
+                            damager.remove();
+                            System.out.println("Arrow removed.");
+                        }
                     }
                 }
 
                 if (trueDamager instanceof Player) {
-                    var player = ((Player) damager);
+                    var player = ((Player) trueDamager);
                     damage = damage * getResistance(entity);
                     var health = getHealth(entity);
                     health = health - damage;
                     var loc = entity.getLocation();
+                    if (damager instanceof Projectile) {
+                        player.playSound(trueDamager.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                    }
                     loc.getWorld().playSound(loc, Sound.BLOCK_NETHERITE_BLOCK_HIT, 2, 1);
                     if (health <= 0.0) {
                         var message = getKillMessage(player, entity);
