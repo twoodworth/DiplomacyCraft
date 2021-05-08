@@ -58,13 +58,14 @@ public class Recipes {
 
         // apple of life
         var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
-        var appleRecipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "apple_of_life"), apple);
-        appleRecipe.addIngredient(6, GLOWSTONE_DUST);
-        appleRecipe.addIngredient(APPLE);
+        var appleRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "apple_of_life"), apple);
+        appleRecipe.shape("DDD", "DAD", "DDD");
+        appleRecipe.setIngredient('D', GLOWSTONE_DUST);
+        appleRecipe.setIngredient('A', APPLE);
         Diplomacy.getInstance().getServer().addRecipe(appleRecipe);
 
         // magical dust
-        var dust = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
+        var dust = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 8);
         var dustRecipe = new ShapelessRecipe(new NamespacedKey(Diplomacy.getInstance(), "magical_dust_crafting"), dust);
         dustRecipe.addIngredient(GOLDEN_APPLE);
         Diplomacy.getInstance().getServer().addRecipe(dustRecipe);

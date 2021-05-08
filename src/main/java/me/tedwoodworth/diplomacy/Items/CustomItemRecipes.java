@@ -77,7 +77,7 @@ public class CustomItemRecipes {
                 switch (result.getType()) {
                     case EXPERIENCE_BOTTLE -> {
                         for (var item : matrix) {
-                            if (item != null && item.getType() == Material.GOLD_NUGGET && !CustomItemGenerator.getInstance().isCustomItem(item)) {
+                            if (item != null && item.getType() == Material.GLOWSTONE_DUST && !CustomItemGenerator.getInstance().isCustomItem(item)) {
                                 inv.setResult(new ItemStack(Material.AIR));
                                 return;
                             }

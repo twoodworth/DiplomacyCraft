@@ -7,7 +7,6 @@ import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -30,24 +29,6 @@ import org.bukkit.util.BoundingBox;
 
 import java.util.*;
 
-import static java.lang.Double.NaN;
-
-
-/*
-    prot ingredients:
-        1: iron ingot 6%  // 2
-        2: iron block 12% // 3
-        3: 3 iron blocks 18% // 6
-        4: diamond 24% // 10
-        5: diamond block 31% // 17
-        6: 3 diamond blocks 38% // 28
-        7: netherite scrap 45% // 48
-        8: netherite ingot 52% // 82
-        9: netherite block 66% // 237
-        10: 3 netherite blocks 80% // 685
- */
-
-
 public class GuardManager {
     public static GuardManager instance = null;
     private final Set<Entity> guards = new HashSet<>();
@@ -60,9 +41,9 @@ public class GuardManager {
     private final double DRAG = 0.01;
 
     // all guards
+    private final NamespacedKey LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_level");
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
-    private final NamespacedKey MAX_HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_max_health");
     private final NamespacedKey NOTIFY_DAMAGE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_notify_damage");
 
     // attacking guards
@@ -70,16 +51,16 @@ public class GuardManager {
     private final NamespacedKey ATTACK_NEUTRAL = new NamespacedKey(Diplomacy.getInstance(), "guard_neutral");
     private final NamespacedKey ATTACK_ALLIES = new NamespacedKey(Diplomacy.getInstance(), "guard_allies");
     private final NamespacedKey ATTACK_NEWBIES = new NamespacedKey(Diplomacy.getInstance(), "guard_newbies");
+    private static final NamespacedKey GUARD_PROJECTILE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_projectile");
 
     // sniper
-    private final NamespacedKey SNIPER_ACCURACY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
-    private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
-    private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
-    private final NamespacedKey GUARD_ARROW_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_arrow");
-
-    // all but basic guards
-    private final NamespacedKey RADIUS_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_radius");
-    private final NamespacedKey RESISTANCE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_protection");
+    private final short[] sniperCost = new short[100];
+    private final float[] sniperMaxHealth = new float[100];
+    private final float[] sniperPrecision = new float[100];
+    private final float[] sniperVelocity = new float[100];
+    private final float[] sniperResistance = new float[100];
+    private final float[] sniperRadius = new float[100];
+    private final float[] sniperPower = new float[100];
 
     // healer
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
@@ -112,6 +93,16 @@ public class GuardManager {
                 chunk.setForceLoaded(false);
             }
         }
+
+        for (int i = 0; i < 100; i++) {
+            sniperCost[i] = (short) (Math.pow(1.05, i));
+            sniperMaxHealth[i] = (float) ((int) (200.0 * Math.pow(1.01, i) - 180.0));
+            sniperPrecision[i] = (float) (15.0 * Math.pow(0.951, i));
+            sniperResistance[i] = (float) (1.0 - Math.pow(0.99, i));
+            sniperVelocity[i] = (float) (2.0 * Math.pow(1.02123, i));
+            sniperRadius[i] = (float) (16.0 * Math.pow(1.0141, i));
+            sniperPower[i] = (float) (9.83188423 * Math.pow(1.02, i) - 3.83188423);
+        }
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
     }
 
@@ -132,15 +123,6 @@ public class GuardManager {
         y = Math.tan(pitch) * d;
         var ydiff = guardLoc.getY() - targetLoc.getY();
         var coef = 0.0;
-
-
-//        //
-//        default -> 2F; // 40 bps
-//        case 1 -> 3F; // 50% (60 bps) / bamboo // 4 dust
-//        case 2 -> 4.5F; // 50% more (90 bps) / iron // 7 dust
-//        case 3 -> 6.75F; // 50% more (135 bps) / redstone // 12 dust
-//        case 4 -> 10F; // 50% more (200 bps) / piston // 38 dust
-//        case 5 -> 15F; // 50% more (300 bps) / gun powder x32 // 115 dust
         if (speed > 3.5) {
             ydiff *= 1.01;
         } else if (speed > 2.5) { // speed = 3.0
@@ -159,7 +141,7 @@ public class GuardManager {
                 var health = getHealth(guard);
                 var max = getMaxHealth(guard);
                 if (health < max) {
-                    setHealth(guard, Math.min(health + GUARD_HEAL_DELAY / 1200.0, max));
+                    setHealth(guard, Math.min(health + GUARD_HEAL_DELAY / 1000.0, max));
                 }
             }
             var type = getType(guard);
@@ -201,8 +183,8 @@ public class GuardManager {
                                 System.out.println("Y height: " + loc.getY());
                                 vec = loc.toVector().subtract(aLoc.toVector()).normalize();
                                 var arrow = guard.getWorld().spawnArrow(aLoc, vec, speed, getSniperPrecision(guard));
-                                arrow.setDamage(getPower(guard, true));
-                                arrow.getPersistentDataContainer().set(GUARD_ARROW_KEY, BooleanPersistentDataType.instance, true);
+                                arrow.setDamage(getPower(guard));
+                                arrow.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
                                 trackNewArrow(arrow, guard);
                                 System.out.println("Guard ID#" + guard.getEntityId() + " fired an arrow."); //todo remove
                             }
@@ -268,17 +250,18 @@ public class GuardManager {
 
     public String getTypePrefix(Entity entity) {
         var type = getType(entity);
+        var level = getLevel(entity);
         return switch (type) {
-            case BASIC -> ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE;
-            case SNIPER -> ChatColor.DARK_GREEN + "[Sniper] " + ChatColor.WHITE;
-            case GUNNER -> ChatColor.DARK_GRAY + "[Gunner] " + ChatColor.WHITE;
-            case FLAMETHROWER -> ChatColor.RED + "[FLamethrower] " + ChatColor.WHITE;
-            case GRENADER -> ChatColor.DARK_RED + "[Grenader] " + ChatColor.WHITE;
-            case HEALER -> ChatColor.LIGHT_PURPLE + "[Healer] " + ChatColor.WHITE;
-            case TANK -> ChatColor.DARK_PURPLE + "[Tank] " + ChatColor.WHITE;
-            case TELEPORTER -> ChatColor.YELLOW + "[Teleporter] " + ChatColor.WHITE;
-            case GENERATOR -> ChatColor.GOLD + "[Generator] " + ChatColor.WHITE;
-            case SNOWMAKER -> ChatColor.AQUA + "[Snowmaker] " + ChatColor.WHITE;
+            case BASIC -> ChatColor.DARK_AQUA + "[Level " + level + " Guard] " + ChatColor.WHITE;
+            case SNIPER -> ChatColor.DARK_GREEN + "[Level " + level + " Sniper] " + ChatColor.WHITE;
+            case GUNNER -> ChatColor.DARK_GRAY + "[Level " + level + " Gunner] " + ChatColor.WHITE;
+            case FLAMETHROWER -> ChatColor.RED + "[Level " + level + " Flamethrower] " + ChatColor.WHITE;
+            case GRENADER -> ChatColor.DARK_RED + "[Level " + level + " Grenader] " + ChatColor.WHITE;
+            case HEALER -> ChatColor.LIGHT_PURPLE + "[Level " + level + " Healer] " + ChatColor.WHITE;
+            case TANK -> ChatColor.DARK_PURPLE + "[Level " + level + " Tank] " + ChatColor.WHITE;
+            case TELEPORTER -> ChatColor.YELLOW + "[Level " + level + " Teleporter] " + ChatColor.WHITE;
+            case GENERATOR -> ChatColor.GOLD + "[Level " + level + " Generator] " + ChatColor.WHITE;
+            case SNOWMAKER -> ChatColor.AQUA + "[Level " + level + " Snowmaker] " + ChatColor.WHITE;
         };
     }
 
@@ -290,16 +273,13 @@ public class GuardManager {
         var container = entity.getPersistentDataContainer();
 
         // type
-        container.set(TYPE_KEY, PersistentDataType.INTEGER, 0);
+        container.set(TYPE_KEY, PersistentDataType.BYTE, (byte)0);
 
         // health
-        container.set(HEALTH_KEY, PersistentDataType.DOUBLE, 20.0);
+        container.set(HEALTH_KEY, PersistentDataType.FLOAT, 20.00f);
 
-        // max health
-        container.set(MAX_HEALTH_KEY, PersistentDataType.SHORT, (short) 0);
-
-        // resistance
-        container.set(RESISTANCE_KEY, PersistentDataType.SHORT, (short) 0);
+        // level
+        container.set(LEVEL_KEY, PersistentDataType.SHORT, (short)0);
 
         // preferences
         container.set(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance, true);
@@ -309,7 +289,7 @@ public class GuardManager {
         container.set(ATTACK_NEWBIES, BooleanPersistentDataType.instance, false);
 
         entity.setCustomNameVisible(true);
-        entity.setCustomName(ChatColor.DARK_AQUA + "[Basic] " + ChatColor.WHITE + "20.00 HP");
+        entity.setCustomName(ChatColor.DARK_AQUA + "[Level 0 Guard] " + ChatColor.WHITE + "20.00 HP");
         ((EnderCrystal) entity).setShowingBottom(false);
         guards.add(entity);
         return entity;
@@ -332,11 +312,30 @@ public class GuardManager {
 
     public boolean isGuard(Entity entity) {
         var container = entity.getPersistentDataContainer();
-        return container.has(TYPE_KEY, PersistentDataType.INTEGER);
+        return container.has(TYPE_KEY, PersistentDataType.BYTE);
+    }
+
+    public short getLevel(Entity entity) {
+        return entity.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
+    }
+
+    public short getCost(Entity entity) {
+        var level = getLevel(entity);
+        if (level == 100) return -1;
+        var type = getType(entity);
+        return switch (type) {
+            default -> (short) 1;
+            case SNIPER -> sniperCost[level];
+        };
+    }
+
+    public void setLevel(Entity entity, int level) {
+        entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short) level);
+        setHealth(entity, getHealth(entity));
     }
 
     public Type getType(Entity entity) {
-        var id = entity.getPersistentDataContainer().get(TYPE_KEY, PersistentDataType.INTEGER);
+        var id = entity.getPersistentDataContainer().get(TYPE_KEY, PersistentDataType.BYTE);
         return getEnum(id);
     }
 
@@ -380,23 +379,16 @@ public class GuardManager {
         return entity.getPersistentDataContainer().get(ATTACK_NEWBIES, BooleanPersistentDataType.instance);
     }
 
-    public boolean setType(Entity entity, Type type) {
+    public boolean upgradeDefault(Entity entity, Type type) {
         var curType = getType(entity);
-        if (curType == type) return false;
+        if (curType != Type.BASIC || type == Type.BASIC) return false;
 
         var id = type.ordinal();
-        entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.INTEGER, id);
+        entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.BYTE, (byte)id);
+        entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short)1);
         switch (type) {
             case HEALER -> {
-                setRadius(entity, (short) 0);
                 setHealerRate(entity, (short) 0);
-
-            }
-            case SNIPER -> {
-                setRadius(entity, (short) 0);
-                setSniperPower(entity, (short) 0);
-                setSniperPrecision(entity, (short) 0);
-                setSniperVelocity(entity, (short) 0);
             }
         }
         setHealth(entity, getHealth(entity));
@@ -404,11 +396,11 @@ public class GuardManager {
     }
 
     public double getHealth(Entity entity) {
-        return entity.getPersistentDataContainer().get(HEALTH_KEY, PersistentDataType.DOUBLE);
+        return entity.getPersistentDataContainer().get(HEALTH_KEY, PersistentDataType.FLOAT);
     }
 
     public void setHealth(Entity entity, double health) {
-        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.DOUBLE, health);
+        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.FLOAT, (float)health);
         var strHealth = String.format("%.2f", health);
         entity.setCustomName(getTypePrefix(entity) + strHealth + " HP");
     }
@@ -445,213 +437,50 @@ public class GuardManager {
 
     }
 
-    public short getShortResistance(Entity entity) {
-        return entity.getPersistentDataContainer().get(RESISTANCE_KEY, PersistentDataType.SHORT);
-    }
-
-    public double getResistance(Entity entity) {
-        var id = entity.getPersistentDataContainer().get(RESISTANCE_KEY, PersistentDataType.SHORT);
-        return switch (id) {
-            default -> 1.0;
-            case 1 -> 0.94; // 4 / iron ingot
-            case 2 -> 0.88; // 5 / 3x iron ingot
-            case 3 -> 0.82; // 7 / iron block
-            case 4 -> 0.76; // 9 / 3x iron block
-            case 5 -> 0.69; // 11 / diamond
-            case 6 -> 0.62; // 14 / 3x diamond
-            case 7 -> 0.55; // 19 / diamond block
-            case 8 -> 0.48; // 24 / 1x netherite scrap
-            case 9 -> 0.34; // 41 / 1x netherite
-            case 10 -> 0.2; // 70 / 3x netherite
-        };
-    }
-
-
-    public void setResistance(Entity entity, short resistance) {
-        entity.getPersistentDataContainer().set(RESISTANCE_KEY, PersistentDataType.SHORT, resistance);
-    }
-
-    public double getMaxHealth(Entity entity) {
-        var id = entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
-        return switch (id) {
-            default -> 20.0;
-            case 1 -> 35.0; // 5
-            case 2 -> 61.0; // 7
-            case 3 -> 107.0; // 9
-            case 4 -> 188.0; // 12
-            case 5 -> 350.0; // 17
-            case 6 -> 574.0; // 22
-            case 7 -> 1005.0; // 30
-            case 8 -> 1759.0; // 41
-            case 9 -> 5388.0; // 74
-            case 10 -> 16500.0; // 183
-        };
-    }
-
-    public short getShortMaxHealth(Entity entity) {
-        return entity.getPersistentDataContainer().get(MAX_HEALTH_KEY, PersistentDataType.SHORT);
-    }
-
-    public void setMaxHealth(Entity entity, short rate) {
-        entity.getPersistentDataContainer().set(MAX_HEALTH_KEY, PersistentDataType.SHORT, rate);
-    }
-
-    public short getShortRadius(Entity entity) {
-        return entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.SHORT);
-    }
-
-    public double getRadius(Entity entity) {
-        var id = entity.getPersistentDataContainer().get(RADIUS_KEY, PersistentDataType.SHORT);
+    public float getResistance(Entity entity) {
         var type = getType(entity);
-        switch (type) {
-            case GUNNER, GRENADER -> {
-                return switch (id) {
-                    default -> 8.0;
-                    case 1 -> 10.0;
-                    case 2 -> 12.0;
-                    case 3 -> 16.0;
-                    case 4 -> 24.0;
-                    case 5 -> 32.0;
-                };
-            }
-            case HEALER -> {
-                return switch (id) {
-                    default -> 16.0;
-                    case 1 -> 20.0;
-                    case 2 -> 24.0;
-                    case 3 -> 28.0;
-                    case 4 -> 32.0;
-                    case 5 -> 36.0;
-                    case 6 -> 40.0;
-                    case 7 -> 44.0;
-                    case 8 -> 48.0;
-                    case 9 -> 56.0;
-                    case 10 -> 64.0;
-                };
-            }
-            case SNIPER -> {
-                return switch (id) {
-                    default -> 8.0; // no scope
-                    case 1 -> 12.5; // 4 dust // glass
-                    case 2 -> 17.0; // 5 dust // iron ingot
-                    case 3 -> 21.5; // 7 dust // glass
-                    case 4 -> 26.0; // 9 dust // iron ingot
-                    case 5 -> 30.5; // 11 dust // glass
-                    case 6 -> 35.0; // 15 dust // diamond
-                    case 7 -> 38.5; // 19 dust // quartz
-                    case 8 -> 43.0; // 25 dust // diamond
-                    case 9 -> 52.0; // 42 dust // quartz
-                    case 10 -> 63.0; // 72 dust // diamond
-                };
-            }
-            case FLAMETHROWER, SNOWMAKER -> {
-                return switch (id) {
-                    default -> 4;
-                    case 1 -> 5;
-                    case 2 -> 6;
-                    case 3 -> 7;
-                    case 4 -> 9;
-                    case 5 -> 12;
-                };
-            }
-            case TELEPORTER -> { // radius (2), regeneration speed, defense, max health
-                return switch (id) { // world size: 9984 x 9984
-                    default -> 250;
-                    case 1 -> 500;
-                    case 2 -> 750;
-                    case 3 -> 1000;
-                    case 4 -> 1250;
-                    case 5 -> 1500;
-                    case 6 -> 2000;
-                    case 7 -> 2500;
-                    case 8 -> 3000;
-                    case 9 -> 4000;
-                    case 10 -> 5000;
-                };
-            }
-            default -> {
-                return 0.0;
-            }
-        }
+        var level = getLevel(entity);
+        return switch (type) {
+            default -> 0.0f;
+            case SNIPER -> sniperResistance[level - 1];
+        };
     }
 
-    public void setRadius(Entity entity, short radius) {
-        entity.getPersistentDataContainer().set(RADIUS_KEY, PersistentDataType.SHORT, radius);
+    public float getMaxHealth(Entity entity) {
+        var type = getType(entity);
+        var level = getLevel(entity);
+        return switch (type) {
+            default -> 20.0f;
+            case SNIPER -> sniperMaxHealth[level - 1];
+        };
     }
 
-
-//    private final NamespacedKey SNIPER_STRENGTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_strength");
-//    private final NamespacedKey SNIPER_VELOCITY_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_velocity");
-//    private final NamespacedKey SNIPER_POWER_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_sniper_power");
+    public float getRadius(Entity entity) {
+        var type = getType(entity);
+        var level = getLevel(entity);
+        return switch (type) {
+            default -> 0.0f;
+            case SNIPER -> sniperRadius[level - 1];
+        };
+    }
 
     public float getSniperPrecision(Entity entity) {
-        var shrt = entity.getPersistentDataContainer().get(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT);
-        return switch (shrt) {
-            default -> 12.0F;
-            case 1 -> 7.0F; // 4 / 3 sticks
-            case 2 -> 4F; // 12 / redstone
-            case 3 -> 2F; // 31 / target
-            case 4 -> 0.5F; // 62 / iron ingot
-            case 5 -> 0.1F; // 120 / 3 iron ingots
-        };
-    }
-
-    public short getShortSniperPrecision(Entity entity) {
-        return entity.getPersistentDataContainer().get(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT);
-    }
-
-    public void setSniperPrecision(Entity entity, short precision) {
-        entity.getPersistentDataContainer().set(SNIPER_ACCURACY_KEY, PersistentDataType.SHORT, precision);
-    }
-
-    public short getShortSniperVelocity(Entity entity) {
-        return entity.getPersistentDataContainer().get(SNIPER_VELOCITY_KEY, PersistentDataType.SHORT);
-    }
-
-    public short getShortSniperPower(Entity entity) {
-        return entity.getPersistentDataContainer().get(SNIPER_POWER_KEY, PersistentDataType.SHORT);
+        var level = getLevel(entity);
+        return sniperPrecision[level - 1];
     }
 
     public float getSniperSpeed(Entity entity) {
-        var s = getShortSniperVelocity(entity);
-        return switch (s) {
-            default -> 2F; // 40 bps
-            case 1 -> 3F; // 50% (60 bps) / bamboo // 4 dust
-            case 2 -> 4.5F; // 50% more (90 bps) / iron // 7 dust
-            case 3 -> 6.75F; // 50% more (135 bps) / redstone // 12 dust
-            case 4 -> 10F; // 50% more (200 bps) / piston // 38 dust
-            case 5 -> 15F; // 50% more (300 bps) / gun powder x32 // 115 dust
+        var level = getLevel(entity);
+        return sniperVelocity[level - 1];
+    }
+
+    public float getPower(Entity entity) {
+        var type = getType(entity);
+        var level = getLevel(entity);
+        return switch (type) {
+            default -> 0.0f;
+            case SNIPER -> sniperPower[level - 1];
         };
-    }
-
-    public void setSniperVelocity(Entity entity, short velocity) {
-        entity.getPersistentDataContainer().set(SNIPER_VELOCITY_KEY, PersistentDataType.SHORT, velocity);
-    }
-
-    public void setSniperPower(Entity entity, short power) {
-        entity.getPersistentDataContainer().set(SNIPER_POWER_KEY, PersistentDataType.SHORT, power);
-    }
-
-    public double getPower(Entity entity, boolean isSniper) {
-        var s = getShortSniperPower(entity);
-        if (isSniper) {
-            return switch (s) {
-                default -> 8.0; // 40 bps
-                case 1 -> 10.0; // 20% / flint // 7 dust
-                case 2 -> 12.0; // 20% more / flint // 9 dust
-                case 3 -> 14.0; // 20% more / iron ingot // 11 dust
-                case 4 -> 16.0; // 20% more / iron block // 15 dust
-                case 5 -> 18.0; // 20% more / diamond // 19 dust
-                case 6 -> 20.0; // 20% more / obsidian // 25 dust
-                case 7 -> 22.0; // 20% more / diamond block // 33 dust
-                case 8 -> 24.0; // 20% more / obsidian x9 // 42 dust
-                case 9 -> 28.0; // 30% more / netherite scrap // 72 dust
-                case 10 -> 32.0; // 30% more / netherite ingot x3   // 121 dust
-            };
-        } else {
-            // todo gunner
-            return 0.0;
-        }
     }
 
     private Type getEnum(int id) {
@@ -813,8 +642,14 @@ public class GuardManager {
                 var place = block.getRelative(face);
                 var loc = place.getLocation();
                 event.setCancelled(true);
-                var box = new BoundingBox(loc.getX(), loc.getY(), loc.getZ(), loc.getX() + 1, loc.getY() + 1, loc.getZ() + 1);
-                var notNearby = loc.getWorld().getNearbyEntities(box).size() == 0;
+                var notNearby = true;
+                var nearby = loc.getWorld().getNearbyEntities(loc, 3, 3, 3);
+                for (var near : nearby) {
+                    if (isGuard(near)) {
+                        notNearby = false;
+                        break;
+                    }
+                }
                 if (place.isEmpty() && notNearby) { // if location is okay
 
                     // check if in nation
@@ -853,7 +688,7 @@ public class GuardManager {
                 } else {
                     player.sendMessage(ChatColor.RED + "Not enough room here.");
                     if (!notNearby) {
-                        player.sendMessage(ChatColor.RED + "This location is too close to another entity (make sure you stand far enough away when placing).");
+                        player.sendMessage(ChatColor.RED + "This location is too close to another guard crystal.");
                     }
                 }
             }
@@ -911,7 +746,7 @@ public class GuardManager {
                             return;
                         }
                         interactSet.add(player);
-                        var menu = GuardGuis.getInstance().generateGui(entity);
+                        var menu = GuardGuis.getInstance().generateGui(entity, player);
                         menu.show(player);
                     }
                 }
@@ -955,7 +790,7 @@ public class GuardManager {
 
                 if (trueDamager instanceof Player) {
                     var player = ((Player) trueDamager);
-                    damage = damage * getResistance(entity);
+                    damage = damage * (1 - getResistance(entity));
                     var health = getHealth(entity);
                     health = health - damage;
                     var loc = entity.getLocation();
@@ -1016,7 +851,7 @@ public class GuardManager {
         }
 
         public boolean isGuardArrow(Entity entity) {
-            return entity.getPersistentDataContainer().has(GUARD_ARROW_KEY, BooleanPersistentDataType.instance);
+            return entity.getPersistentDataContainer().has(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance);
         }
 
         public String getKillMessage(Entity damager, Entity guard) {
