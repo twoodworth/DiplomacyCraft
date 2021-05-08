@@ -86,7 +86,7 @@ public class Recipes {
         var guard = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GUARD_CRYSTAL, 1);
         var guardRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "guard_crystal"), guard);
         guardRecipe.shape("GGG", "GAG", "GDG");
-        guardRecipe.setIngredient('G', GLASS_PANE);
+        guardRecipe.setIngredient('G', GLASS);
         guardRecipe.setIngredient('A', GOLDEN_APPLE);
         guardRecipe.setIngredient('D', DIAMOND);
         Diplomacy.getInstance().getServer().addRecipe(guardRecipe);

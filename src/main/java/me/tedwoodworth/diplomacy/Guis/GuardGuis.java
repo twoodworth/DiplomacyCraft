@@ -903,7 +903,7 @@ public class GuardGuis {
                 ));
                 return gui;
             }
-            case SNIPER -> {
+            case SNIPER, GUNNER -> {
                 var level = GuardManager.getInstance().getLevel(guard);
                 // title
                 var title = GuardManager.getInstance().getTypePrefix(guard) + ChatColor.DARK_GRAY + " Guard Menu";
