@@ -7,7 +7,6 @@ import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -80,6 +79,17 @@ public class GuardManager {
     private final float[] tankPower = new float[100];
     private final int TANK_DELAY = 160;
 
+    // flamethrower
+    private Set<Item> flames = new HashSet<>();
+    private final short[] flamethrowerCost = new short[100];
+    private final float[] flamethrowerMaxHealth = new float[100];
+    private final float[] flamethrowerResistance = new float[100];
+    private final float[] flamethrowerPower = new float[100];
+    private final float[] flamethrowerDelay = new float[100];
+    private final short[] flamethrowerBurnTime = new short[100];
+    private final float[] flamesPerTick = new float[100];
+    private final NamespacedKey FLAME_LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "flame_level");
+
 
     // healer
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
@@ -96,6 +106,7 @@ public class GuardManager {
 
     private GuardManager() {
         var gunners = new HashSet<Entity>();
+        var flamethrowers = new HashSet<Entity>();
         for (var nation : Nations.getInstance().getNations()) {
             var dChunks = nation.getChunks();
             for (var dChunk : dChunks) {
@@ -108,6 +119,8 @@ public class GuardManager {
                         guards.add(entity);
                         if (getType(entity) == Type.GUNNER) {
                             gunners.add(entity);
+                        } else if (getType(entity) == Type.FLAMETHROWER) {
+                            flamethrowers.add(entity);
                         }
                     }
                 }
@@ -142,11 +155,24 @@ public class GuardManager {
             tankVelocity[i] = (float) Math.pow(1.013, i);
             tankPower[i] = (float) (4.0 * Math.pow(1.008, i) - 3.35);
 
+            // flamethrower
+            flamethrowerCost[i] = sniperCost[i];
+            flamethrowerMaxHealth[i] = tankMaxHealth[i];
+            flamethrowerResistance[i] = sniperResistance[i];
+            flamethrowerPower[i] = (float) (Math.pow(1.0112, i) - 1.0);
+            flamethrowerDelay[i] = (float) (30.0 * Math.pow(0.977, (50.0 + 0.5 * i)));
+            flamethrowerBurnTime[i] = (short) (10.0 + Math.pow(1.05, i));
+            flamesPerTick[i] = (short) (Math.pow(1.0142, 33 + (0.67 * i)));
+
+
         }
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
 
         for (var gunner : gunners) {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGunnerTick(gunner), 0L);
+        }
+        for (var flamethrower : flamethrowers) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(flamethrower), 0L);
         }
     }
 
@@ -190,6 +216,35 @@ public class GuardManager {
         arrow.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
         trackNewArrow(arrow, guard);
         return arrow;
+    }
+
+    private void spawnFlame(Location targetLoc, Location guardLoc, Entity guard, short level) {
+        var guardY= guardLoc.getY() + 0.5;
+        var targY = targetLoc.getY();
+        guardLoc.setY(guardY);
+        targetLoc.setY(targY + Math.abs(targY - guardY) * 0.4);
+        guard.getWorld().playSound(guard.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 0.25f, 1.0f);
+        var stack = new ItemStack(Material.BLAZE_POWDER, 1);
+        var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
+        var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
+        var drop = guard.getWorld().dropItem(aLoc, stack);
+        drop.getPersistentDataContainer().set(FLAME_LEVEL_KEY, PersistentDataType.SHORT, level);
+        drop.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
+        var variation = 0.1;
+        vec.setX(vec.getX() + Math.random() * variation - 0.5 * variation);
+        vec.setY(vec.getY() + Math.random() * variation - 0.5 * variation);
+        vec.setZ(vec.getZ() + Math.random() * variation - 0.5 * variation);
+        drop.setVelocity(vec);
+        drop.setPickupDelay(1000);
+        flames.add(drop);
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                    if (!drop.isDead()) {
+                        flames.remove(drop);
+                        drop.remove();
+                    }
+                },
+                30L
+        );
     }
 
     private void fireMissile(Location targetLoc, Location guardLoc, float speed, Entity guard, long time) {
@@ -361,11 +416,55 @@ public class GuardManager {
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, false), 1L);
     }
 
+    private void onFlamethrowerTick(Entity guard) {
+        if (guard.isDead()) {
+            return;
+        }
+        var delay = getDelay(guard);
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+            if (guard.isDead()) {
+                return;
+            }
+            var radius = 12.0f;
+            var nearby = guard.getNearbyEntities(radius, radius, radius);
+            var gLoc = guard.getLocation();
+            var gNation = getNation(guard);
+            Player closest = null;
+            double distance = Double.MAX_VALUE;
+            Location loc = null;
+            for (var entity : nearby) {
+                if (entity instanceof Player && canAttackPlayer((Player) entity, guard) && Objects.equals(gNation, getNation(entity))) {
+                    var pLoc = ((Player) entity).getEyeLocation();
+                    pLoc.setY(pLoc.getY() - 0.5);
+                    var d = gLoc.distanceSquared(pLoc);
+                    if (d < distance) {
+                        distance = d;
+                        closest = (Player) entity;
+                        loc = pLoc;
+                    }
+                }
+            }
+
+            if (closest != null) {
+                var level = getLevel(guard);
+                var amount = flamesPerTick[level - 1];
+                for (int i = 0; i < amount; i++) {
+                    spawnFlame(loc, gLoc, guard, level);
+                }
+            }
+        }, (long) (Math.random() * (delay * 0.4)));
+
+        var lDelay = (long) delay;
+        var remainder = lDelay - delay;
+        if (Math.random() < remainder) lDelay++;
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(guard), lDelay);
+    }
+
     private void onGunnerTick(Entity guard) {
         if (guard.isDead()) {
             return;
         }
-        var delay = getGunnerDelay(guard);
+        var delay = getDelay(guard);
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
             if (guard.isDead()) {
                 return;
@@ -415,10 +514,6 @@ public class GuardManager {
             }
             var type = getType(guard);
             switch (type) {
-                case FLAMETHROWER -> {
-                    // launch fire items, if they collide (like grenades) deal tiny fire damage and light player on fire
-
-                }
                 case SNIPER -> {
                     if (i % (SNIPER_DELAY / GUARD_TICK_DELAY) == 0) {
                         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
@@ -522,6 +617,24 @@ public class GuardManager {
                 }
             }
         }
+
+        // flames
+        for (var flame : new HashSet<>(flames)) {
+            var nearby = flame.getNearbyEntities(0.5, 0.5, 0.5);
+            for (var entity : nearby) {
+                if (entity instanceof LivingEntity) {
+                    var level = flame.getPersistentDataContainer().get(FLAME_LEVEL_KEY, PersistentDataType.SHORT);
+                    var burnTime = flamethrowerBurnTime[level - 1];
+                    var damage = flamethrowerPower[level - 1];
+                    ((LivingEntity)entity).damage(damage, flame);
+                    entity.setFireTicks(Math.max(entity.getFireTicks(), burnTime));
+                    flames.remove(flame);
+                    flame.remove();
+                    break;
+                }
+            }
+        }
+
         if (i == 6000 / GUARD_TICK_DELAY) {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), GUARD_TICK_DELAY);
         } else {
@@ -621,6 +734,7 @@ public class GuardManager {
             case SNIPER -> sniperCost[level];
             case GUNNER -> gunnerCost[level];
             case TANK -> tankCost[level];
+            case FLAMETHROWER -> flamethrowerCost[level];
         };
     }
 
@@ -688,6 +802,7 @@ public class GuardManager {
                 setHealerRate(entity, (short) 0);
             }
             case GUNNER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGunnerTick(entity), 0L);
+            case FLAMETHROWER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(entity), 0L);
         }
         setHealth(entity, getHealth(entity));
         return true;
@@ -743,6 +858,7 @@ public class GuardManager {
             case SNIPER -> sniperResistance[level - 1];
             case GUNNER -> gunnerResistance[level - 1];
             case TANK -> tankResistance[level - 1];
+            case FLAMETHROWER -> flamethrowerResistance[level - 1];
         };
     }
 
@@ -754,6 +870,7 @@ public class GuardManager {
             case SNIPER -> sniperMaxHealth[level - 1];
             case GUNNER -> gunnerMaxHealth[level - 1];
             case TANK -> tankMaxHealth[level - 1];
+            case FLAMETHROWER -> flamethrowerMaxHealth[level - 1];
         };
     }
 
@@ -799,9 +916,14 @@ public class GuardManager {
         };
     }
 
-    public float getGunnerDelay(Entity entity) {
+    public float getDelay(Entity entity) {
         var level = getLevel(entity);
-        return gunnerDelay[level - 1];
+        var type = getType(entity);
+        return switch (type) {
+            case GUNNER -> gunnerDelay[level - 1];
+            case FLAMETHROWER -> flamethrowerDelay[level - 1];
+            default -> 20f;
+        };
     }
 
     private Type getEnum(int id) {
@@ -924,6 +1046,10 @@ public class GuardManager {
         } else {
             return damager;
         }
+    }
+
+    public boolean isGuardProjectile(Entity entity) {
+        return entity.getPersistentDataContainer().has(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance);
     }
 
     private class EventListener implements Listener {
@@ -1099,7 +1225,7 @@ public class GuardManager {
 
                 var trueDamager = getTrueDamager(damager);
                 if (damager instanceof Projectile) {
-                    if (!isGuardArrow(damager)) {
+                    if (!isGuardProjectile(damager)) {
                         if (damager instanceof Trident) {
                         } else {
                             damager.remove();
@@ -1158,19 +1284,16 @@ public class GuardManager {
                     return;
                 }
             } else {
-                if (damager instanceof Arrow && isGuardArrow(damager) && entity instanceof Player) {
+                if (damager instanceof Arrow && isGuardProjectile(damager) && entity instanceof Player) {
                     event.setDamage(((Arrow) damager).getDamage());
                     guardDamage.remove(entity);
                     guardDamage.put((Player) entity, entity.getName() + " was shot by a Guard Crystal");
 
-                } else {
+                } else if (damager instanceof Item && isGuardProjectile(damager) && entity instanceof Player) {
                     guardDamage.remove(entity);
+                    guardDamage.put((Player) entity, entity.getName() + " was burned by a Guard Crystal");
                 }
             }
-        }
-
-        public boolean isGuardArrow(Entity entity) {
-            return entity.getPersistentDataContainer().has(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance);
         }
 
         public String getKillMessage(Entity damager, Entity guard) {

@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.Items;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.entities.Entities;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -611,6 +612,23 @@ public class Items {
                 event.setCancelled(true);
                 return;
             }
+            if (item.getItemStack().getType() == BLAZE_POWDER && GuardManager.getInstance().isGuardProjectile(item)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        @EventHandler
+        private void onItemMerge(ItemMergeEvent event) {
+            var item = event.getEntity();
+            if (isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
+                event.setCancelled(true);
+                return;
+            }
+            if (item.getItemStack().getType() == BLAZE_POWDER && GuardManager.getInstance().isGuardProjectile(item)) {
+                event.setCancelled(true);
+                return;
+            }
         }
 
         @EventHandler
@@ -619,6 +637,10 @@ public class Items {
             var item = drop.getItemStack();
             if (item == null) return;
             if (isGrenade(item) && item.getType() == Material.TNT) {
+                event.setCancelled(true);
+                return;
+            }
+            if (item.getType() == BLAZE_POWDER && GuardManager.getInstance().isGuardProjectile(drop)) {
                 event.setCancelled(true);
                 return;
             }
@@ -679,6 +701,9 @@ public class Items {
                 if (lookingAt != null) {
                     var lookingItem = lookingAt.getItemStack();
                     if (isGrenade(lookingItem) && lookingItem.getType() == Material.TNT) return;
+                    if (lookingItem.getType() == BLAZE_POWDER && GuardManager.getInstance().isGuardProjectile(lookingAt)) {
+                        return;
+                    }
                     event.setUseItemInHand(Event.Result.DENY);
                     event.setCancelled(true);
 
