@@ -2508,6 +2508,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         if (diplomacyOutlaw == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Unknown Player.");
+            return;
         }
 
         var outlaw = diplomacyOutlaw.getOfflinePlayer();

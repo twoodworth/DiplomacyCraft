@@ -173,7 +173,7 @@ public class GuardGuis {
                 new ItemStack(material),
                 click -> {
                     var clicker = click.getEvent().getWhoClicked();
-                    GuardManager.getInstance().setAttackAllies(guard, !isOn);
+                    GuardManager.getInstance().setAttackNewbies(guard, !isOn);
                     ((Player) clicker).playSound(clicker.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 1);
                     var nGui = generateGui(guard, viewer);
                     nGui.show(clicker);
@@ -682,7 +682,7 @@ public class GuardGuis {
                             return true;
                         },
                         ChatColor.DARK_PURPLE + "Tank - Click to upgrade",
-                        ChatColor.GRAY + "Has high health, is highly resistant, and fires powerful projectiles",
+                        ChatColor.GRAY + "Has high health, is highly resistant, and fires explosive missiles",
                         " ",
                         ChatColor.BLUE + "Cost:",
                         ChatColor.GRAY + "- 1x Shulker Shell",
@@ -903,7 +903,7 @@ public class GuardGuis {
                 ));
                 return gui;
             }
-            case SNIPER, GUNNER -> {
+            case SNIPER, GUNNER, TANK -> {
                 var level = GuardManager.getInstance().getLevel(guard);
                 // title
                 var title = GuardManager.getInstance().getTypePrefix(guard) + ChatColor.DARK_GRAY + " Guard Menu";

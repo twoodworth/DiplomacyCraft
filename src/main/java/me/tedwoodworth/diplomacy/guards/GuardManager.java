@@ -7,6 +7,7 @@ import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -34,7 +35,6 @@ public class GuardManager {
     private final Set<Player> interactSet = new HashSet<>();
     private HashMap<Player, String> guardDamage = new HashMap<>();
     private HashMap<DiplomacyPlayer, HashSet<Nation>> autoOutlaw = new HashMap<>();
-
     // Math stuff
     private final double GRAVITY_CONSTANT = 0.05;
     private final double DRAG = 0.01;
@@ -60,6 +60,7 @@ public class GuardManager {
     private final float[] sniperResistance = new float[100];
     private final float[] sniperRadius = new float[100];
     private final float[] sniperPower = new float[100];
+    private final int SNIPER_DELAY = 80;
 
     // gunner
     private final short[] gunnerCost = new short[100];
@@ -71,12 +72,19 @@ public class GuardManager {
     private final float[] gunnerPower = new float[100];
     private final float[] gunnerDelay = new float[100];
 
+    // tank
+    private final short[] tankCost = new short[100];
+    private final float[] tankMaxHealth = new float[100];
+    private final float[] tankResistance = new float[100];
+    private final float[] tankVelocity = new float[100];
+    private final float[] tankPower = new float[100];
+    private final int TANK_DELAY = 160;
+
 
     // healer
     private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
-    private final int SNIPER_DELAY = 80;
 
 
     public static GuardManager getInstance() {
@@ -126,6 +134,14 @@ public class GuardManager {
             gunnerPower[i] = (float) (10.0 * Math.pow(1.004, i) - 5.0);
             gunnerRadius[i] = (float) (16.0 * Math.pow(1.0141, 0.5 * i));
             gunnerDelay[i] = (float) (30.0 * Math.pow(0.977, i));
+
+            // tank
+            tankCost[i] = (short) (Math.pow(1.055, i));
+            tankMaxHealth[i] = (float) ((int) (200.0 * Math.pow(1.01244, i) - 180.0));
+            tankResistance[i] = (float) (1.0 - Math.pow(0.97, i));
+            tankVelocity[i] = (float) Math.pow(1.013, i);
+            tankPower[i] = (float) (4.0 * Math.pow(1.008, i) - 3.35);
+
         }
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
 
@@ -174,6 +190,175 @@ public class GuardManager {
         arrow.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
         trackNewArrow(arrow, guard);
         return arrow;
+    }
+
+    private void fireMissile(Location targetLoc, Location guardLoc, float speed, Entity guard, long time) {
+        guard.getWorld().playSound(guard.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.25f, 1.0f);
+        var stack = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.THROWN_GRENADE, 1);
+        var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
+        var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
+        var vel = vec.clone();
+        vel.multiply(speed);
+        var drop = guard.getWorld().dropItem(aLoc, stack);
+        drop.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
+        drop.setVelocity(vel);
+        drop.setPickupDelay(1000);
+        drop.setGravity(false);
+        var power = getPower(guard);
+        missileTick(drop, time, power, false);
+    }
+
+    private Location getNextLocation(Item item) {
+        var location = item.getLocation();
+        var velocity = item.getVelocity();
+        return new Location(location.getWorld(), location.getX() + velocity.getX(), location.getY() + velocity.getY(), location.getZ() + velocity.getZ());
+    }
+
+    private boolean entityCollision(Item item, Location location, Location nextLocation) {
+        var xDist = Math.abs(location.getX() - nextLocation.getX());
+        var yDist = Math.abs(location.getY() - nextLocation.getY());
+        var zDist = Math.abs(location.getZ() - nextLocation.getZ());
+
+        var nearby = item.getNearbyEntities(xDist, yDist, zDist);
+        if (nearby.size() == 0) return false;
+        else {
+            var x = location.getX();
+            var y = location.getY();
+            var z = location.getZ();
+            var v = item.getVelocity();
+            var vX = v.getX();
+            var vY = v.getY();
+            var vZ = v.getZ();
+            for (int i = 1; i <= 10; i++) {
+                x += vX / 10.0;
+                y += vY / 10.0;
+                z += vZ / 10.0;
+                for (var entity : nearby) {
+                    if (isGuard(entity)) continue;
+                    var box = entity.getBoundingBox();
+                    if (box.contains(x, y, z)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+    private void missileTick(Item item, long curTime, float power, boolean isExploding) {
+        if (curTime == 0 || isExploding) {
+            item.getWorld().createExplosion(item.getLocation(), power, false, false, item);
+            item.remove();
+            return;
+        }
+        var location = item.getLocation();
+        var location2 = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());
+        var velocity = item.getVelocity();
+        location2.setY(item.getLocation().getY() + 0.25);
+        item.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, location2, 1, 0.05, 0.05, 0.05, 0);
+        var nextLocation = getNextLocation(item);
+        if (location.getBlock().isLiquid()) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+            return;
+        }
+
+        if (entityCollision(item, item.getLocation(), nextLocation)) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+            return;
+        }
+        var vLength = velocity.length();
+
+        // X-axis check
+        var magnitude = Math.abs(nextLocation.getBlockX() - location.getBlockX());
+        if (velocity.getX() > 0 && nextLocation.getBlockX() - location.getBlockX() >= 1) {
+            var colliding = true;
+            for (int i = 1; i <= magnitude; i++) {
+                if (item.getWorld().getBlockAt(location.getBlockX() + i, location.getBlockY(), location.getBlockZ()).isPassable()) {
+                    colliding = false;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+        } else if (velocity.getX() < 0
+                && nextLocation.getBlockX() - location.getBlockX() <= -1) {
+            var colliding = false;
+            for (int i = 1; i <= magnitude; i++) {
+                if (!item.getWorld().getBlockAt(location.getBlockX() - i, location.getBlockY(), location.getBlockZ()).isPassable()) {
+                    colliding = true;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+        }
+
+        // Y-axis check
+        magnitude = Math.abs(nextLocation.getBlockY() - location.getBlockY());
+        if (velocity.getY() > 0
+                && nextLocation.getBlockY() - location.getBlockY() >= 1) {
+            var colliding = true;
+            for (int i = 1; i <= magnitude; i++) {
+                if (item.getWorld().getBlockAt(location.getBlockX(), location.getBlockY() + i, location.getBlockZ()).isPassable()) {
+                    colliding = false;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+
+        } else if (velocity.getY() < 0
+                && nextLocation.getBlockY() - location.getBlockY() <= -1) {
+            var colliding = false;
+            for (int i = 1; i <= magnitude; i++) {
+                if (!item.getWorld().getBlockAt(location.getBlockX(), location.getBlockY() - i, location.getBlockZ()).isPassable()) {
+                    colliding = true;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+        }
+
+        // Z-axis check
+        magnitude = Math.abs(nextLocation.getBlockZ() - location.getBlockZ());
+        if (velocity.getZ() > 0
+                && nextLocation.getBlockZ() - location.getBlockZ() >= 1) {
+            var colliding = true;
+            for (int i = 1; i <= magnitude; i++) {
+                if (item.getWorld().getBlockAt(location.getBlockX(), location.getBlockY(), location.getBlockZ() + i).isPassable()) {
+                    colliding = false;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+        } else if (velocity.getZ() < 0
+                && nextLocation.getBlockZ() - location.getBlockZ() <= -1) {
+            var colliding = false;
+            for (int i = 1; i <= magnitude; i++) {
+                if (!item.getWorld().getBlockAt(location.getBlockX(), location.getBlockY(), location.getBlockZ() - i).isPassable()) {
+                    colliding = true;
+                    break;
+                }
+            }
+            if (colliding) {
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, true), 1L);
+                return;
+            }
+        }
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> missileTick(item, curTime - 1L, power, false), 1L);
     }
 
     private void onGunnerTick(Entity guard) {
@@ -268,6 +453,38 @@ public class GuardManager {
                         }, (long) (Math.random() * (SNIPER_DELAY * 0.4)));
                     }
                 }
+                case TANK -> {
+                    if (i % (TANK_DELAY / GUARD_TICK_DELAY) == 0) {
+                        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                            var radius = 50.0;
+                            var speed = getProjectileVelocity(guard);
+                            var nearby = guard.getNearbyEntities(radius, radius, radius);
+                            var gLoc = guard.getLocation();
+                            var gNation = getNation(guard);
+                            Player closest = null;
+                            double distance = Double.MAX_VALUE;
+                            Location loc = null;
+                            for (var entity : nearby) {
+                                if (entity instanceof Player && canAttackPlayer((Player) entity, guard) && Objects.equals(gNation, getNation(entity))) {
+                                    var pLoc = ((Player) entity).getEyeLocation();
+                                    pLoc.setY(pLoc.getY() - 0.5);
+                                    var d = gLoc.distanceSquared(pLoc);
+                                    if (d < distance) {
+                                        distance = d;
+                                        closest = (Player) entity;
+                                        loc = pLoc;
+                                    }
+                                }
+                            }
+
+                            if (closest != null) {
+                                var d = Math.sqrt(distance);
+                                var ticks = (long) (d / speed * 1.2);
+                                fireMissile(loc, gLoc, speed, guard, ticks);
+                            }
+                        }, (long) (Math.random() * (TANK_DELAY * 0.4)));
+                    }
+                }
                 case HEALER -> {
                     if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) { // only 1/10 ticks
                         var radius = getRadius(guard);
@@ -350,13 +567,13 @@ public class GuardManager {
         var container = entity.getPersistentDataContainer();
 
         // type
-        container.set(TYPE_KEY, PersistentDataType.BYTE, (byte)0);
+        container.set(TYPE_KEY, PersistentDataType.BYTE, (byte) 0);
 
         // health
         container.set(HEALTH_KEY, PersistentDataType.FLOAT, 20.00f);
 
         // level
-        container.set(LEVEL_KEY, PersistentDataType.SHORT, (short)0);
+        container.set(LEVEL_KEY, PersistentDataType.SHORT, (short) 0);
 
         // preferences
         container.set(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance, true);
@@ -403,12 +620,15 @@ public class GuardManager {
             default -> (short) 1;
             case SNIPER -> sniperCost[level];
             case GUNNER -> gunnerCost[level];
+            case TANK -> tankCost[level];
         };
     }
 
     public void setLevel(Entity entity, int level) {
+        var cur = getMaxHealth(entity);
         entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short) level);
-        setHealth(entity, getHealth(entity));
+        var change = getMaxHealth(entity) - cur;
+        setHealth(entity, getHealth(entity) + change);
     }
 
     public Type getType(Entity entity) {
@@ -461,8 +681,8 @@ public class GuardManager {
         if (curType != Type.BASIC || type == Type.BASIC) return false;
 
         var id = type.ordinal();
-        entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.BYTE, (byte)id);
-        entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short)1);
+        entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.BYTE, (byte) id);
+        entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short) 1);
         switch (type) {
             case HEALER -> {
                 setHealerRate(entity, (short) 0);
@@ -478,7 +698,7 @@ public class GuardManager {
     }
 
     public void setHealth(Entity entity, double health) {
-        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.FLOAT, (float)health);
+        entity.getPersistentDataContainer().set(HEALTH_KEY, PersistentDataType.FLOAT, (float) health);
         var strHealth = String.format("%.2f", health);
         entity.setCustomName(getTypePrefix(entity) + strHealth + " HP");
     }
@@ -521,6 +741,8 @@ public class GuardManager {
         return switch (type) {
             default -> 0.0f;
             case SNIPER -> sniperResistance[level - 1];
+            case GUNNER -> gunnerResistance[level - 1];
+            case TANK -> tankResistance[level - 1];
         };
     }
 
@@ -531,6 +753,7 @@ public class GuardManager {
             default -> 20.0f;
             case SNIPER -> sniperMaxHealth[level - 1];
             case GUNNER -> gunnerMaxHealth[level - 1];
+            case TANK -> tankMaxHealth[level - 1];
         };
     }
 
@@ -547,7 +770,7 @@ public class GuardManager {
     public float getPrecision(Entity entity) {
         var level = getLevel(entity);
         var type = getType(entity);
-        return switch(type) {
+        return switch (type) {
             default -> 90.0f;
             case SNIPER -> sniperPrecision[level - 1];
             case GUNNER -> gunnerPrecision[level - 1];
@@ -557,10 +780,11 @@ public class GuardManager {
     public float getProjectileVelocity(Entity entity) {
         var level = getLevel(entity);
         var type = getType(entity);
-        return switch(type) {
+        return switch (type) {
             default -> 0.0f;
             case SNIPER -> sniperVelocity[level - 1];
             case GUNNER -> gunnerVelocity[level - 1];
+            case TANK -> tankVelocity[level - 1];
         };
     }
 
@@ -571,6 +795,7 @@ public class GuardManager {
             default -> 0.0f;
             case SNIPER -> sniperPower[level - 1];
             case GUNNER -> gunnerPower[level - 1];
+            case TANK -> tankPower[level - 1];
         };
     }
 
@@ -847,8 +1072,6 @@ public class GuardManager {
                         menu.show(player);
                     }
                 }
-
-
             }
         }
 
