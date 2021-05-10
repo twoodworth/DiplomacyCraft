@@ -25,6 +25,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
 
@@ -86,8 +88,7 @@ public class GuardManager {
     private final float[] flamethrowerPower = new float[100];
     private final float[] flamethrowerDelay = new float[100];
     private final short[] flamethrowerBurnTime = new short[100];
-    private final float[] flamesPerTick = new float[100];
-    private final NamespacedKey FLAME_LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "flame_level");
+    private final short[] flamesPerTick = new short[100];
 
     // healer
     private final short[] healerCost = new short[100];
@@ -95,12 +96,20 @@ public class GuardManager {
     private final float[] healerResistance = new float[100];
     private final float[] healerPower = new float[100];
     private final float[] healerRadius = new float[100];
+    private final int HEALER_DELAY = 30;
 
+    // snowballer
+    private final short[] snowmakerCost = new short[100];
+    private final float[] snowmakerMaxHealth = new float[100];
+    private final  float[] snowmakerResistance = new float[100];
+    private final short[] snowmakerPower = new short[100];
+    private final float[] snowmakerDelay = new float[100];
+    private final short[] snowmakerSlowTime = new short[100];
+    private final short[] snowmakerBallsPerTick = new short[100];
 
-    // healer
+    // all
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
-    private final int HEALER_DELAY = 30;
 
 
     public static GuardManager getInstance() {
@@ -113,6 +122,7 @@ public class GuardManager {
     private GuardManager() {
         var gunners = new HashSet<Entity>();
         var flamethrowers = new HashSet<Entity>();
+        var snowmakers = new HashSet<Entity>();
         for (var nation : Nations.getInstance().getNations()) {
             var dChunks = nation.getChunks();
             for (var dChunk : dChunks) {
@@ -123,10 +133,11 @@ public class GuardManager {
                 for (var entity : entities) {
                     if (isGuard(entity)) {
                         guards.add(entity);
-                        if (getType(entity) == Type.GUNNER) {
-                            gunners.add(entity);
-                        } else if (getType(entity) == Type.FLAMETHROWER) {
-                            flamethrowers.add(entity);
+                        var type = getType(entity);
+                        switch (type) {
+                            case GUNNER -> gunners.add(entity);
+                            case FLAMETHROWER -> flamethrowers.add(entity);
+                            case SNOWMAKER -> snowmakers.add(entity);
                         }
                     }
                 }
@@ -177,6 +188,15 @@ public class GuardManager {
             healerPower[i] = (float) (0.5 * (Math.pow(1.000954, i + 1) - 1));
             healerRadius[i] = sniperRadius[i];
 
+            // snowmaker
+            snowmakerCost[i] = sniperCost[i];
+            snowmakerMaxHealth[i] = sniperMaxHealth[i];
+            snowmakerResistance[i] = sniperResistance[i];
+            snowmakerPower[i] = (short) (Math.pow(1.017, i) - 1.0);
+            snowmakerDelay[i] = flamethrowerDelay[i];
+            snowmakerSlowTime[i] = (short) (29.0 + Math.pow(1.05, i));
+            snowmakerBallsPerTick[i] = flamesPerTick[i];
+
 
         }
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGuardTick(0), 0L);
@@ -186,6 +206,9 @@ public class GuardManager {
         }
         for (var flamethrower : flamethrowers) {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(flamethrower), 0L);
+        }
+        for (var snowmaker : snowmakers) {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onSnowmakerTick(snowmaker), 0L);
         }
     }
 
@@ -283,7 +306,7 @@ public class GuardManager {
         var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
         var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
         var drop = guard.getWorld().dropItem(aLoc, stack);
-        drop.getPersistentDataContainer().set(FLAME_LEVEL_KEY, PersistentDataType.SHORT, level);
+        drop.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, level);
         drop.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
         var variation = 0.1;
         vec.setX(vec.getX() + Math.random() * variation - 0.5 * variation);
@@ -300,6 +323,26 @@ public class GuardManager {
                 },
                 30L
         );
+    }
+
+    private void fireSnowball(Location targetLoc, Location guardLoc, Entity guard, short level) {
+        var guardY = guardLoc.getY() + 0.5;
+        var targY = targetLoc.getY();
+        guardLoc.setY(guardY);
+        targetLoc.setY(targY + Math.abs(targY - guardY) * 0.4);
+        var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
+        var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
+        var ball = guardLoc.getWorld().spawn(aLoc, Snowball.class);
+        ball.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, level);
+        ball.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
+        trackedProjectiles.put(ball, guard);
+        var variation = 0.1;
+        vec.setX(vec.getX() + Math.random() * variation - 0.5 * variation);
+        vec.setY(vec.getY() + Math.random() * variation - 0.5 * variation);
+        vec.setZ(vec.getZ() + Math.random() * variation - 0.5 * variation);
+        vec.multiply(1.5);
+        ball.setVelocity(vec);
+        guard.getWorld().playSound(guardLoc, Sound.ENTITY_SNOWBALL_THROW, 1.0f, 1.0f);
     }
 
     private void fireMissile(Location targetLoc, Location guardLoc, float speed, Entity guard, long time) {
@@ -354,7 +397,6 @@ public class GuardManager {
         }
         return false;
     }
-
 
     private void missileTick(Item item, long curTime, float power, boolean isExploding) {
         if (curTime == 0 || isExploding) {
@@ -513,6 +555,50 @@ public class GuardManager {
         var remainder = lDelay - delay;
         if (Math.random() < remainder) lDelay++;
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(guard), lDelay);
+    }
+
+    private void onSnowmakerTick(Entity guard) {
+        if (guard.isDead()) {
+            return;
+        }
+        var delay = getDelay(guard);
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+            if (guard.isDead()) {
+                return;
+            }
+            var radius = 16.0f;
+            var nearby = guard.getNearbyEntities(radius, radius, radius);
+            var gLoc = guard.getLocation();
+            var gNation = getNation(guard);
+            Player closest = null;
+            double distance = Double.MAX_VALUE;
+            Location loc = null;
+            for (var entity : nearby) {
+                if (entity instanceof Player && canAttackPlayer((Player) entity, guard) && Objects.equals(gNation, getNation(entity))) {
+                    var pLoc = ((Player) entity).getEyeLocation();
+                    pLoc.setY(pLoc.getY() - 0.5);
+                    var d = gLoc.distanceSquared(pLoc);
+                    if (d < distance) {
+                        distance = d;
+                        closest = (Player) entity;
+                        loc = pLoc;
+                    }
+                }
+            }
+
+            if (closest != null) {
+                var level = getLevel(guard);
+                var amount = snowmakerBallsPerTick[level - 1];
+                for (int i = 0; i < amount; i++) {
+                    fireSnowball(loc, gLoc, guard, level);
+                }
+            }
+        }, (long) (Math.random() * (delay * 0.4)));
+
+        var lDelay = (long) delay;
+        var remainder = lDelay - delay;
+        if (Math.random() < remainder) lDelay++;
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onSnowmakerTick(guard), lDelay);
     }
 
     private void onGunnerTick(Entity guard) {
@@ -677,7 +763,7 @@ public class GuardManager {
             for (var entity : nearby) {
                 var guard = flames.get(flame);
                 if (entity instanceof Player && canAttackPlayer((Player) entity, guard)) {
-                    var level = flame.getPersistentDataContainer().get(FLAME_LEVEL_KEY, PersistentDataType.SHORT);
+                    var level = flame.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
                     var burnTime = flamethrowerBurnTime[level - 1];
                     var damage = flamethrowerPower[level - 1];
                     ((LivingEntity) entity).damage(damage, flame);
@@ -686,7 +772,7 @@ public class GuardManager {
                     flame.remove();
                     break;
                 } else if (entity instanceof LivingEntity) {
-                    var level = flame.getPersistentDataContainer().get(FLAME_LEVEL_KEY, PersistentDataType.SHORT);
+                    var level = flame.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
                     var burnTime = flamethrowerBurnTime[level - 1];
                     var damage = flamethrowerPower[level - 1];
                     ((LivingEntity) entity).damage(damage, flame);
@@ -799,6 +885,7 @@ public class GuardManager {
             case TANK -> tankCost[level];
             case FLAMETHROWER -> flamethrowerCost[level];
             case HEALER -> healerCost[level];
+            case SNOWMAKER -> snowmakerCost[level];
         };
     }
 
@@ -864,6 +951,7 @@ public class GuardManager {
         switch (type) {
             case GUNNER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGunnerTick(entity), 0L);
             case FLAMETHROWER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(entity), 0L);
+            case SNOWMAKER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onSnowmakerTick(entity), 0L);
         }
         setHealth(entity, getHealth(entity));
         return true;
@@ -894,6 +982,7 @@ public class GuardManager {
             case TANK -> tankResistance[level - 1];
             case FLAMETHROWER -> flamethrowerResistance[level - 1];
             case HEALER -> healerResistance[level - 1];
+            case SNOWMAKER -> snowmakerResistance[level - 1];
         };
     }
 
@@ -907,6 +996,7 @@ public class GuardManager {
             case TANK -> tankMaxHealth[level - 1];
             case FLAMETHROWER -> flamethrowerMaxHealth[level - 1];
             case HEALER -> healerMaxHealth[level - 1];
+            case SNOWMAKER -> snowmakerMaxHealth[level - 1];
         };
     }
 
@@ -960,6 +1050,7 @@ public class GuardManager {
         return switch (type) {
             case GUNNER -> gunnerDelay[level - 1];
             case FLAMETHROWER -> flamethrowerDelay[level - 1];
+            case SNOWMAKER -> snowmakerDelay[level - 1];
             default -> 20f;
         };
     }
@@ -1175,13 +1266,30 @@ public class GuardManager {
 
 
         @EventHandler
-        private void arrowHit(ProjectileHitEvent event) {
+        private void projectileHit(ProjectileHitEvent event) {
             var entity = event.getEntity();
             var hit = event.getHitEntity();
-            if (hit != null && trackedProjectiles.containsKey(entity) && hit instanceof Player) {
-                var guard = trackedProjectiles.get(entity);
-                if (!canAttackPlayer((Player) hit, guard)) {
-                    entity.setBounce(true);
+            if (hit != null && trackedProjectiles.containsKey(entity)) {
+                if (hit instanceof Player) {
+                    var guard = trackedProjectiles.get(entity);
+                    if (!canAttackPlayer((Player) hit, guard)) {
+                        entity.setBounce(true);
+                    }
+                }
+                if (!entity.doesBounce() && entity instanceof Snowball && hit instanceof LivingEntity) {
+                    var level = entity.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
+                    var power = snowmakerPower[level - 1];
+                    var length = snowmakerSlowTime[level - 1];
+                    var living = ((LivingEntity) hit);
+                    var effect = new PotionEffect(PotionEffectType.SLOW, length, power, true, true, true);
+                    living.addPotionEffect(effect);
+                    living.getWorld().playSound(living.getLocation(), Sound.BLOCK_SNOW_PLACE, 1.5f, 1f);
+                    var vel = living.getVelocity();
+                    var ballVel = entity.getVelocity();
+                    ballVel.normalize();
+                    ballVel.multiply(0.1);
+                    vel.add(ballVel);
+                    living.setVelocity(vel);
                 }
             }
             trackedProjectiles.remove(entity);

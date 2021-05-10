@@ -903,7 +903,7 @@ public class GuardGuis {
                 ));
                 return gui;
             }
-            case SNIPER, GUNNER, TANK, FLAMETHROWER, HEALER -> {
+            case SNIPER, GUNNER, TANK, FLAMETHROWER, HEALER, SNOWMAKER -> {
                 // title
                 var title = GuardManager.getInstance().getTypePrefix(guard) + ChatColor.DARK_GRAY + " Guard Menu";
 
