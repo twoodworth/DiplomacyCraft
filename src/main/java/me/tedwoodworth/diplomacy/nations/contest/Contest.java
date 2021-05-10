@@ -238,7 +238,7 @@ public class Contest {
         var particle = Particle.REDSTONE;
         Particle.DustOptions dustOptions;
         if (isWilderness) {
-            dustOptions = new Particle.DustOptions(Color.fromRGB(220, 220, 220), 1);
+            dustOptions = new Particle.DustOptions(Color.fromRGB(220, 220, 220), 4.0f);
         } else {
             var defendingNationIsWilderness = Nations.isWilderness(defendingNation);
             var isAttackingNationAlly = attackingNation.getAllyNationIDs().contains(nation.getNationID());
@@ -247,13 +247,13 @@ public class Contest {
             var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
 
             if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-                dustOptions = new Particle.DustOptions(Color.LIME, 1);
+                dustOptions = new Particle.DustOptions(Color.LIME, 4.0f);
             } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-                dustOptions = new Particle.DustOptions(Color.RED, 1);
+                dustOptions = new Particle.DustOptions(Color.RED, 4.0f);
             } else if (isDefendingNationAlly) {
-                dustOptions = new Particle.DustOptions(Color.YELLOW, 1);
+                dustOptions = new Particle.DustOptions(Color.YELLOW, 4.0f);
             } else {
-                dustOptions = new Particle.DustOptions(Color.AQUA, 1);
+                dustOptions = new Particle.DustOptions(Color.AQUA, 4.0f);
             }
         }
         var min = Math.max(0, player.getLocation().getBlockY() - 17);

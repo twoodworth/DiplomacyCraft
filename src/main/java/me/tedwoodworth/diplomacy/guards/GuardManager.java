@@ -32,11 +32,10 @@ public class GuardManager {
     public static GuardManager instance = null;
     private final Set<Entity> guards = new HashSet<>();
     private final Set<Player> interactSet = new HashSet<>();
-    private HashMap<Player, String> guardDamage = new HashMap<>();
-    private HashMap<DiplomacyPlayer, HashSet<Nation>> autoOutlaw = new HashMap<>();
+    private final HashMap<Player, String> guardDamage = new HashMap<>();
+    private final HashMap<DiplomacyPlayer, HashSet<Nation>> autoOutlaw = new HashMap<>();
     // Math stuff
     private final double GRAVITY_CONSTANT = 0.05;
-    private final double DRAG = 0.01;
 
     // all guards
     private final NamespacedKey LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_level");
@@ -80,7 +79,7 @@ public class GuardManager {
     private final int TANK_DELAY = 160;
 
     // flamethrower
-    private Set<Item> flames = new HashSet<>();
+    private final Map<Item, Entity> flames = new HashMap<>();
     private final short[] flamethrowerCost = new short[100];
     private final float[] flamethrowerMaxHealth = new float[100];
     private final float[] flamethrowerResistance = new float[100];
@@ -90,11 +89,18 @@ public class GuardManager {
     private final float[] flamesPerTick = new float[100];
     private final NamespacedKey FLAME_LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "flame_level");
 
+    // healer
+    private final short[] healerCost = new short[100];
+    private final float[] healerMaxHealth = new float[100];
+    private final float[] healerResistance = new float[100];
+    private final float[] healerPower = new float[100];
+    private final float[] healerRadius = new float[100];
+
 
     // healer
-    private final NamespacedKey HEALER_RATE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_healer_rate");
     private final int GUARD_TICK_DELAY = 2;
     private final int GUARD_HEAL_DELAY = 10;
+    private final int HEALER_DELAY = 30;
 
 
     public static GuardManager getInstance() {
@@ -161,8 +167,15 @@ public class GuardManager {
             flamethrowerResistance[i] = sniperResistance[i];
             flamethrowerPower[i] = (float) (Math.pow(1.0112, i) - 1.0);
             flamethrowerDelay[i] = (float) (30.0 * Math.pow(0.977, (50.0 + 0.5 * i)));
-            flamethrowerBurnTime[i] = (short) (10.0 + Math.pow(1.05, i));
+            flamethrowerBurnTime[i] = (short) (19.0 + Math.pow(1.057, i));
             flamesPerTick[i] = (short) (Math.pow(1.0142, 33 + (0.67 * i)));
+
+            // healer
+            healerCost[i] = sniperCost[i];
+            healerMaxHealth[i] = (float) ((int) (20.0 * Math.pow(1.0164, i)));
+            healerResistance[i] = (float) (1.0 - Math.pow(0.9948, i));
+            healerPower[i] = (float) (0.5 * (Math.pow(1.000954, i + 1) - 1));
+            healerRadius[i] = sniperRadius[i];
 
 
         }
@@ -174,6 +187,48 @@ public class GuardManager {
         for (var flamethrower : flamethrowers) {
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(flamethrower), 0L);
         }
+    }
+
+    private boolean fireHealBeam(Entity healer, Entity target) {
+        //T to H
+        var tLoc = target.getLocation();
+        tLoc.setY(tLoc.getY() + 0.65);
+        var hLoc = healer.getLocation();
+        hLoc.setY(hLoc.getY() + 0.65);
+        var vector = hLoc.toVector().subtract(tLoc.toVector());
+        var j = Math.floor(vector.length());
+        var world = target.getWorld();
+        var locations = new ArrayList<Location>();
+        for (int i = 0; i <= j; i++) {
+            vector = tLoc.toVector().subtract(hLoc.toVector());
+            vector.multiply(1 / vector.length());
+            var loc = (hLoc.toVector().add(vector.multiply(i))).toLocation(world);
+            locations.add(loc);
+            var block = world.getBlockAt(loc);
+            if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
+                return false;
+            }
+        }
+        tickHealBeam(0, j, target, locations, world, HEALER_DELAY * GUARD_TICK_DELAY * getPower(healer));
+        return true;
+    }
+
+    private void tickHealBeam(int i, final double j, Entity target, ArrayList<Location> locations, World world, float healthBoost) {
+        if (i == j) {
+            if (!target.isDead()) {
+                var max = getMaxHealth(target);
+                setHealth(target, Math.min(max, getHealth(target) + healthBoost));
+            }
+            return;
+        }
+        var dustOptions = new Particle.DustOptions(Color.fromRGB(255, 50, 120), 3.0f);
+        var location = locations.get(i);
+        world.spawnParticle(Particle.REDSTONE, location, 1, dustOptions);
+        var block = world.getBlockAt(location);
+        if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
+            return;
+        }
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> tickHealBeam(i + 1, j, target, locations, world, healthBoost), 1L);
     }
 
     private double adjustHeight(Location guardLoc, Location targetLoc, float speed) {
@@ -214,12 +269,12 @@ public class GuardManager {
         aLoc.getWorld().playSound(aLoc, Sound.ENTITY_ARROW_SHOOT, 1, 1);
         arrow.setDamage(getPower(guard));
         arrow.getPersistentDataContainer().set(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance, true);
-        trackNewArrow(arrow, guard);
+        trackNewProjectile(arrow, guard);
         return arrow;
     }
 
     private void spawnFlame(Location targetLoc, Location guardLoc, Entity guard, short level) {
-        var guardY= guardLoc.getY() + 0.5;
+        var guardY = guardLoc.getY() + 0.5;
         var targY = targetLoc.getY();
         guardLoc.setY(guardY);
         targetLoc.setY(targY + Math.abs(targY - guardY) * 0.4);
@@ -236,7 +291,7 @@ public class GuardManager {
         vec.setZ(vec.getZ() + Math.random() * variation - 0.5 * variation);
         drop.setVelocity(vec);
         drop.setPickupDelay(1000);
-        flames.add(drop);
+        flames.put(drop, guard);
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
                     if (!drop.isDead()) {
                         flames.remove(drop);
@@ -504,8 +559,12 @@ public class GuardManager {
 
     private void onGuardTick(int i) {
         var healMap = new HashMap<Entity, Integer>();
-        for (var guard : guards) {
-            if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) {
+        var isHealTick = i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0;
+        for (var guard : new HashSet<>(guards)) {
+            if (guard.isDead()) {
+                guards.remove(guard);
+            }
+            if (isHealTick) {
                 var health = getHealth(guard);
                 var max = getMaxHealth(guard);
                 if (health < max) {
@@ -581,37 +640,31 @@ public class GuardManager {
                     }
                 }
                 case HEALER -> {
-                    if (i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0) { // only 1/10 ticks
+                    if (i % (HEALER_DELAY / GUARD_TICK_DELAY) == 0) { // only 1/10 ticks
                         var radius = getRadius(guard);
                         var nearby = guard.getNearbyEntities(radius, radius, radius);
                         var nation = getNation(guard);
-                        var percent = 1.0;
-                        Entity lowest = null;
-                        var lowestHealth = 0.0;
-                        var lowestMax = 0.0;
+                        var valid = new ArrayList<Entity>();
                         for (var entity : nearby) {
-                            if (isGuard(entity) && Objects.equals(nation, getNation(entity)) && !(healMap.containsKey(entity) && healMap.get(entity) == 3)) {
+                            if (isGuard(entity) && !entity.isDead() && Objects.equals(nation, getNation(entity)) && !(healMap.containsKey(entity) && healMap.get(entity) == 3)) {
                                 var health = getHealth(entity);
                                 var max = getMaxHealth(entity);
-                                var temp = health / max;
-                                if (temp < percent) {
-                                    percent = temp;
-                                    lowest = entity;
-                                    lowestHealth = health;
-                                    lowestMax = max;
+                                if (health < max) {
+                                    valid.add(entity);
                                 }
                             }
                         }
-                        if (lowest != null) {
-                            ((EnderCrystal) guard).setBeamTarget(lowest.getLocation());
-                            setHealth(lowest, Math.min(lowestMax, lowestHealth + (GUARD_HEAL_DELAY * getHealerRate(guard))));
-                            if (healMap.containsKey(lowest)) {
-                                healMap.replace(lowest, healMap.get(lowest) + 1);
-                            } else {
-                                healMap.put(lowest, 1);
+                        valid.sort(Comparator.comparingDouble((p) -> getHealth(p) / getMaxHealth(p)));
+                        for (var target : valid) {
+                            var success = fireHealBeam(guard, target);
+                            if (success) {
+                                if (healMap.containsKey(target)) {
+                                    healMap.replace(target, healMap.get(target) + 1);
+                                } else {
+                                    healMap.put(target, 1);
+                                }
+                                break;
                             }
-                        } else {
-                            ((EnderCrystal) guard).setBeamTarget(null);
                         }
                     }
                 }
@@ -619,14 +672,24 @@ public class GuardManager {
         }
 
         // flames
-        for (var flame : new HashSet<>(flames)) {
+        for (var flame : new ArrayList<>(flames.keySet())) {
             var nearby = flame.getNearbyEntities(0.5, 0.5, 0.5);
             for (var entity : nearby) {
-                if (entity instanceof LivingEntity) {
+                var guard = flames.get(flame);
+                if (entity instanceof Player && canAttackPlayer((Player) entity, guard)) {
                     var level = flame.getPersistentDataContainer().get(FLAME_LEVEL_KEY, PersistentDataType.SHORT);
                     var burnTime = flamethrowerBurnTime[level - 1];
                     var damage = flamethrowerPower[level - 1];
-                    ((LivingEntity)entity).damage(damage, flame);
+                    ((LivingEntity) entity).damage(damage, flame);
+                    entity.setFireTicks(Math.max(entity.getFireTicks(), burnTime));
+                    flames.remove(flame);
+                    flame.remove();
+                    break;
+                } else if (entity instanceof LivingEntity) {
+                    var level = flame.getPersistentDataContainer().get(FLAME_LEVEL_KEY, PersistentDataType.SHORT);
+                    var burnTime = flamethrowerBurnTime[level - 1];
+                    var damage = flamethrowerPower[level - 1];
+                    ((LivingEntity) entity).damage(damage, flame);
                     entity.setFireTicks(Math.max(entity.getFireTicks(), burnTime));
                     flames.remove(flame);
                     flame.remove();
@@ -735,6 +798,7 @@ public class GuardManager {
             case GUNNER -> gunnerCost[level];
             case TANK -> tankCost[level];
             case FLAMETHROWER -> flamethrowerCost[level];
+            case HEALER -> healerCost[level];
         };
     }
 
@@ -798,9 +862,6 @@ public class GuardManager {
         entity.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.BYTE, (byte) id);
         entity.getPersistentDataContainer().set(LEVEL_KEY, PersistentDataType.SHORT, (short) 1);
         switch (type) {
-            case HEALER -> {
-                setHealerRate(entity, (short) 0);
-            }
             case GUNNER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGunnerTick(entity), 0L);
             case FLAMETHROWER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(entity), 0L);
         }
@@ -823,33 +884,6 @@ public class GuardManager {
         return DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
     }
 
-    public short getShortHealerRate(Entity entity) {
-        return entity.getPersistentDataContainer().get(HEALER_RATE_KEY, PersistentDataType.SHORT);
-    }
-
-    public double getHealerRate(Entity entity) {
-        var id = entity.getPersistentDataContainer().get(HEALER_RATE_KEY, PersistentDataType.SHORT);
-        return switch (id) {
-            default -> 4.0 / 1200.0;
-            case 1 -> 6.0 / 1200.0; // 4
-            case 2 -> 9.0 / 1200.0; // 5
-            case 3 -> 13.5 / 1200.0; // 7
-            case 4 -> 20.25 / 1200.0; // 10
-            case 5 -> 30.375 / 1200.0; // 13
-            case 6 -> 45.5624 / 1200.0; // 18
-            case 7 -> 68.3436 / 1200.0; // 24
-            case 8 -> 101.0756 / 1200.0; // 32
-            case 9 -> 230.66 / 1200.0; // 59
-            case 10 -> 518.98400 / 1200.0; // 109
-        };
-    }
-
-
-    public void setHealerRate(Entity entity, short rate) {
-        entity.getPersistentDataContainer().set(HEALER_RATE_KEY, PersistentDataType.SHORT, rate);
-
-    }
-
     public float getResistance(Entity entity) {
         var type = getType(entity);
         var level = getLevel(entity);
@@ -859,6 +893,7 @@ public class GuardManager {
             case GUNNER -> gunnerResistance[level - 1];
             case TANK -> tankResistance[level - 1];
             case FLAMETHROWER -> flamethrowerResistance[level - 1];
+            case HEALER -> healerResistance[level - 1];
         };
     }
 
@@ -871,6 +906,7 @@ public class GuardManager {
             case GUNNER -> gunnerMaxHealth[level - 1];
             case TANK -> tankMaxHealth[level - 1];
             case FLAMETHROWER -> flamethrowerMaxHealth[level - 1];
+            case HEALER -> healerMaxHealth[level - 1];
         };
     }
 
@@ -881,6 +917,7 @@ public class GuardManager {
             default -> 0.0f;
             case SNIPER -> sniperRadius[level - 1];
             case GUNNER -> gunnerRadius[level - 1];
+            case HEALER -> healerRadius[level - 1];
         };
     }
 
@@ -913,6 +950,7 @@ public class GuardManager {
             case SNIPER -> sniperPower[level - 1];
             case GUNNER -> gunnerPower[level - 1];
             case TANK -> tankPower[level - 1];
+            case HEALER -> healerPower[level - 1];
         };
     }
 
@@ -956,17 +994,10 @@ public class GuardManager {
         Bukkit.getPluginManager().registerEvents(new GuardManager.EventListener(), Diplomacy.getInstance());
     }
 
-    private HashMap<Arrow, Entity> trackedArrows = new HashMap<>();
+    private HashMap<Projectile, Entity> trackedProjectiles = new HashMap<>(); // projectile entity, guard entity
 
-    public void trackNewArrow(Arrow arrow, Entity guard) {
-        trackedArrows.put(arrow, guard);
-        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> trackArrow(arrow), 1L);
-    }
-
-    private void trackArrow(Arrow arrow) {
-        if (trackedArrows.containsKey(arrow)) {
-            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> trackArrow(arrow), 1L);
-        }
+    public void trackNewProjectile(Projectile projectile, Entity guard) {
+        trackedProjectiles.put(projectile, guard);
     }
 
     public boolean canGetAutoOutlawed(Player player, Entity guard) {
@@ -1147,13 +1178,13 @@ public class GuardManager {
         private void arrowHit(ProjectileHitEvent event) {
             var entity = event.getEntity();
             var hit = event.getHitEntity();
-            if (hit != null && trackedArrows.containsKey(entity) && hit instanceof Player) {
-                var guard = trackedArrows.get(entity);
+            if (hit != null && trackedProjectiles.containsKey(entity) && hit instanceof Player) {
+                var guard = trackedProjectiles.get(entity);
                 if (!canAttackPlayer((Player) hit, guard)) {
                     entity.setBounce(true);
                 }
             }
-            trackedArrows.remove(entity);
+            trackedProjectiles.remove(entity);
         }
 
 

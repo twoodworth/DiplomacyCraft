@@ -257,7 +257,7 @@ public class GuardGuis {
 
                 // Crate setup
                 String[] guiSetup = {
-                        "abcdefghi",
+                        "abcefghid",
                         "    A    ",
                         "    J    "
                 };
@@ -470,76 +470,76 @@ public class GuardGuis {
                         ChatColor.GRAY + "- 2x Magic Dust"
                 ));
 
-                // add grenader
-                gui.addElement(new StaticGuiElement(
-                        'd',
-                        CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, 1),
-                        click -> {
-                            var clicker = click.getEvent().getWhoClicked();
-                            var contents = clicker.getInventory().getContents();
-                            var magicDust = 0;
-                            var grenade = false;
-                            for (var item : contents) {
-                                if (item == null) continue;
-                                if (item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
-                                    magicDust += item.getAmount();
-                                } else if (item.getType() == Material.FIREWORK_STAR && CustomItemGenerator.getInstance().isCustomItem(item)) {
-                                    grenade = true;
-                                }
-                            }
-                            if (magicDust >= 1 && grenade) {
-                                var success = GuardManager.getInstance().upgradeDefault(guard, GuardManager.Type.GRENADER);
-                                if (success) {
-                                    var inv = clicker.getInventory();
-                                    var remaining = 2;
-                                    grenade = false;
-                                    for (int i = 0; i < inv.getSize(); i++) {
-                                        if (grenade && remaining == 0) break;
-                                        var item = inv.getItem(i);
-                                        if (item == null) continue;
-                                        if (!grenade && item.getType() == Material.FIREWORK_STAR && CustomItemGenerator.getInstance().isCustomItem(item)) {
-                                            var amount = item.getAmount();
-                                            if (amount == 1) {
-                                                inv.setItem(i, new ItemStack(Material.AIR));
-                                            } else {
-                                                item.setAmount(amount - 1);
-                                                inv.setItem(i, item);
-                                            }
-                                            grenade = true;
-                                        } else if (remaining > 0 && item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
-                                            var amount = item.getAmount();
-                                            if (amount == 1) {
-                                                remaining--;
-                                                inv.setItem(i, new ItemStack(Material.AIR));
-                                            } else if (amount == 2 && remaining == 2) {
-                                                remaining = 0;
-                                                inv.setItem(i, new ItemStack(Material.AIR));
-                                            } else {
-                                                item.setAmount(amount - remaining);
-                                                remaining = 0;
-                                                inv.setItem(i, item);
-                                            }
-                                        }
-                                    }
-                                    var nGui = generateGui(guard, viewer);
-                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                    nGui.show(clicker);
-                                } else {
-                                    clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
-                                }
-                                gui.close();
-                            } else {
-                                clicker.sendMessage(ChatColor.RED + "You do not have the required ingredients.");
-                            }
-                            return true;
-                        },
-                        ChatColor.DARK_RED + "Grenader - Click to upgrade",
-                        ChatColor.GRAY + "Fires grenades at targets",
-                        " ",
-                        ChatColor.BLUE + "Cost:",
-                        ChatColor.GRAY + "- 1x Grenade",
-                        ChatColor.GRAY + "- 2x Magic Dust"
-                ));
+//                // add grenader
+//                gui.addElement(new StaticGuiElement(
+//                        'd',
+//                        CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, 1),
+//                        click -> {
+//                            var clicker = click.getEvent().getWhoClicked();
+//                            var contents = clicker.getInventory().getContents();
+//                            var magicDust = 0;
+//                            var grenade = false;
+//                            for (var item : contents) {
+//                                if (item == null) continue;
+//                                if (item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
+//                                    magicDust += item.getAmount();
+//                                } else if (item.getType() == Material.FIREWORK_STAR && CustomItemGenerator.getInstance().isCustomItem(item)) {
+//                                    grenade = true;
+//                                }
+//                            }
+//                            if (magicDust >= 1 && grenade) {
+//                                var success = GuardManager.getInstance().upgradeDefault(guard, GuardManager.Type.GRENADER);
+//                                if (success) {
+//                                    var inv = clicker.getInventory();
+//                                    var remaining = 2;
+//                                    grenade = false;
+//                                    for (int i = 0; i < inv.getSize(); i++) {
+//                                        if (grenade && remaining == 0) break;
+//                                        var item = inv.getItem(i);
+//                                        if (item == null) continue;
+//                                        if (!grenade && item.getType() == Material.FIREWORK_STAR && CustomItemGenerator.getInstance().isCustomItem(item)) {
+//                                            var amount = item.getAmount();
+//                                            if (amount == 1) {
+//                                                inv.setItem(i, new ItemStack(Material.AIR));
+//                                            } else {
+//                                                item.setAmount(amount - 1);
+//                                                inv.setItem(i, item);
+//                                            }
+//                                            grenade = true;
+//                                        } else if (remaining > 0 && item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
+//                                            var amount = item.getAmount();
+//                                            if (amount == 1) {
+//                                                remaining--;
+//                                                inv.setItem(i, new ItemStack(Material.AIR));
+//                                            } else if (amount == 2 && remaining == 2) {
+//                                                remaining = 0;
+//                                                inv.setItem(i, new ItemStack(Material.AIR));
+//                                            } else {
+//                                                item.setAmount(amount - remaining);
+//                                                remaining = 0;
+//                                                inv.setItem(i, item);
+//                                            }
+//                                        }
+//                                    }
+//                                    var nGui = generateGui(guard, viewer);
+//                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+//                                    nGui.show(clicker);
+//                                } else {
+//                                    clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
+//                                }
+//                                gui.close();
+//                            } else {
+//                                clicker.sendMessage(ChatColor.RED + "You do not have the required ingredients.");
+//                            }
+//                            return true;
+//                        },
+//                        ChatColor.DARK_RED + "Grenader - Click to upgrade",
+//                        ChatColor.GRAY + "Fires grenades at targets",
+//                        " ",
+//                        ChatColor.BLUE + "Cost:",
+//                        ChatColor.GRAY + "- 1x Grenade",
+//                        ChatColor.GRAY + "- 2x Magic Dust"
+//                ));
 
                 var potion = new ItemStack(Material.POTION);
                 CustomItems.getInstance().addEnchant(potion);
@@ -903,7 +903,7 @@ public class GuardGuis {
                 ));
                 return gui;
             }
-            case SNIPER, GUNNER, TANK, FLAMETHROWER -> {
+            case SNIPER, GUNNER, TANK, FLAMETHROWER, HEALER -> {
                 // title
                 var title = GuardManager.getInstance().getTypePrefix(guard) + ChatColor.DARK_GRAY + " Guard Menu";
 
