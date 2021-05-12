@@ -50,6 +50,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 if (args[0].equalsIgnoreCase("give")) {
                     if (args.length == 3) {
                         give(sender, args[1], args[2], "64");
+                    } else if (args.length == 4) {
+                        give(sender, args[1], args[2],  args[3]);
                     } else {
                         sender.sendMessage(incorrectUsage + giveUsage);
                     }
@@ -287,7 +289,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        player.sendMessage(ChatColor.GREEN + "You have been given " + amount + " of " + strItem + " by an admin.");
+        player.sendMessage(ChatColor.GREEN + "You have been given " + ChatColor.RED + amount + ChatColor.GREEN + " of " + ChatColor.RED +  strItem + ChatColor.GREEN + " by an admin.");
         var inv = player.getInventory();
         var extra = inv.addItem(item);
         if (extra.size() > 0) {

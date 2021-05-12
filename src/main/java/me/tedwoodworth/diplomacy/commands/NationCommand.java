@@ -548,7 +548,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                     var nation = Nations.getInstance().get(diplomacyPlayer);
                     if (nation != null) {
                         for (var player : Bukkit.getOnlinePlayers()) {
-                            if (player.getName().toLowerCase().contains(args[1].toLowerCase()))
+                            if (player.getName().toLowerCase().contains(args[2].toLowerCase()))
                                 players.add(player.getName());
                         }
                         return players;

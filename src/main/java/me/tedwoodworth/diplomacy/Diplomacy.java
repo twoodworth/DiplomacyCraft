@@ -32,6 +32,7 @@ public class Diplomacy extends JavaPlugin {
         //noinspection ConstantConditions
         PlotCommand.register(getCommand("plot"));
         NationCommand.register(getCommand("nation"));
+        GuardCommand.register(getCommand("guard"));
         GroupCommand.register(getCommand("group"));
         EconomyCommand.register(getCommand("wallet"));
         EconomyCommand.register(getCommand("pay"));

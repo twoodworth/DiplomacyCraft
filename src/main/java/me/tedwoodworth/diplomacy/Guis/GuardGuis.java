@@ -1,18 +1,20 @@
 package me.tedwoodworth.diplomacy.Guis;
 
-import de.themoep.inventorygui.GuiElementGroup;
-import de.themoep.inventorygui.InventoryGui;
-import de.themoep.inventorygui.StaticGuiElement;
+import de.themoep.inventorygui.*;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
+
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 
 public class GuardGuis {
@@ -905,7 +907,7 @@ public class GuardGuis {
             }
             case SNIPER, GUNNER, TANK, FLAMETHROWER, HEALER, SNOWMAKER -> {
                 // title
-                var title = GuardManager.getInstance().getTypePrefix(guard) + ChatColor.DARK_GRAY + " Guard Menu";
+                var title = GuardManager.getInstance().getTypePrefix(guard);
 
                 // Crate setup
                 String[] guiSetup = {
@@ -927,9 +929,308 @@ public class GuardGuis {
 
                 return gui;
             }
+            case TELEPORTER -> {
+                InventoryGui gui;
+                if (GuardManager.getInstance().canManageGuard(viewer, guard)) {
+                    // title
+                    var title = GuardManager.getInstance().getTypePrefix(guard);
+
+                    // Crate setup
+                    String[] guiSetup = {
+                            "         ",
+                            " lABC   J",
+                            "         ",
+                    };
+
+                    gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+                    gui.setCloseAction(close -> false);
+                    gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+                    gui.addElement(getLevelUpElement(guard, viewer)); // level up
+                    gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
+                    gui.addElement(getToggleIncomingTeleportersElement(guard, viewer, gui)); // toggle teleporters
+                    gui.addElement(getViewDestinationsElement(guard, viewer, gui)); // view destinations
+                    gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
+                } else {
+                    gui = getViewDestinationsGui(guard, viewer);
+                }
+                return gui;
+            }
             default -> {
                 return null;
             }
         }
+    }
+
+    private StaticGuiElement getToggleIncomingTeleportersElement(Entity guard, Player viewer, InventoryGui gui) {
+        return new StaticGuiElement('B',
+                new ItemStack(Material.REPEATER),
+                click -> {
+                    if (guard.isDead()) {
+                        gui.close();
+                        viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                        return true;
+                    }
+                    var nGui = getToggleIncomingTeleportersGui(guard, viewer);
+                    nGui.show(viewer);
+                    return true;
+                },
+                "" + ChatColor.BLUE + ChatColor.BOLD + "Toggle incoming teleporters",
+                ChatColor.GRAY + "Allow/prevent other teleporters from teleporting players here"
+        );
+    }
+
+    private StaticGuiElement getViewDestinationsElement(Entity guard, Player viewer, InventoryGui gui) {
+        return new StaticGuiElement('C',
+                new ItemStack(Material.FILLED_MAP),
+                click -> {
+                    if (guard.isDead()) {
+                        gui.close();
+                        viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                        return true;
+                    }
+                    var nGui = getViewDestinationsGui(guard, viewer);
+                    nGui.show(viewer);
+                    return true;
+                },
+                "" + ChatColor.BLUE + ChatColor.BOLD + "View Destinations"
+        );
+    }
+
+    private InventoryGui getToggleIncomingTeleportersGui(Entity guard, Player viewer) {
+        // title
+        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Incoming teleporters";
+
+        // Crate setup
+        String[] guiSetup = {
+                " B  I    ",
+                "ggggggggg",
+                "ggggggggg",
+                "ggggggggg",
+                "ggggggggg",
+                " P     N "
+        };
+
+        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
+        gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        gui.addElement(new StaticGuiElement('B',
+                        new ItemStack(Material.ARROW),
+                        click -> {
+                            if (guard.isDead()) {
+                                gui.close();
+                                viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                                return true;
+                            }
+                            var nGui = generateGui(guard, viewer);
+                            nGui.show(viewer);
+                            return true;
+                        },
+                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
+                        ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Return to primary menu"
+                )
+        );
+        gui.addElement(new StaticGuiElement('I',
+                        new ItemStack(Material.PAPER),
+                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Incoming teleporters",
+                        ChatColor.GRAY + "Players can potentially teleport to this teleporter from ",
+                        ChatColor.GRAY + "any of the teleporters shown below. To prevent specific ",
+                        ChatColor.GRAY + "teleporters from being able to teleport players to",
+                        ChatColor.GRAY + "this location, toggle it by clicking below."
+                )
+        );
+        var group = new GuiElementGroup('g');
+        var gLoc = guard.getLocation();
+        var tps = GuardManager.getInstance().getAllTeleporters();
+        var tpList = tps.stream().filter((p) -> p.getLocation().distanceSquared(gLoc) < Math.pow(GuardManager.getInstance().getRadius(p), 2)).sorted((p1, p2) -> GuardManager.getInstance().getName(p1).compareToIgnoreCase(GuardManager.getInstance().getName(p2))).collect(Collectors.toList());
+        var allowed = GuardManager.getInstance().getAllowedTeleporters(guard);
+        for (var tp : tpList) {
+            if (tp.equals(guard)) continue;
+            var loc = tp.getLocation();
+            String defaultState;
+            // get default state
+            if (allowed.contains(tp)) {
+                defaultState = "enabled";
+            } else {
+                defaultState = "disabled";
+            }
+            var chunk = loc.getChunk();
+            var dc = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
+            String g;
+            if (dc.getGroup() == null) {
+                g = "N/A";
+            } else {
+                g = dc.getGroup().getName();
+            }
+            var name = GuardManager.getInstance().getName(tp);
+            // create state1
+            var state1 = new GuiStateElement.State(
+                    change -> {
+                        if (!tp.isDead()) {
+                            if (guard.isDead()) {
+                                gui.close();
+                                viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                                return;
+                            }
+                            GuardManager.getInstance().addAllowedTeleporter(guard, tp);
+                        } else {
+                            gui.close();
+                            viewer.sendMessage(ChatColor.RED + "Error: That teleporter no longer exists.");
+                        }
+                    },
+                    "enabled",
+                    new ItemStack(Material.EMERALD_BLOCK),
+                    "" + ChatColor.GREEN + ChatColor.BOLD + name,
+                    ChatColor.BLUE + "Nation: " + ChatColor.GRAY + dc.getNation().getName(),
+                    ChatColor.BLUE + "Group: " + ChatColor.GRAY + g,
+                    " ",
+                    ChatColor.RED + "Click to disable"
+            );
+            // create state2
+            var state2 = new GuiStateElement.State(
+                    change -> {
+                        if (!tp.isDead()) {
+                            if (guard.isDead()) {
+                                gui.close();
+                                viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                                return;
+                            }
+                            GuardManager.getInstance().removeAllowedTeleporter(guard, tp);
+                        } else {
+                            gui.close();
+                            viewer.sendMessage(ChatColor.RED + "Error: That teleporter no longer exists.");
+                        }
+                    },
+                    "disabled",
+                    new ItemStack(Material.REDSTONE_BLOCK),
+                    "" + ChatColor.RED + ChatColor.BOLD + name,
+                    ChatColor.BLUE + "Nation: " + ChatColor.GRAY + dc.getNation().getName(),
+                    ChatColor.BLUE + "Group: " + ChatColor.GRAY + g,
+                    " ",
+                    ChatColor.GREEN + "Click to enable"
+            );
+            var element = new GuiStateElement('g', defaultState, state1, state2);
+            group.addElement(element);
+        }
+
+        gui.addElement(group);
+        // create next page
+        var pageElement = new GuiPageElement('N',
+                new ItemStack(Material.LIME_STAINED_GLASS_PANE),
+                GuiPageElement.PageAction.NEXT,
+                ChatColor.GREEN + "Next Page");
+        gui.addElement(pageElement);
+
+        // create previous page
+        pageElement = new GuiPageElement('P',
+                new ItemStack(Material.RED_STAINED_GLASS_PANE),
+                GuiPageElement.PageAction.PREVIOUS,
+                ChatColor.RED + "Previous Page");
+        gui.addElement(pageElement);
+        return gui;
+
+    }
+
+    private InventoryGui getViewDestinationsGui(Entity guard, Player viewer) {
+        // title
+        var title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Teleporter Destinations";
+
+        // Crate setup
+        String[] guiSetup = {
+                " B  I    ",
+                "ggggggggg",
+                "ggggggggg",
+                "ggggggggg",
+                "ggggggggg",
+                " P     N "
+        };
+
+        InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        gui.setCloseAction(close -> false);
+        gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        if (GuardManager.getInstance().canManageGuard(viewer, guard)) {
+            gui.addElement(new StaticGuiElement('B',
+                            new ItemStack(Material.ARROW),
+                            click -> {
+                                if (guard.isDead()) {
+                                    gui.close();
+                                    viewer.sendMessage(ChatColor.RED + "Error: The guard you were managing was destroyed.");
+                                    return true;
+                                }
+                                var nGui = generateGui(guard, viewer);
+                                nGui.show(viewer);
+                                return true;
+                            },
+                            "" + ChatColor.YELLOW + ChatColor.BOLD + "Go Back",
+                            ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Return to primary menu"
+                    )
+            );
+        }
+        var radius = GuardManager.getInstance().getRadius(guard);
+        var radiusSquared = Math.pow(radius, 2);
+
+
+        var strRadius = String.format("%.1f", radius);
+        gui.addElement(new StaticGuiElement('I',
+                        new ItemStack(Material.PAPER),
+                        "" + ChatColor.YELLOW + ChatColor.BOLD + "Teleporter Destination",
+                        ChatColor.GRAY + "This teleporter has a radius of " + strRadius + " blocks",
+                        ChatColor.GRAY + "and can teleport to any of the locations shown below.",
+                        ChatColor.GRAY + "Click one of the icons below to teleport to them."
+                )
+        );
+        var group = new GuiElementGroup('g');
+        var tps = GuardManager.getInstance().getAllTeleporters();
+        var gLoc = guard.getLocation();
+        var sorted = tps.stream()
+                .filter((p) -> GuardManager.getInstance().getAllowedTeleporters(p).contains(guard) && p.getLocation().distanceSquared(gLoc) < radiusSquared)
+                .sorted((p1, p2) -> GuardManager.getInstance().getName(p1).compareToIgnoreCase(GuardManager.getInstance().getName(p2)))
+                .collect(Collectors.toList());
+        for (var tp : sorted) {
+            if (tp.equals(guard)) continue;
+            var loc = tp.getLocation();
+            var dc = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk());
+            String g;
+            if (dc.getGroup() != null) {
+                g = dc.getGroup().getName();
+            } else {
+                g = "N/A";
+            }
+            var dist = loc.distance(gLoc);
+            var strDist = String.format("%.1f", dist);
+            var rate = GuardManager.getInstance().getTeleporterLoadRate(guard);
+            var time = dist / 20.0 * rate;
+            var strTime = String.format("%.1f", time);
+            var element = new StaticGuiElement('g',
+                    new ItemStack(Material.END_CRYSTAL),
+                    click -> {
+                        gui.close();
+                        GuardManager.getInstance().beginTeleportation(viewer, guard, tp, (long) (time * 20.0));
+                        return true;
+                    },
+                    "" + ChatColor.YELLOW + ChatColor.BOLD + GuardManager.getInstance().getName(tp),
+                    ChatColor.BLUE + "Nation: " + ChatColor.GRAY + dc.getNation().getName(),
+                    ChatColor.BLUE + "Group: " + ChatColor.GRAY + g,
+                    ChatColor.BLUE + "XYZ: " + ChatColor.GRAY + "[" + loc.getX() + ", " + loc.getY() + ", " + loc.getZ() + "]",
+                    ChatColor.BLUE + "Distance: " + ChatColor.GRAY + strDist + " blocks",
+                    ChatColor.BLUE + "Teleport Time: " + ChatColor.GRAY + strTime + "s"
+            );
+            group.addElement(element);
+        }
+        gui.addElement(group);
+        // create next page
+        var pageElement = new GuiPageElement('N',
+                new ItemStack(Material.LIME_STAINED_GLASS_PANE),
+                GuiPageElement.PageAction.NEXT,
+                ChatColor.GREEN + "Next Page");
+        gui.addElement(pageElement);
+
+        // create previous page
+        pageElement = new GuiPageElement('P',
+                new ItemStack(Material.RED_STAINED_GLASS_PANE),
+                GuiPageElement.PageAction.PREVIOUS,
+                ChatColor.RED + "Previous Page");
+        gui.addElement(pageElement);
+        return gui;
+
     }
 }

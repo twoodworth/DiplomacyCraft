@@ -168,4 +168,9 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
+  guard:
+    description: Guard commands.
+    aliases: []
+    usage: "Usage: /<command>"
+
 

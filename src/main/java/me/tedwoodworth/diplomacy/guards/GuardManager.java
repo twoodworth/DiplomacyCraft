@@ -23,10 +23,13 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 
 import java.util.*;
 
@@ -44,13 +47,14 @@ public class GuardManager {
     private final NamespacedKey TYPE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_type");
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey NOTIFY_DAMAGE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_notify_damage");
+    private final NamespacedKey NAME_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_name");
 
     // attacking guards
     private final NamespacedKey ATTACK_TRESPASSERS = new NamespacedKey(Diplomacy.getInstance(), "guard_tresspassers");
     private final NamespacedKey ATTACK_NEUTRAL = new NamespacedKey(Diplomacy.getInstance(), "guard_neutral");
     private final NamespacedKey ATTACK_ALLIES = new NamespacedKey(Diplomacy.getInstance(), "guard_allies");
     private final NamespacedKey ATTACK_NEWBIES = new NamespacedKey(Diplomacy.getInstance(), "guard_newbies");
-    private static final NamespacedKey GUARD_PROJECTILE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_projectile");
+    private final NamespacedKey GUARD_PROJECTILE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_projectile");
 
     // sniper
     private final short[] sniperCost = new short[100];
@@ -101,11 +105,23 @@ public class GuardManager {
     // snowballer
     private final short[] snowmakerCost = new short[100];
     private final float[] snowmakerMaxHealth = new float[100];
-    private final  float[] snowmakerResistance = new float[100];
+    private final float[] snowmakerResistance = new float[100];
     private final short[] snowmakerPower = new short[100];
     private final float[] snowmakerDelay = new float[100];
     private final short[] snowmakerSlowTime = new short[100];
     private final short[] snowmakerBallsPerTick = new short[100];
+
+    // teleporter
+    private final short[] teleporterCost = new short[100];
+    private final float[] teleporterMaxHealth = new float[100];
+    private final float[] teleporterResistance = new float[100];
+    private final float[] teleporterRadius = new float[100];
+    private final float[] teleporterLoadRate = new float[100];
+    private final NamespacedKey ALLOWED_TELEPORTS_KEY = new NamespacedKey(Diplomacy.getInstance(), "allowed_teleports");
+    private final NamespacedKey TELEPORTER_ID_KEY = new NamespacedKey(Diplomacy.getInstance(), "teleporter_id");
+    private final HashMap<Integer, Entity> teleporterMap = new HashMap<>();
+    private final HashMap<Player, Long> activeTeleports = new HashMap<>();
+
 
     // all
     private final int GUARD_TICK_DELAY = 2;
@@ -119,6 +135,86 @@ public class GuardManager {
         return instance;
     }
 
+    private int[] getAllowedTeleporterIDs(Entity teleporter) {
+        return teleporter.getPersistentDataContainer().get(ALLOWED_TELEPORTS_KEY, PersistentDataType.INTEGER_ARRAY);
+    }
+
+    public HashSet<Entity> getAllowedTeleporters(Entity teleporter) {
+        var ids = getAllowedTeleporterIDs(teleporter);
+        var set = new HashSet<Entity>();
+        for (var id : ids) {
+            set.add(teleporterMap.get(id));
+        }
+        return set;
+    }
+
+    public HashSet<Entity> getAllTeleporters() {
+        var ids = teleporterMap.keySet();
+        var tps = new HashSet<Entity>();
+        for (var id : ids) {
+            tps.add(teleporterMap.get(id));
+        }
+        return tps;
+    }
+
+    public float getTeleporterLoadRate(Entity teleporter) {
+        var level = getLevel(teleporter);
+        return teleporterLoadRate[level - 1];
+    }
+
+    public void removeAllowedTeleporter(Entity teleporter, Entity remove) {
+        var id = getTeleporterID(remove);
+        var ids = getAllowedTeleporterIDs(teleporter);
+        var contains = false;
+        for (var i : ids) {
+            if (i == id) {
+                contains = true;
+                break;
+            }
+        }
+        if (!contains) return;
+        var nIds = new int[ids.length - 1];
+        int j = 0;
+        for (int i : ids) {
+            if (i == id) continue;
+            nIds[j] = i;
+            j++;
+        }
+        teleporter.getPersistentDataContainer().set(ALLOWED_TELEPORTS_KEY, PersistentDataType.INTEGER_ARRAY, nIds);
+    }
+
+    public void addAllowedTeleporter(Entity teleporter, Entity add) {
+        var id = getTeleporterID(add);
+        var ids = getAllowedTeleporterIDs(teleporter);
+        var nIds = new int[ids.length + 1];
+        System.arraycopy(ids, 0, nIds, 0, ids.length);
+        nIds[ids.length] = id;
+        teleporter.getPersistentDataContainer().set(ALLOWED_TELEPORTS_KEY, PersistentDataType.INTEGER_ARRAY, nIds);
+    }
+
+    public int getTeleporterID(Entity guard) {
+        return guard.getPersistentDataContainer().get(TELEPORTER_ID_KEY, PersistentDataType.INTEGER);
+    }
+
+    private Entity getTeleporter(int id) {
+        return teleporterMap.get(id);
+    }
+
+
+    public int getUniqueTeleporterID() {
+        int id;
+        var set = teleporterMap.keySet();
+        do {
+            if (Math.random() < 0.5) {
+                id = (int) (Math.random() * Integer.MIN_VALUE);
+            } else {
+                id = (int) (Math.random() * Integer.MAX_VALUE);
+            }
+        } while (set.contains(id));
+        return id;
+
+    }
+
     private GuardManager() {
         var gunners = new HashSet<Entity>();
         var flamethrowers = new HashSet<Entity>();
@@ -130,18 +226,27 @@ public class GuardManager {
                 chunk.setForceLoaded(true);
                 chunk.load();
                 var entities = chunk.getEntities();
+                var contains = false;
                 for (var entity : entities) {
                     if (isGuard(entity)) {
+                        contains = true;
                         guards.add(entity);
+                        System.out.println("Guard Loaded: Name = " + getName(entity) + "; ID#" + entity.getEntityId());
                         var type = getType(entity);
                         switch (type) {
                             case GUNNER -> gunners.add(entity);
                             case FLAMETHROWER -> flamethrowers.add(entity);
                             case SNOWMAKER -> snowmakers.add(entity);
+                            case TELEPORTER -> {
+                                var id = getTeleporterID(entity);
+                                teleporterMap.put(id, entity);
+                            }
                         }
                     }
                 }
-                chunk.setForceLoaded(false);
+                if (!contains) {
+                    chunk.unload();
+                }
             }
         }
 
@@ -196,6 +301,13 @@ public class GuardManager {
             snowmakerDelay[i] = flamethrowerDelay[i];
             snowmakerSlowTime[i] = (short) (29.0 + Math.pow(1.05, i));
             snowmakerBallsPerTick[i] = flamesPerTick[i];
+
+            // teleporter
+            teleporterCost[i] = (short) (Math.pow(1.06, i));
+            teleporterMaxHealth[i] = healerMaxHealth[i];
+            teleporterResistance[i] = sniperResistance[i];
+            teleporterLoadRate[i] = (float) (8.0 * Math.pow(.96125516, i));
+            teleporterRadius[i] = (short) (480.0 / teleporterLoadRate[i]);
 
 
         }
@@ -279,7 +391,7 @@ public class GuardManager {
         } else { // speed = 2.0
             coef = 0.0012;
         }
-        return y + targetLoc.getY() - coef * tempSD + ydiff; // Further adjust for distance todo adjust for y height
+        return y + targetLoc.getY() - coef * tempSD + ydiff;
     }
 
     private Arrow spawnGuardArrow(Location targetLoc, Location guardLoc, float speed, Entity guard) {
@@ -329,7 +441,7 @@ public class GuardManager {
         var guardY = guardLoc.getY() + 0.5;
         var targY = targetLoc.getY();
         guardLoc.setY(guardY);
-        targetLoc.setY(targY + Math.abs(targY - guardY) * 0.4);
+        targetLoc.setY(targY + 1);
         var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
         var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
         var ball = guardLoc.getWorld().spawn(aLoc, Snowball.class);
@@ -566,7 +678,7 @@ public class GuardManager {
             if (guard.isDead()) {
                 return;
             }
-            var radius = 16.0f;
+            var radius = 24.0f;
             var nearby = guard.getNearbyEntities(radius, radius, radius);
             var gLoc = guard.getLocation();
             var gNation = getNation(guard);
@@ -807,23 +919,28 @@ public class GuardManager {
     public String getTypePrefix(Entity entity) {
         var type = getType(entity);
         var level = getLevel(entity);
+        var name = getName(entity);
         return switch (type) {
-            case BASIC -> ChatColor.DARK_AQUA + "[Level " + level + " Guard] " + ChatColor.WHITE;
-            case SNIPER -> ChatColor.DARK_GREEN + "[Level " + level + " Sniper] " + ChatColor.WHITE;
-            case GUNNER -> ChatColor.DARK_GRAY + "[Level " + level + " Gunner] " + ChatColor.WHITE;
-            case FLAMETHROWER -> ChatColor.RED + "[Level " + level + " Flamethrower] " + ChatColor.WHITE;
-            case GRENADER -> ChatColor.DARK_RED + "[Level " + level + " Grenader] " + ChatColor.WHITE;
-            case HEALER -> ChatColor.LIGHT_PURPLE + "[Level " + level + " Healer] " + ChatColor.WHITE;
-            case TANK -> ChatColor.DARK_PURPLE + "[Level " + level + " Tank] " + ChatColor.WHITE;
-            case TELEPORTER -> ChatColor.YELLOW + "[Level " + level + " Teleporter] " + ChatColor.WHITE;
-            case GENERATOR -> ChatColor.GOLD + "[Level " + level + " Generator] " + ChatColor.WHITE;
-            case SNOWMAKER -> ChatColor.AQUA + "[Level " + level + " Snowmaker] " + ChatColor.WHITE;
+            case BASIC -> ChatColor.DARK_AQUA + "[" + name + " | Level " + level + " Guard] " + ChatColor.WHITE;
+            case SNIPER -> ChatColor.DARK_GREEN + "[" + name + " | Level " + level + " Sniper] " + ChatColor.WHITE;
+            case GUNNER -> ChatColor.DARK_GRAY + "[" + name + " | Level " + level + " Gunner] " + ChatColor.WHITE;
+            case FLAMETHROWER -> ChatColor.RED + "[" + name + " | Level " + level + " Flamethrower] " + ChatColor.WHITE;
+            case GRENADER -> ChatColor.DARK_RED + "[" + name + " | Level " + level + " Grenader] " + ChatColor.WHITE;
+            case HEALER -> ChatColor.LIGHT_PURPLE + "[" + name + " | Level " + level + " Healer] " + ChatColor.WHITE;
+            case TANK -> ChatColor.DARK_PURPLE + "[" + name + " | Level " + level + " Tank] " + ChatColor.WHITE;
+            case TELEPORTER -> ChatColor.YELLOW + "[" + name + " | Level " + level + " Teleporter] " + ChatColor.WHITE;
+            case GENERATOR -> ChatColor.GOLD + "[" + name + " | Level " + level + " Generator] " + ChatColor.WHITE;
+            case SNOWMAKER -> ChatColor.AQUA + "[" + name + " | Level " + level + " Snowmaker] " + ChatColor.WHITE;
         };
     }
 
     public Entity spawnGuard(Location loc) {
         loc.setX(loc.getX() + 0.5);
         loc.setZ(loc.getZ() + 0.5);
+        var chunk = loc.getChunk();
+        if (!chunk.isForceLoaded()) {
+            chunk.setForceLoaded(true);
+        }
         var entity = loc.getWorld().spawnEntity(loc, EntityType.ENDER_CRYSTAL);
         loc.getWorld().playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 1, 1);
         var container = entity.getPersistentDataContainer();
@@ -837,6 +954,8 @@ public class GuardManager {
         // level
         container.set(LEVEL_KEY, PersistentDataType.SHORT, (short) 0);
 
+        // name
+        container.set(NAME_KEY, PersistentDataType.STRING, "Guard");
         // preferences
         container.set(NOTIFY_DAMAGE_KEY, BooleanPersistentDataType.instance, true);
         container.set(ATTACK_TRESPASSERS, BooleanPersistentDataType.instance, false);
@@ -845,7 +964,7 @@ public class GuardManager {
         container.set(ATTACK_NEWBIES, BooleanPersistentDataType.instance, false);
 
         entity.setCustomNameVisible(true);
-        entity.setCustomName(ChatColor.DARK_AQUA + "[Level 0 Guard] " + ChatColor.WHITE + "20.00 HP");
+        entity.setCustomName(ChatColor.DARK_AQUA + "[Guard | Level 0 Guard] " + ChatColor.WHITE + "20.00 HP");
         ((EnderCrystal) entity).setShowingBottom(false);
         guards.add(entity);
         return entity;
@@ -853,6 +972,14 @@ public class GuardManager {
 
     public void killGuard(Entity entity) {
         var loc = entity.getLocation();
+        var chunk = loc.getChunk();
+        if (getType(entity) == Type.TELEPORTER) {
+            for (var id : teleporterMap.keySet()) {
+                var teleporter = teleporterMap.get(id);
+                removeAllowedTeleporter(teleporter, entity);
+            }
+            teleporterMap.remove(getTeleporterID(entity));
+        }
         var container = entity.getPersistentDataContainer();
         var keys = container.getKeys();
         for (var key : keys) {
@@ -863,6 +990,17 @@ public class GuardManager {
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
         loc.getWorld().playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1, 1);
         loc.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, loc, 4);
+        var entities = chunk.getEntities();
+        var hasGuards = false;
+        for (var tEntity : entities) {
+            if (isGuard(tEntity)) {
+                hasGuards = true;
+                break;
+            }
+        }
+        if (!hasGuards && chunk.isForceLoaded()) {
+            chunk.setForceLoaded(false);
+        }
     }
 
     public boolean isGuard(Entity entity) {
@@ -886,6 +1024,7 @@ public class GuardManager {
             case FLAMETHROWER -> flamethrowerCost[level];
             case HEALER -> healerCost[level];
             case SNOWMAKER -> snowmakerCost[level];
+            case TELEPORTER -> teleporterCost[level];
         };
     }
 
@@ -952,6 +1091,13 @@ public class GuardManager {
             case GUNNER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onGunnerTick(entity), 0L);
             case FLAMETHROWER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onFlamethrowerTick(entity), 0L);
             case SNOWMAKER -> Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> onSnowmakerTick(entity), 0L);
+            case TELEPORTER -> {
+                var newId = getUniqueTeleporterID();
+                var container = entity.getPersistentDataContainer();
+                container.set(TELEPORTER_ID_KEY, PersistentDataType.INTEGER, newId);
+                container.set(ALLOWED_TELEPORTS_KEY, PersistentDataType.INTEGER_ARRAY, new int[0]);
+                teleporterMap.put(newId, entity);
+            }
         }
         setHealth(entity, getHealth(entity));
         return true;
@@ -972,6 +1118,15 @@ public class GuardManager {
         return DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
     }
 
+    public String getName(Entity entity) {
+        return entity.getPersistentDataContainer().get(NAME_KEY, PersistentDataType.STRING);
+    }
+
+    public void setName(Entity entity, String name) {
+        entity.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
+        setHealth(entity, getHealth(entity));
+    }
+
     public float getResistance(Entity entity) {
         var type = getType(entity);
         var level = getLevel(entity);
@@ -983,6 +1138,7 @@ public class GuardManager {
             case FLAMETHROWER -> flamethrowerResistance[level - 1];
             case HEALER -> healerResistance[level - 1];
             case SNOWMAKER -> snowmakerResistance[level - 1];
+            case TELEPORTER -> teleporterResistance[level - 1];
         };
     }
 
@@ -997,6 +1153,7 @@ public class GuardManager {
             case FLAMETHROWER -> flamethrowerMaxHealth[level - 1];
             case HEALER -> healerMaxHealth[level - 1];
             case SNOWMAKER -> snowmakerMaxHealth[level - 1];
+            case TELEPORTER -> teleporterMaxHealth[level - 1];
         };
     }
 
@@ -1008,6 +1165,7 @@ public class GuardManager {
             case SNIPER -> sniperRadius[level - 1];
             case GUNNER -> gunnerRadius[level - 1];
             case HEALER -> healerRadius[level - 1];
+            case TELEPORTER -> teleporterRadius[level - 1];
         };
     }
 
@@ -1170,8 +1328,141 @@ public class GuardManager {
         }
     }
 
+    public boolean canManageGuard(Player player, Entity guard) {
+        // check if in nation
+        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+        var playerNation = Nations.getInstance().get(dp);
+        if (playerNation == null) { // not in nation
+            return false;
+        }
+
+        // check if in correct nation
+        var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(guard.getLocation().getChunk()).getNation();
+        if (!playerNation.equals(guardNation)) {
+            return false;
+        }
+
+        // check if outlaw
+        if (guardNation.getOutlaws().contains(player.getUniqueId())) {
+            return false;
+        }
+
+        // check nation permissions
+        var permissions = playerNation.getMemberClass(dp).getPermissions();
+        var canManageGuards = permissions.get("CanManageGuards");
+        if (!canManageGuards) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean isGuardProjectile(Entity entity) {
         return entity.getPersistentDataContainer().has(GUARD_PROJECTILE_KEY, BooleanPersistentDataType.instance);
+    }
+
+    public void beginTeleportation(Player player, Entity fromGuard, Entity toGuard, long time) {
+        long key = (long) (Math.random() * Long.MAX_VALUE);
+        activeTeleports.remove(player);
+        activeTeleports.put(player, key);
+        var fromLoc = fromGuard.getLocation();
+        var x = fromLoc.getX();
+        var y = fromLoc.getY();
+        var z = fromLoc.getZ();
+        var box = new BoundingBox(x - 4, y - 4, z - 4, x + 4, y + 4, z + 4);
+        var locs = new HashSet<Location>();
+        for (double minX = x - 4; minX < x + 4; minX++) {
+            for (double minY = y - 4; minY < y + 4; minY++) {
+                locs.add(new Location(fromGuard.getWorld(), minX, minY, z - 4));
+                locs.add(new Location(fromGuard.getWorld(), minX, minY, z + 4));
+            }
+
+            for (double minZ = z - 4; minZ < z + 4; minZ++) {
+                locs.add(new Location(fromGuard.getWorld(), minX, y - 4, minZ));
+                locs.add(new Location(fromGuard.getWorld(), minX, y + 4, minZ));
+            }
+        }
+        for (double minZ = z - 4; minZ < z + 4; minZ++) {
+            for (double minY = y - 4; minY < y + 4; minY++) {
+                locs.add(new Location(fromGuard.getWorld(), x - 4, minY, minZ));
+                locs.add(new Location(fromGuard.getWorld(), x + 4, minY, minZ));
+            }
+        }
+        var name = getName(toGuard);
+        teleportationTick(player, fromGuard, toGuard, name, time, time, key, box, locs);
+    }
+
+    public void teleportationTick(Player player, Entity fromGuard, Entity toGuard, String toName, long remaining, long initial, final long key, BoundingBox box, Set<Location> particleLocs) {
+        if (!activeTeleports.containsKey(player)) {
+            if (player.isOnline()) {
+                player.sendMessage(ChatColor.RED + "Teleportation Cancelled.");
+                player.sendTitle(ChatColor.RED + "Teleportation Cancelled", null, 0, 40, 10);
+            }
+            return;
+        }
+        if (activeTeleports.get(player) != key) {
+            if (player.isOnline()) {
+                player.sendMessage(ChatColor.DARK_GREEN + "Previous Teleportation Cancelled: New teleport initiated.");
+                player.sendTitle(ChatColor.RED + "Teleportation Cancelled", ChatColor.RED + "New teleport initiated", 0, 40, 10);
+            }
+            return;
+        }
+        if (!player.isOnline()) {
+            activeTeleports.remove(player);
+            return;
+        }
+        if (fromGuard.isDead()) {
+            activeTeleports.remove(player);
+            player.sendMessage(ChatColor.RED + "Teleportation Cancelled: Teleporter crystal has been destroyed.");
+            player.sendTitle(ChatColor.RED + "Teleportation Cancelled", ChatColor.RED + "Teleporter crystal has been destroyed", 0, 40, 10);
+
+            return;
+        }
+        if (toGuard.isDead()) {
+            activeTeleports.remove(player);
+            player.sendMessage(ChatColor.RED + "Teleportation Cancelled: Destination crystal has been destroyed.");
+            player.sendTitle(ChatColor.RED + "Teleportation Cancelled", ChatColor.RED + "Destination crystal has been destroyed", 0, 40, 10);
+            return;
+        }
+        if (!box.contains(player.getBoundingBox())) {
+            activeTeleports.remove(player);
+            player.sendMessage(ChatColor.RED + "Teleportation Cancelled: You have left the teleportation area.");
+            player.sendTitle(ChatColor.RED + "Teleportation Cancelled", ChatColor.RED + "You have left the teleportation area", 0, 40, 10);
+            return;
+        }
+        var seconds = remaining / 20.0;
+        var strSeconds = String.format("%.1f", seconds) + "s";
+        player.sendTitle(ChatColor.GREEN + "Preparing to teleport to " + toName, ChatColor.GREEN + strSeconds, 0, 10, 1);
+        if (remaining % 10 == 0) {
+            for (var loc : particleLocs) {
+                if (Math.random() < 0.25) {
+                    var dustOptions = new Particle.DustOptions(Color.fromRGB(230, 80, 255), (float) (1.0 + Math.random() * 3.0));
+                    player.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
+                }
+            }
+        }
+        var percent = (((float) remaining) / ((float) initial));
+        player.getWorld().playSound(fromGuard.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, .3f + .7f * percent, 2.0f - 1.5f * ((remaining + (800.0f - initial)) / 800.0f));
+        if (remaining == 0) {
+            player.sendTitle(ChatColor.GREEN + "Teleporting to " + toName, null, 1, 30, 20);
+            var loc = player.getLocation();
+            var y = loc.getY();
+            var dustOptions = new Particle.DustOptions(Color.fromRGB(230, 80, 255), 1.0f);
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 2.0f);
+            for (double i = loc.getWorld().getMaxHeight(); i > y; i -= 0.5) {
+                loc.setY(i);
+                loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
+            }
+            var nLoc = toGuard.getLocation();
+            var nY = nLoc.getY();
+            player.teleport(toGuard.getLocation());
+            for (double i = nLoc.getWorld().getMaxHeight(); i > nY; i -= 0.5) {
+                nLoc.setY(i);
+                nLoc.getWorld().spawnParticle(Particle.REDSTONE, nLoc, 1, dustOptions);
+            }
+            player.getWorld().playSound(nLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+        } else {
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> teleportationTick(player, fromGuard, toGuard, toName, remaining - 1, initial, key, box, particleLocs), 1L);
+        }
     }
 
     private class EventListener implements Listener {
@@ -1305,37 +1596,21 @@ public class GuardManager {
                 var type = getType(entity);
                 switch (type) {
                     case TELEPORTER -> {
-
-                    }
-                    default -> {
-                        // check if in nation
-                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                        var playerNation = Nations.getInstance().get(dp);
-                        if (playerNation == null) { // not in nation
-                            return;
-                        }
-
-                        // check if in correct nation
-                        var guardNation = DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation();
-                        if (!playerNation.equals(guardNation)) {
-                            return;
-                        }
-                        // check if outlaw
-                        if (guardNation.getOutlaws().contains(player.getUniqueId())) {
-                            return;
-                        }
-
-                        // check nation permissions
-                        var permissions = playerNation.getMemberClass(dp).getPermissions();
-                        var canManageGuards = permissions.get("CanManageGuards");
-                        if (!canManageGuards) {
-                            player.sendMessage(ChatColor.RED + "You do not have permission to manage guard crystals.");
-                            return;
-                        }
                         interactSet.add(player);
                         var menu = GuardGuis.getInstance().generateGui(entity, player);
                         menu.show(player);
                     }
+                    default -> {
+                        var canManage = canManageGuard(player, entity);
+                        if (canManage) {
+                            interactSet.add(player);
+                            var menu = GuardGuis.getInstance().generateGui(entity, player);
+                            menu.show(player);
+                        } else {
+                            player.sendMessage(ChatColor.RED + "You do not have permission to manage this guard crystal.");
+                        }
+                    }
+
                 }
             }
         }
@@ -1437,7 +1712,7 @@ public class GuardManager {
 
         public String getKillMessage(Entity damager, Entity guard) {
             var loc = guard.getLocation();
-            var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard killed by " + ChatColor.RED;
+            var message = ChatColor.DARK_GREEN + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.RED + getName(guard) + ChatColor.DARK_GREEN + " killed by " + ChatColor.RED;
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof Player) message += ((Player) shooter).getName();
@@ -1452,7 +1727,7 @@ public class GuardManager {
 
         public String getDamageMessage(Entity damager, Entity guard) {
             var loc = guard.getLocation();
-            var message = ChatColor.RED + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.DARK_GREEN + "Guard damaged by " + ChatColor.RED;
+            var message = ChatColor.DARK_GREEN + "[" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "] " + ChatColor.RED + getName(guard) + ChatColor.DARK_GREEN + " damaged by " + ChatColor.RED;
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof Player) message += ((Player) shooter).getName();
