@@ -122,6 +122,22 @@ public class GuardManager {
     private final HashMap<Integer, Entity> teleporterMap = new HashMap<>();
     private final HashMap<Player, Long> activeTeleports = new HashMap<>();
 
+    // generator
+    private final short[] generatorCost = new short[100];
+    private final float[] generatorMaxHealth = new float[100];
+    private final float[] generatorResistance = new float[100];
+    private final double[] generatorRate = new double[100];
+    public final NamespacedKey GENERATOR_GUNPOWDER_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_gunpowder");
+    public final NamespacedKey GENERATOR_LAPIS_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_lapis");
+    public final NamespacedKey GENERATOR_REDSTONE_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_redstone");
+    public final NamespacedKey GENERATOR_QUARTZ_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_quartz");
+    public final NamespacedKey GENERATOR_GLOWSTONE_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_glowstone");
+    public final NamespacedKey GENERATOR_IRON_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_iron");
+    public final NamespacedKey GENERATOR_GOLD_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_gold");
+    public final NamespacedKey GENERATOR_EMERALD_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_emerald");
+    public final NamespacedKey GENERATOR_MAGIC_DUST_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_magic_dust");
+    public final NamespacedKey GENERATOR_DIAMOND_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_diamond");
+    public final NamespacedKey GENERATOR_NETHERITE_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_netherite");
 
     // all
     private final int GUARD_TICK_DELAY = 2;
@@ -308,6 +324,12 @@ public class GuardManager {
             teleporterResistance[i] = sniperResistance[i];
             teleporterLoadRate[i] = (float) (8.0 * Math.pow(.96125516, i));
             teleporterRadius[i] = (short) (480.0 / teleporterLoadRate[i]);
+
+            // generator
+            generatorCost[i] = teleporterCost[i];
+            generatorMaxHealth[i] = healerMaxHealth[i];
+            generatorResistance[i] = healerResistance[i];
+            generatorRate[i] = Math.pow(1.042628, i + 1.0) - 1.0;
 
 
         }
@@ -866,6 +888,112 @@ public class GuardManager {
                         }
                     }
                 }
+                case GENERATOR -> {
+                    if (i % (300 / GUARD_TICK_DELAY) == 0) {
+                        var container = guard.getPersistentDataContainer();
+                        var level = getLevel(guard);
+                        var rate = generatorRate[level - 1];
+
+                                                                                                            //rate * drops per day
+                        var gunpowder = container.get(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (gunpowder > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.GUNPOWDER));
+                            gunpowder--;
+                        }
+                        container.set(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE, gunpowder);
+
+                        // lapis
+                        var lapis = container.get(GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (lapis > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.LAPIS_LAZULI));
+                            lapis--;
+                        }
+                        container.set(GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE, lapis);
+
+                        // redstone
+                        var redstone = container.get(GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (redstone > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.REDSTONE));
+                            redstone--;
+                        }
+                        container.set(GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE, redstone);
+
+                        // quartz
+                        var quartz = container.get(GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (quartz > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.QUARTZ));
+                            quartz--;
+                        }
+                        container.set(GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE, quartz);
+
+                        // glowstone
+                        var glowstone = container.get(GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (glowstone > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.GLOWSTONE_DUST));
+                            glowstone--;
+                        }
+                        container.set(GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE, glowstone);
+
+                        // iron
+                        var iron = container.get(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE) + ((rate * 432.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (iron > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.IRON_NUGGET));
+                            iron --;
+                        }
+                        container.set(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE, iron);
+
+                        // gold
+                        var gold = container.get(GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE) + ((rate * 432.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (gold > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.GOLD_NUGGET));
+                            gold--;
+                        }
+                        container.set(GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE, gold);
+
+                        // emerald
+                        var emerald = container.get(GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE) + ((rate * 8.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (emerald > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.EMERALD));
+                            emerald--;
+                        }
+                        container.set(GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE, emerald);
+
+                        // magic dust
+                        var magicDust = container.get(GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE) + ((rate * 16.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (magicDust > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1));
+                            magicDust--;
+                        }
+                        container.set(GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE, magicDust);
+
+                        // diamond
+                        var diamond = container.get(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE) + ((rate * 8.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (diamond > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.DIAMOND));
+                            diamond--;
+                        }
+                        container.set(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE, diamond);
+
+                        // netherite
+                        var netherite = container.get(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE) + ((rate * 3.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        if (netherite > 1.0) {
+                            var loc = guard.getLocation();
+                            loc.getWorld().dropItem(loc, new ItemStack(Material.NETHERITE_SCRAP));
+                            netherite--;
+                        }
+                        container.set(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE, netherite);
+                    }
+                }
             }
         }
 
@@ -1009,7 +1137,12 @@ public class GuardManager {
     }
 
     public short getLevel(Entity entity) {
-        return entity.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
+        var container = entity.getPersistentDataContainer();
+        if (container.has(LEVEL_KEY, PersistentDataType.SHORT)) {
+            return entity.getPersistentDataContainer().get(LEVEL_KEY, PersistentDataType.SHORT);
+        } else {
+            return (short) 0;
+        }
     }
 
     public short getCost(Entity entity) {
@@ -1025,6 +1158,7 @@ public class GuardManager {
             case HEALER -> healerCost[level];
             case SNOWMAKER -> snowmakerCost[level];
             case TELEPORTER -> teleporterCost[level];
+            case GENERATOR -> generatorCost[level];
         };
     }
 
@@ -1098,6 +1232,20 @@ public class GuardManager {
                 container.set(ALLOWED_TELEPORTS_KEY, PersistentDataType.INTEGER_ARRAY, new int[0]);
                 teleporterMap.put(newId, entity);
             }
+            case GENERATOR -> {
+                    var container = entity.getPersistentDataContainer();
+                    container.set(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE, 0.0);
+                    container.set(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE, 0.0);
+            }
         }
         setHealth(entity, getHealth(entity));
         return true;
@@ -1139,6 +1287,7 @@ public class GuardManager {
             case HEALER -> healerResistance[level - 1];
             case SNOWMAKER -> snowmakerResistance[level - 1];
             case TELEPORTER -> teleporterResistance[level - 1];
+            case GENERATOR -> generatorResistance[level - 1];
         };
     }
 
@@ -1154,6 +1303,7 @@ public class GuardManager {
             case HEALER -> healerMaxHealth[level - 1];
             case SNOWMAKER -> snowmakerMaxHealth[level - 1];
             case TELEPORTER -> teleporterMaxHealth[level - 1];
+            case GENERATOR -> generatorMaxHealth[level - 1];
         };
     }
 

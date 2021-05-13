@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -298,7 +299,13 @@ public class GuardGuis {
                                         var item = inv.getItem(i);
                                         if (item == null) continue;
                                         if (!bow && item.getType() == Material.BOW && ((Damageable) item.getItemMeta()).getDamage() == 0) {
-                                            inv.setItem(i, new ItemStack(Material.AIR));
+                                            var amount = item.getAmount();
+                                            if (amount == 1) {
+                                                inv.setItem(i, new ItemStack(Material.AIR));
+                                            } else {
+                                                item.setAmount(amount - 1);
+                                                inv.setItem(i, item);
+                                            }
                                             bow = true;
                                         } else if (remaining > 0 && item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
                                             var amount = item.getAmount();
@@ -364,7 +371,13 @@ public class GuardGuis {
                                         var item = inv.getItem(i);
                                         if (item == null) continue;
                                         if (!bow && item.getType() == Material.CROSSBOW && ((Damageable) item.getItemMeta()).getDamage() == 0) {
-                                            inv.setItem(i, new ItemStack(Material.AIR));
+                                            var amount = item.getAmount();
+                                            if (amount == 1) {
+                                                inv.setItem(i, new ItemStack(Material.AIR));
+                                            } else {
+                                                item.setAmount(amount - 1);
+                                                inv.setItem(i, item);
+                                            }
                                             bow = true;
                                         } else if (remaining > 0 && item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
                                             var amount = item.getAmount();
@@ -628,26 +641,26 @@ public class GuardGuis {
                             var clicker = click.getEvent().getWhoClicked();
                             var contents = clicker.getInventory().getContents();
                             var magicDust = 0;
-                            var shell = false;
+                            var shield = false;
                             for (var item : contents) {
                                 if (item == null) continue;
                                 if (item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
                                     magicDust += item.getAmount();
-                                } else if (item.getType() == Material.SHULKER_SHELL) {
-                                    shell = true;
+                                } else if (item.getType() == Material.SHIELD && ((Damageable) item.getItemMeta()).getDamage() == 0) {
+                                    shield = true;
                                 }
                             }
-                            if (magicDust >= 1 && shell) {
+                            if (magicDust >= 1 && shield) {
                                 var success = GuardManager.getInstance().upgradeDefault(guard, GuardManager.Type.TANK);
                                 if (success) {
                                     var inv = clicker.getInventory();
                                     var remaining = 2;
-                                    shell = false;
+                                    shield = false;
                                     for (int i = 0; i < inv.getSize(); i++) {
-                                        if (shell && remaining == 0) break;
+                                        if (shield && remaining == 0) break;
                                         var item = inv.getItem(i);
                                         if (item == null) continue;
-                                        if (!shell && item.getType() == Material.SHULKER_SHELL) {
+                                        if (!shield && item.getType() == Material.SHIELD && ((Damageable) item.getItemMeta()).getDamage() == 0) {
                                             var amount = item.getAmount();
                                             if (amount == 1) {
                                                 inv.setItem(i, new ItemStack(Material.AIR));
@@ -655,7 +668,7 @@ public class GuardGuis {
                                                 item.setAmount(amount - 1);
                                                 inv.setItem(i, item);
                                             }
-                                            shell = true;
+                                            shield = true;
                                         } else if (remaining > 0 && item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
                                             var amount = item.getAmount();
                                             if (amount == 1) {
@@ -687,7 +700,7 @@ public class GuardGuis {
                         ChatColor.GRAY + "Has high health, is highly resistant, and fires explosive missiles",
                         " ",
                         ChatColor.BLUE + "Cost:",
-                        ChatColor.GRAY + "- 1x Shulker Shell",
+                        ChatColor.GRAY + "- 1x Shield (Undamaged)",
                         ChatColor.GRAY + "- 2x Magic Dust"
                 ));
 
@@ -775,7 +788,7 @@ public class GuardGuis {
                                 if (item == null) continue;
                                 if (item.getType() == Material.GLOWSTONE_DUST && CustomItemGenerator.getInstance().isCustomItem(item)) {
                                     magicDust += item.getAmount();
-                                } else if (item.getType() == Material.NETHER_STAR) {
+                                } else if (item.getType() == Material.DAYLIGHT_DETECTOR) {
                                     star = true;
                                 }
                             }
@@ -789,7 +802,7 @@ public class GuardGuis {
                                         if (star && remaining == 0) break;
                                         var item = inv.getItem(i);
                                         if (item == null) continue;
-                                        if (!star && item.getType() == Material.NETHER_STAR) {
+                                        if (!star && item.getType() == Material.DAYLIGHT_DETECTOR) {
                                             var amount = item.getAmount();
                                             if (amount == 1) {
                                                 inv.setItem(i, new ItemStack(Material.AIR));
@@ -829,7 +842,7 @@ public class GuardGuis {
                         ChatColor.GRAY + "Magically generates resources",
                         " ",
                         ChatColor.BLUE + "Cost:",
-                        ChatColor.GRAY + "- 1x Nether Star",
+                        ChatColor.GRAY + "- 1x Light Detector",
                         ChatColor.GRAY + "- 2x Magic Dust"
                 ));
 
@@ -953,6 +966,120 @@ public class GuardGuis {
                 } else {
                     gui = getViewDestinationsGui(guard, viewer);
                 }
+                return gui;
+            }
+            case GENERATOR -> {
+                // title
+                var title = GuardManager.getInstance().getTypePrefix(guard);
+
+                // Crate setup
+                String[] guiSetup = {
+                        "         ",
+                        " lA    J ",
+                        "         ",
+                        " mnopqrs ",
+                        " tuvw    ",
+                        "         "
+                };
+
+                var container = guard.getPersistentDataContainer();
+
+                var diamond = container.get(GuardManager.getInstance().GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE);
+                var emerald = container.get(GuardManager.getInstance().GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE);
+                var glowstone = container.get(GuardManager.getInstance().GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE);
+                var gold = container.get(GuardManager.getInstance().GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE);
+                var gunpowder = container.get(GuardManager.getInstance().GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE);
+                var iron = container.get(GuardManager.getInstance().GENERATOR_IRON_KEY, PersistentDataType.DOUBLE);
+                var lapis = container.get(GuardManager.getInstance().GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE);
+                var magicDust = container.get(GuardManager.getInstance().GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE);
+                var netherite = container.get(GuardManager.getInstance().GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE);
+                var quartz = container.get(GuardManager.getInstance().GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE);
+                var redstone = container.get(GuardManager.getInstance().GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE);
+
+                InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+                gui.setCloseAction(close -> false);
+                gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+                gui.addElement(getLevelUpElement(guard, viewer)); // level up
+                gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
+                gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
+
+                var percent = diamond / 1;
+                gui.addElement(new StaticGuiElement('m',
+                                new ItemStack(Material.DIAMOND),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Diamond",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next diamond generated"
+                        )
+                );
+                percent = emerald / 1;
+                gui.addElement(new StaticGuiElement('n',
+                                new ItemStack(Material.EMERALD),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Emerald",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next emerald generated"
+                        )
+                );
+                percent = glowstone / 1;
+                gui.addElement(new StaticGuiElement('o',
+                                new ItemStack(Material.GLOWSTONE_DUST),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Glowstone Dust",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next glowstone dust generated"
+                        )
+                );
+                percent = gold / (1.0 / 9.0);
+                gui.addElement(new StaticGuiElement('p',
+                                new ItemStack(Material.GOLD_NUGGET),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Gold Nugget",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next gold nugget generated"
+                        )
+                );
+                percent = gunpowder / 1;
+                gui.addElement(new StaticGuiElement('q',
+                                new ItemStack(Material.GUNPOWDER),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Gunpowder",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next gunpowder generated"
+                        )
+                );
+                percent = iron / (1.0 / 9.0);
+                gui.addElement(new StaticGuiElement('r',
+                                new ItemStack(Material.IRON_NUGGET),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Iron Nugget",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next iron nugget generated"
+                        )
+                );
+                percent = lapis / 1;
+                gui.addElement(new StaticGuiElement('s',
+                                new ItemStack(Material.LAPIS_LAZULI),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Lapis Lazuli",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next lapis lazuili generated"
+                        )
+                );
+                percent = magicDust / 1;
+                gui.addElement(new StaticGuiElement('t',
+                                CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1),
+                                "" + ChatColor.GOLD + ChatColor.BOLD + "Magic Dust",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next magic dust generated"
+                        )
+                );
+                percent = netherite / 1;
+                gui.addElement(new StaticGuiElement('u',
+                                new ItemStack(Material.NETHERITE_SCRAP),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Netherite Scrap",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next netherite scrap generated"
+                        )
+                );
+                percent = quartz / 1;
+                gui.addElement(new StaticGuiElement('v',
+                                new ItemStack(Material.QUARTZ),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Nether Quartz",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next nether quartz generated"
+                        )
+                );
+                percent = redstone / 1;
+                gui.addElement(new StaticGuiElement('w',
+                                new ItemStack(Material.REDSTONE),
+                                "" + ChatColor.WHITE + ChatColor.BOLD + "Redstone Dust",
+                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next redstone dust generated"
+                        )
+                );
                 return gui;
             }
             default -> {
