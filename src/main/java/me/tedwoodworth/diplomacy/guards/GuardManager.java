@@ -460,10 +460,13 @@ public class GuardManager {
     }
 
     private void fireSnowball(Location targetLoc, Location guardLoc, Entity guard, short level) {
+        var tempLoc = new Location(targetLoc.getWorld(), guardLoc.getX(), targetLoc.getY(), guardLoc.getZ());
+        var flatDist = tempLoc.distanceSquared(targetLoc);
+
         var guardY = guardLoc.getY() + 0.5;
         var targY = targetLoc.getY();
         guardLoc.setY(guardY);
-        targetLoc.setY(targY + 1);
+        targetLoc.setY(targY + .0037 * flatDist);
         var vec = targetLoc.toVector().subtract(guardLoc.toVector()).normalize();
         var aLoc = new Location(guardLoc.getWorld(), guardLoc.getX() + vec.getX(), guardLoc.getY() + vec.getY(), guardLoc.getZ() + vec.getZ());
         var ball = guardLoc.getWorld().spawn(aLoc, Snowball.class);
@@ -1728,7 +1731,7 @@ public class GuardManager {
                     var vel = living.getVelocity();
                     var ballVel = entity.getVelocity();
                     ballVel.normalize();
-                    ballVel.multiply(0.1);
+                    ballVel.multiply(0.3);
                     vel.add(ballVel);
                     living.setVelocity(vel);
                 }

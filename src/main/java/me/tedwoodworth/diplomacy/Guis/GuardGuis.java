@@ -9,6 +9,7 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -559,8 +560,10 @@ public class GuardGuis {
                 var potion = new ItemStack(Material.POTION);
                 CustomItems.getInstance().addEnchant(potion);
                 var meta = potion.getItemMeta();
+                meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
                 ((PotionMeta) meta).setColor(Color.fromRGB(0xFFC0CB));
                 potion.setItemMeta(meta);
+
 
                 // add healer
                 gui.addElement(new StaticGuiElement(
@@ -1003,81 +1006,70 @@ public class GuardGuis {
                 gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
                 gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
 
-                var percent = diamond / 1;
                 gui.addElement(new StaticGuiElement('m',
                                 new ItemStack(Material.DIAMOND),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Diamond",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next diamond generated"
+                                ChatColor.GRAY + String.format("%.2f", diamond * 100) + "% of next diamond generated"
                         )
                 );
-                percent = emerald / 1;
                 gui.addElement(new StaticGuiElement('n',
                                 new ItemStack(Material.EMERALD),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Emerald",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next emerald generated"
+                                ChatColor.GRAY + String.format("%.2f", emerald * 100) + "% of next emerald generated"
                         )
                 );
-                percent = glowstone / 1;
                 gui.addElement(new StaticGuiElement('o',
                                 new ItemStack(Material.GLOWSTONE_DUST),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Glowstone Dust",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next glowstone dust generated"
+                                ChatColor.GRAY + String.format("%.2f", glowstone * 100) + "% of next glowstone dust generated"
                         )
                 );
-                percent = gold / (1.0 / 9.0);
                 gui.addElement(new StaticGuiElement('p',
                                 new ItemStack(Material.GOLD_NUGGET),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Gold Nugget",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next gold nugget generated"
+                                ChatColor.GRAY + String.format("%.2f", gold * 100) + "% of next gold nugget generated"
                         )
                 );
-                percent = gunpowder / 1;
                 gui.addElement(new StaticGuiElement('q',
                                 new ItemStack(Material.GUNPOWDER),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Gunpowder",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next gunpowder generated"
+                                ChatColor.GRAY + String.format("%.2f", gunpowder * 100) + "% of next gunpowder generated"
                         )
                 );
-                percent = iron / (1.0 / 9.0);
                 gui.addElement(new StaticGuiElement('r',
                                 new ItemStack(Material.IRON_NUGGET),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Iron Nugget",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next iron nugget generated"
+                                ChatColor.GRAY + String.format("%.2f", iron * 100) + "% of next iron nugget generated"
                         )
                 );
-                percent = lapis / 1;
                 gui.addElement(new StaticGuiElement('s',
                                 new ItemStack(Material.LAPIS_LAZULI),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Lapis Lazuli",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next lapis lazuili generated"
+                                ChatColor.GRAY + String.format("%.2f", lapis * 100) + "% of next lapis lazuili generated"
                         )
                 );
-                percent = magicDust / 1;
                 gui.addElement(new StaticGuiElement('t',
                                 CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1),
                                 "" + ChatColor.GOLD + ChatColor.BOLD + "Magic Dust",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next magic dust generated"
+                                ChatColor.GRAY + String.format("%.2f", magicDust * 100) + "% of next magic dust generated"
                         )
                 );
-                percent = netherite / 1;
                 gui.addElement(new StaticGuiElement('u',
                                 new ItemStack(Material.NETHERITE_SCRAP),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Netherite Scrap",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next netherite scrap generated"
+                                ChatColor.GRAY + String.format("%.2f", netherite * 100) + "% of next netherite scrap generated"
                         )
                 );
-                percent = quartz / 1;
                 gui.addElement(new StaticGuiElement('v',
                                 new ItemStack(Material.QUARTZ),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Nether Quartz",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next nether quartz generated"
+                                ChatColor.GRAY + String.format("%.2f", quartz * 100) + "% of next nether quartz generated"
                         )
                 );
-                percent = redstone / 1;
                 gui.addElement(new StaticGuiElement('w',
                                 new ItemStack(Material.REDSTONE),
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "Redstone Dust",
-                                ChatColor.GRAY + String.format("%.3f", percent) + "% of next redstone dust generated"
+                                ChatColor.GRAY + String.format("%.2f", redstone * 100) + "% of next redstone dust generated"
                         )
                 );
                 return gui;
@@ -1325,7 +1317,7 @@ public class GuardGuis {
             var dist = loc.distance(gLoc);
             var strDist = String.format("%.1f", dist);
             var rate = GuardManager.getInstance().getTeleporterLoadRate(guard);
-            var time = dist / 20.0 * rate;
+            var time = dist / 12.0 * rate;
             var strTime = String.format("%.1f", time);
             var element = new StaticGuiElement('g',
                     new ItemStack(Material.END_CRYSTAL),

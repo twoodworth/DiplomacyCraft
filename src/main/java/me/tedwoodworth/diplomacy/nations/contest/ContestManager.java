@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.nations.contest;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -11,9 +12,12 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -190,12 +194,51 @@ public class ContestManager {
         }
     }
 
+    private boolean guardIsVisible(HashSet<DiplomacyPlayer> attackers, Entity guard) {
+        //D to A
+        if (guard.isDead() || !GuardManager.getInstance().isGuard(guard)) {
+            return false;
+        }
+
+        var gLocation = guard.getLocation();
+        gLocation.setY(gLocation.getY() + 0.65);
+        for (var diplomacyAttacker : attackers) {
+            var attacker = diplomacyAttacker.getOfflinePlayer().getPlayer();
+            if (attacker == null) {
+                continue;
+            }
+            var aLocation = attacker.getEyeLocation();
+            if (aLocation.distanceSquared(gLocation) > 256.0) {
+                continue;
+            }
+            var vector = aLocation.toVector().subtract(gLocation.toVector());
+            var j = Math.floor(vector.length());
+            vector.multiply(1 / vector.length());
+            var isVisible = true;
+            for (var i = 0; i <= j; i++) { // check vector to see if it is obstructed.
+                vector = aLocation.toVector().subtract(gLocation.toVector());
+                vector.multiply(1 / vector.length());
+                var world = gLocation.getWorld();
+                var block = world.getBlockAt((gLocation.toVector().add(vector.multiply(i))).toLocation(guard.getWorld()));
+                if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
+                    isVisible = false; // if obstructed, continue.
+                    break;
+                }
+            }
+            if (isVisible) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean defenderIsVisible(HashSet<DiplomacyPlayer> attackers, DiplomacyPlayer diplomacyDefender) {
         //D to A
         var defender = diplomacyDefender.getOfflinePlayer().getPlayer();
         if (defender == null) {
             return false;
         }
+
         var dLocation = defender.getEyeLocation();
         for (var diplomacyAttacker : attackers) {
             var attacker = diplomacyAttacker.getOfflinePlayer().getPlayer();
@@ -203,20 +246,28 @@ public class ContestManager {
                 continue;
             }
             var aLocation = attacker.getEyeLocation();
+            if (aLocation.distanceSquared(dLocation) > 256.0) {
+                continue;
+            }
             var vector = aLocation.toVector().subtract(dLocation.toVector());
             var j = Math.floor(vector.length());
             vector.multiply(1 / vector.length());
-            for (var i = 0; i <= j; i++) {
+            var isVisible = true;
+            for (var i = 0; i <= j; i++) { // check vector to see if it is obstructed.
                 vector = aLocation.toVector().subtract(dLocation.toVector());
                 vector.multiply(1 / vector.length());
                 var world = defender.getWorld();
                 var block = world.getBlockAt((dLocation.toVector().add(vector.multiply(i))).toLocation(defender.getWorld()));
                 if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
-                    return false;
+                    isVisible = false; // if obstructed, continue.
+                    break;
                 }
             }
+            if (isVisible) {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     public void updateProgress(Contest contest) {
@@ -227,66 +278,67 @@ public class ContestManager {
         var defendingNation = diplomacyChunk.getNation();
         Validate.notNull(defendingNation);
         var attackingPlayers = new HashSet<DiplomacyPlayer>();
-        var defendingPlayers = new HashSet<DiplomacyPlayer>();
-        for (var player : Bukkit.getOnlinePlayers()) {
-            var pChunk = player.getLocation().getChunk();
-            var pX = pChunk.getX();
-            var x = chunk.getX();
-            if (pX != x) continue;
+        var defending = new HashSet<>();
+        for (var entity : chunk.getEntities()) {
+            if (GuardManager.getInstance().isGuard(entity)) {
+                defending.add(entity);
+            } else if (entity instanceof Player) {
+                var player = ((Player) entity);
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                var nation = Nations.getInstance().get(diplomacyPlayer);
+                if (nation == null) continue;
 
-
-            var z = chunk.getZ();
-            var pZ = pChunk.getZ();
-            if (pZ != z) continue;
-
-            var pWorld = pChunk.getWorld();
-            var world = chunk.getWorld();
-            if (!world.equals(pWorld)) continue;
-
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            var nation = Nations.getInstance().get(diplomacyPlayer);
-            if (nation == null) continue;
-
-            var nationID = nation.getNationID();
-            var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
-            var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
-            var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
-            var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
-            if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-                attackingPlayers.add(diplomacyPlayer);
-            } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-                defendingPlayers.add(diplomacyPlayer);
+                var nationID = nation.getNationID();
+                var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
+                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), attackingNation);
+                var isDefendingNation = Objects.equals(Nations.getInstance().get(diplomacyPlayer), defendingNation);
+                if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
+                    attackingPlayers.add(diplomacyPlayer);
+                } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                    defending.add(diplomacyPlayer);
+                }
             }
+
         }
 
         var attackingPlayerCount = attackingPlayers.size();
-        int defendingPlayerCount;
+        int defendingCount;
         if (attackingPlayerCount == 0) {
-            defendingPlayerCount = defendingPlayers.size();
+            defendingCount = defending.size();
         } else {
-            defendingPlayerCount = 0;
+            defendingCount = 0;
         }
 
-        for (var defendingPlayer : defendingPlayers) {
-            if (defenderIsVisible(attackingPlayers, defendingPlayer)) {
-                defendingPlayerCount++;
+        for (var defender : defending) {
+            if (defender instanceof DiplomacyPlayer) {
+                var defendingPlayer = (DiplomacyPlayer) defender;
+                if (defenderIsVisible(attackingPlayers, defendingPlayer)) {
+                    defendingCount++;
+                } else {
+                    var offline = defendingPlayer.getOfflinePlayer();
+                    if (offline.getPlayer() == null) continue;
+                    offline.getPlayer().sendTitle(ChatColor.RED + "Not Defending", ChatColor.RED + "Must have line of sight of an attacker to block progress gain", 5, 30, 5);
+                }
+            } else {
+                if (guardIsVisible(attackingPlayers, (Entity) defender)) {
+                    defendingCount++;
+                }
             }
         }
-
-        //TODO defendingPlayers++ for every defending nation guard within the chunk
 
         var attackingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, attackingNation, false);
         var defendingAdjacentCoefficient = getAdjacentCoefficient(diplomacyChunk, defendingNation, false);
 
-        if (attackingPlayerCount > defendingPlayerCount) {
-            contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayerCount - defendingPlayerCount)) * attackingAdjacentCoefficient);
-        } else if (attackingPlayerCount < defendingPlayerCount) {
-            contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingPlayerCount - attackingPlayerCount)) * defendingAdjacentCoefficient);
+        if (attackingPlayerCount > defendingCount) {
+            contest.setProgress(contest.getProgress() + Math.pow(2.0, (attackingPlayerCount - defendingCount)) * attackingAdjacentCoefficient);
+        } else if (attackingPlayerCount < defendingCount) {
+            contest.setProgress(contest.getProgress() - Math.pow(2.0, (defendingCount - attackingPlayerCount)) * defendingAdjacentCoefficient);
         } else if (attackingPlayerCount == 0 && contest.getVacantTimer() == 600) {
             contest.setProgress(contest.getProgress() - Math.pow(2.0, (0.5)) * defendingAdjacentCoefficient);
         }
 
-        if (attackingPlayerCount == 0 && defendingPlayerCount == 0) {
+        if (attackingPlayerCount == 0 && defendingCount == 0) {
             if (contest.getVacantTimer() < 600) {
                 contest.setVacantTimer(contest.getVacantTimer() + 1);
             }

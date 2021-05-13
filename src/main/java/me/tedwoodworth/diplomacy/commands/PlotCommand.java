@@ -202,6 +202,13 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return;
         }
         var player = (Player) sender;
+
+        var world = player.getWorld();
+        if (!world.equals(Bukkit.getWorld("world"))) {
+            player.sendMessage(ChatColor.RED + "You cannot contest here.");
+            return;
+        }
+
         var uuid = (player).getUniqueId();
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
         var attackingNation = Nations.getInstance().get(diplomacyPlayer);
