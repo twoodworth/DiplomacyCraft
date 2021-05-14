@@ -8,7 +8,10 @@ import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.*;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import org.bukkit.*;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -242,7 +245,33 @@ public class DiplomacyPlayers {
         this.guideBook = guideBook;
     }
 
-    public boolean canBuildHere(Chunk chunk, Player player) {
+    public boolean canBuildHere(Block block, Player player) {
+        var biome = block.getBiome();
+        if (biome == Biome.OCEAN || biome == Biome.COLD_OCEAN || biome == Biome.DEEP_COLD_OCEAN || biome == Biome.DEEP_FROZEN_OCEAN
+                || biome == Biome.DEEP_LUKEWARM_OCEAN || biome == Biome.DEEP_OCEAN || biome == Biome.DEEP_WARM_OCEAN || biome == Biome.FROZEN_OCEAN
+                || biome == Biome.LUKEWARM_OCEAN || biome == Biome.WARM_OCEAN) {
+            var height = block.getY();
+            var seaLevel = new Location(block.getWorld(), block.getX(), 33, block.getZ());
+            if (height >= 34 && seaLevel.getBlock().getType() == Material.WATER) {
+                return false;
+            } else {
+                var isBelow = false;
+                var current = block.getRelative(BlockFace.UP);
+                for (int i = height; i < 34; i++) {
+                    if (current.getType() != Material.WATER) {
+                        isBelow = true;
+                        break;
+                    } else {
+                        current = current.getRelative(BlockFace.UP);
+                    }
+                }
+                if (!isBelow) {
+                    return false;
+                }
+            }
+        }
+        var chunk = block.getChunk();
+        // check if ocean
         // Return true if there is no nation
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var nation = diplomacyChunk.getNation();
@@ -498,10 +527,9 @@ public class DiplomacyPlayers {
 
         @EventHandler(ignoreCancelled = true)
         private void onBlockPlaceEvent(BlockPlaceEvent event) {
-            var chunk = event.getBlock().getLocation().getChunk();
+            var block = event.getBlock();
             var player = event.getPlayer();
-
-            if (canBuildHere(chunk, player)) return;
+            if (canBuildHere(block, player)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot build here.");
             event.setCancelled(true);
@@ -511,10 +539,9 @@ public class DiplomacyPlayers {
         private void onPlayerBucketFill(PlayerBucketFillEvent event) {
             var block = event.getBlock();
 
-            var chunk = block.getLocation().getChunk();
             var player = event.getPlayer();
 
-            if (canBuildHere(chunk, player)) return;
+            if (canBuildHere(block, player)) return;
 
             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
             event.setCancelled(true);
@@ -523,11 +550,8 @@ public class DiplomacyPlayers {
         @EventHandler
         private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
             var block = event.getBlock();
-
-            var chunk = block.getLocation().getChunk();
             var player = event.getPlayer();
-
-            if (canBuildHere(chunk, player)) return;
+            if (canBuildHere(block, player)) return;
 
             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
             event.setCancelled(true);
@@ -560,8 +584,7 @@ public class DiplomacyPlayers {
                             if (block.getWorld().getEnvironment().equals(World.Environment.NETHER)) return;
 
                             var player = event.getPlayer();
-                            var chunk = block.getChunk();
-                            if (canBuildHere(chunk, player)) return;
+                            if (canBuildHere(block, player)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -569,8 +592,7 @@ public class DiplomacyPlayers {
                         }
                         case ITEM_FRAME, COMPOSTER -> {
                             var player = event.getPlayer();
-                            var chunk = block.getChunk();
-                            if (canBuildHere(chunk, player)) return;
+                            if (canBuildHere(block, player)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -581,8 +603,7 @@ public class DiplomacyPlayers {
                             if (block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) return;
 
                             var player = event.getPlayer();
-                            var chunk = block.getChunk();
-                            if (canBuildHere(chunk, player)) return;
+                            if (canBuildHere(block, player)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -593,8 +614,7 @@ public class DiplomacyPlayers {
                 case PHYSICAL -> {
                     if (block.getType() == Material.FARMLAND) {
                         var player = event.getPlayer();
-                        var chunk = block.getChunk();
-                        if (canBuildHere(chunk, player)) return;
+                        if (canBuildHere(block, player)) return;
 
                         player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
                         event.setCancelled(true);
@@ -609,8 +629,7 @@ public class DiplomacyPlayers {
                     switch (itemType) {
                         case FLINT_AND_STEEL, FIRE_CHARGE, END_CRYSTAL, PAINTING, ITEM_FRAME -> {
                             var player = event.getPlayer();
-                            var chunk = block.getChunk();
-                            if (canBuildHere(chunk, player)) return;
+                            if (canBuildHere(block, player)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -732,9 +751,9 @@ public class DiplomacyPlayers {
         @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
 
-            var chunk = event.getBlock().getChunk();
+            var block = event.getBlock();
             var player = event.getPlayer();
-            if (canBuildHere(chunk, player)) return;
+            if (canBuildHere(block, player)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");
             event.setCancelled(true);

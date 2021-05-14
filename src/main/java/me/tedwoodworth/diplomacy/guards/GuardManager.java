@@ -23,8 +23,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
@@ -39,8 +37,6 @@ public class GuardManager {
     private final Set<Player> interactSet = new HashSet<>();
     private final HashMap<Player, String> guardDamage = new HashMap<>();
     private final HashMap<DiplomacyPlayer, HashSet<Nation>> autoOutlaw = new HashMap<>();
-    // Math stuff
-    private final double GRAVITY_CONSTANT = 0.05;
 
     // all guards
     private final NamespacedKey LEVEL_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_level");
@@ -64,7 +60,6 @@ public class GuardManager {
     private final float[] sniperResistance = new float[100];
     private final float[] sniperRadius = new float[100];
     private final float[] sniperPower = new float[100];
-    private final int SNIPER_DELAY = 80;
 
     // gunner
     private final short[] gunnerCost = new short[100];
@@ -82,7 +77,6 @@ public class GuardManager {
     private final float[] tankResistance = new float[100];
     private final float[] tankVelocity = new float[100];
     private final float[] tankPower = new float[100];
-    private final int TANK_DELAY = 160;
 
     // flamethrower
     private final Map<Item, Entity> flames = new HashMap<>();
@@ -141,7 +135,6 @@ public class GuardManager {
 
     // all
     private final int GUARD_TICK_DELAY = 2;
-    private final int GUARD_HEAL_DELAY = 10;
 
 
     public static GuardManager getInstance() {
@@ -397,6 +390,8 @@ public class GuardManager {
         var avgSpeed = speed - tempD / 200.0; // adjust for drag
         var speedSquared = Math.pow(avgSpeed, 2);
         var y = targetLoc.getY() - guardLoc.getY();
+        // Math stuff
+        double GRAVITY_CONSTANT = 0.05;
         var a = Math.max(0, Math.pow(speedSquared, 2) - GRAVITY_CONSTANT * (GRAVITY_CONSTANT * ds + 2 * y * speedSquared));
         a = Math.sqrt(a);
         a = Math.min(speedSquared + a, speedSquared - a);
@@ -782,6 +777,7 @@ public class GuardManager {
 
     private void onGuardTick(int i) {
         var healMap = new HashMap<Entity, Integer>();
+        int GUARD_HEAL_DELAY = 10;
         var isHealTick = i % (GUARD_HEAL_DELAY / GUARD_TICK_DELAY) == 0;
         for (var guard : new HashSet<>(guards)) {
             if (guard.isDead()) {
@@ -797,6 +793,7 @@ public class GuardManager {
             var type = getType(guard);
             switch (type) {
                 case SNIPER -> {
+                    int SNIPER_DELAY = 80;
                     if (i % (SNIPER_DELAY / GUARD_TICK_DELAY) == 0) {
                         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
                             if (guard.isDead()) {
@@ -831,6 +828,7 @@ public class GuardManager {
                     }
                 }
                 case TANK -> {
+                    int TANK_DELAY = 160;
                     if (i % (TANK_DELAY / GUARD_TICK_DELAY) == 0) {
                         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
                             var radius = 50.0;
@@ -1440,8 +1438,9 @@ public class GuardManager {
             return true;
         }
 
-        var chunk = damager.getLocation().getChunk();
-        var canBuild = DiplomacyPlayers.getInstance().canBuildHere(chunk, damager);
+        var block = damager.getLocation().getBlock();
+        var chunk = block.getChunk();
+        var canBuild = DiplomacyPlayers.getInstance().canBuildHere(block, damager);
         var attackTresspassers = getAttackTrespassers(guard);
         var isNationChunk = Objects.equals(guardNation, DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation());
         if (!canBuild && attackTresspassers && isNationChunk) {
