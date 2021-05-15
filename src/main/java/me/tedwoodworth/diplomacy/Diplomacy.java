@@ -8,6 +8,7 @@ import me.tedwoodworth.diplomacy.chat.ChatNotifications;
 import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.entities.Entities;
 //import me.tedwoodworth.diplomacy.geology.*;
+import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.lives_and_tax.LivesCommand;
@@ -19,6 +20,7 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import me.tedwoodworth.diplomacy.spawning.SpawnManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.WorldCreator;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -30,6 +32,8 @@ public class Diplomacy extends JavaPlugin {
     public void onEnable() {
         instance = this;
         //noinspection ConstantConditions
+        WorldManager.getInstance().registerEvents();
+        System.out.println("[Diplomacy] Loaded worlds & registered world events");
         PlotCommand.register(getCommand("plot"));
         NationCommand.register(getCommand("nation"));
         GuardCommand.register(getCommand("guard"));

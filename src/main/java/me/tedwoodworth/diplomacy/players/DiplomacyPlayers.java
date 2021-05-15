@@ -3,6 +3,7 @@ package me.tedwoodworth.diplomacy.players;
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.Items;
+import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.nations.*;
@@ -11,7 +12,6 @@ import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Levelled;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -21,7 +21,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -488,9 +487,66 @@ public class DiplomacyPlayers {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         private void onPlayerMove(PlayerMoveEvent event) {
+            var from = event.getFrom();
+            var to = event.getTo();
+            var toY = to.getY();
+            var toWorld = to.getWorld();
+            if (Objects.equals(toWorld, WorldManager.getInstance().getOverworld()) && toY < 4) {
+                var subword = WorldManager.getInstance().getSubworld();
+                var player = event.getPlayer();
+                var velocity = player.getVelocity();
+                var chunk = to.getChunk();
+                var yaw = to.getYaw();
+                var pitch = to.getPitch();
+                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
+                player.teleport(new Location(subword, to.getX(), toY + 118, to.getZ(), yaw, pitch));
+                player.setVelocity(velocity);
+                player.sendTitle(ChatColor.GRAY + "Subworld", ChatColor.GRAY + "Travel back upwards to return to the overworld", 10, 60, 10);
+                return;
+            } else if (Objects.equals(toWorld, WorldManager.getInstance().getSubworld()) && toY >= 122.2) {
+                var world = WorldManager.getInstance().getOverworld();
+                var player = event.getPlayer();
+                var velocity = player.getVelocity();
+                var chunk = to.getChunk();
+                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
+                var yaw = to.getYaw();
+                var pitch = to.getPitch();
+                player.teleport(new Location(world, to.getX(), toY - 118, to.getZ(), yaw, pitch));
+                player.setVelocity(velocity);
+                player.sendTitle(ChatColor.GREEN + "Overworld", ChatColor.GREEN + "Travel back downwards to return to the subworld", 10, 60, 10);
+
+                to = player.getLocation();
+            } else if (Objects.equals(toWorld, WorldManager.getInstance().getSubworld()) && toY < 4) {
+                var world = WorldManager.getInstance().getNether();
+                var player = event.getPlayer();
+                var velocity = player.getVelocity();
+                var chunk = to.getChunk();
+                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
+                var yaw = to.getYaw();
+                var pitch = to.getPitch();
+                player.teleport(new Location(world, to.getX(), toY + 153, to.getZ(), yaw, pitch));
+                player.setVelocity(velocity);
+                player.sendTitle(ChatColor.RED + "Nether", ChatColor.RED + "Travel back upwards to return to the subworld", 10, 60, 10);
+                return;
+            } else if (Objects.equals(toWorld, WorldManager.getInstance().getNether()) && toY >= 157.2) {
+                var world = WorldManager.getInstance().getSubworld();
+                var player = event.getPlayer();
+                var velocity = player.getVelocity();
+                var chunk = to.getChunk();
+                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
+                var yaw = to.getYaw();
+                var pitch = to.getPitch();
+                player.teleport(new Location(world, to.getX(), toY - 153, to.getZ(), yaw, pitch));
+                player.setVelocity(velocity);
+                player.sendTitle(ChatColor.GRAY + "Subworld", ChatColor.GRAY + "Travel downwards to return to the nether, or upwards to return to the overworld", 10, 60, 10);
+                return;
+            }
+
+
             var fromChunk = event.getFrom().getChunk();
-            var toChunk = event.getTo().getChunk();
+            var toChunk = to.getChunk();
             if (!fromChunk.equals(toChunk)) {
+                WorldManager.getInstance().adjustChunks(toChunk.getX(), toChunk.getZ());
                 var fromDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk);
                 var toDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk);
 

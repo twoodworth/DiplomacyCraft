@@ -1647,61 +1647,63 @@ public class GuardManager {
             }
             var hand = event.getHand();
             var equipment = player.getEquipment();
-            var item = equipment.getItem(hand);
-            if (type == Action.RIGHT_CLICK_BLOCK && CustomItemGenerator.getInstance().isCustomItem(item) &&
-                    CustomItems.getInstance().getEnum(CustomItemGenerator.getInstance().getCustomID(item)) == CustomItems.CustomID.GUARD_CRYSTAL) {
-                var block = event.getClickedBlock();
-                var face = event.getBlockFace();
-                var place = block.getRelative(face);
-                var loc = place.getLocation();
-                event.setCancelled(true);
-                var notNearby = true;
-                var nearby = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
-                for (var near : nearby) {
-                    if (isGuard(near)) {
-                        notNearby = false;
-                        break;
+            if (equipment != null && hand == null) {
+                var item = equipment.getItem(hand);
+                if (type == Action.RIGHT_CLICK_BLOCK && CustomItemGenerator.getInstance().isCustomItem(item) &&
+                        CustomItems.getInstance().getEnum(CustomItemGenerator.getInstance().getCustomID(item)) == CustomItems.CustomID.GUARD_CRYSTAL) {
+                    var block = event.getClickedBlock();
+                    var face = event.getBlockFace();
+                    var place = block.getRelative(face);
+                    var loc = place.getLocation();
+                    event.setCancelled(true);
+                    var notNearby = true;
+                    var nearby = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
+                    for (var near : nearby) {
+                        if (isGuard(near)) {
+                            notNearby = false;
+                            break;
+                        }
                     }
-                }
-                if (place.isEmpty() && notNearby) { // if location is okay
+                    if (place.isEmpty() && notNearby) { // if location is okay
 
-                    // check if in nation
-                    var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                    var playerNation = Nations.getInstance().get(dp);
-                    if (playerNation == null) {
-                        player.sendMessage(ChatColor.RED + "You must be part of a nation to place guard crystals.");
-                        return;
-                    }
+                        // check if in nation
+                        var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                        var playerNation = Nations.getInstance().get(dp);
+                        if (playerNation == null) {
+                            player.sendMessage(ChatColor.RED + "You must be part of a nation to place guard crystals.");
+                            return;
+                        }
 
-                    // check nation permissions
-                    var permissions = playerNation.getMemberClass(dp).getPermissions();
-                    var canManageGuards = permissions.get("CanManageGuards");
-                    if (!canManageGuards) {
-                        player.sendMessage(ChatColor.RED + "You do not have permission to place guard crystals.");
-                        return;
-                    }
+                        // check nation permissions
+                        var permissions = playerNation.getMemberClass(dp).getPermissions();
+                        var canManageGuards = permissions.get("CanManageGuards");
+                        if (!canManageGuards) {
+                            player.sendMessage(ChatColor.RED + "You do not have permission to place guard crystals.");
+                            return;
+                        }
 
-                    // Check location
-                    var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk());
-                    var nation = diplomacyChunk.getNation();
-                    if (nation == null || !Objects.equals(nation, playerNation)) {
-                        player.sendMessage(ChatColor.RED + "You can only place guard crystals inside your nation's territory.");
-                        return;
-                    }
+                        // Check location
+                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(loc.getChunk());
+                        var nation = diplomacyChunk.getNation();
+                        if (nation == null || !Objects.equals(nation, playerNation)) {
+                            player.sendMessage(ChatColor.RED + "You can only place guard crystals inside your nation's territory.");
+                            return;
+                        }
 
 
-                    spawnGuard(loc);
-                    var amount = item.getAmount();
-                    if (amount == 1) {
-                        equipment.setItem(hand, new ItemStack(Material.AIR));
+                        spawnGuard(loc);
+                        var amount = item.getAmount();
+                        if (amount == 1) {
+                            equipment.setItem(hand, new ItemStack(Material.AIR));
+                        } else {
+                            item.setAmount(amount - 1);
+                            equipment.setItem(hand, item);
+                        }
                     } else {
-                        item.setAmount(amount - 1);
-                        equipment.setItem(hand, item);
-                    }
-                } else {
-                    player.sendMessage(ChatColor.RED + "Not enough room here.");
-                    if (!notNearby) {
-                        player.sendMessage(ChatColor.RED + "This location is too close to another guard crystal.");
+                        player.sendMessage(ChatColor.RED + "Not enough room here.");
+                        if (!notNearby) {
+                            player.sendMessage(ChatColor.RED + "This location is too close to another guard crystal.");
+                        }
                     }
                 }
             }
