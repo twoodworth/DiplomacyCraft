@@ -6,8 +6,10 @@ import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.nations.*;
-import me.tedwoodworth.diplomacy.spawning.SpawnManager;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -19,7 +21,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -341,19 +344,6 @@ public class DiplomacyPlayers {
         void onPluginDisable(PluginDisableEvent event) {
             if (event.getPlugin().equals(Diplomacy.getInstance())) {
                 save();
-            }
-        }
-
-        @EventHandler
-        private void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-            var player = event.getPlayer();
-            if (event.getFrom().getEnvironment().equals(World.Environment.THE_END) && !player.getWorld().getEnvironment().equals(World.Environment.THE_END)) {
-                if (player.getBedSpawnLocation() == null) {
-                    var location = SpawnManager.getInstance().getRespawnLocation(player.getLocation(), false);
-                    if (location != null) {
-                        player.teleport(location);
-                    }
-                }
             }
         }
 

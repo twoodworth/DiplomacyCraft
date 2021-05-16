@@ -316,7 +316,7 @@ public class GuardManager {
             teleporterMaxHealth[i] = healerMaxHealth[i];
             teleporterResistance[i] = sniperResistance[i];
             teleporterLoadRate[i] = (float) (8.0 * Math.pow(.96125516, i));
-            teleporterRadius[i] = (short) (480.0 / teleporterLoadRate[i]);
+            teleporterRadius[i] = (short) (800.0 / teleporterLoadRate[i]);
 
             // generator
             generatorCost[i] = teleporterCost[i];

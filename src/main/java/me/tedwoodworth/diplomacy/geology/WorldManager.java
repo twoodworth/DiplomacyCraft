@@ -2,10 +2,8 @@ package me.tedwoodworth.diplomacy.geology;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,9 +11,7 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.BrewingStandFuelEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +21,7 @@ public class WorldManager {
     private final World overworld = Bukkit.getWorld("world");
     private final World nether = Bukkit.getWorld("world_nether");
     private final World end = Bukkit.getWorld("world_the_end");
+    private final World spawn = Bukkit.getWorld("spawn");
     private static WorldManager instance = null;
     public final NamespacedKey ADJUSTED_KEY = new NamespacedKey(Diplomacy.getInstance(), "chunk_is_adjusted");
 
@@ -38,14 +35,21 @@ public class WorldManager {
     public World getOverworld() {
         return overworld;
     }
+
     public World getSubworld() {
         return subworld;
     }
+
     public World getNether() {
         return nether;
     }
+
     public World getEnd() {
         return end;
+    }
+
+    public World getSpawn() {
+        return spawn;
     }
 
 
