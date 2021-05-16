@@ -21,10 +21,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class WorldManager {
 
-    public final World subworld = Bukkit.createWorld(new WorldCreator("subworld"));
-    public final World overworld = Bukkit.getWorld("world");
-    public final World nether = Bukkit.getWorld("world_nether");
-    public final World end = Bukkit.getWorld("world_the_end");
+    private final World subworld = Bukkit.createWorld(new WorldCreator("subworld"));
+    private final World overworld = Bukkit.getWorld("world");
+    private final World nether = Bukkit.getWorld("world_nether");
+    private final World end = Bukkit.getWorld("world_the_end");
     private static WorldManager instance = null;
     public final NamespacedKey ADJUSTED_KEY = new NamespacedKey(Diplomacy.getInstance(), "chunk_is_adjusted");
 
@@ -38,12 +38,14 @@ public class WorldManager {
     public World getOverworld() {
         return overworld;
     }
-
     public World getSubworld() {
         return subworld;
     }
     public World getNether() {
         return nether;
+    }
+    public World getEnd() {
+        return end;
     }
 
 
@@ -58,7 +60,15 @@ public class WorldManager {
         }
         for (int tempX = 0; tempX < 16; tempX++) {
             for (int tempZ = 0; tempZ < 16; tempZ++) {
-
+                for (int tempY = 1; tempY < overworld.getMaxHeight(); tempY++) {
+                    var block = overChunk.getBlock(tempX, tempY, tempZ);
+                    var type = block.getType();
+                    if (type == Material.BEDROCK) {
+                        block.setType(Material.STONE);
+                    } else if (type == Material.DIAMOND_ORE || type == Material.EMERALD_ORE || type == Material.GOLD_ORE || type == Material.LAPIS_ORE || type == Material.REDSTONE_ORE) {
+                        block.setType(Material.IRON_ORE);
+                    }
+                }
                 for (int tempY = 127; tempY < 135; tempY++) { // subchunk create roof
                     subChunk.getBlock(tempX, tempY, tempZ).setType(Material.BEDROCK, true);
                 }
@@ -186,13 +196,13 @@ public class WorldManager {
         if (block == null) return;
         var y = block.getY();
         if (world.equals(overworld) && y <= 8 && y >= 1) {
-            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> adjustBlocks(block));
+            adjustBlocks(block);
         } else if (world.equals(subworld) && y <= 126 && y >= 119) {
-            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> adjustBlocks(block));
+            adjustBlocks(block);
         } else if (world.equals(subworld) && y <= 8 && y >= 1) {
-            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> adjustBlocksNether(block));
+            adjustBlocksNether(block);
         } else if (world.equals(nether) && y <= 161 && y >= 154) {
-            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> adjustBlocksNether(block));
+            adjustBlocksNether(block);
         }
     }
 

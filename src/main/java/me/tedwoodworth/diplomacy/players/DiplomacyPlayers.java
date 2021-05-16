@@ -270,7 +270,20 @@ public class DiplomacyPlayers {
             }
         }
         var chunk = block.getChunk();
-        // check if ocean
+        var world = chunk.getWorld();
+        var wm = WorldManager.getInstance();
+        if (world.equals(wm.getEnd()) || world.equals(wm.getNether())) {
+            return true;
+        } else if (world.equals(wm.getSubworld())) {
+            if (block.getLocation().getY() < 119) {
+                return true;
+            } else {
+                var x = chunk.getX();
+                var z = chunk.getZ();
+                chunk = wm.getOverworld().getChunkAt(x, z);
+            }
+        }
+
         // Return true if there is no nation
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var nation = diplomacyChunk.getNation();
@@ -499,7 +512,11 @@ public class DiplomacyPlayers {
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
                 WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
-                player.teleport(new Location(subword, to.getX(), toY + 118, to.getZ(), yaw, pitch));
+                var nLoc = new Location(subword, to.getX(), toY + 118, to.getZ(), yaw, pitch);
+                player.teleport(nLoc);
+                if (player.getLocation().distanceSquared(nLoc) > 2.0) {
+                    player.teleport(nLoc);
+                }
                 player.setVelocity(velocity);
                 player.sendTitle(ChatColor.GRAY + "Subworld", ChatColor.GRAY + "Travel back upwards to return to the overworld", 10, 60, 10);
                 return;
@@ -511,10 +528,13 @@ public class DiplomacyPlayers {
                 WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
-                player.teleport(new Location(world, to.getX(), toY - 118, to.getZ(), yaw, pitch));
+                var nLoc = new Location(world, to.getX(), toY - 118, to.getZ(), yaw, pitch);
+                player.teleport(nLoc);
+                if (player.getLocation().distanceSquared(nLoc) > 2.0) {
+                    player.teleport(nLoc);
+                }
                 player.setVelocity(velocity);
                 player.sendTitle(ChatColor.GREEN + "Overworld", ChatColor.GREEN + "Travel back downwards to return to the subworld", 10, 60, 10);
-
                 to = player.getLocation();
             } else if (Objects.equals(toWorld, WorldManager.getInstance().getSubworld()) && toY < 4) {
                 var world = WorldManager.getInstance().getNether();
@@ -524,7 +544,11 @@ public class DiplomacyPlayers {
                 WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
-                player.teleport(new Location(world, to.getX(), toY + 153, to.getZ(), yaw, pitch));
+                var nLoc = new Location(world, to.getX(), toY + 153, to.getZ(), yaw, pitch);
+                player.teleport(nLoc);
+                if (player.getLocation().distanceSquared(nLoc) > 2.0) {
+                    player.teleport(nLoc);
+                }
                 player.setVelocity(velocity);
                 player.sendTitle(ChatColor.RED + "Nether", ChatColor.RED + "Travel back upwards to return to the subworld", 10, 60, 10);
                 return;
@@ -536,6 +560,7 @@ public class DiplomacyPlayers {
                 WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
+                player.teleport(new Location(world, to.getX(), toY - 153, to.getZ(), yaw, pitch));
                 player.teleport(new Location(world, to.getX(), toY - 153, to.getZ(), yaw, pitch));
                 player.setVelocity(velocity);
                 player.sendTitle(ChatColor.GRAY + "Subworld", ChatColor.GRAY + "Travel downwards to return to the nether, or upwards to return to the overworld", 10, 60, 10);
@@ -807,8 +832,10 @@ public class DiplomacyPlayers {
         @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
 
+
             var block = event.getBlock();
             var player = event.getPlayer();
+
             if (canBuildHere(block, player)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");
