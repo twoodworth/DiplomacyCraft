@@ -5,7 +5,7 @@ description: This plugin allows players to create nations, and modifies the game
 author: Tedsworth
 
 api-version: 1.16
-depend: [ Vault ]
+depend: [ ]
 
 commands:
   plot:

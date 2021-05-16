@@ -113,9 +113,9 @@ public class NationGuiFactory {
 
         var title = "" + ChatColor.BLUE + ChatColor.BOLD + player.getName();
         String[] guiSetup = {
-                "   bac  g",
-                "         ",
-                "   def  h"
+                "    a   g",
+                "   bef   ",
+                "        h"
         };
 
         InventoryGui gui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
@@ -172,25 +172,6 @@ public class NationGuiFactory {
             }
         }
 
-        if (Objects.equals(Bukkit.getOfflinePlayer(player.getUniqueId()), player)) {
-            gui.addElement(new StaticGuiElement('d',
-                    new ItemStack(Material.DIAMOND),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                    ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(player)),
-                    " ",
-                    ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/deposit <amount>",
-                    ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/withdraw <amount>"
-            ));
-        } else {
-            gui.addElement(new StaticGuiElement('d',
-                    new ItemStack(Material.DIAMOND),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                    ChatColor.GRAY + "\u00A4" + formatter.format(Diplomacy.getEconomy().getBalance(player))
-            ));
-        }
-
         if (nation != null) {
             gui.addElement(new StaticGuiElement('e',
                     new ItemStack(Material.NETHER_STAR),
@@ -242,8 +223,8 @@ public class NationGuiFactory {
         String[] guiSetup = {
                 "        z",
                 "   bai  p",
-                "  oeumn q",
-                "  cdsgf r",
+                "   mnf  q",
+                "   cdg  r",
                 "   klh   ",
                 "        t"
         };
@@ -285,20 +266,6 @@ public class NationGuiFactory {
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Menu",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "Go to menu"
-        ));
-
-        // Nation balance element
-        var nationWealth = nation.getBalance();
-        var strNationWealth = "\u00A4" + formatter.format(nationWealth);
-        gui.addElement(new StaticGuiElement('e',
-                new ItemStack(Material.DIAMOND),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                " ",
-                ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
-                ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
-
         ));
 
         // Nation groups element
@@ -396,29 +363,6 @@ public class NationGuiFactory {
                 },
                 "" + ChatColor.YELLOW + ChatColor.BOLD + "Nation list",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View nation list"
-        ));
-
-        // Nation guards element
-        gui.addElement(new StaticGuiElement('s',
-                new ItemStack(Material.ZOMBIE_HEAD),
-                click -> {
-                    var clicker = click.getEvent().getWhoClicked();
-                    var diplomacyClicker = DiplomacyPlayers.getInstance().get(clicker.getUniqueId());
-                    var clickerNation = Nations.getInstance().get(diplomacyClicker);
-                    if (!(Objects.equals(nation, clickerNation))) {
-                        clicker.sendMessage(ChatColor.RED + "You do not have permission.");
-                        return true;
-                    }
-                    var memberClass = nation.getMemberClass(diplomacyClicker);
-                    if (memberClass == null || !memberClass.getPermissions().get("CanManageGuards")) {
-                        clicker.sendMessage(ChatColor.RED + "You do not have permission.");
-                        return true;
-                    }
-                    clicker.sendMessage(ChatColor.RED + "Feature coming soon."); //TODO add
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Guards",
-                ChatColor.BLUE + "Coming soon: " + ChatColor.GRAY + "View guards"
         ));
 
         // Nation escape element

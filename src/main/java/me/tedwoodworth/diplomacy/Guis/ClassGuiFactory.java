@@ -1189,56 +1189,56 @@ public class ClassGuiFactory {
         ));
 
 
-        item = new ItemStack(Material.REDSTONE_BLOCK);
-        color = ChatColor.RED;
-        var wPermissionKey = "CanDeposit";
-        permission = permissions.get(wPermissionKey);
-        if (permission) {
-            item = new ItemStack(Material.EMERALD_BLOCK);
-            color = ChatColor.GREEN;
-        }
+//        item = new ItemStack(Material.REDSTONE_BLOCK);
+//        color = ChatColor.RED;
+//        var wPermissionKey = "CanDeposit";
+//        permission = permissions.get(wPermissionKey);
+//        if (permission) {
+//            item = new ItemStack(Material.EMERALD_BLOCK);
+//            color = ChatColor.GREEN;
+//        }
         gui.addElement(new StaticGuiElement('w',
-                item,
+                new ItemStack(Material.BEDROCK),
                 click -> {
-                    nation.toggleClassPermission(nationClass, player, wPermissionKey);
-                    var nGui = createChangeClassSettings(nation, player, nationClass);
-                    nGui.show(player);
+//                    nation.toggleClassPermission(nationClass, player, wPermissionKey);
+//                    var nGui = createChangeClassSettings(nation, player, nationClass);
+//                    nGui.show(player);
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + wPermissionKey,
-                ChatColor.BLUE + "Currently: " + color + permission,
-                " ",
-                ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player can use \"/nation deposit\".",
-                " ",
-                ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player cannot use \"/nation deposit\"."
+                "" + ChatColor.GRAY + ChatColor.BOLD + "Permission removed"
+//                ChatColor.BLUE + "Currently: " + color + permission,
+//                " ",
+//                ChatColor.BLUE + "If true: ",
+//                ChatColor.GRAY + "Player can use \"/nation deposit\".",
+//                " ",
+//                ChatColor.BLUE + "If false: ",
+//                ChatColor.GRAY + "Player cannot use \"/nation deposit\"."
         ));
 
-        item = new ItemStack(Material.REDSTONE_BLOCK);
-        color = ChatColor.RED;
-        var xPermissionKey = "CanWithdraw";
-        permission = permissions.get(xPermissionKey);
-        if (permission) {
-            item = new ItemStack(Material.EMERALD_BLOCK);
-            color = ChatColor.GREEN;
-        }
+//        item = new ItemStack(Material.REDSTONE_BLOCK);
+//        color = ChatColor.RED;
+//        var xPermissionKey = "CanWithdraw";
+//        permission = permissions.get(xPermissionKey);
+//        if (permission) {
+//            item = new ItemStack(Material.EMERALD_BLOCK);
+//            color = ChatColor.GREEN;
+//        }
         gui.addElement(new StaticGuiElement('x',
-                item,
+                new ItemStack(Material.BEDROCK),
                 click -> {
-                    nation.toggleClassPermission(nationClass, player, xPermissionKey);
-                    var nGui = createChangeClassSettings(nation, player, nationClass);
-                    nGui.show(player);
+//                    nation.toggleClassPermission(nationClass, player, xPermissionKey);
+//                    var nGui = createChangeClassSettings(nation, player, nationClass);
+//                    nGui.show(player);
                     return true;
                 },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + xPermissionKey,
-                ChatColor.BLUE + "Currently: " + color + permission,
-                " ",
-                ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player can use \"/nation withdraw\".",
-                " ",
-                ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player cannot use \"/nation withdraw\"."
+                "" + ChatColor.GRAY + ChatColor.BOLD + "Permission removed"
+//                ChatColor.BLUE + "Currently: " + color + permission,
+//                " ",
+//                ChatColor.BLUE + "If true: ",
+//                ChatColor.GRAY + "Player can use \"/nation withdraw\".",
+//                " ",
+//                ChatColor.BLUE + "If false: ",
+//                ChatColor.GRAY + "Player cannot use \"/nation withdraw\"."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);

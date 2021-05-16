@@ -311,7 +311,7 @@ public class RecipeGuis {
                 " aaa aaa ",
                 "         ",
         };
-        var magicalDust2 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
+        var magicalDust2 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 8);
         itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
         itemGui.setCloseAction(close -> false);
         itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
@@ -652,7 +652,7 @@ public class RecipeGuis {
         itemGroup.addElement(element);
 
         // add magical dust element (crafting)
-        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 6);
+        item = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 8);
         element = new StaticGuiElement(
                 'l',
                 item,

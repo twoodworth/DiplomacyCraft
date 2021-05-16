@@ -60,8 +60,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
     private static final String nationOutlawAddUsage = "/nation outlaw add <player>";
     private static final String nationOutlawUsage = "/nation outlaw (add/remove) <player>";
     private static final String nationOutlawRemoveUsage = "/nation outlaw remove <player>";
-    private static final String nationDepositUsage = "/nation deposit <amount>";
-    private static final String nationWithdrawUsage = "/nation withdraw <amount>";
     private static final String setClassUsage = "/nation setClass <player> <class>";
     private static final String nationColorUsage = "/nation color <0-255 (Red)> <0-255 (Green)> <0-255 (Blue)>";
 
@@ -311,18 +309,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 }
             } else {
                 sender.sendMessage(incorrectUsage + nationOutlawUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("deposit")) {
-            if (args.length == 2) {
-                nationDeposit(sender, args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + nationDepositUsage);
-            }
-        } else if (args[0].equalsIgnoreCase("withdraw")) {
-            if (args.length == 2) {
-                nationWithdraw(sender, args[1]);
-            } else {
-                sender.sendMessage(incorrectUsage + nationWithdrawUsage);
             }
         } else {
             sender.sendMessage(incorrectUsage + nationUsage);
@@ -897,14 +883,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(otherNation, diplomacyChunks));
         Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
-        var balance = nation.getBalance();
-        if (nation.getBalance() >= 0.01) {
-            Diplomacy.getEconomy().depositPlayer(player, balance);
-            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-
-        }
-        nation.setBalance(0.0);
-
         for (var testNationID : nation.getAllyNationIDs()) {
             var testNation = Nations.getInstance().getFromID(testNationID);
             Objects.requireNonNull(testNation).removeAllyNation(nation);
@@ -984,13 +962,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeChunk(diplomacyChunk);
         }
         Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
-
-        var balance = nation.getBalance();
-        if (nation.getBalance() >= 0.01) {
-            Diplomacy.getEconomy().depositPlayer(player, balance);
-            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-        }
-        nation.setBalance(0.0);
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
@@ -2248,13 +2219,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
-        var balance = nation.getBalance();
-        if (nation.getBalance() >= 0.01) {
-            Diplomacy.getEconomy().depositPlayer(player, balance);
-            sender.sendMessage(ChatColor.GREEN + "\u00A4" + formatter.format(balance) + " has been transferred from " + nation.getName() + " to your bank account.");
-        }
-        nation.setBalance(0.0);
-
         sender.sendMessage(ChatColor.AQUA + "You have left " + ChatColor.BLUE + nation.getName() + ".");
 
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
@@ -2548,175 +2512,6 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     private void nationOutlawList(CommandSender sender, String page) {
 
-    }
-
-    private void nationDeposit(CommandSender sender, String strAmount) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        var player = (Player) sender;
-        var uuid = (player).getUniqueId();
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
-        var nation = Nations.getInstance().get(diplomacyPlayer);
-
-        if (nation == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
-            return;
-        }
-
-        var memberClass = nation.getMemberClass(diplomacyPlayer);
-        var permissions = memberClass.getPermissions();
-        var canDeposit = permissions.get("CanDeposit");
-        if (!canDeposit) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to deposit currency into your nation.");
-            return;
-        }
-
-        var amount = 0.0;
-        try {
-            amount = Double.parseDouble(strAmount);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
-            return;
-        }
-
-        if (amount < 0.01) {
-            sender.sendMessage(ChatColor.DARK_RED + "A minimum payment of \u00A40.01 is required.");
-            return;
-        }
-
-        var tooManyDecimals = BigDecimal.valueOf(amount).scale() > 2;
-
-        if (tooManyDecimals) {
-            sender.sendMessage(ChatColor.DARK_RED + "Too many decimal places.");
-            return;
-        }
-
-        var nationBalance = nation.getBalance();
-        var newNationBalance = nationBalance + amount;
-        var playerBalance = Diplomacy.getEconomy().getBalance(player);
-        var newPlayerBalance = playerBalance - amount;
-
-
-        if (newPlayerBalance < 0.0) {
-            sender.sendMessage(ChatColor.DARK_RED + "You only have \u00A4" + formatter.format(playerBalance) + ".");
-            return;
-        }
-
-
-        if (newNationBalance > 10000000000000.0) {
-            sender.sendMessage(ChatColor.DARK_RED + "Your nation's balance cannot exceed \u00A410,000,000,000,000.00.");
-            return;
-        }
-
-        var chunk = player.getLocation().getChunk();
-        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be inside your nation's borders to do this.");
-            return;
-        }
-
-        nation.setBalance(newNationBalance);
-        Diplomacy.getEconomy().withdrawPlayer(player, amount);
-
-        for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
-            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-
-            if (Objects.equals(testNation, nation)) {
-                if (Objects.equals(testPlayer, player)) {
-                    testPlayer.sendMessage(ChatColor.GREEN + "You have deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
-                } else {
-                    sender.sendMessage(ChatColor.GREEN + sender.getName() + " has deposited \u00A4" + formatter.format(amount) + " into your nation's balance.");
-                }
-            }
-        }
-    }
-
-
-    private void nationWithdraw(CommandSender sender, String strAmount) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        var player = (Player) sender;
-        var uuid = (player).getUniqueId();
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
-        var nation = Nations.getInstance().get(diplomacyPlayer);
-
-        if (nation == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
-            return;
-        }
-
-        var memberClass = nation.getMemberClass(diplomacyPlayer);
-        var permissions = memberClass.getPermissions();
-        var canWithdraw = permissions.get("CanWithdraw");
-        if (!canWithdraw) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to withdraw currency from your nation.");
-            return;
-        }
-
-        var amount = 0.0;
-        try {
-            amount = Double.parseDouble(strAmount);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.DARK_RED + "Amount must be a number.");
-            return;
-        }
-
-        if (amount < 0.01) {
-            sender.sendMessage(ChatColor.DARK_RED + "A minimum withdrawal of \u00A40.01 is required.");
-            return;
-        }
-
-        var tooManyDecimals = BigDecimal.valueOf(amount).scale() > 2;
-
-        if (tooManyDecimals) {
-            sender.sendMessage(ChatColor.DARK_RED + "Too many decimal places.");
-            return;
-        }
-
-        var nationBalance = nation.getBalance();
-        var newNationBalance = nationBalance - amount;
-        var playerBalance = Diplomacy.getEconomy().getBalance(player);
-        var newPlayerBalance = playerBalance + amount;
-
-
-        if (newNationBalance < 0.0) {
-            sender.sendMessage(ChatColor.DARK_RED + "Your nation only has a balance of \u00A4" + formatter.format(nationBalance) + ".");
-            return;
-        }
-
-
-        if (newPlayerBalance > 10000000000000.0) {
-            sender.sendMessage(ChatColor.DARK_RED + "Your balance cannot exceed \u00A410,000,000,000,000.00.");
-            return;
-        }
-
-        var chunk = player.getLocation().getChunk();
-        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-        if (!Objects.equals(diplomacyChunk.getNation(), nation)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be inside your nation's borders to do this.");
-            return;
-        }
-
-        nation.setBalance(newNationBalance);
-        Diplomacy.getEconomy().depositPlayer(player, amount);
-
-        for (var testPlayer : Bukkit.getOnlinePlayers()) {
-            var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
-            var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-
-            if (Objects.equals(testNation, nation)) {
-                if (Objects.equals(testPlayer, player)) {
-                    testPlayer.sendMessage(ChatColor.GREEN + "You have withdrawn \u00A4" + formatter.format(amount) + " from your nation's balance.");
-                }
-            }
-        }
     }
 
     private void nationBanner(CommandSender sender) {

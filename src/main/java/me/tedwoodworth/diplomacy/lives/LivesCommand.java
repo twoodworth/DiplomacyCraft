@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.lives_and_tax;
+package me.tedwoodworth.diplomacy.lives;
 
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class LivesCommand implements CommandExecutor, TabCompleter {
     private static final String incorrectUsage = ChatColor.DARK_RED + "Incorrect usage, try: ";

@@ -364,16 +364,6 @@ public class Nation {
         return null;
     }
 
-    public double getBalance() {
-        return configSection.getDouble("Balance");
-    }
-
-    public void setBalance(double balance) {
-        var oldBal = this.getBalance();
-        configSection.set("Balance", balance);
-        Bukkit.getPluginManager().callEvent(new NationChangeBalanceEvent(this, balance, oldBal));
-    }
-
     public List<String> getAllyNationIDs() {
         return configSection.getStringList("AllyNations");
     }

@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.lives_and_tax;
+package me.tedwoodworth.diplomacy.lives;
 
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;

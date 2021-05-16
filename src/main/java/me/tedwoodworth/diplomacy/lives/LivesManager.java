@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.lives_and_tax;
+package me.tedwoodworth.diplomacy.lives;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
@@ -49,14 +49,6 @@ public class LivesManager {
         // Gives lives.
         var scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new GiveApple(),
-                initalDelay,
-                TimeUnit.DAYS.toSeconds(1),
-                TimeUnit.SECONDS);
-
-
-        // Does taxes.
-        var taxScheduler = Executors.newScheduledThreadPool(1);
-        taxScheduler.scheduleAtFixedRate(new Tax(),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);

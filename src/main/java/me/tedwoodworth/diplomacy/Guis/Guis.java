@@ -122,21 +122,6 @@ public class Guis {
         );
     }
 
-    public StaticGuiElement getBalanceElement(Nation nation) {
-        var nationWealth = nation.getBalance();
-        var strNationWealth = "\u00A4" + formatter.format(nationWealth);
-        return new StaticGuiElement('e',
-                new ItemStack(Material.DIAMOND),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                " ",
-                ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
-                ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
-
-        );
-    }
-
     public StaticGuiElement getPlotElement(Nation nation) {
         var plots = nation.getChunks().size();
         var label = " plots";
@@ -196,26 +181,6 @@ public class Guis {
             var nation = event.getNation();
             var gui = getNationMenu(nation);
             gui.addElement(Guis.getInstance().getBannerElement(nation));
-            gui.draw();
-        }
-
-        @EventHandler
-        private void onNationChangeBalance(NationChangeBalanceEvent event) {
-            var nation = event.getNation();
-            var gui = getNationMenu(nation);
-            var nationWealth = nation.getBalance();
-
-            var strNationWealth = "\u00A4" + formatter.format(nationWealth);
-            gui.addElement(new StaticGuiElement('e',
-                    new ItemStack(Material.DIAMOND),
-                    click -> true,
-                    "" + ChatColor.YELLOW + ChatColor.BOLD + "Balance",
-                    ChatColor.BLUE + "Balance: " + ChatColor.GRAY + strNationWealth,
-                    " ",
-                    ChatColor.BLUE + "Deposit: " + ChatColor.GRAY + "/nation deposit <amount>",
-                    ChatColor.BLUE + "Withdraw: " + ChatColor.GRAY + "/nation withdraw <amount>"
-
-            ));
             gui.draw();
         }
 
