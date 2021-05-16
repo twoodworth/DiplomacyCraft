@@ -840,12 +840,20 @@ public class DiplomacyPlayers {
             if (!player.hasPlayedBefore()) {
                 player.getInventory().addItem(getGuideBook());
                 player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 8));
+                player.teleport(WorldManager.getInstance().getSpawn().getSpawnLocation());
             }
         }
 
-        @EventHandler
+        @EventHandler(ignoreCancelled = false, priority = EventPriority.HIGHEST)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
-            event.getPlayer().getInventory().addItem(getGuideBook());
+            var player = event.getPlayer();
+            player.getInventory().addItem(getGuideBook());
+            var bed = player.getBedSpawnLocation();
+            if (bed == null) {
+                var world = WorldManager.getInstance().getSpawn();
+                var point = world.getSpawnLocation();
+                event.setRespawnLocation(point);
+            }
         }
 
         @EventHandler(priority = EventPriority.HIGHEST)

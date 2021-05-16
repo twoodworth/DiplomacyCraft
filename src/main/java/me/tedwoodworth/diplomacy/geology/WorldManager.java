@@ -18,10 +18,10 @@ import org.jetbrains.annotations.Nullable;
 public class WorldManager {
 
     private final World subworld = Bukkit.createWorld(new WorldCreator("subworld"));
+    private final World spawn = Bukkit.createWorld(new WorldCreator("spawnworld"));
     private final World overworld = Bukkit.getWorld("world");
     private final World nether = Bukkit.getWorld("world_nether");
     private final World end = Bukkit.getWorld("world_the_end");
-    private final World spawn = Bukkit.getWorld("spawn");
     private static WorldManager instance = null;
     public final NamespacedKey ADJUSTED_KEY = new NamespacedKey(Diplomacy.getInstance(), "chunk_is_adjusted");
 

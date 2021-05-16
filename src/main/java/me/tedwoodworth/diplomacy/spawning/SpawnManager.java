@@ -17,20 +17,31 @@ import java.util.Objects;
 public class SpawnManager {
 
     private static SpawnManager instance = null;
-    private final List<Biome> oceanBiomes;
+    private final List<Biome> badBiomes;
     private final Location[] respawnLocations = new Location[20];
 
     private SpawnManager() {
-        this.oceanBiomes = new ArrayList<>();
-        oceanBiomes.add(Biome.COLD_OCEAN);
-        oceanBiomes.add(Biome.DEEP_COLD_OCEAN);
-        oceanBiomes.add(Biome.DEEP_FROZEN_OCEAN);
-        oceanBiomes.add(Biome.DEEP_LUKEWARM_OCEAN);
-        oceanBiomes.add(Biome.DEEP_OCEAN);
-        oceanBiomes.add(Biome.DEEP_WARM_OCEAN);
-        oceanBiomes.add(Biome.LUKEWARM_OCEAN);
-        oceanBiomes.add(Biome.OCEAN);
-        oceanBiomes.add(Biome.WARM_OCEAN);
+        this.badBiomes = new ArrayList<>();
+        badBiomes.add(Biome.COLD_OCEAN);
+        badBiomes.add(Biome.DEEP_COLD_OCEAN);
+        badBiomes.add(Biome.DEEP_FROZEN_OCEAN);
+        badBiomes.add(Biome.DEEP_LUKEWARM_OCEAN);
+        badBiomes.add(Biome.DEEP_OCEAN);
+        badBiomes.add(Biome.DEEP_WARM_OCEAN);
+        badBiomes.add(Biome.LUKEWARM_OCEAN);
+        badBiomes.add(Biome.OCEAN);
+        badBiomes.add(Biome.BEACH);
+        badBiomes.add(Biome.WARM_OCEAN);
+        badBiomes.add(Biome.DESERT);
+        badBiomes.add(Biome.DESERT_LAKES);
+        badBiomes.add(Biome.DESERT_HILLS);
+        badBiomes.add(Biome.RIVER);
+        badBiomes.add(Biome.FROZEN_RIVER);
+        badBiomes.add(Biome.BADLANDS_PLATEAU);
+        badBiomes.add(Biome.BADLANDS);
+        badBiomes.add(Biome.MODIFIED_BADLANDS_PLATEAU);
+        badBiomes.add(Biome.MODIFIED_WOODED_BADLANDS_PLATEAU);
+        badBiomes.add(Biome.WOODED_BADLANDS_PLATEAU);
 
         for (int i = 0; i < respawnLocations.length; i++) {
             var location = getNewLocation();
