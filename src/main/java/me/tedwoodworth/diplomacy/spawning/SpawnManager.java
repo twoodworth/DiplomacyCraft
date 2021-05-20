@@ -9,7 +9,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.player.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,6 +123,54 @@ public class SpawnManager {
         private void onEntityDamage(EntityDamageEvent event) {
             var entity = event.getEntity();
             if (entity.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerMove(PlayerMoveEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn()) && player.getLocation().getY() < -20) {
+                player.teleport(WorldManager.getInstance().getSpawn().getSpawnLocation());
+            }
+        }
+
+        @EventHandler
+        private void onPlayerDropItem(PlayerDropItemEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerInteract(PlayerInteractEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onPlayerBucketFill(PlayerBucketFillEvent event) {
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn())) {
                 event.setCancelled(true);
             }
         }
