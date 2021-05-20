@@ -1,6 +1,5 @@
 package me.tedwoodworth.diplomacy.commands;
 
-import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
@@ -28,7 +27,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String setChunkNationUsage = "/admin setChunkNation <nation>";
     private static final String removeChunkNationUsage = "/admin removeChunkNation";
     private static final String fireArrowUsage = "/admin fireArrow <speed> <spread>";
-    private static final String generateChunksUsage = "/admin generateChunks";
+    private static final String generateChunkUsage = "/admin generateChunk";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -73,11 +72,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     } else {
                         sender.sendMessage(incorrectUsage + fireArrowUsage);
                     }
-                } else if (args[0].equalsIgnoreCase("generateChunks")) {
+                } else if (args[0].equalsIgnoreCase("generateChunk")) {
                     if (args.length == 1) {
-                        generateChunks();
+                        generateChunk(sender);
                     } else {
-                        sender.sendMessage(incorrectUsage + generateChunksUsage);
+                        sender.sendMessage(incorrectUsage + generateChunkUsage);
                     }
                 }
             }
@@ -97,7 +96,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                             "setChunkNation",
                             "removeChunkNation",
                             "fireArrow",
-                            "generateChunks"
+                            "generateChunk"
                     );
                 } else if (args.length == 2) {
                     if (args[0].equalsIgnoreCase("give")) {
@@ -130,29 +129,17 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
-    private void generateChunks() {
-        generateChunks(0, 0, 0);
-
-    }
-
-    private void generateChunks(int x, int z, int i) {
-        System.out.println(i + " / " + 10485760 + " chunks generated.");
-        if (z == 1024) {
-            z = 0;
-            x++;
-        }
-        if (x == 1024) {
+    private void generateChunk(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Must be a player.");
             return;
         }
+        var loc = ((Player) sender).getLocation();
+        var chunk = loc.getChunk();
+        var x = chunk.getX();
+        var z = chunk.getZ();
         WorldManager.getInstance().adjustChunks(x, z);
 
-        if (i % 5 == 0) {
-            int finalX = x;
-            int finalZ = z;
-            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> generateChunks(finalX, finalZ + 1, i + 1));
-        } else {
-            generateChunks(x, z + 1, i + 1);
-        }
     }
 
     private void fireArrow(CommandSender sender, String strSpeed, String strSpread) {

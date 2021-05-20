@@ -256,9 +256,9 @@ public class RecipeGuis {
         guiSetup = new String[]{
                 " B  T  M ",
                 "         ",
-                " fdd aaa ",
-                " ddd ara ",
-                " daa aaa ",
+                " ddd aaa ",
+                " dfd ara ",
+                " ddd aaa ",
                 "         ",
         };
         var magicalDust1 = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.MAGICAL_DUST, 1);

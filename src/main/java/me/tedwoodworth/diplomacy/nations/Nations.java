@@ -232,7 +232,7 @@ public class Nations {
             nations.add(Nations.getInstance().getFromID(id));
         }
         if (nations.size() == 0) {
-            player.sendMessage(ChatColor.RED + "This natino does not have any allies.");
+            player.sendMessage(ChatColor.RED + "This nation does not have any allies.");
             return;
         }
         nations.sort(Comparator.comparingInt(p -> -p.getMembers().size()));

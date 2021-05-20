@@ -1647,7 +1647,7 @@ public class GuardManager {
             }
             var hand = event.getHand();
             var equipment = player.getEquipment();
-            if (equipment != null && hand == null) {
+            if (equipment != null && hand != null) {
                 var item = equipment.getItem(hand);
                 if (type == Action.RIGHT_CLICK_BLOCK && CustomItemGenerator.getInstance().isCustomItem(item) &&
                         CustomItems.getInstance().getEnum(CustomItemGenerator.getInstance().getCustomID(item)) == CustomItems.CustomID.GUARD_CRYSTAL) {

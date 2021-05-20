@@ -285,6 +285,8 @@ public class DiplomacyPlayers {
                 var z = chunk.getZ();
                 chunk = wm.getOverworld().getChunkAt(x, z);
             }
+        } else if (world.equals(wm.getSpawn()) && player.getGameMode() != GameMode.CREATIVE) {
+            return false;
         }
 
         // Return true if there is no nation
@@ -501,7 +503,6 @@ public class DiplomacyPlayers {
                 var chunk = to.getChunk();
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
-                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var nLoc = new Location(subword, to.getX(), toY + 118, to.getZ(), yaw, pitch);
                 player.teleport(nLoc);
                 if (player.getLocation().distanceSquared(nLoc) > 2.0) {
@@ -515,7 +516,6 @@ public class DiplomacyPlayers {
                 var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
-                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
                 var nLoc = new Location(world, to.getX(), toY - 118, to.getZ(), yaw, pitch);
@@ -531,7 +531,6 @@ public class DiplomacyPlayers {
                 var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
-                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
                 var nLoc = new Location(world, to.getX(), toY + 153, to.getZ(), yaw, pitch);
@@ -547,7 +546,6 @@ public class DiplomacyPlayers {
                 var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
-                WorldManager.getInstance().adjustChunks(chunk.getX(), chunk.getZ());
                 var yaw = to.getYaw();
                 var pitch = to.getPitch();
                 player.teleport(new Location(world, to.getX(), toY - 153, to.getZ(), yaw, pitch));
@@ -561,7 +559,6 @@ public class DiplomacyPlayers {
             var fromChunk = event.getFrom().getChunk();
             var toChunk = to.getChunk();
             if (!fromChunk.equals(toChunk)) {
-                WorldManager.getInstance().adjustChunks(toChunk.getX(), toChunk.getZ());
                 var fromDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk);
                 var toDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk);
 
@@ -719,20 +716,6 @@ public class DiplomacyPlayers {
             var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
             var nation = diplomacyChunk.getNation();
 
-            // Disable villager trades/interaction
-            if (entity instanceof Villager || entity instanceof WanderingTrader) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Villager trading is currently disabled.");
-                event.setCancelled(true);
-                return;
-            }
-
-            // Disable adding chests to horses/donkeys/etc.
-            if (entity instanceof ChestedHorse && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.CHEST)) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Equipping chests to donkeys/mules is disabled.");
-                event.setCancelled(true);
-                return;
-            }
-
             if (nation == null) {
                 return;
             }
@@ -852,6 +835,8 @@ public class DiplomacyPlayers {
             if (bed == null) {
                 var world = WorldManager.getInstance().getSpawn();
                 var point = world.getSpawnLocation();
+                point.setX(point.getX() + 0.5);
+                point.setZ(point.getZ() + 0.5);
                 event.setRespawnLocation(point);
             }
         }

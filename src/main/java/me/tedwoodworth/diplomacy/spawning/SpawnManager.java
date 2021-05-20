@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class SpawnManager {
 
     private static SpawnManager instance = null;
     private final List<Biome> badBiomes;
-    private final Location[] respawnLocations = new Location[20];
+    private final Location[] respawnLocations = new Location[40];
 
     private SpawnManager() {
         this.badBiomes = new ArrayList<>();
@@ -43,12 +44,14 @@ public class SpawnManager {
         badBiomes.add(Biome.MODIFIED_WOODED_BADLANDS_PLATEAU);
         badBiomes.add(Biome.WOODED_BADLANDS_PLATEAU);
 
+        System.out.println("[Diplomacy] 0/40 Random locations initialized");
         for (int i = 0; i < respawnLocations.length; i++) {
             var location = getNewLocation();
             while (location == null) {
                 location = getNewLocation();
             }
             respawnLocations[i] = location;
+            System.out.println("[Diplomacy] " + (i + 1) + "/40 Random locations initialized");
         }
         System.out.println("[Diplomacy] Initialized random teleportation");
     }
@@ -58,7 +61,7 @@ public class SpawnManager {
         var z = (int) (Math.random() * 16384);
         var loc = new Location(WorldManager.getInstance().getOverworld(), x, 255, z);
         var y = getMaxYHeight(loc);
-        if (y == -1 || y > 100) {
+        if (y == -1 || y > 65 || badBiomes.contains(loc.getBlock().getBiome())) {
             return null;
         } else {
             return new Location(WorldManager.getInstance().getOverworld(), x, y, z);
@@ -113,6 +116,14 @@ public class SpawnManager {
                 var loc = respawnLocations[i];
                 event.setTo(loc);
                 Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> replaceLocation(i));
+            }
+        }
+
+        @EventHandler
+        private void onEntityDamage(EntityDamageEvent event) {
+            var entity = event.getEntity();
+            if (entity.getWorld().equals(WorldManager.getInstance().getSpawn())) {
+                event.setCancelled(true);
             }
         }
 
