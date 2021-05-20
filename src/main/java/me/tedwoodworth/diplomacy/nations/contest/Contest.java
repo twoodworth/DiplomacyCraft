@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.nations.contest;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -90,6 +91,28 @@ public class Contest {
                 } else {
                     player.sendTitle(ChatColor.BLUE + attackingNation.getName(), null, 5, 40, 10);
                 }
+            }
+        }
+    }
+
+    public void sendBlockdTitles() {
+        var chunk = diplomacyChunk.getChunk();
+        for (var player : Bukkit.getOnlinePlayers()) {
+            var playerChunk = player.getLocation().getChunk();
+            if (chunk.equals(playerChunk)) {
+                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                Nation nation = Nations.getInstance().get(diplomacyPlayer);
+                ChatColor color;
+                if (nation == null) {
+                    color = ChatColor.BLUE;
+                } else if (attackingNation.getEnemyNationIDs().contains(nation.getNationID())) {
+                    color = ChatColor.GREEN;
+                } else if (attackingNation.getAllyNationIDs().contains(nation.getNationID()) || attackingNation.equals(nation)) {
+                    color = ChatColor.RED;
+                } else {
+                    color = ChatColor.BLUE;
+                }
+                player.sendTitle(color + "Contest Blocked", null, 5, 40, 10);
             }
         }
     }
@@ -272,12 +295,25 @@ public class Contest {
     }
 
 
-    public void sendFireworks() {
+    public void sendWinSound() {
         var chunk = diplomacyChunk.getChunk();
-        for (var player : Bukkit.getOnlinePlayers()) {
-            var playerChunk = player.getLocation().getChunk();
-            if (chunk.equals(playerChunk)) {
+        for (var entity : chunk.getEntities()) {
+            if (entity instanceof Player) {
+                var player = (Player) entity;
                 player.playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1, 1);
+            }
+        }
+    }
+
+
+    public void sendLoseSound() {
+        var chunk = diplomacyChunk.getChunk();
+        for (var entity : chunk.getEntities()) {
+            if (entity instanceof Player) {
+                var player = (Player) entity;
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1f);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 0.6f), 4L);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 0.6f), 8L);
             }
         }
     }

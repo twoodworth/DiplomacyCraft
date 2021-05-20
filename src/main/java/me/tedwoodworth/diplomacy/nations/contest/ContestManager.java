@@ -128,6 +128,7 @@ public class ContestManager {
                     winContest(contest);
                 }
             } else if (contest.getProgress() < 0.0) {
+                loseContest(contest);
                 endContest(contest);
             }
         }
@@ -160,10 +161,18 @@ public class ContestManager {
                 }
             }
         }
-        contest.sendFireworks();
+        contest.sendWinSound();
         contest.sendNewNationTitles();
         endContest(contest);
     }
+
+
+    public void loseContest(Contest contest) {
+        contest.sendLoseSound();
+        contest.sendBlockdTitles();
+        endContest(contest);
+    }
+
 
     private void winWildernessContest(Contest contest) {
         var diplomacyChunk = contest.getDiplomacyChunk();
@@ -174,7 +183,7 @@ public class ContestManager {
         set.add(diplomacyChunk);
         Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(attackingNation, set));
 
-        contest.sendFireworks();
+        contest.sendWinSound();
         contest.sendNewNationTitles();
         endContest(contest);
     }
@@ -194,7 +203,7 @@ public class ContestManager {
         }
     }
 
-    private boolean guardIsVisible(HashSet<DiplomacyPlayer> attackers, Entity guard) {
+    public boolean guardIsVisible(HashSet<DiplomacyPlayer> attackers, Entity guard) {
         //D to A
         if (guard.isDead() || !GuardManager.getInstance().isGuard(guard)) {
             return false;
@@ -232,7 +241,7 @@ public class ContestManager {
         return false;
     }
 
-    private boolean defenderIsVisible(HashSet<DiplomacyPlayer> attackers, DiplomacyPlayer diplomacyDefender) {
+    public boolean defenderIsVisible(HashSet<DiplomacyPlayer> attackers, DiplomacyPlayer diplomacyDefender) {
         //D to A
         var defender = diplomacyDefender.getOfflinePlayer().getPlayer();
         if (defender == null) {
@@ -271,7 +280,6 @@ public class ContestManager {
     }
 
     public void updateProgress(Contest contest) {
-
         var diplomacyChunk = contest.getDiplomacyChunk();
         var chunk = diplomacyChunk.getChunk();
         var attackingNation = contest.getAttackingNation();
@@ -304,25 +312,27 @@ public class ContestManager {
 
         var attackingPlayerCount = attackingPlayers.size();
         int defendingCount;
-        if (attackingPlayerCount == 0) {
+        if (attackingPlayerCount == 0) { // if there are no attackers, all defenders automatically count
             defendingCount = defending.size();
-        } else {
+        } else { // otherwise only defenders with vision count
             defendingCount = 0;
         }
 
-        for (var defender : defending) {
-            if (defender instanceof DiplomacyPlayer) {
-                var defendingPlayer = (DiplomacyPlayer) defender;
-                if (defenderIsVisible(attackingPlayers, defendingPlayer)) {
-                    defendingCount++;
+        if (attackingPlayerCount > 0) { // if there are attackers
+            for (var defender : defending) {
+                if (defender instanceof DiplomacyPlayer) {
+                    var defendingPlayer = (DiplomacyPlayer) defender;
+                    if (defenderIsVisible(attackingPlayers, defendingPlayer)) {
+                        defendingCount++;
+                    } else {
+                        var offline = defendingPlayer.getOfflinePlayer();
+                        if (offline.getPlayer() == null) continue;
+                        offline.getPlayer().sendTitle(ChatColor.RED + "Not Defending", ChatColor.RED + "Must have line of sight of an attacker to block progress gain", 0, 30, 5);
+                    }
                 } else {
-                    var offline = defendingPlayer.getOfflinePlayer();
-                    if (offline.getPlayer() == null) continue;
-                    offline.getPlayer().sendTitle(ChatColor.RED + "Not Defending", ChatColor.RED + "Must have line of sight of an attacker to block progress gain", 5, 30, 5);
-                }
-            } else {
-                if (guardIsVisible(attackingPlayers, (Entity) defender)) {
-                    defendingCount++;
+                    if (guardIsVisible(attackingPlayers, (Entity) defender)) {
+                        defendingCount++;
+                    }
                 }
             }
         }
