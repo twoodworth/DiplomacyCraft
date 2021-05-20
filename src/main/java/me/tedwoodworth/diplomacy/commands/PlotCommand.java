@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.block.Biome;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -205,14 +206,46 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
         var world = player.getWorld();
         if (!world.equals(Bukkit.getWorld("world"))) {
-            player.sendMessage(ChatColor.RED + "You cannot contest here.");
+            player.sendMessage(ChatColor.RED + "You cannot contest in this world.");
             return;
         }
+
+        var allOcean = true;
+        var chunk = player.getLocation().getChunk();
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                var block = chunk.getBlock(x, 50, z);
+                var biome = block.getBiome();
+                if (
+                        !(biome == Biome.OCEAN ||
+                                biome == Biome.COLD_OCEAN ||
+                                biome == Biome.DEEP_COLD_OCEAN ||
+                                biome == Biome.DEEP_FROZEN_OCEAN ||
+                                biome == Biome.DEEP_LUKEWARM_OCEAN ||
+                                biome == Biome.DEEP_OCEAN ||
+                                biome == Biome.DEEP_WARM_OCEAN ||
+                                biome == Biome.FROZEN_OCEAN ||
+                                biome == Biome.LUKEWARM_OCEAN ||
+                                biome == Biome.WARM_OCEAN
+                        )) {
+                    allOcean = false;
+                    break;
+                }
+            }
+            if (!allOcean) {
+                break;
+            }
+        }
+
+        if (allOcean) {
+            sender.sendMessage(ChatColor.RED + "Cannot contest the ocean.");
+            return;
+        }
+
 
         var uuid = (player).getUniqueId();
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
         var attackingNation = Nations.getInstance().get(diplomacyPlayer);
-        var chunk = player.getLocation().getChunk();
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var isWilderness = diplomacyChunk.getNation() == null;
 
