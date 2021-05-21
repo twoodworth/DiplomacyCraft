@@ -138,11 +138,6 @@ commands:
     aliases: []
     usage: "Usage: /<command>"
 
-  guide:
-    description: Get a guide.
-    aliases: []
-    usage: "Usage: /<command>"
-
   toggleAutopickup:
     description: Toggle autopickup.
     aliases: [ta]
@@ -170,6 +165,11 @@ commands:
 
   guard:
     description: Guard commands.
+    aliases: []
+    usage: "Usage: /<command>"
+
+  spawn:
+    description: Teleport to spawn.
     aliases: []
     usage: "Usage: /<command>"
 

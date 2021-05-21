@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -101,6 +102,18 @@ public class DiplomacyPlayer {
         return playerHead;
     }
 
+    public Location getLastLocation() {
+        if (configSection.contains("Last")) {
+            return (Location) configSection.get("Last", Location.class);
+        } else {
+            return null;
+        }
+    }
+
+    public void setLastLocation(Location location) {
+        configSection.set("Last", location);
+    }
+
     public int getLives() {
         var lives = configSection.getString("Lives");
         if (lives == null) {
@@ -114,7 +127,10 @@ public class DiplomacyPlayer {
     }
 
     public boolean getCanTeleport() {
-        return configSection.getBoolean("CanTeleport");
+        var canTeleport = configSection.getBoolean("CanTeleport");
+        if (!canTeleport) return false;
+        var firstPlayed = Bukkit.getOfflinePlayer(this.getUUID()).getFirstPlayed();
+        return firstPlayed <= System.currentTimeMillis() + 86400;
     }
 
     public void setCanTeleport(boolean canTeleport) {

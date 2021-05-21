@@ -6,6 +6,7 @@ import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -21,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -28,7 +30,6 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -41,7 +42,8 @@ public class DiplomacyPlayers {
     private final File diplomacyPlayerConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "diplomacyPlayers.yml");
     private final Map<UUID, DiplomacyPlayer> diplomacyPlayers = new WeakHashMap<>();
     private final YamlConfiguration config;
-    private ItemStack guideBook;
+    public final HashMap<Player, Integer> combatLogged = new HashMap<>();
+    public final HashMap<Player, Integer> teleportMap = new HashMap<>();
 
     public static DiplomacyPlayers getInstance() {
         if (instance == null) {
@@ -136,117 +138,6 @@ public class DiplomacyPlayers {
         }
     }
 
-    public ItemStack getGuideBook() {
-        if (guideBook == null) {
-            createGuideBook();
-        }
-        return guideBook;
-    }
-
-    private void createGuideBook() {
-        var guideBook = new ItemStack(Material.WRITTEN_BOOK, 1);
-        var bookMeta = (BookMeta) guideBook.getItemMeta();
-        bookMeta.setTitle("" + ChatColor.GREEN + ChatColor.BOLD + "Server Guide");
-        bookMeta.setAuthor(ChatColor.BOLD + "Unknown");
-        bookMeta.setGeneration(BookMeta.Generation.TATTERED);
-        var pages = new ArrayList<String>();
-
-        pages.add(
-                ChatColor.BOLD + "Table of contents:\n\n" + ChatColor.RESET +
-                        "2 - Intro\n" +
-                        "3 - Server Genre\n" +
-                        "4 - Rules\n" +
-                        "5 - Respawning\n" +
-                        "6 - One-time Teleport\n" +
-                        "7 - Lives\n" +
-                        "8 - Combat\n" +
-                        "9 - Menu\n" +
-                        "10 - Nations\n" +
-                        "11 - Groups\n" +
-                        "12 - Economy\n" +
-                        "13 - World Map\n"
-        );
-
-        pages.add(
-                ChatColor.BOLD + "Intro\n\n" + ChatColor.RESET +
-                        "This guide is an overview of the most " +
-                        "important features a new player should be " +
-                        "aware of. " +
-                        "A more detailed guide can be found on the discord server (accessed via \"/discord\")"
-        );
-        pages.add(
-                ChatColor.BOLD + "Server Genre\n\n" + ChatColor.RESET +
-                        "DiplomacyCraft is a geopolitical strategy & anarchy server. " +
-                        "This means that there are minimal rules, and that nations compete " +
-                        "with other nations for power and stability. "
-        );
-        pages.add(
-                ChatColor.BOLD + "Rules\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " No hacking\n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " No cheating\n" +
-                        ChatColor.BOLD + "3)" + ChatColor.RESET + " No spamming\n" +
-                        ChatColor.BOLD + "4)" + ChatColor.RESET + " No racism\n" +
-                        ChatColor.BOLD + "5)" + ChatColor.RESET + " No sexism\n" +
-                        ChatColor.BOLD + "6)" + ChatColor.RESET + " No homophobia\n" +
-                        ChatColor.BOLD + "7)" + ChatColor.RESET + " No doxxing.\n" +
-                        ChatColor.BOLD + "8)" + ChatColor.RESET + " No real-life threats."
-        );
-        pages.add(
-                ChatColor.BOLD + "Respawning\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " If you die in the nether, you will respawn in the nether.\n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " If you don't have a bed/respawn anchor you will randomly respawn within 2000 blocks of where you died."
-        );
-        pages.add(
-                ChatColor.BOLD + "One-Time Teleport\n\n" + ChatColor.RESET +
-                        "Players are only able to teleport once with \"/ott\" (one-time teleport). Once used, it is impossible to teleport again."
-        );
-        pages.add(
-                ChatColor.BOLD + "Lives\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Every time you die, you lose a life. \n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " If you run out of lives, you will be banned until the next day begins.\n" +
-                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Players can gain 5 lives a day: one for joining, and four for voting with \"/vote\"."
-        );
-        pages.add(
-                ChatColor.BOLD + "Combat\n\n" + ChatColor.RESET +
-                        "The server will be using pre-1.9 style combat. This means that there will be no cooldown between swings."
-        );
-        pages.add(
-                ChatColor.BOLD + "Menu\n\n" + ChatColor.RESET +
-                        "The menu contains almost all the info you need to know when it comes to nation, group, and player stats. " +
-                        "The menu can be accessed by typing \"/menu\"."
-        );
-        pages.add(
-                ChatColor.BOLD + "Nations\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Nations are created in order to protect territory and builds from outsiders.\n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Create a nation with \"/nation create\"\n" +
-                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Expand territory with \"/plot contest\"\n" +
-                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Join a nation with \"/nation join\" or by accepting an invite."
-        );
-        pages.add(
-                ChatColor.BOLD + "Groups\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " Groups are sub-sections of a nation.\n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Only a group's members can build in its plots.\n" +
-                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Players can join a foreign nation's groups.\n" +
-                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Groups are created with \"/group create\"."
-        );
-        pages.add(
-                ChatColor.BOLD + "Economy\n\n" + ChatColor.RESET +
-                        ChatColor.BOLD + "1)" + ChatColor.RESET + " The currency is diamond-based; 1 diamond = \u00A41,000.00.\n" +
-                        ChatColor.BOLD + "2)" + ChatColor.RESET + " Turn diamonds into currency with \"/deposit\".\n" +
-                        ChatColor.BOLD + "3)" + ChatColor.RESET + " Turn currency into diamonds with \"/withdraw\".\n" +
-                        ChatColor.BOLD + "4)" + ChatColor.RESET + " Check your balance with \"/balance\"."
-        );
-        pages.add(
-                ChatColor.BOLD + "World Map\n\n" + ChatColor.RESET +
-                        "The world map displays all explored territory and nation borders. It is accessed via \"/map\"."
-        );
-
-        bookMeta.setPages(pages);
-        guideBook.setItemMeta(bookMeta);
-        guideBook.addUnsafeEnchantment(Enchantment.VANISHING_CURSE, 1);
-        this.guideBook = guideBook;
-    }
-
     public boolean canBuildHere(Block block, Player player) {
         var biome = block.getBiome();
         if (biome == Biome.OCEAN || biome == Biome.COLD_OCEAN || biome == Biome.DEEP_COLD_OCEAN || biome == Biome.DEEP_FROZEN_OCEAN
@@ -339,11 +230,23 @@ public class DiplomacyPlayers {
 
         @EventHandler
         void onWorldSave(WorldSaveEvent event) {
+            for (var player : Bukkit.getOnlinePlayers()) {
+                if (!player.getWorld().equals(WorldManager.getInstance().getSpawn()) && player.getHealth() > 0.0) {
+                    var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                    dp.setLastLocation(player.getLocation());
+                }
+            }
             save();
         }
 
         @EventHandler
         void onPluginDisable(PluginDisableEvent event) {
+            for (var player : Bukkit.getOnlinePlayers()) {
+                if (!player.getWorld().equals(WorldManager.getInstance().getSpawn()) && player.getHealth() > 0.0) {
+                    var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                    dp.setLastLocation(player.getLocation());
+                }
+            }
             if (event.getPlugin().equals(Diplomacy.getInstance())) {
                 save();
             }
@@ -492,13 +395,19 @@ public class DiplomacyPlayers {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         private void onPlayerMove(PlayerMoveEvent event) {
+            var player = event.getPlayer();
             var from = event.getFrom();
             var to = event.getTo();
+
+            if (teleportMap.containsKey(player) && to != null && ((!Objects.equals(from.getWorld(), to.getWorld())) || (from.distanceSquared(to) > 0.01))) {
+                player.sendMessage(ChatColor.RED + "Teleport to spawn cancelled.");
+                teleportMap.remove(player);
+            }
+
             var toY = to.getY();
             var toWorld = to.getWorld();
             if (Objects.equals(toWorld, WorldManager.getInstance().getOverworld()) && toY < 4) {
                 var subword = WorldManager.getInstance().getSubworld();
-                var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
                 var yaw = to.getYaw();
@@ -513,7 +422,6 @@ public class DiplomacyPlayers {
                 return;
             } else if (Objects.equals(toWorld, WorldManager.getInstance().getSubworld()) && toY >= 122.2) {
                 var world = WorldManager.getInstance().getOverworld();
-                var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
                 var yaw = to.getYaw();
@@ -528,7 +436,6 @@ public class DiplomacyPlayers {
                 to = player.getLocation();
             } else if (Objects.equals(toWorld, WorldManager.getInstance().getSubworld()) && toY < 4) {
                 var world = WorldManager.getInstance().getNether();
-                var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
                 var yaw = to.getYaw();
@@ -543,7 +450,6 @@ public class DiplomacyPlayers {
                 return;
             } else if (Objects.equals(toWorld, WorldManager.getInstance().getNether()) && toY >= 157.2) {
                 var world = WorldManager.getInstance().getSubworld();
-                var player = event.getPlayer();
                 var velocity = player.getVelocity();
                 var chunk = to.getChunk();
                 var yaw = to.getYaw();
@@ -569,7 +475,6 @@ public class DiplomacyPlayers {
                 var toGroup = toDiplomacyChunk.getGroup();
 
                 if (!Objects.equals(fromNation, toNation) || !Objects.equals(fromGroup, toGroup)) {
-                    var player = event.getPlayer();
                     if (toNation == null) {
                         player.sendTitle(ChatColor.GRAY + "Wilderness", " ", 5, 30, 5);
                     } else {
@@ -638,16 +543,6 @@ public class DiplomacyPlayers {
                 case RIGHT_CLICK_BLOCK -> {
                     var type = block.getType();
                     switch (type) {
-                        case BEACON -> {
-                            event.getPlayer().sendMessage(ChatColor.RED + "Beacons are currently disabled.");
-                            event.setCancelled(true);
-                            return;
-                        }
-                        case ENCHANTING_TABLE -> {
-                            event.getPlayer().sendMessage(ChatColor.RED + "Enchanting tables are disabled. (enchantments obtained via crafting recipes, view #recipes in /discord)");
-                            event.setCancelled(true);
-                            return;
-                        }
                         case RESPAWN_ANCHOR -> {
                             if (block.getWorld().getEnvironment().equals(World.Environment.NETHER)) return;
 
@@ -743,6 +638,61 @@ public class DiplomacyPlayers {
             }
         }
 
+        private void removeCombat(Player player) {
+            if (combatLogged.containsKey(player)) {
+                var count = combatLogged.get(player);
+                if (count == 1) {
+                    combatLogged.remove(player);
+                    player.sendMessage(ChatColor.RED + "You are no longer in combat.");
+                } else {
+                    combatLogged.replace(player, count - 1);
+                }
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        private void onDamageByEntity(EntityDamageByEntityEvent event) {
+            var damager = event.getDamager();
+            var damaged = event.getEntity();
+            var trueDamager = GuardManager.getInstance().getTrueDamager(damager);
+            if (!(trueDamager instanceof Player || GuardManager.getInstance().isGuard(trueDamager)) && !(damaged instanceof Player || GuardManager.getInstance().isGuard(damaged))) {
+                return;
+            }
+            if (damaged instanceof Player) {
+                var player = ((Player) damaged);
+
+                if (teleportMap.containsKey(player)) {
+                    player.sendMessage(ChatColor.RED + "Teleport to spawn cancelled.");
+                    teleportMap.remove(player);
+                }
+
+                if (combatLogged.containsKey(player)) {
+                    var count = combatLogged.get(player);
+                    combatLogged.replace(player, count + 1);
+                } else {
+                    combatLogged.put(player, 1);
+                    player.sendMessage(ChatColor.RED + "You are now in combat. You will be killed if you attempt to quit.");
+                    player.sendMessage(ChatColor.RED + "Avoid damage for 15 seconds to leave combat.");
+                }
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> removeCombat(player), 300L);
+            }
+            if (damager instanceof Player) {
+                var player = ((Player) damager);
+                if (teleportMap.containsKey(player)) {
+                    player.sendMessage(ChatColor.RED + "Teleport to spawn cancelled.");
+                    teleportMap.remove(player);
+                }
+                if (combatLogged.containsKey(player)) {
+                    var count = combatLogged.get(player);
+                    combatLogged.replace(player, count + 1);
+                } else {
+                    combatLogged.put(player, 1);
+                    player.sendMessage(ChatColor.RED + "You are now in combat. You will be killed if you attempt to quit.");
+                }
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> removeCombat(player), 300L);
+            }
+        }
+
         @EventHandler(ignoreCancelled = true)
         public void onEntityDamageByEntity(HangingBreakByEntityEvent event) {
             // Make sure it's a player/player's projectile damaging an item frame/painting
@@ -816,21 +766,74 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
+        private void onPlayerTeleport(PlayerTeleportEvent event) {
+            var from = event.getFrom();
+            var to = event.getTo();
+            var cause = event.getCause();
+            if (cause == PlayerTeleportEvent.TeleportCause.COMMAND && Objects.equals(to.getWorld(), WorldManager.getInstance().getSpawn()) && !Objects.equals(from.getWorld(), WorldManager.getInstance().getSpawn())) {
+                var dp = DiplomacyPlayers.getInstance().get(event.getPlayer().getUniqueId());
+                dp.setLastLocation(from);
+            }
+        }
+
+        @EventHandler
+        private void onKick(PlayerKickEvent event) {
+            var player = event.getPlayer();
+            combatLogged.remove(player);
+        }
+
+
+        @EventHandler
+        private void onPlayerQuit(PlayerQuitEvent event) {
+            var player = event.getPlayer();
+            if (combatLogged.containsKey(player)) {
+                Entity source = null;
+                if (player.getLastDamageCause() != null) {
+                    source = player.getLastDamageCause().getEntity();
+                }
+                player.damage(9999, source);
+                for (var online : Bukkit.getOnlinePlayers()) {
+                    online.sendMessage(ChatColor.RED + player.getName() + " was killed for logging out during combat.");
+                }
+                combatLogged.remove(player);
+            }
+
+            var loc = player.getLocation();
+
+            if (!Objects.equals(loc.getWorld(), WorldManager.getInstance().getSpawn())) {
+                var dp = DiplomacyPlayers.getInstance().get(event.getPlayer().getUniqueId());
+                dp.setLastLocation(loc);
+            }
+        }
+
+        @EventHandler
         private void onPlayerJoinEvent(PlayerJoinEvent event) {
             var player = event.getPlayer();
+            var point = WorldManager.getInstance().getSpawn().getSpawnLocation();
+            point.setX(point.getX() + 0.5);
+            point.setZ(point.getZ() + 0.5);
+            player.teleport(point);
 
             ScoreboardManager.getInstance().updateScoreboards();
             if (!player.hasPlayedBefore()) {
-                player.getInventory().addItem(getGuideBook());
                 player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 8));
-                player.teleport(WorldManager.getInstance().getSpawn().getSpawnLocation());
+                player.getInventory().addItem(new ItemStack(Material.OAK_LOG, 8));
             }
         }
 
         @EventHandler(ignoreCancelled = false, priority = EventPriority.HIGHEST)
         private void onPlayerRespawn(PlayerRespawnEvent event) {
             var player = event.getPlayer();
-            player.getInventory().addItem(getGuideBook());
+            var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+            if (dp.getLives() == 0) {
+                var point = WorldManager.getInstance().getSpawn().getSpawnLocation();
+                point.setX(point.getX() + 0.5);
+                point.setZ(point.getZ() + 0.5);
+                event.setRespawnLocation(point);
+                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You have 0 lives left. You will not be able to re-enter the world until you gain more lives.");
+                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "Gain more lives by voting for our server, or waiting until the next day begins.");
+                return;
+            }
             var bed = player.getBedSpawnLocation();
             if (bed == null) {
                 var world = WorldManager.getInstance().getSpawn();
@@ -853,6 +856,7 @@ public class DiplomacyPlayers {
             }
             if (!(entity instanceof LivingEntity) && DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation() != null)
                 event.setCancelled(true);//todo figure out
+
         }
 
         @EventHandler(priority = EventPriority.HIGH)

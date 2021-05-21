@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.commands;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -10,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +25,7 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
     private static final String ottCancelUsage = "/ottCancel <player>";
     private static final String ottAcceptUsage = "/ottAccept <player>";
     private static final String ottDeclineUsage = "/ottDecline <player>";
+    private static final String spawnUsage = "/spawn";
 
     private static Map<RequestKey, Long> requests;
 
@@ -114,6 +117,12 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + ottDeclineUsage);
             }
+        } else if (command.getName().equalsIgnoreCase("spawn")) {
+            if (args.length == 0) {
+                spawn(sender);
+            } else {
+                sender.sendMessage(incorrectUsage + spawnUsage);
+            }
         }
         return true;
     }
@@ -131,6 +140,42 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
+    private void spawn(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Must be a player to use this command.");
+            return;
+        }
+        var player = ((Player) sender);
+
+        if (DiplomacyPlayers.getInstance().combatLogged.containsKey(player)) {
+            player.sendMessage(ChatColor.RED + "You cannot teleport to spawn while in combat.");
+            return;
+        }
+
+        var map = DiplomacyPlayers.getInstance().teleportMap;
+        if (map.containsKey(player)) {
+            sender.sendMessage(ChatColor.RED + "Already teleporting.");
+            return;
+        }
+        var key = (int) (Math.random() * Integer.MAX_VALUE);
+        DiplomacyPlayers.getInstance().teleportMap.put(player, key);
+        player.sendMessage(ChatColor.GOLD + "Teleporting to spawn in 3 seconds, do not move.");
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> teleportSpawn(player, key), 60L);
+    }
+
+    private void teleportSpawn(Player player, int key) {
+        var map = DiplomacyPlayers.getInstance().teleportMap;
+        if (map.containsKey(player) && map.get(player) == key) {
+            var point = WorldManager.getInstance().getSpawn().getSpawnLocation();
+            point.setX(point.getX() + 0.5);
+            point.setZ(point.getZ() + 0.5);
+            player.sendMessage(ChatColor.GOLD + "Teleporting to spawn...");
+            player.teleport(point, PlayerTeleportEvent.TeleportCause.COMMAND);
+            DiplomacyPlayers.getInstance().teleportMap.remove(player);
+        }
+
+    }
+
     private void ott(CommandSender sender, String strOtherPlayer) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
@@ -142,7 +187,17 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
         var canTeleport = diplomacyPlayer.getCanTeleport();
 
         if (!canTeleport) {
-            sender.sendMessage(ChatColor.DARK_RED + "You have already used your one-time teleport.");
+            sender.sendMessage(ChatColor.DARK_RED + "You have already used your one-time teleport or it has expired.");
+            return;
+        }
+
+        if (diplomacyPlayer.getLives() == 0) {
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot teleport, you have 0 lives left.");
+            return;
+        }
+
+        if (DiplomacyPlayers.getInstance().combatLogged.containsKey(player)) {
+            player.sendMessage(ChatColor.RED + "You cannot use OTT while in combat.");
             return;
         }
 
@@ -214,9 +269,20 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
         var canTeleport = teleporterDiplomacyPlayer.getCanTeleport();
 
         if (!canTeleport) {
-            sender.sendMessage(ChatColor.DARK_RED + "You have already used your one-time teleport.");
+            sender.sendMessage(ChatColor.DARK_RED + "You have already used your one-time teleport or it has expired.");
             return;
         }
+
+        if (teleporterDiplomacyPlayer.getLives() == 0) {
+            sender.sendMessage(ChatColor.DARK_RED + "You cannot teleport, you have 0 lives left.");
+            return;
+        }
+
+        if (DiplomacyPlayers.getInstance().combatLogged.containsKey(teleporter)) {
+            teleporter.sendMessage(ChatColor.RED + "You cannot use OTT while in combat.");
+            return;
+        }
+
 
         var nonTeleporter = Bukkit.getPlayer(strNonTeleporter);
 
@@ -324,15 +390,24 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
         var teleporter = Bukkit.getPlayer(strTeleporter);
 
         if (teleporter == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "The player attempting to teleport to is no longer online.");
+            sender.sendMessage(ChatColor.DARK_RED + "The player attempting to teleport to you is no longer online.");
             return;
         }
-
         var teleporterDiplomacyPlayer = DiplomacyPlayers.getInstance().get(teleporter.getUniqueId());
         var canTeleport = teleporterDiplomacyPlayer.getCanTeleport();
 
         if (!canTeleport) {
             sender.sendMessage(ChatColor.DARK_RED + "That player has already used their one-time teleport.");
+            return;
+        }
+
+        if (teleporterDiplomacyPlayer.getLives() == 0) {
+            sender.sendMessage(ChatColor.DARK_RED + "That player has 0 lives and cannot teleport.");
+            return;
+        }
+
+        if (DiplomacyPlayers.getInstance().combatLogged.containsKey(teleporter)) {
+            sender.sendMessage(ChatColor.RED + "The player attempting to teleport to you is in combat and cannot use their OTT.");
             return;
         }
 
@@ -350,7 +425,7 @@ public class TeleportCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.AQUA + "Teleport request has been accepted.");
         teleporter.sendMessage(ChatColor.AQUA + "Teleport request has been accepted.");
 
-        teleporter.teleport(nonTeleporter);
+        teleporter.teleport(nonTeleporter, PlayerTeleportEvent.TeleportCause.COMMAND);
         teleporterDiplomacyPlayer.setCanTeleport(false);
 
     }

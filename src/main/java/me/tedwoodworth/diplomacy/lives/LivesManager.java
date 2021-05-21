@@ -75,13 +75,13 @@ public class LivesManager {
 
     void giveApple(Player player, String reason) {
         Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
-                player.sendMessage(ChatColor.AQUA + "You have recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.AQUA + " for " + reason + ".");
-                var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
-                var extra = player.getInventory().addItem(apple);
-                if (extra.size() > 0) {
-                    player.getWorld().dropItem(player.getLocation(), apple);
-                }
-        }, 100);
+            player.sendMessage(ChatColor.AQUA + "You have recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.AQUA + " for " + reason + ".");
+            var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
+            var extra = player.getInventory().addItem(apple);
+            if (extra.size() > 0) {
+                player.getWorld().dropItem(player.getLocation(), apple);
+            }
+        }, 20L);
     }
 
 
@@ -97,15 +97,10 @@ public class LivesManager {
             var player = event.getPlayer();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var lives = diplomacyPlayer.getLives();
-            if (lives == 0 && diplomacyPlayer.getJoinedToday()) {
+            if (lives == 0) {
+                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "You have 0 lives left. You will not be able to re-enter the world until you gain more lives.");
+                player.sendMessage("" + ChatColor.RED + ChatColor.BOLD + "Gain more lives by voting for our server, or waiting until the next day begins.");
 
-                var message = "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
-                        net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
-                        net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
-                        net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
-                        net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf";
-
-                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, message);
             }
         }
 
@@ -134,27 +129,21 @@ public class LivesManager {
             var player = (Player) event.getEntity();
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             diplomacyPlayer.setLives(diplomacyPlayer.getLives() - 1);
-
+            diplomacyPlayer.setLastLocation(null);
+            DiplomacyPlayers.getInstance().combatLogged.remove(player);
             if (diplomacyPlayer.getLives() == 0) {
                 var name = player.getName();
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () ->
-                        player.kickPlayer(
-                                "" + net.md_5.bungee.api.ChatColor.RED + net.md_5.bungee.api.ChatColor.BOLD + "You have 0 lives left.\n\n" +
-                                        net.md_5.bungee.api.ChatColor.WHITE + "You will be able to join again in " + LivesManager.getInstance().getStringTimeUntil() + ".\n\n" +
-                                        net.md_5.bungee.api.ChatColor.WHITE + "To join sooner, get more lives by voting for our server.\n" +
-                                        net.md_5.bungee.api.ChatColor.WHITE + "The vote links are listed in discord.\n\n" +
-                                        net.md_5.bungee.api.ChatColor.LIGHT_PURPLE + net.md_5.bungee.api.ChatColor.BOLD + "Discord: " + net.md_5.bungee.api.ChatColor.WHITE + net.md_5.bungee.api.ChatColor.BOLD + "discord.gg/PZd9gdf"
-                        ), 1);
                 for (var testPlayer : Bukkit.getOnlinePlayers()) {
                     testPlayer.sendMessage("" + ChatColor.RED + ChatColor.BOLD + name + " ran out of lives.");
                 }
                 return;
+            } else {
+                var label = " lives ";
+                if (diplomacyPlayer.getLives() == 1) {
+                    label = " life ";
+                }
+                player.sendMessage(ChatColor.AQUA + "You now have " + diplomacyPlayer.getLives() + label + "left.");
             }
-            var label = " lives ";
-            if (diplomacyPlayer.getLives() == 1) {
-                label = " life ";
-            }
-            player.sendMessage(ChatColor.AQUA + "You now have " + diplomacyPlayer.getLives() + label + "left.");
         }
     }
 }

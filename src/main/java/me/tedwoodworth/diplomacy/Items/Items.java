@@ -2,10 +2,9 @@ package me.tedwoodworth.diplomacy.Items;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
-import me.tedwoodworth.diplomacy.entities.Entities;
+import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
-import me.tedwoodworth.diplomacy.Guis.Guis;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -13,11 +12,17 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.*;
-import org.bukkit.inventory.*;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 
@@ -230,10 +235,6 @@ public class Items {
             if (result.getType() == Material.SUSPICIOUS_STEW) {
                 inventory.setResult(air);
             }
-        }
-
-        private void guardThrowGrenade(Entity guard, Player target) {
-
         }
 
         private void throwGrenade(Player player, boolean isOverhand, long explodeTime) {
@@ -581,12 +582,19 @@ public class Items {
             var item = event.getItem();
             if (item == null) return;
             var action = event.getAction();
+
             // Grenade
+            var player = event.getPlayer();
+            if (player.getWorld().equals(WorldManager.getInstance().getSpawn()) && player.getGameMode() != GameMode.CREATIVE && item.getType() == Material.FIREWORK_STAR && CustomItemGenerator.getInstance().isCustomItem(item)) {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "You cannot throw grenades here.");
+                return;
+            }
             if (isGrenade(item) && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
                 ItemStack finalItem = item;
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeUse(finalItem, action, event.getPlayer(), event.getHand()), 2L);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeUse(finalItem, action, player, event.getHand()), 2L);
+
                 event.setCancelled(true);
-                return;
             }
         }
 
@@ -651,7 +659,6 @@ public class Items {
                     return;
                 }
             } else {
-                Entities.getInstance().setDropItems(entity, true);
                 entity.setRemoveWhenFarAway(false);
             }
 
