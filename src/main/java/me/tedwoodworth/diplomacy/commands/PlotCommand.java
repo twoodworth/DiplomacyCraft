@@ -331,7 +331,7 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
                     }
                 }
             }
-            if (attackingPlayerCount >= defendingCount) {
+            if (attackingPlayerCount < defendingCount) {
                 player.sendMessage(ChatColor.RED + "Contest blocked. There must be more attackers than defenders and guards to contest.");
                 player.sendMessage(ChatColor.RED + "(There are " + attackingPlayerCount + " attackers and " + defendingCount + " defenders/guards)");
                 return;

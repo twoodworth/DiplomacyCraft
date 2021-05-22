@@ -547,11 +547,7 @@ public class ClassGuiFactory {
         ));
         gui.addElement(new StaticGuiElement('D',
                 new ItemStack(Material.DIAMOND),
-                click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + "Class Tax",
-                ChatColor.GRAY + "\u00A4" + formatter.format(nationClass.getTax()),
-                " ",
-                ChatColor.BLUE + "Set Tax: " + ChatColor.GRAY + "/class tax " + nationClass.getName() + " <amount>"
+                click -> true
         ));
         gui.addElement(new StaticGuiElement('E',
                 new ItemStack(Material.NETHER_STAR),
@@ -954,30 +950,10 @@ public class ClassGuiFactory {
                 ChatColor.GRAY + "Player cannot use the command \"/nation enemy\""
         ));
 
-        item = new ItemStack(Material.REDSTONE_BLOCK);
-        color = ChatColor.RED;
-        var nPermissionKey = "CanManageTaxes";
-        permission = permissions.get(nPermissionKey);
-        if (permission) {
-            item = new ItemStack(Material.EMERALD_BLOCK);
-            color = ChatColor.GREEN;
-        }
         gui.addElement(new StaticGuiElement('n',
-                item,
-                click -> {
-                    nation.toggleClassPermission(nationClass, player, nPermissionKey);
-                    var nGui = createChangeClassSettings(nation, player, nationClass);
-                    nGui.show(player);
-                    return true;
-                },
-                "" + ChatColor.YELLOW + ChatColor.BOLD + nPermissionKey,
-                ChatColor.BLUE + "Currently: " + color + permission,
-                " ",
-                ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player can change how much each class is taxed.",
-                " ",
-                ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player cannot change how much each class is taxed."
+                new ItemStack(Material.BEDROCK),
+                click -> true,
+                "" + ChatColor.RED + ChatColor.BOLD + "Permission removed."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -2201,17 +2177,11 @@ public class ClassGuiFactory {
             item = new ItemStack(Material.EMERALD_BLOCK);
             color = ChatColor.GREEN;
         }
+
         gui.addElement(new StaticGuiElement('n',
-                item,
+                new ItemStack(Material.BEDROCK),
                 click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + nPermissionKey,
-                ChatColor.BLUE + "Currently: " + color + permission,
-                " ",
-                ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player can change how much each class is taxed.",
-                " ",
-                ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player cannot change how much each class is taxed."
+                "" + ChatColor.RED + ChatColor.BOLD + "Permission removed."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);
@@ -3286,25 +3256,10 @@ public class ClassGuiFactory {
                 ChatColor.GRAY + "Player cannot use the command \"/nation enemy\""
         ));
 
-        item = new ItemStack(Material.REDSTONE_BLOCK);
-        color = ChatColor.RED;
-        var nPermissionKey = "CanManageTaxes";
-        permission = permissions.get(nPermissionKey);
-        if (permission) {
-            item = new ItemStack(Material.EMERALD_BLOCK);
-            color = ChatColor.GREEN;
-        }
         gui.addElement(new StaticGuiElement('n',
-                item,
+                new ItemStack(Material.BEDROCK),
                 click -> true,
-                "" + ChatColor.YELLOW + ChatColor.BOLD + nPermissionKey,
-                ChatColor.BLUE + "Currently: " + color + permission,
-                " ",
-                ChatColor.BLUE + "If true: ",
-                ChatColor.GRAY + "Player can change how much each class is taxed.",
-                " ",
-                ChatColor.BLUE + "If false: ",
-                ChatColor.GRAY + "Player cannot change how much each class is taxed."
+                "" + ChatColor.RED + ChatColor.BOLD + "Permission removed."
         ));
 
         item = new ItemStack(Material.REDSTONE_BLOCK);

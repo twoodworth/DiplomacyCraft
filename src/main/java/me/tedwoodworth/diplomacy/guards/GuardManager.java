@@ -1440,7 +1440,7 @@ public class GuardManager {
 
         var block = damager.getLocation().getBlock();
         var chunk = block.getChunk();
-        var canBuild = DiplomacyPlayers.getInstance().canBuildHere(block, damager);
+        var canBuild = DiplomacyPlayers.getInstance().canBuildHere(block, damager, null);
         var attackTresspassers = getAttackTrespassers(guard);
         var isNationChunk = Objects.equals(guardNation, DiplomacyChunks.getInstance().getDiplomacyChunk(chunk).getNation());
         if (!canBuild && attackTresspassers && isNationChunk) {

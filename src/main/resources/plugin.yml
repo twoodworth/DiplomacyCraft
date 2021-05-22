@@ -23,26 +23,6 @@ commands:
     aliases: [g]
     usage: "Usage: /<command> ..."
 
-  wallet:
-    description: Check your wallet.
-    aliases: []
-    usage: "Usage: /<command>"
-
-  pay:
-    description: Pay another player.
-    aliases: []
-    usage: "Usage: /<command> ..."
-
-  deposit:
-    description: Deposit money into the bank.
-    aliases: []
-    usage: "Usage: /<command> ..."
-
-  withdraw:
-    description: Withdraw money from the bank.
-    aliases: []
-    usage: "Usage: /<command> ..."
-
   menu:
     description: Open the diplomacy menu.
     aliases: []
@@ -75,11 +55,6 @@ commands:
 
   lives:
     description: Get your lives.
-    aliases: []
-    usage: "Usage: /<command>"
-
-  giveLives:
-    description: Give another player lives.
     aliases: []
     usage: "Usage: /<command>"
 
@@ -125,11 +100,6 @@ commands:
 
   discord:
     description: Get a link to the discord.
-    aliases: []
-    usage: "Usage: /<command>"
-
-  addLife:
-    description: Give a player 1 life.
     aliases: []
     usage: "Usage: /<command>"
 

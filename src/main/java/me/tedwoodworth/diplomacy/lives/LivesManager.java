@@ -81,6 +81,12 @@ public class LivesManager {
             if (extra.size() > 0) {
                 player.getWorld().dropItem(player.getLocation(), apple);
             }
+            if (!reason.equals("playing today")) {
+                for (var p : Bukkit.getOnlinePlayers()) {
+//                    if (p.equals(player)) continue;
+                    p.sendMessage(ChatColor.DARK_GRAY + player.getName() + " has recieved an " + ChatColor.GOLD + "Apple of Life" + ChatColor.DARK_GRAY + " for" + reason + ".");
+                }
+            }
         }, 20L);
     }
 

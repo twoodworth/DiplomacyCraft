@@ -138,11 +138,12 @@ public class DiplomacyPlayers {
         }
     }
 
-    public boolean canBuildHere(Block block, Player player) {
+    public boolean canBuildHere(Block block, Player player, Material itemUsed) {
         var biome = block.getBiome();
-        if (biome == Biome.OCEAN || biome == Biome.COLD_OCEAN || biome == Biome.DEEP_COLD_OCEAN || biome == Biome.DEEP_FROZEN_OCEAN
+        if ((biome == Biome.OCEAN || biome == Biome.COLD_OCEAN || biome == Biome.DEEP_COLD_OCEAN || biome == Biome.DEEP_FROZEN_OCEAN
                 || biome == Biome.DEEP_LUKEWARM_OCEAN || biome == Biome.DEEP_OCEAN || biome == Biome.DEEP_WARM_OCEAN || biome == Biome.FROZEN_OCEAN
-                || biome == Biome.LUKEWARM_OCEAN || biome == Biome.WARM_OCEAN) {
+                || biome == Biome.LUKEWARM_OCEAN || biome == Biome.WARM_OCEAN) &&
+                ((itemUsed != Material.LILY_PAD && itemUsed != Material.BUCKET && itemUsed != Material.COD_BUCKET && itemUsed != Material.PUFFERFISH_BUCKET && itemUsed != Material.SALMON_BUCKET && itemUsed != Material.TROPICAL_FISH_BUCKET && itemUsed != Material.WATER_BUCKET))) {
             var height = block.getY();
             var seaLevel = new Location(block.getWorld(), block.getX(), 33, block.getZ());
             if (height >= 34 && seaLevel.getBlock().getType() == Material.WATER) {
@@ -502,7 +503,7 @@ public class DiplomacyPlayers {
         private void onBlockPlaceEvent(BlockPlaceEvent event) {
             var block = event.getBlock();
             var player = event.getPlayer();
-            if (canBuildHere(block, player)) return;
+            if (canBuildHere(block, player, null)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot build here.");
             event.setCancelled(true);
@@ -513,8 +514,8 @@ public class DiplomacyPlayers {
             var block = event.getBlock();
 
             var player = event.getPlayer();
-
-            if (canBuildHere(block, player)) return;
+            var bucket = event.getBucket();
+            if (canBuildHere(block, player, bucket)) return;
 
             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
             event.setCancelled(true);
@@ -524,7 +525,8 @@ public class DiplomacyPlayers {
         private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
             var block = event.getBlock();
             var player = event.getPlayer();
-            if (canBuildHere(block, player)) return;
+            var bucket = event.getBucket();
+            if (canBuildHere(block, player, bucket)) return;
 
             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
             event.setCancelled(true);
@@ -547,7 +549,7 @@ public class DiplomacyPlayers {
                             if (block.getWorld().getEnvironment().equals(World.Environment.NETHER)) return;
 
                             var player = event.getPlayer();
-                            if (canBuildHere(block, player)) return;
+                            if (canBuildHere(block, player, null)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -555,7 +557,7 @@ public class DiplomacyPlayers {
                         }
                         case ITEM_FRAME, COMPOSTER -> {
                             var player = event.getPlayer();
-                            if (canBuildHere(block, player)) return;
+                            if (canBuildHere(block, player, null)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -566,7 +568,7 @@ public class DiplomacyPlayers {
                             if (block.getWorld().getEnvironment().equals(World.Environment.NORMAL)) return;
 
                             var player = event.getPlayer();
-                            if (canBuildHere(block, player)) return;
+                            if (canBuildHere(block, player, null)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -577,7 +579,7 @@ public class DiplomacyPlayers {
                 case PHYSICAL -> {
                     if (block.getType() == Material.FARMLAND) {
                         var player = event.getPlayer();
-                        if (canBuildHere(block, player)) return;
+                        if (canBuildHere(block, player, null)) return;
 
                         player.sendMessage(ChatColor.RED + "You cannot trample farmland here.");
                         event.setCancelled(true);
@@ -592,7 +594,7 @@ public class DiplomacyPlayers {
                     switch (itemType) {
                         case FLINT_AND_STEEL, FIRE_CHARGE, END_CRYSTAL, PAINTING, ITEM_FRAME -> {
                             var player = event.getPlayer();
-                            if (canBuildHere(block, player)) return;
+                            if (canBuildHere(block, player, null)) return;
 
                             player.sendMessage(ChatColor.RED + "You don't have permission to use that here.");
                             event.setCancelled(true);
@@ -656,6 +658,7 @@ public class DiplomacyPlayers {
             var damaged = event.getEntity();
             var trueDamager = GuardManager.getInstance().getTrueDamager(damager);
             if (!(trueDamager instanceof Player || GuardManager.getInstance().isGuard(trueDamager)) && !(damaged instanceof Player || GuardManager.getInstance().isGuard(damaged))) {
+                System.out.println("Returning damagebyEntity");
                 return;
             }
             if (damaged instanceof Player) {
@@ -759,7 +762,7 @@ public class DiplomacyPlayers {
             var block = event.getBlock();
             var player = event.getPlayer();
 
-            if (canBuildHere(block, player)) return;
+            if (canBuildHere(block, player, null)) return;
 
             player.sendMessage(ChatColor.RED + "You cannot destroy here.");
             event.setCancelled(true);

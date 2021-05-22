@@ -21,7 +21,6 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
     private static final String classRenameUsage = "/class rename <class> <new name>";
     private static final String classPrefixUsage = "/class prefix <class> <new prefix>";
     private static final String classClearPrefixUsage = "/class clearPrefix <class>";
-    private static final String classTaxUsage = "/class tax <class> <amount>";
 
     private static final DecimalFormat formatter = new DecimalFormat("#,##0.00");
 
@@ -55,12 +54,6 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
             } else {
                 sender.sendMessage(incorrectUsage + classClearPrefixUsage);
             }
-        } else if (args[0].equalsIgnoreCase("tax")) {
-            if (args.length == 3) {
-                classTax(sender, args[1], args[2]);
-            } else {
-                sender.sendMessage(incorrectUsage + classTaxUsage);
-            }
         } else {
             sender.sendMessage(incorrectUsage + classUsage);
         }
@@ -74,8 +67,7 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
                 var list = Arrays.asList(
                         "rename",
                         "prefix",
-                        "clearPrefix",
-                        "tax"
+                        "clearPrefix"
                 );
                 var list1 = new ArrayList<String>();
                 for (var val : list) {
@@ -125,19 +117,6 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
                         return list;
                     }
                 }
-            } else if (args[0].equalsIgnoreCase("tax")) {
-                if (args.length == 2) {
-                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-                    var nation = Nations.getInstance().get(diplomacyPlayer);
-                    if (nation != null) {
-                        var list = new ArrayList<String>();
-                        var classes = nation.getClasses();
-                        for (var nationClass : classes) {
-                            list.add(nationClass.getName());
-                        }
-                        return list;
-                    }
-                }
             }
         }
         return null;
@@ -153,7 +132,6 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "/class rename" + ChatColor.WHITE + " Rename a class");
         sender.sendMessage(ChatColor.GOLD + "/class prefix" + ChatColor.WHITE + " Change a class's prefix");
         sender.sendMessage(ChatColor.GOLD + "/class clearPrefix" + ChatColor.WHITE + " Remove a class's prefix");
-        sender.sendMessage(ChatColor.GOLD + "/class tax" + ChatColor.WHITE + " Set a class's tax");
     }
 
     private void classRename(CommandSender sender, String className, String newClassName) {
@@ -327,67 +305,5 @@ public class ClassCommand implements CommandExecutor, TabCompleter {
         }
 
         nation.clearClassPrefix(nationClass);
-    }
-
-    private void classTax(CommandSender sender, String className, String strAmount) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
-            return;
-        }
-
-        var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
-        var nation = Nations.getInstance().get(diplomacyPlayer);
-
-        if (nation == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to use this command.");
-            return;
-        }
-
-        var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-        var canManageClasses = permissions.get("CanManageClasses");
-
-        if (!canManageClasses) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to set class taxes.");
-            return;
-        }
-
-        NationClass nationClass = null;
-
-        for (var testClass : nation.getClasses()) {
-            var testClassName = testClass.getName();
-            if (className.equalsIgnoreCase(testClassName)) {
-                nationClass = testClass;
-            }
-        }
-
-        if (nationClass == null) {
-            sender.sendMessage(ChatColor.RED + "Class not found.");
-            return;
-        }
-
-        var amount = 0.0;
-
-        try {
-            amount = Double.parseDouble(strAmount);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Amount must be a number.");
-            return;
-        }
-
-
-        if (nationClass.getTax() == amount) {
-            sender.sendMessage(ChatColor.RED + "The tax is already set to that.");
-            return;
-        }
-
-
-        for (var member : nation.getMembers()) {
-            var player = Bukkit.getPlayer(member.getUUID());
-            if (player != null) {
-                player.sendMessage(ChatColor.AQUA + "The tax for the class '" + nationClass.getName() + "' has been set to \u00A4" + formatter.format(amount));
-            }
-        }
-
-        nation.setClassTax(nationClass, amount);
     }
 }

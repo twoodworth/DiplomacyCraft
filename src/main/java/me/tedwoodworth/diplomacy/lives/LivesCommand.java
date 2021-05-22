@@ -38,13 +38,7 @@ public class LivesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (command.getName().equalsIgnoreCase("giveLives") && args.length == 1) {
-            List<String> players = new ArrayList<>();
-            for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
-                players.add(player.getOfflinePlayer().getName());
-            }
-            return players;
-        } else if (command.getName().equalsIgnoreCase("addLife") && args.length == 1) {
+        if (command.getName().equalsIgnoreCase("addLife") && args.length == 1) {
             List<String> players = new ArrayList<>();
             for (var player : DiplomacyPlayers.getInstance().getPlayers()) {
                 players.add(player.getOfflinePlayer().getName());

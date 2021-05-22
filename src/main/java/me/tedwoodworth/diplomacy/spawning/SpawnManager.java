@@ -5,6 +5,7 @@ import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.*;
 
 import java.util.ArrayList;
@@ -215,6 +217,18 @@ public class SpawnManager {
             var player = event.getPlayer();
             if (player.getWorld().equals(WorldManager.getInstance().getSpawn()) && player.getGameMode() != GameMode.CREATIVE) {
                 player.sendMessage(ChatColor.RED + "You cannot do that here.");
+                event.setCancelled(true);
+            }
+        }
+
+        @EventHandler
+        private void onHangingBreak(HangingBreakByEntityEvent event) {
+            var player = event.getRemover();
+            var world = event.getEntity().getWorld();
+            if (world.equals(WorldManager.getInstance().getSpawn()) && (!(player instanceof Player) || ((Player) player).getGameMode() != GameMode.CREATIVE)) {
+                if (player != null) {
+                    player.sendMessage(ChatColor.RED + "You cannot do that here.");
+                }
                 event.setCancelled(true);
             }
         }

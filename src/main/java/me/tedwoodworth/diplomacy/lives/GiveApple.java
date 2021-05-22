@@ -19,6 +19,7 @@ public class GiveApple implements Runnable {
             diplomacyPlayer.setJoinedToday(false);
             if (diplomacyPlayer.getOfflinePlayer().isOnline() && !diplomacyPlayer.getJoinedToday()) {
                 LivesManager.getInstance().giveApple(diplomacyPlayer.getOfflinePlayer().getPlayer(), "playing today");
+                diplomacyPlayer.setJoinedToday(true);
             }
         }
 
