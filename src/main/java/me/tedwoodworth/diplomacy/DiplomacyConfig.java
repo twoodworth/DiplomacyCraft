@@ -18,7 +18,9 @@ public class DiplomacyConfig {
 
     private static DiplomacyConfig instance = null;
     private final File diplomacyConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "config.yml");
+    private final File censoredConfigFile = new File(Diplomacy.getInstance().getDataFolder(), "censored.yml");
     private YamlConfiguration diplomacyConfig;
+    private YamlConfiguration censoredConfig;
 
     public static DiplomacyConfig getInstance() {
         if (instance == null) {
@@ -33,6 +35,7 @@ public class DiplomacyConfig {
 
     private DiplomacyConfig() {
         diplomacyConfig = YamlConfiguration.loadConfiguration(diplomacyConfigFile);
+        censoredConfig = YamlConfiguration.loadConfiguration(censoredConfigFile);
     }
 
     public String getMapLink() {
@@ -63,22 +66,75 @@ public class DiplomacyConfig {
         return diplomacyConfig.getStringList("messages");
     }
 
-    public int getWorldSize() {
-        var size = diplomacyConfig.getInt("world-size");
-        if (size == 0) {
-            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
-            diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
-            size = (int) Bukkit.getWorld("world").getWorldBorder().getSize();
-            diplomacyConfig.set("world-size", 64);
-            return size;
+    public List<String> getCensoredWords() {
+        if (censoredConfig.getStringList("censored").size() == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Censored.yml")));
+            censoredConfig = YamlConfiguration.loadConfiguration(reader);
         }
-        return size;
+        return censoredConfig.getStringList("censored");
     }
 
-    public void setWorldSize(int size) {
-        Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
-        diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
-        diplomacyConfig.set("world-size", size);
+    public List<String> getSuperCensoredWords() {
+        if (censoredConfig.getStringList("superCensored").size() == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Censored.yml")));
+            censoredConfig = YamlConfiguration.loadConfiguration(reader);
+        }
+        return censoredConfig.getStringList("superCensored");
+    }
+
+    /**
+     * Adds a word to the censored words list.
+     *
+     * @param word: Word to add
+     * @return true if it was successfully added, false if not.
+     */
+    public boolean addCensoredWord(String word) {
+        if (censoredConfig.getStringList("censored").size() == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Censored.yml")));
+            censoredConfig = YamlConfiguration.loadConfiguration(reader);
+        }
+        var list = censoredConfig.getStringList("censored");
+        if (!list.contains(word)) {
+            list.add(word);
+            censoredConfig.set("censored", list);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addSuperCensoredWord(String word) {
+        if (censoredConfig.getStringList("superCensored").size() == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Censored.yml")));
+            censoredConfig = YamlConfiguration.loadConfiguration(reader);
+        }
+        var list = censoredConfig.getStringList("superCensored");
+        if (!list.contains(word)) {
+            list.add(word);
+            censoredConfig.set("superCensored", list);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeCensoredWord(String word) {
+        if (censoredConfig.getStringList("superCensored").size() == 0) {
+            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Censored.yml")));
+            censoredConfig = YamlConfiguration.loadConfiguration(reader);
+        }
+        var list = censoredConfig.getStringList("superCensored");
+        var removed = false;
+        if (list.contains(word)) {
+            list.remove(word);
+            censoredConfig.set("superCensored", list);
+            removed = true;
+        }
+        list = censoredConfig.getStringList("censored");
+        if (list.contains(word)) {
+            list.remove(word);
+            censoredConfig.set("censored", list);
+            removed = true;
+        }
+        return removed;
     }
 
     public long getMessageInterval() {
@@ -90,17 +146,6 @@ public class DiplomacyConfig {
         }
         return Long.parseLong(interval);
     }
-
-    public String getResetWorldPassword() {
-        var password = diplomacyConfig.getString("reset-world-password");
-        if (password == null) {
-            Reader reader = new InputStreamReader(Objects.requireNonNull(Diplomacy.getInstance().getResource("Default/Config.yml")));
-            diplomacyConfig = YamlConfiguration.loadConfiguration(reader);
-            password = "password312";
-        }
-        return password;
-    }
-
     public void save() {
         try {
             diplomacyConfig.save(diplomacyConfigFile);

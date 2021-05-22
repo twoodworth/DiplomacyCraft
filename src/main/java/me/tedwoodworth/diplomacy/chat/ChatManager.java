@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.chat;
 
 import com.earth2me.essentials.Essentials;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.DiplomacyConfig;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
@@ -14,9 +15,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class ChatManager {
 
@@ -28,6 +27,7 @@ public class ChatManager {
     private final String NATION = "3";
 
     private Map<Player, String> chatModes = new HashMap<>();
+    private Set<Player> cooldown = new HashSet<>();
 
     public static ChatManager getInstance() {
         if (instance == null) {
@@ -85,6 +85,29 @@ public class ChatManager {
                 player.sendMessage(ChatColor.RED + "You cannot chat while muted.");
                 return;
             }
+
+            var censored = DiplomacyConfig.getInstance().getCensoredWords();
+            var message = event.getMessage();
+            var words = message.split(" ");
+            for (var word : words) {
+                var lower = word.toLowerCase();
+                if (censored.contains(lower)) {
+                    player.sendMessage(ChatColor.RED + "The word '" + word + "' is censored.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            var superCensored = DiplomacyConfig.getInstance().getSuperCensoredWords();
+            for (var word : superCensored) {
+                var lower = message.toLowerCase();
+                if (lower.contains(word)) {
+                    player.sendMessage(ChatColor.RED + "The word '" + word + "' is censored.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
             var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
             var nation = Nations.getInstance().get(diplomacyPlayer);
             if (getChatMode(player) == null) {
@@ -100,6 +123,19 @@ public class ChatManager {
 
             switch (getChatMode(player)) {
                 case GLOBAL -> {
+
+                    var rank = diplomacyPlayer.getRank();
+                    if (rank.equals("None")) {
+                        if (cooldown.contains(player)) {
+                            player.sendMessage(ChatColor.RED + "You can only use global chat once every 5 seconds. You can chat without a cooldown in local chat (/lc), ally chat (/ac), and nation chat (/nc).");
+                            event.setCancelled(true);
+                            return;
+                        } else {
+                            cooldown.add(player);
+                            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> cooldown.remove(player), 100L);
+                        }
+                    }
+
                     System.out.println(player.getName() + ": " + event.getMessage());
                     for (var recipient : event.getRecipients()) {
                         if (nation != null) {

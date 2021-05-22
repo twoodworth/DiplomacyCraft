@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.DiplomacyConfig;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.events.NationAddChunksEvent;
@@ -28,6 +29,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String removeChunkNationUsage = "/admin removeChunkNation";
     private static final String fireArrowUsage = "/admin fireArrow <speed> <spread>";
     private static final String generateChunkUsage = "/admin generateChunk";
+    private static final String censorUsage = "/admin censor <word>";
+    private static final String uncensorUsage = "/admin uncensor <word>";
+    private static final String superCensorUsage = "/admin superCensor <word>";
+    private static final String listCensoredUsage = "/admin listCensored";
 
 
     public static void register(PluginCommand pluginCommand) {
@@ -78,6 +83,30 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     } else {
                         sender.sendMessage(incorrectUsage + generateChunkUsage);
                     }
+                } else if (args[0].equalsIgnoreCase("censor")) {
+                    if (args.length == 2) {
+                        addCensoredWord(sender, args[1]);
+                    } else {
+                        sender.sendMessage(incorrectUsage + censorUsage);
+                    }
+                } else if (args[0].equalsIgnoreCase("superCensor")) {
+                    if (args.length == 2) {
+                        addSuperCensoredWord(sender, args[1]);
+                    } else {
+                        sender.sendMessage(incorrectUsage + superCensorUsage);
+                    }
+                } else if (args[0].equalsIgnoreCase("uncensor")) {
+                    if (args.length == 2) {
+                        removeCensoredWord(sender, args[1]);
+                    } else {
+                        sender.sendMessage(incorrectUsage + uncensorUsage);
+                    }
+                } else if (args[0].equalsIgnoreCase("listCensored")) {
+                    if (args.length == 1) {
+                        listCensoredWords(sender);
+                    } else {
+                        sender.sendMessage(incorrectUsage + listCensoredUsage);
+                    }
                 }
             }
         }
@@ -96,7 +125,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                             "setChunkNation",
                             "removeChunkNation",
                             "fireArrow",
-                            "generateChunk"
+                            "generateChunk",
+                            "censor",
+                            "uncensor",
+                            "superCensor",
+                            "listCensored"
                     );
                 } else if (args.length == 2) {
                     if (args[0].equalsIgnoreCase("give")) {
@@ -140,6 +173,53 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         var z = chunk.getZ();
         WorldManager.getInstance().adjustChunks(x, z);
 
+    }
+
+    private void addCensoredWord(CommandSender sender, String word) {
+        var added = DiplomacyConfig.getInstance().addCensoredWord(word);
+        if (!added) {
+            sender.sendMessage(ChatColor.RED + "This word was already censored.");
+        } else {
+            sender.sendMessage(ChatColor.RED + "The word '" + word + "' has been added to the censor list.");
+        }
+    }
+
+    private void removeCensoredWord(CommandSender sender, String word) {
+        var removed = DiplomacyConfig.getInstance().removeCensoredWord(word);
+        if (!removed) {
+            sender.sendMessage(ChatColor.RED + "This word is not censored.");
+        } else {
+            sender.sendMessage(ChatColor.RED + "The word '" + word + "' has been removed from the censor/supercensor list.");
+        }
+    }
+
+    private void addSuperCensoredWord(CommandSender sender, String word) {
+        var added = DiplomacyConfig.getInstance().addSuperCensoredWord(word);
+        if (!added) {
+            sender.sendMessage(ChatColor.RED + "This word was already super censored.");
+        } else {
+            sender.sendMessage(ChatColor.RED + "The word '" + word + "' has been added to the super censor list.");
+        }
+    }
+
+    private void listCensoredWords(CommandSender sender) {
+        var censored = DiplomacyConfig.getInstance().getCensoredWords();
+        var superCensored = DiplomacyConfig.getInstance().getSuperCensoredWords();
+
+        var censoredMessage = new StringBuilder();
+        censoredMessage.append(ChatColor.RED + "Censored words: ");
+        for (var word : censored) {
+            censoredMessage.append(word + ", ");
+        }
+
+        var superCensoredMessage = new StringBuilder();
+        superCensoredMessage.append(ChatColor.RED + "Super Censored words: ");
+        for (var word : superCensored) {
+            superCensoredMessage.append(word + ", ");
+        }
+
+        sender.sendMessage(censoredMessage.toString());
+        sender.sendMessage(superCensoredMessage.toString());
     }
 
     private void fireArrow(CommandSender sender, String strSpeed, String strSpread) {
