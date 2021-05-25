@@ -986,7 +986,7 @@ public class GuardManager {
                         container.set(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE, diamond);
 
                         // netherite
-                        var netherite = container.get(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE) + ((rate * 3.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
+                        var netherite = container.get(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE) + ((rate * 1.5) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
                         if (netherite > 1.0) {
                             var loc = guard.getLocation();
                             loc.getWorld().dropItem(loc, new ItemStack(Material.NETHERITE_SCRAP));

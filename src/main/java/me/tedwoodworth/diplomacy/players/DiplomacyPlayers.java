@@ -657,11 +657,10 @@ public class DiplomacyPlayers {
             var damager = event.getDamager();
             var damaged = event.getEntity();
             var trueDamager = GuardManager.getInstance().getTrueDamager(damager);
-            if (!(trueDamager instanceof Player || GuardManager.getInstance().isGuard(trueDamager)) && !(damaged instanceof Player || GuardManager.getInstance().isGuard(damaged))) {
-                System.out.println("Returning damagebyEntity");
+            if (!(trueDamager instanceof Player && damaged instanceof Player)) {
                 return;
             }
-            if (damaged instanceof Player) {
+            {
                 var player = ((Player) damaged);
 
                 if (teleportMap.containsKey(player)) {
@@ -679,21 +678,19 @@ public class DiplomacyPlayers {
                 }
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> removeCombat(player), 300L);
             }
-            if (damager instanceof Player) {
-                var player = ((Player) damager);
-                if (teleportMap.containsKey(player)) {
-                    player.sendMessage(ChatColor.RED + "Teleport to spawn cancelled.");
-                    teleportMap.remove(player);
-                }
-                if (combatLogged.containsKey(player)) {
-                    var count = combatLogged.get(player);
-                    combatLogged.replace(player, count + 1);
-                } else {
-                    combatLogged.put(player, 1);
-                    player.sendMessage(ChatColor.RED + "You are now in combat. You will be killed if you attempt to quit.");
-                }
-                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> removeCombat(player), 300L);
+            var player = ((Player) trueDamager);
+            if (teleportMap.containsKey(player)) {
+                player.sendMessage(ChatColor.RED + "Teleport to spawn cancelled.");
+                teleportMap.remove(player);
             }
+            if (combatLogged.containsKey(player)) {
+                var count = combatLogged.get(player);
+                combatLogged.replace(player, count + 1);
+            } else {
+                combatLogged.put(player, 1);
+                player.sendMessage(ChatColor.RED + "You are now in combat. You will be killed if you attempt to quit.");
+            }
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> removeCombat(player), 300L);
         }
 
         @EventHandler(ignoreCancelled = true)
