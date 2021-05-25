@@ -296,6 +296,16 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
+        private void onInteract(PlayerInteractEvent event) {
+            var player = event.getPlayer();
+            var item = event.getItem();
+            if (item != null && player.hasCooldown(item.getType())) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        @EventHandler
         private void onBlockBurn(BlockBurnEvent event) {
             var block = event.getBlock().getLocation();
             var chunk = block.getChunk();
