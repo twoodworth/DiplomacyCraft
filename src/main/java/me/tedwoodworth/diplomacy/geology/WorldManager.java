@@ -182,6 +182,9 @@ public class WorldManager {
 
     public void adjustBlocksNether(Block block) {
         var world = block.getWorld();
+        if (block.getType() == Material.WATER) {
+            block.setType(Material.AIR);
+        }
         World otherWorld;
         var y = block.getY();
         if (world.equals(subworld)) {
@@ -191,11 +194,12 @@ public class WorldManager {
             otherWorld = subworld;
             y -= 153;
         }
-
+        if (otherWorld == null) return;
         var otherBlock = otherWorld.getBlockAt(block.getX(), y, block.getZ());
         otherBlock.setType(block.getType());
         otherBlock.setBlockData(block.getBlockData());
     }
+
     public void blockEventCheck(@Nullable Block block, World world) {
         if (block == null) return;
         var y = block.getY();
