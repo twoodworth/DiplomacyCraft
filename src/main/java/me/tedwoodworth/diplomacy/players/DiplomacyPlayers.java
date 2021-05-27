@@ -296,12 +296,15 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler
-        private void onInteract(PlayerInteractEvent event) {
-            var player = event.getPlayer();
-            var item = event.getItem();
-            if (item != null && player.hasCooldown(item.getType())) {
+        private void onInteract(EntityDamageByEntityEvent event) {
+            var entity = event.getDamager();
+            if (!(entity instanceof Player)) return;
+            var player = ((Player) entity);
+            var equipment = player.getEquipment();
+            if (equipment == null) return;
+            var item = equipment.getItemInMainHand();
+            if (player.hasCooldown(item.getType())) {
                 event.setCancelled(true);
-                return;
             }
         }
 
