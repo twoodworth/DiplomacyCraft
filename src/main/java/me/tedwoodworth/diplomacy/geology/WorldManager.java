@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,6 +12,8 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.BrewingStandFuelEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.jetbrains.annotations.Nullable;
@@ -309,6 +312,11 @@ public class WorldManager {
         private void onBlockGrow(BlockGrowEvent event) {
             var block = event.getBlock();
             var world = block.getWorld();
+            var n = event.getNewState();
+            var state = block.getState();
+            state.setBlockData(n.getBlockData());
+            state.setData(n.getData());
+            state.setType(n.getType());
             blockEventCheck(block, world);
         }
 
@@ -384,6 +392,10 @@ public class WorldManager {
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         private void onCauldronLevelChangeEvent(CauldronLevelChangeEvent event) {
             var block = event.getBlock();
+            var n = event.getNewLevel();
+            var data = block.getBlockData();
+            ((Levelled) data).setLevel(n);
+            block.setBlockData(data);
             var world = block.getWorld();
             blockEventCheck(block, world);
         }
@@ -392,7 +404,23 @@ public class WorldManager {
         private void onFluidLevelChange(FluidLevelChangeEvent event) {
             var block = event.getBlock();
             var world = block.getWorld();
+            var nData = event.getNewData();
+            block.setBlockData(nData);
             blockEventCheck(block, world);
+        }
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+        private void onBucketFill(PlayerBucketFillEvent event) {
+            var block = event.getBlock();
+            var world = block.getWorld();
+            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> blockEventCheck(block, world));
+        }
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+        private void onBucketEmpty(PlayerBucketEmptyEvent event) {
+            var block = event.getBlock();
+            var world = block.getWorld();
+            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> blockEventCheck(block, world));
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -413,7 +441,7 @@ public class WorldManager {
         private void onMoistureChange(MoistureChangeEvent event) {
             var block = event.getBlock();
             var world = block.getWorld();
-            blockEventCheck(block, world);
+            Bukkit.getScheduler().runTask(Diplomacy.getInstance(), () -> blockEventCheck(block, world));
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)

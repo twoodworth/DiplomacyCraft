@@ -12,9 +12,7 @@ import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import org.bukkit.*;
-import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -139,31 +137,6 @@ public class DiplomacyPlayers {
     }
 
     public boolean canBuildHere(Block block, Player player, Material itemUsed) {
-        var biome = block.getBiome();
-        if ((biome == Biome.OCEAN || biome == Biome.COLD_OCEAN || biome == Biome.DEEP_COLD_OCEAN || biome == Biome.DEEP_FROZEN_OCEAN
-                || biome == Biome.DEEP_LUKEWARM_OCEAN || biome == Biome.DEEP_OCEAN || biome == Biome.DEEP_WARM_OCEAN || biome == Biome.FROZEN_OCEAN
-                || biome == Biome.LUKEWARM_OCEAN || biome == Biome.WARM_OCEAN) &&
-                ((itemUsed != Material.LILY_PAD && itemUsed != Material.BUCKET && itemUsed != Material.COD_BUCKET && itemUsed != Material.PUFFERFISH_BUCKET && itemUsed != Material.SALMON_BUCKET && itemUsed != Material.TROPICAL_FISH_BUCKET && itemUsed != Material.WATER_BUCKET))) {
-            var height = block.getY();
-            var seaLevel = new Location(block.getWorld(), block.getX(), 33, block.getZ());
-            if (height >= 34 && seaLevel.getBlock().getType() == Material.WATER) {
-                return false;
-            } else {
-                var isBelow = false;
-                var current = block.getRelative(BlockFace.UP);
-                for (int i = height; i < 34; i++) {
-                    if (current.getType() != Material.WATER) {
-                        isBelow = true;
-                        break;
-                    } else {
-                        current = current.getRelative(BlockFace.UP);
-                    }
-                }
-                if (!isBelow) {
-                    return false;
-                }
-            }
-        }
         var chunk = block.getChunk();
         var world = chunk.getWorld();
         var wm = WorldManager.getInstance();
@@ -199,8 +172,7 @@ public class DiplomacyPlayers {
         // check if player has nation build permissions
         var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
         var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-        if (canBuildAnywhere) return true;
-        else return false;
+        return canBuildAnywhere;
     }
 
     public boolean canPlaceGuards(Chunk chunk, Player player) {
