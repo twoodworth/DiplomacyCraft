@@ -86,10 +86,23 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        //todo add dynmap link
-        sender.sendMessage(ChatColor.RED + "Dynmap is currently disabled until May 27, 2021.");
-        sender.sendMessage(ChatColor.RED + "It is disabled to give new nations 1 week to develop");
-        sender.sendMessage(ChatColor.RED + "before nation locations can be seen on the map.");
+        var mapLink = DiplomacyConfig.getInstance().getMapLink();
+
+
+        var hoverComponent = new ComponentBuilder()
+                .append(mapLink)
+                .color(net.md_5.bungee.api.ChatColor.AQUA)
+                .create();
+
+        var message = new ComponentBuilder()
+                .append("[Click me to open the map]")
+                .color(net.md_5.bungee.api.ChatColor.AQUA)
+                .bold(true)
+                .event(new ClickEvent(ClickEvent.Action.OPEN_URL, mapLink))
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverComponent)))
+                .create();
+
+        sender.spigot().sendMessage(message);
     }
 
     private void discord(CommandSender sender) {

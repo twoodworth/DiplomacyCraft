@@ -11,6 +11,7 @@ repositories {
     mavenCentral()
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = 'https://repo.minebench.de/' }
+    maven { url = 'http://repo.mikeprimm.com/' }
     maven { url = 'https://jitpack.io' }
     maven {
         name "essentialsx"
@@ -24,6 +25,8 @@ dependencies {
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
     compile 'de.themoep:inventorygui:1.4.2-SNAPSHOT'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'us.dynmap:DynmapCoreAPI:3.1-SNAPSHOT'
+    compile 'us.dynmap:dynmap-api:3.1-SNAPSHOT'
     compileOnly 'net.ess3:EssentialsX:2.18.0'
 }
 
