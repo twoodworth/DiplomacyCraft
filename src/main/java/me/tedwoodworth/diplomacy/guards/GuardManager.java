@@ -53,74 +53,74 @@ public class GuardManager {
     private final NamespacedKey GUARD_PROJECTILE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_projectile");
 
     // sniper
-    private final short[] sniperCost = new short[100];
-    private final float[] sniperMaxHealth = new float[100];
-    private final float[] sniperPrecision = new float[100];
-    private final float[] sniperVelocity = new float[100];
-    private final float[] sniperResistance = new float[100];
-    private final float[] sniperRadius = new float[100];
-    private final float[] sniperPower = new float[100];
+    public final short[] sniperCost = new short[100];
+    public final float[] sniperMaxHealth = new float[100];
+    public final float[] sniperPrecision = new float[100];
+    public final float[] sniperVelocity = new float[100];
+    public final float[] sniperResistance = new float[100];
+    public final float[] sniperRadius = new float[100];
+    public final float[] sniperPower = new float[100];
 
     // gunner
-    private final short[] gunnerCost = new short[100];
-    private final float[] gunnerMaxHealth = new float[100];
-    private final float[] gunnerPrecision = new float[100];
-    private final float[] gunnerVelocity = new float[100];
-    private final float[] gunnerResistance = new float[100];
-    private final float[] gunnerRadius = new float[100];
-    private final float[] gunnerPower = new float[100];
-    private final float[] gunnerDelay = new float[100];
+    public final short[] gunnerCost = new short[100];
+    public final float[] gunnerMaxHealth = new float[100];
+    public final float[] gunnerPrecision = new float[100];
+    public final float[] gunnerVelocity = new float[100];
+    public final float[] gunnerResistance = new float[100];
+    public final float[] gunnerRadius = new float[100];
+    public final float[] gunnerPower = new float[100];
+    public final float[] gunnerDelay = new float[100];
 
     // tank
-    private final short[] tankCost = new short[100];
-    private final float[] tankMaxHealth = new float[100];
-    private final float[] tankResistance = new float[100];
-    private final float[] tankVelocity = new float[100];
-    private final float[] tankPower = new float[100];
+    public final short[] tankCost = new short[100];
+    public final float[] tankMaxHealth = new float[100];
+    public final float[] tankResistance = new float[100];
+    public final float[] tankVelocity = new float[100];
+    public final float[] tankPower = new float[100];
 
     // flamethrower
-    private final Map<Item, Entity> flames = new HashMap<>();
-    private final short[] flamethrowerCost = new short[100];
-    private final float[] flamethrowerMaxHealth = new float[100];
-    private final float[] flamethrowerResistance = new float[100];
-    private final float[] flamethrowerPower = new float[100];
-    private final float[] flamethrowerDelay = new float[100];
-    private final short[] flamethrowerBurnTime = new short[100];
-    private final short[] flamesPerTick = new short[100];
+    public final Map<Item, Entity> flames = new HashMap<>();
+    public final short[] flamethrowerCost = new short[100];
+    public final float[] flamethrowerMaxHealth = new float[100];
+    public final float[] flamethrowerResistance = new float[100];
+    public final float[] flamethrowerPower = new float[100];
+    public final float[] flamethrowerDelay = new float[100];
+    public final short[] flamethrowerBurnTime = new short[100];
+    public final short[] flamesPerTick = new short[100];
 
     // healer
-    private final short[] healerCost = new short[100];
-    private final float[] healerMaxHealth = new float[100];
-    private final float[] healerResistance = new float[100];
-    private final float[] healerPower = new float[100];
-    private final float[] healerRadius = new float[100];
-    private final int HEALER_DELAY = 30;
+    public final short[] healerCost = new short[100];
+    public final float[] healerMaxHealth = new float[100];
+    public final float[] healerResistance = new float[100];
+    public final float[] healerPower = new float[100];
+    public final float[] healerRadius = new float[100];
+    public final int HEALER_DELAY = 30;
 
     // snowballer
-    private final short[] snowmakerCost = new short[100];
-    private final float[] snowmakerMaxHealth = new float[100];
-    private final float[] snowmakerResistance = new float[100];
-    private final short[] snowmakerPower = new short[100];
-    private final float[] snowmakerDelay = new float[100];
-    private final short[] snowmakerSlowTime = new short[100];
-    private final short[] snowmakerBallsPerTick = new short[100];
+    public final short[] snowmakerCost = new short[100];
+    public final float[] snowmakerMaxHealth = new float[100];
+    public final float[] snowmakerResistance = new float[100];
+    public final short[] snowmakerPower = new short[100];
+    public final float[] snowmakerDelay = new float[100];
+    public final short[] snowmakerSlowTime = new short[100];
+    public final short[] snowmakerBallsPerTick = new short[100];
 
     // teleporter
-    private final short[] teleporterCost = new short[100];
-    private final float[] teleporterMaxHealth = new float[100];
-    private final float[] teleporterResistance = new float[100];
-    private final float[] teleporterRadius = new float[100];
-    private final float[] teleporterLoadRate = new float[100];
-    private final NamespacedKey ALLOWED_TELEPORTS_KEY = new NamespacedKey(Diplomacy.getInstance(), "allowed_teleports");
-    private final NamespacedKey TELEPORTER_ID_KEY = new NamespacedKey(Diplomacy.getInstance(), "teleporter_id");
-    private final HashMap<Integer, Entity> teleporterMap = new HashMap<>();
-    private final HashMap<Player, Long> activeTeleports = new HashMap<>();
+    public final short[] teleporterCost = new short[100];
+    public final float[] teleporterMaxHealth = new float[100];
+    public final float[] teleporterResistance = new float[100];
+    public final float[] teleporterRadius = new float[100];
+    public final float[] teleporterLoadRate = new float[100];
+    public final NamespacedKey ALLOWED_TELEPORTS_KEY = new NamespacedKey(Diplomacy.getInstance(), "allowed_teleports");
+    public final NamespacedKey TELEPORTER_ID_KEY = new NamespacedKey(Diplomacy.getInstance(), "teleporter_id");
+    public final HashMap<Integer, Entity> teleporterMap = new HashMap<>();
+    public final HashMap<Player, Long> activeTeleports = new HashMap<>();
 
     // generator
-    private final short[] generatorCost = new short[100];
-    private final float[] generatorMaxHealth = new float[100];
-    private final float[] generatorResistance = new float[100];
-    private final double[] generatorRate = new double[100];
+    public final short[] generatorCost = new short[100];
+    public final float[] generatorMaxHealth = new float[100];
+    public final float[] generatorResistance = new float[100];
+    public final double[] generatorRate = new double[100];
     public final NamespacedKey GENERATOR_GUNPOWDER_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_gunpowder");
     public final NamespacedKey GENERATOR_LAPIS_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_lapis");
     public final NamespacedKey GENERATOR_REDSTONE_KEY = new NamespacedKey(Diplomacy.getInstance(), "generator_redstone");

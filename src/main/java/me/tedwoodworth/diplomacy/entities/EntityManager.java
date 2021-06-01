@@ -32,16 +32,22 @@ public class EntityManager {
                 if (entity instanceof Player || entity instanceof EnderCrystal || entity instanceof EnderDragon || entity instanceof Wither) {
                     continue;
                 }
-                if (Math.random() < 0.02) {
-                    var nearby = entity.getNearbyEntities(1, 1, 1);
+                if (Math.random() < 0.25) {
+                    var nearby = entity.getNearbyEntities(0.5, 0.5, 0.5);
                     var trueNearby = 0;
+                    var superNearby = 0;
+                    var loc = entity.getLocation();
                     for (var near : new HashSet<>(nearby)) {
+                        if (near.equals(entity)) continue;
                         if (near instanceof LivingEntity) {
                             trueNearby++;
+                            if (near.getLocation().distanceSquared(loc) < 0.0625) {
+                                superNearby++;
+                            }
                         }
                     }
-                    if (trueNearby > 8) {
-                        entity.damage(99999);
+                    if (trueNearby > 7 || superNearby > 0) {
+                        entity.damage(1);
                     }
                 }
             }

@@ -136,7 +136,7 @@ public class DiplomacyPlayers {
         }
     }
 
-    public boolean canBuildHere(Block block, Player player, Material itemUsed) {
+    public boolean canBuildHere(Block block, Entity entity, Material itemUsed) {
         var chunk = block.getChunk();
         var world = chunk.getWorld();
         var wm = WorldManager.getInstance();
@@ -150,7 +150,7 @@ public class DiplomacyPlayers {
                 var z = chunk.getZ();
                 chunk = wm.getOverworld().getChunkAt(x, z);
             }
-        } else if (world.equals(wm.getSpawn()) && player.getGameMode() != GameMode.CREATIVE) {
+        } else if (world.equals(wm.getSpawn()) && (!(entity instanceof Player) || ((Player) entity).getGameMode() != GameMode.CREATIVE)) {
             return false;
         }
 
@@ -158,6 +158,11 @@ public class DiplomacyPlayers {
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
         var nation = diplomacyChunk.getNation();
         if (nation == null) return true;
+
+        // return false if it is not a player
+        if (!(entity instanceof Player)) return false;
+
+        var player = (Player) entity;
 
         // return true if there is a group and the player is in it
         var group = diplomacyChunk.getGroup();
@@ -679,60 +684,32 @@ public class DiplomacyPlayers {
         }
 
         @EventHandler(ignoreCancelled = true)
-        public void onEntityDamageByEntity(HangingBreakByEntityEvent event) {
+        public void onHangingBreak(HangingBreakByEntityEvent event) {
             // Make sure it's a player/player's projectile damaging an item frame/painting
             if (!(event.getEntity() instanceof ItemFrame || event.getEntity() instanceof Painting)) {
                 return;
             }
-            if (!(event.getRemover() instanceof Player || event.getRemover() instanceof Projectile)) {
+
+            var remover = event.getRemover();
+            var trueRemover = GuardManager.getInstance().getTrueDamager(remover);
+
+            if (!(trueRemover instanceof Player)) {
                 return;
             }
-            if (event.getRemover() instanceof Projectile) {
-                if (!(((Projectile) event.getRemover()).getShooter() instanceof Player)) {
-                    return;
-                }
-            }
+
 
             // Make sure the player isn't allowed to build/destroy at the event location.
             var entity = event.getEntity();
-            var chunk = entity.getLocation().getChunk();
-            var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-            var nation = diplomacyChunk.getNation();
+            var canBuild = canBuildHere(entity.getLocation().getBlock(), entity, null);
 
-            if (nation == null) {
-                return;
-            }
-
-            Player player;
-
-            if (event.getRemover() instanceof Player) {
-                player = (Player) event.getRemover();
-            } else {
-                player = (Player) ((Projectile) event.getRemover()).getShooter();
-            }
-
-            var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-            var group = DiplomacyGroups.getInstance().get(diplomacyChunk);
-
-            // if there is a group and the player is part of it
-            if (group != null && group.getMembers().contains(diplomacyPlayer)) return;
-
-            // if there isn't a group and the player can build anywhere, and its the player's nation
-            var playerNation = Nations.getInstance().get(diplomacyPlayer);
-            if (Objects.equals(nation, playerNation)) {
-                var permissions = nation.getMemberClass(diplomacyPlayer).getPermissions();
-                var canBuildAnywhere = permissions.get("CanBuildAnywhere");
-                if (group == null && canBuildAnywhere && Objects.equals(nation, playerNation)) {
-                    return;
+            if (!canBuild) {
+                // Cancel the event
+                if (event.getRemover() instanceof Projectile) {
+                    event.getRemover().remove();
                 }
+                entity.sendMessage(ChatColor.RED + "You don't have permission to break that here.");
+                event.setCancelled(true);
             }
-
-            // Cancel the event
-            if (event.getRemover() instanceof Projectile) {
-                event.getRemover().remove();
-            }
-            player.sendMessage(ChatColor.RED + "You don't have permission to break that here.");
-            event.setCancelled(true);
 
         }
 
