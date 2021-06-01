@@ -24,6 +24,11 @@ public class RecipeGuis {
     public final String CHAIN_CHESTPLATE_KEY = "chain_chestplate";
     public final String CHAIN_LEGGINGS_KEY = "chain_leggings";
     public final String CHAIN_BOOTS_KEY = "chain_boots";
+    public final String NAME_TAG_KEY = "name_tag";
+    public final String SADDLE_KEY = "saddle";
+    public final String IRON_HORSE_ARMOR_KEY = "iron_horse_armor";
+    public final String GOLD_HORSE_ARMOR_KEY = "gold_horse_armor";
+    public final String DIAMOND_HORSE_ARMOR_KEY = "diamond_horse_armor";
     public final String GRENADE_KEY = "grenade";
     public final String MAGICAL_DUST_FURNACE_KEY = "magical_dust_furnace";
     public final String MAGICAL_DUST_CRAFTING_KEY = "magical_dust_crafting";
@@ -208,6 +213,171 @@ public class RecipeGuis {
                 ChatColor.WHITE + "Chainmail Boots")
         );
         recipeMenus.put(CHAIN_BOOTS_KEY, itemGui);
+
+        // name tag
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Name Tag";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " aaa aaa ",
+                " lli ara ",
+                " aaa aaa ",
+                "         ",
+        };
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.IRON_INGOT),
+                click -> true,
+                ChatColor.WHITE + "Iron Ingot")
+        );
+        itemGui.addElement(new StaticGuiElement('l',
+                new ItemStack(Material.LEATHER),
+                click -> true,
+                ChatColor.WHITE + "Leather")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.NAME_TAG),
+                ChatColor.WHITE + "Name Tag")
+        );
+        recipeMenus.put(NAME_TAG_KEY, itemGui);
+
+        // saddle
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Name Tag";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " lll aaa ",
+                " lal ara ",
+                " iai aaa ",
+                "         ",
+        };
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.IRON_INGOT),
+                click -> true,
+                ChatColor.WHITE + "Iron Ingot")
+        );
+        itemGui.addElement(new StaticGuiElement('l',
+                new ItemStack(Material.LEATHER),
+                click -> true,
+                ChatColor.WHITE + "Leather")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.SADDLE),
+                ChatColor.WHITE + "Saddle")
+        );
+        recipeMenus.put(SADDLE_KEY, itemGui);
+
+        // iron horse armor
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Iron Horse Armor";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " aai aaa ",
+                " isi ara ",
+                " iai aaa ",
+                "         ",
+        };
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.IRON_INGOT),
+                click -> true,
+                ChatColor.WHITE + "Iron Ingot")
+        );
+        itemGui.addElement(new StaticGuiElement('s',
+                new ItemStack(Material.SADDLE),
+                click -> true,
+                ChatColor.WHITE + "Saddle")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.IRON_HORSE_ARMOR),
+                ChatColor.WHITE + "Iron Horse Armor")
+        );
+        recipeMenus.put(IRON_HORSE_ARMOR_KEY, itemGui);
+
+        // golden horse armor
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Golden Horse Armor";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " aai aaa ",
+                " isi ara ",
+                " iai aaa ",
+                "         ",
+        };
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.GOLD_INGOT),
+                click -> true,
+                ChatColor.WHITE + "Gold Ingot")
+        );
+        itemGui.addElement(new StaticGuiElement('s',
+                new ItemStack(Material.SADDLE),
+                click -> true,
+                ChatColor.WHITE + "Saddle")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.GOLDEN_HORSE_ARMOR),
+                ChatColor.WHITE + "Golden Horse Armor")
+        );
+        recipeMenus.put(GOLD_HORSE_ARMOR_KEY, itemGui);
+
+        // diamond horse armor
+        title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Diamond Horse Armor";
+        guiSetup = new String[]{
+                " B  T  M ",
+                "         ",
+                " aai aaa ",
+                " isi ara ",
+                " iai aaa ",
+                "         ",
+        };
+        itemGui = new InventoryGui(Diplomacy.getInstance(), title, guiSetup);
+        itemGui.setCloseAction(close -> false);
+        itemGui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        itemGui.addElement(airElement);
+        itemGui.addElement(backElement);
+        itemGui.addElement(craftingTableElement);
+        itemGui.addElement(menuElement);
+        itemGui.addElement(new StaticGuiElement('i',
+                new ItemStack(Material.DIAMOND),
+                click -> true,
+                ChatColor.WHITE + "Diamond")
+        );
+        itemGui.addElement(new StaticGuiElement('s',
+                new ItemStack(Material.SADDLE),
+                click -> true,
+                ChatColor.WHITE + "Saddle")
+        );
+        itemGui.addElement(new StaticGuiElement('r',
+                new ItemStack(Material.DIAMOND_HORSE_ARMOR),
+                ChatColor.WHITE + "Diamond Horse Armor")
+        );
+        recipeMenus.put(DIAMOND_HORSE_ARMOR_KEY, itemGui);
 
         // Grenade
         title = "" + ChatColor.DARK_GRAY + ChatColor.BOLD + "Grenade";
@@ -595,6 +765,101 @@ public class RecipeGuis {
                     return true;
                 },
                 ChatColor.WHITE + "Chainmail Boots",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add name tag element
+        item = new ItemStack(Material.NAME_TAG);
+        meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        element = new StaticGuiElement(
+                'i',
+                item,
+                click -> {
+                    var nGui = recipeMenus.get(NAME_TAG_KEY);
+                    nGui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.WHITE + "Name Tag",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add saddle element
+        item = new ItemStack(Material.SADDLE);
+        meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        element = new StaticGuiElement(
+                'i',
+                item,
+                click -> {
+                    var nGui = recipeMenus.get(SADDLE_KEY);
+                    nGui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.WHITE + "Saddle",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add iron horse armor element
+        item = new ItemStack(Material.IRON_HORSE_ARMOR);
+        meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        element = new StaticGuiElement(
+                'i',
+                item,
+                click -> {
+                    var nGui = recipeMenus.get(IRON_HORSE_ARMOR_KEY);
+                    nGui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.WHITE + "Iron Horse Armor",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add golden horse armor element
+        item = new ItemStack(Material.GOLDEN_HORSE_ARMOR);
+        meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        element = new StaticGuiElement(
+                'i',
+                item,
+                click -> {
+                    var nGui = recipeMenus.get(GOLD_HORSE_ARMOR_KEY);
+                    nGui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.WHITE + "Golden Horse Armor",
+                " ",
+                ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
+        );
+        itemGroup.addElement(element);
+
+        // add diamond horse armor element
+        item = new ItemStack(Material.DIAMOND_HORSE_ARMOR);
+        meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        element = new StaticGuiElement(
+                'i',
+                item,
+                click -> {
+                    var nGui = recipeMenus.get(DIAMOND_HORSE_ARMOR_KEY);
+                    nGui.show(click.getEvent().getWhoClicked());
+                    return true;
+                },
+                ChatColor.WHITE + "Diamond Horse Armor",
                 " ",
                 ChatColor.BLUE + "Click: " + ChatColor.GRAY + "View recipe"
         );

@@ -3,7 +3,10 @@ package me.tedwoodworth.diplomacy.Items;
 import me.tedwoodworth.diplomacy.Diplomacy;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.ArrayList;
 
@@ -45,6 +48,49 @@ public class Recipes {
         chainBootsR.shape("N N", "N N");
         chainBootsR.setIngredient('N', IRON_NUGGET);
         Diplomacy.getInstance().getServer().addRecipe(chainBootsR);
+
+        var nameTag = new ItemStack(NAME_TAG);
+        var nameTagR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "nametag"), nameTag);
+        chainBootsR.shape("LLI");
+        chainBootsR.setIngredient('L', LEATHER);
+        chainBootsR.setIngredient('I', IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(nameTagR);
+
+        var saddle = new ItemStack(SADDLE);
+        var saddleR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "saddle"), saddle);
+        chainBootsR.shape("LLL");
+        chainBootsR.shape("L L");
+        chainBootsR.shape("I I");
+        chainBootsR.setIngredient('L', LEATHER);
+        chainBootsR.setIngredient('I', IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(saddleR);
+
+        var ironHorse = new ItemStack(IRON_HORSE_ARMOR);
+        var ironHorseR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "iron_horse_armor"), ironHorse);
+        chainBootsR.shape("  I");
+        chainBootsR.shape("ISI");
+        chainBootsR.shape("I I");
+        chainBootsR.setIngredient('S', SADDLE);
+        chainBootsR.setIngredient('I', IRON_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(ironHorseR);
+
+        var goldHorse = new ItemStack(GOLDEN_HORSE_ARMOR);
+        var goldHorseR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "gold_horse_armor"), goldHorse);
+        chainBootsR.shape("  G");
+        chainBootsR.shape("GSG");
+        chainBootsR.shape("G G");
+        chainBootsR.setIngredient('S', SADDLE);
+        chainBootsR.setIngredient('G', GOLD_INGOT);
+        Diplomacy.getInstance().getServer().addRecipe(goldHorseR);
+
+        var diamondHorse = new ItemStack(DIAMOND_HORSE_ARMOR);
+        var diamondHorseR = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "diamond_horse_armor"), diamondHorse);
+        chainBootsR.shape("  D");
+        chainBootsR.shape("DSD");
+        chainBootsR.shape("D D");
+        chainBootsR.setIngredient('S', SADDLE);
+        chainBootsR.setIngredient('D', DIAMOND);
+        Diplomacy.getInstance().getServer().addRecipe(diamondHorseR);
 
         // grenade
         var grenade = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, 2);
