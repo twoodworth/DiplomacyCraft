@@ -103,6 +103,19 @@ public class Diplomacy extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for (var grenade : Items.getInstance().grenadeThrowerMap.keySet()) {
+            grenade.remove();
+        }
+        for (var block : DiplomacyPlayers.getInstance().griefedBlocks.keySet()) {
+            var state = DiplomacyPlayers.getInstance().griefedBlocks.get(block);
+            state.update(true, false);
+        }
+        for (var map : DiplomacyPlayers.getInstance().explodedBlocks) {
+            for (var block : map.keySet()) {
+                var state = map.get(block);
+                state.update(true, false);
+            }
+        }
     }
 
     public static Diplomacy getInstance() {

@@ -7,12 +7,10 @@ import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
-import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
-import me.tedwoodworth.diplomacy.nations.Nation;
-import me.tedwoodworth.diplomacy.nations.Nations;
-import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
+import me.tedwoodworth.diplomacy.nations.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -24,6 +22,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -42,6 +41,8 @@ public class DiplomacyPlayers {
     private final YamlConfiguration config;
     public final HashMap<Player, Integer> combatLogged = new HashMap<>();
     public final HashMap<Player, Integer> teleportMap = new HashMap<>();
+    public final HashMap<Block, BlockState> griefedBlocks = new HashMap<>();
+    public final HashSet<HashMap<Block, BlockState>> explodedBlocks = new HashSet<>();
 
     public static DiplomacyPlayers getInstance() {
         if (instance == null) {
@@ -686,8 +687,10 @@ public class DiplomacyPlayers {
         @EventHandler(ignoreCancelled = true)
         public void onHangingBreak(HangingBreakByEntityEvent event) {
             // Make sure it's a player/player's projectile damaging an item frame/painting
-            if (!(event.getEntity() instanceof ItemFrame || event.getEntity() instanceof Painting)) {
-                return;
+            var cause = event.getCause();
+
+            if (cause != HangingBreakEvent.RemoveCause.ENTITY) {
+                event.setCancelled(true);
             }
 
             var remover = event.getRemover();
@@ -707,24 +710,62 @@ public class DiplomacyPlayers {
                 if (event.getRemover() instanceof Projectile) {
                     event.getRemover().remove();
                 }
-                entity.sendMessage(ChatColor.RED + "You don't have permission to break that here.");
+                trueRemover.sendMessage(ChatColor.RED + "You don't have permission to break that here.");
                 event.setCancelled(true);
             }
 
         }
 
 
+        private boolean isBorder(DiplomacyChunk diplomacyChunk) {
+            var chunk = diplomacyChunk.getChunk();
+            var world = chunk.getWorld();
+            if (!world.equals(WorldManager.getInstance().getOverworld())) return false;
+            var nation = diplomacyChunk.getNation();
+            if (nation == null) return false;
+
+            var x = chunk.getX();
+            var z = chunk.getZ();
+
+            var a = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x - 1, z - 1)).getNation(), nation);
+            var b = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x, z - 1)).getNation(), nation);
+            var c = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x + 1, z - 1)).getNation(), nation);
+            var d = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x - 1, z)).getNation(), nation);
+            var e = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x + 1, z)).getNation(), nation);
+            var f = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x - 1, z + 1)).getNation(), nation);
+            var g = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x, z + 1)).getNation(), nation);
+            var h = Objects.equals(DiplomacyChunks.getInstance().getDiplomacyChunk(chunk.getWorld().getChunkAt(x + 1, z + 1)).getNation(), nation);
+
+            return !(a && b && c && d && e && f && g && h);
+        }
+
         @EventHandler(ignoreCancelled = true)
         private void onBlockBreakEvent(BlockBreakEvent event) {
-
-
             var block = event.getBlock();
             var player = event.getPlayer();
 
-            if (canBuildHere(block, player, null)) return;
+            var canBuild = canBuildHere(block, player, null);
 
-            player.sendMessage(ChatColor.RED + "You cannot destroy here.");
-            event.setCancelled(true);
+            if (canBuild) return;
+            var isBorder = isBorder(DiplomacyChunks.getInstance().getDiplomacyChunk(block.getChunk()));
+            if (isBorder) {
+                event.setDropItems(false);
+                event.setExpToDrop(0);
+                var state = block.getState();
+                griefedBlocks.putIfAbsent(block, state);
+                player.sendMessage(ChatColor.RED + "Block destroyed, but will regenerate back in 5 seconds.");
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+                            var originalState = griefedBlocks.get(block);
+                            block.breakNaturally();
+                            originalState.update(true, false);
+                            griefedBlocks.remove(block);
+                        },
+                        100L
+                );
+            } else {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "You cannot destroy here.");
+            }
         }
 
         @EventHandler
@@ -824,88 +865,39 @@ public class DiplomacyPlayers {
         @EventHandler(priority = EventPriority.HIGH)
         private void onEntityExplode(EntityExplodeEvent event) {
             var entity = event.getEntity();
+            var trueEntity = GuardManager.getInstance().getTrueDamager(entity);
             List<Block> keepBlocks = new ArrayList<>();
-            if (entity instanceof Player) {
-                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
-                var nation = Nations.getInstance().get(diplomacyPlayer);
-                for (var block : event.blockList()) {
-                    var chunk = block.getChunk();
-                    var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                    var blockNation = diplomacyChunk.getNation();
-                    if (blockNation == null) {
-                        continue;
-                    }
-                    if (!Objects.equals(blockNation, nation)) {
-                        keepBlocks.add(block);
-                    }
-                }
-                event.blockList().removeAll(keepBlocks);
-            } else if (entity instanceof Creeper || entity instanceof Wither || entity instanceof WitherSkull || entity instanceof DragonFireball || entity instanceof EnderCrystal || entity instanceof Item) {
-                for (var block : event.blockList()) {
-                    var chunk = block.getChunk();
-                    var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                    var blockNation = diplomacyChunk.getNation();
-                    if (blockNation != null) {
-                        keepBlocks.add(block);
-                    }
-                }
-                event.blockList().removeAll(keepBlocks);
-            } else if (entity instanceof Projectile) {
-                var projectile = (Projectile) event.getEntity();
-                if (projectile.getShooter() instanceof Player) {
-                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
-                    var nation = Nations.getInstance().get(diplomacyPlayer);
-                    for (var block : event.blockList()) {
-                        var chunk = block.getChunk();
-                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                        var blockNation = diplomacyChunk.getNation();
-                        if (blockNation == null) {
-                            continue;
-                        }
-                        if (!Objects.equals(blockNation, nation)) {
-                            keepBlocks.add(block);
-                        }
-                    }
-                } else {
-                    for (var block : event.blockList()) {
-                        var chunk = block.getChunk();
-                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                        var blockNation = diplomacyChunk.getNation();
-                        if (blockNation != null) {
-                            keepBlocks.add(block);
-                        }
-                    }
-                }
-            } else if (entity instanceof TNTPrimed) {
-                var tnt = (TNTPrimed) event.getEntity();
-                var source = tnt.getSource();
-                if (source instanceof Player) {
-
-                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(entity.getUniqueId());
-                    var nation = Nations.getInstance().get(diplomacyPlayer);
-                    for (var block : event.blockList()) {
-                        var chunk = block.getChunk();
-                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                        var blockNation = diplomacyChunk.getNation();
-                        if (blockNation == null) {
-                            continue;
-                        }
-                        if (!Objects.equals(blockNation, nation)) {
-                            keepBlocks.add(block);
-                        }
-                    }
-                } else {
-                    for (var block : event.blockList()) {
-                        var chunk = block.getChunk();
-                        var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-                        var blockNation = diplomacyChunk.getNation();
-                        if (blockNation != null) {
-                            keepBlocks.add(block);
-                        }
+            HashMap<Block, BlockState> tempGriefed = new HashMap<>();
+            for (var block : event.blockList()) {
+                var canBuildHere = canBuildHere(block, trueEntity, null);
+                if (!canBuildHere) {
+                    keepBlocks.add(block);
+                    if (isBorder(DiplomacyChunks.getInstance().getDiplomacyChunk(block.getChunk()))) {
+                        tempGriefed.put(block, block.getState());
                     }
                 }
             }
             event.blockList().removeAll(keepBlocks);
+            for (var block : tempGriefed.keySet()) {
+                block.setType(Material.AIR);
+            }
+            explodedBlocks.add(tempGriefed);
+            Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> regenerateExplodedBlocks(tempGriefed), 600L);
+        }
+
+        private void regenerateExplodedBlocks(HashMap<Block, BlockState> blocks) {
+            explodedBlocks.remove(blocks);
+            var array = blocks.keySet().toArray();
+            var size = blocks.size();
+            var r = (int) (Math.random() * size);
+            var block = array[r];
+            var state = blocks.get(block);
+            state.update(true, false);
+            blocks.remove(block);
+            if (blocks.size() > 0) {
+                explodedBlocks.add(blocks);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> regenerateExplodedBlocks(blocks), 20L);
+            }
         }
     }
 }

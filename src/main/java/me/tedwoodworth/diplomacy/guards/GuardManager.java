@@ -895,7 +895,7 @@ public class GuardManager {
                         var level = getLevel(guard);
                         var rate = generatorRate[level - 1];
 
-                                                                                                            //rate * drops per day
+                        //rate * drops per day
                         var gunpowder = container.get(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE) + ((rate * 32.0) / (1440.0 * 64.0 * 4.0)) * (.9 + .2 * Math.random());
                         if (gunpowder > 1.0) {
                             var loc = guard.getLocation();
@@ -945,7 +945,7 @@ public class GuardManager {
                         if (iron > 1.0) {
                             var loc = guard.getLocation();
                             loc.getWorld().dropItem(loc, new ItemStack(Material.IRON_NUGGET));
-                            iron --;
+                            iron--;
                         }
                         container.set(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE, iron);
 
@@ -1234,18 +1234,18 @@ public class GuardManager {
                 teleporterMap.put(newId, entity);
             }
             case GENERATOR -> {
-                    var container = entity.getPersistentDataContainer();
-                    container.set(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE, 0.0);
-                    container.set(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE, 0.0);
+                var container = entity.getPersistentDataContainer();
+                container.set(GENERATOR_GUNPOWDER_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_LAPIS_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_IRON_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_GOLD_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_QUARTZ_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_GLOWSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_REDSTONE_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_EMERALD_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_MAGIC_DUST_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_DIAMOND_KEY, PersistentDataType.DOUBLE, 0.0);
+                container.set(GENERATOR_NETHERITE_KEY, PersistentDataType.DOUBLE, 0.0);
             }
         }
         setHealth(entity, getHealth(entity));
@@ -1473,8 +1473,12 @@ public class GuardManager {
     public Entity getTrueDamager(Entity damager) {
         if (damager instanceof Projectile) {
             return (Entity) ((Projectile) damager).getShooter();
-        } else if (damager instanceof Item) {
+        } else if (damager instanceof Item && Items.getInstance().isGrenade(((Item) damager).getItemStack())) {
             return Items.getInstance().grenadeThrowerMap.get(damager);
+        } else if (damager instanceof TNTPrimed) {
+            var primer = ((TNTPrimed) damager).getSource();
+            if (primer == null) return damager;
+            else return getTrueDamager(primer);
         } else {
             return damager;
         }
@@ -1870,7 +1874,7 @@ public class GuardManager {
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof Player) message += ((Player) shooter).getName();
-            } else if (damager instanceof Item) {
+            } else if (damager instanceof Item && Items.getInstance().isGrenade(((Item) damager).getItemStack())) {
                 var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
                 if (shooter instanceof Player) message += shooter.getName();
             } else if (damager instanceof Player) {

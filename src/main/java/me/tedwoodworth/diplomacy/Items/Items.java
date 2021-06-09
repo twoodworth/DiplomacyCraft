@@ -389,7 +389,7 @@ public class Items {
                 breakBlocks = diplomacyChunk.getNation() == null;
                 item.getWorld().createExplosion(item.getLocation(), 3.85F, false, false, item);
                 item.getWorld().createExplosion(item.getLocation(), 0.75F, false, breakBlocks, item);
-                grenadeThrowerMap.remove(item);
+                Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> grenadeThrowerMap.remove(item), 20L);
                 item.remove();
                 return;
             }
