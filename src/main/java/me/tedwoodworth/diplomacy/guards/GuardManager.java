@@ -261,7 +261,7 @@ public class GuardManager {
 
         for (int i = 0; i < 100; i++) {
             // sniper
-            sniperCost[i] = (short) (Math.pow(1.05, i));
+            sniperCost[i] = (short) (Math.pow(1.032, i + 18));
             sniperMaxHealth[i] = (float) ((int) (200.0 * Math.pow(1.01, i) - 180.0));
             sniperPrecision[i] = (float) (15.0 * Math.pow(0.951, i));
             sniperResistance[i] = (float) (1.0 - Math.pow(0.99, i));
@@ -270,7 +270,7 @@ public class GuardManager {
             sniperPower[i] = (float) (9.83188423 * Math.pow(1.02, i) - 3.83188423);
 
             // gunner
-            gunnerCost[i] = sniperCost[i];
+            gunnerCost[i] = (short) (Math.pow(1.026, i + 21));
             gunnerMaxHealth[i] = sniperMaxHealth[i];
             gunnerPrecision[i] = (float) (15.0 * Math.pow(0.98, i));
             gunnerResistance[i] = sniperResistance[i];
@@ -280,14 +280,14 @@ public class GuardManager {
             gunnerDelay[i] = (float) (30.0 * Math.pow(0.977, i));
 
             // tank
-            tankCost[i] = (short) (Math.pow(1.055, i));
+            tankCost[i] = (short) (Math.pow(1.058, i - 13) + 1);
             tankMaxHealth[i] = (float) ((int) (200.0 * Math.pow(1.01244, i) - 180.0));
             tankResistance[i] = (float) (1.0 - Math.pow(0.97, i));
             tankVelocity[i] = (float) Math.pow(1.013, i);
             tankPower[i] = (float) (4.0 * Math.pow(1.008, i) - 3.35);
 
             // flamethrower
-            flamethrowerCost[i] = sniperCost[i];
+            flamethrowerCost[i] = (short) (Math.pow(1.024, i + 14));
             flamethrowerMaxHealth[i] = tankMaxHealth[i];
             flamethrowerResistance[i] = sniperResistance[i];
             flamethrowerPower[i] = (float) (Math.pow(1.0112, i) - 1.0);
@@ -296,14 +296,14 @@ public class GuardManager {
             flamesPerTick[i] = (short) (Math.pow(1.0142, 33 + (0.67 * i)));
 
             // healer
-            healerCost[i] = sniperCost[i];
+            healerCost[i] = (short) (Math.pow(1.014, i + 50));
             healerMaxHealth[i] = (float) ((int) (20.0 * Math.pow(1.0164, i)));
             healerResistance[i] = (float) (1.0 - Math.pow(0.9948, i));
             healerPower[i] = (float) (0.5 * (Math.pow(1.000954, i + 1) - 1));
             healerRadius[i] = sniperRadius[i];
 
             // snowmaker
-            snowmakerCost[i] = sniperCost[i];
+            snowmakerCost[i] = (short) (Math.pow(1.023, i + 8));
             snowmakerMaxHealth[i] = sniperMaxHealth[i];
             snowmakerResistance[i] = sniperResistance[i];
             snowmakerPower[i] = (short) (Math.pow(1.017, i) - 1.0);
@@ -312,14 +312,14 @@ public class GuardManager {
             snowmakerBallsPerTick[i] = flamesPerTick[i];
 
             // teleporter
-            teleporterCost[i] = (short) (Math.pow(1.06, i));
+            teleporterCost[i] = (short) (Math.pow(1.073, i - 20) + 1);
             teleporterMaxHealth[i] = healerMaxHealth[i];
             teleporterResistance[i] = sniperResistance[i];
             teleporterLoadRate[i] = (float) (8.0 * Math.pow(.96125516, i));
             teleporterRadius[i] = (short) (800.0 / teleporterLoadRate[i]);
 
             // generator
-            generatorCost[i] = teleporterCost[i];
+            generatorCost[i] = (short) (1.51 * ((Math.pow(1.042628, i))) + 2);
             generatorMaxHealth[i] = healerMaxHealth[i];
             generatorResistance[i] = healerResistance[i];
             generatorRate[i] = Math.pow(1.042628, i + 1.0) - 1.0;
