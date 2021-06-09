@@ -4,7 +4,6 @@ import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
 
 import java.util.Objects;
 
@@ -46,16 +45,22 @@ public class ScoreboardManager {
 
             String nationPrefix;
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
-            if (testNation == null)
+            if (testNation == null) {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] ";
-            else if (nation != null && Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation))
+                team.setColor(ChatColor.DARK_GRAY);
+            } else if (nation != null && Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.GREEN + testNation.getName() + ChatColor.GRAY + "] ";
-            else if (nation != null && nation.getAllyNationIDs().contains(testNation.getNationID()))
+                team.setColor(ChatColor.GREEN);
+            } else if (nation != null && nation.getAllyNationIDs().contains(testNation.getNationID())) {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GREEN + testNation.getName() + ChatColor.GRAY + "] ";
-            else if (nation != null && nation.getEnemyNationIDs().contains(testNation.getNationID()))
+                team.setColor(ChatColor.DARK_GREEN);
+            } else if (nation != null && nation.getEnemyNationIDs().contains(testNation.getNationID())) {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.RED + testNation.getName() + ChatColor.GRAY + "] ";
-            else
+                team.setColor(ChatColor.RED);
+            } else {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.BLUE + testNation.getName() + ChatColor.GRAY + "] ";
+                team.setColor(ChatColor.BLUE);
+            }
             prefix.append(nationPrefix);
 
 

@@ -9,14 +9,12 @@ import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
-import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.command.*;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -218,7 +216,8 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(uuid);
         var attackingNation = Nations.getInstance().get(diplomacyPlayer);
         var diplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(chunk);
-        var isWilderness = diplomacyChunk.getNation() == null;
+        var defendingNation = diplomacyChunk.getNation();
+        var isWilderness = defendingNation == null;
 
         if (attackingNation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to contest territory.");
@@ -250,63 +249,41 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        var defendingNation = diplomacyChunk.getNation();
-        if (defendingNation != null) {
-            var attackingPlayers = new HashSet<DiplomacyPlayer>();
-            var defending = new HashSet<>();
-            for (var entity : chunk.getEntities()) {
-                if (GuardManager.getInstance().isGuard(entity)) {
-                    defending.add(entity);
-                } else if (entity instanceof Player) {
-                    var tempPlayer = ((Player) entity);
-                    var tempDiplomacyPlayer = DiplomacyPlayers.getInstance().get(tempPlayer.getUniqueId());
-                    var nation = Nations.getInstance().get(tempDiplomacyPlayer);
-                    if (nation == null) continue;
+        var defenderCount = 0;
+        var guardCount = 0;
+        var attackerCount = 0;
 
-                    var nationID = nation.getNationID();
-                    var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
-                    var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
-                    var isAttackingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), attackingNation);
-                    var isDefendingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), defendingNation);
-                    if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-                        attackingPlayers.add(tempDiplomacyPlayer);
-                    } else if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-                        defending.add(tempDiplomacyPlayer);
-                    }
+        for (var entity : chunk.getEntities()) {
+            if (entity instanceof Player) {
+                ContestManager.getInstance().addGlow(entity);
+                var tempPlayer = ((Player) entity);
+                var tempDiplomacyPlayer = DiplomacyPlayers.getInstance().get(tempPlayer.getUniqueId());
+                var nation = Nations.getInstance().get(tempDiplomacyPlayer);
+                if (nation == null) continue;
+                var nationID = nation.getNationID();
+                var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
+                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
+                var isAttackingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), attackingNation);
+                var isDefendingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), defendingNation);
+                if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                    defenderCount++;
+                } else if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
+                    attackerCount++;
                 }
-
-            }
-
-            var attackingPlayerCount = attackingPlayers.size();
-            int defendingCount;
-            if (attackingPlayerCount == 0) { // if there are no attackers, all defenders automatically count
-                defendingCount = defending.size();
-            } else { // otherwise only defenders with vision count
-                defendingCount = 0;
-            }
-
-            if (attackingPlayerCount > 0) { // if there are attackers
-                for (var defender : defending) {
-                    if (defender instanceof DiplomacyPlayer) {
-                        var defendingPlayer = (DiplomacyPlayer) defender;
-                        if (ContestManager.getInstance().defenderIsVisible(attackingPlayers, defendingPlayer)) {
-                            defendingCount++;
-                        }
-                    } else {
-                        if (ContestManager.getInstance().guardIsVisible(attackingPlayers, (Entity) defender)) {
-                            defendingCount++;
-                        }
-                    }
-                }
-            }
-            if (attackingPlayerCount < defendingCount) {
-                player.sendMessage(ChatColor.RED + "Contest blocked. There must be more attackers than defenders and guards to contest.");
-                player.sendMessage(ChatColor.RED + "(There are " + attackingPlayerCount + " attackers and " + defendingCount + " defenders/guards)");
-                return;
+            } else if (GuardManager.getInstance().isGuard(entity)) {
+                ContestManager.getInstance().addGlow(entity);
+                guardCount++;
             }
         }
 
-        ContestManager.getInstance().startContest(attackingNation, diplomacyChunk, isWilderness);
+        if (!isWilderness) {
+            if (defenderCount + guardCount > 0) {
+                player.sendMessage(ChatColor.RED + "Contest blocked. You must kill all defenders and guards in a plot to contest it.");
+                player.sendMessage(ChatColor.RED + "(There are " + defenderCount + " defenders and " + guardCount + " guards)");
+                return;
+            }
+        }
+        ContestManager.getInstance().startContest(attackingNation, diplomacyChunk);
 
         sender.sendMessage(ChatColor.AQUA + "Contest started.");
 

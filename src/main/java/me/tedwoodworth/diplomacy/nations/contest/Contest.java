@@ -1,6 +1,7 @@
 package me.tedwoodworth.diplomacy.nations.contest;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunk;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
@@ -20,7 +21,6 @@ public class Contest {
 
     private ConfigurationSection configSection;
     private double progress;
-    private int vacantTimer;
     private final Nation attackingNation;
     private final DiplomacyChunk diplomacyChunk;
     private boolean isWilderness;
@@ -32,12 +32,6 @@ public class Contest {
             this.progress = 0.0;
         } else {
             this.progress = Double.parseDouble(strProgress);
-        }
-        String strVacantTimer = configSection.getString("VacantTimer");
-        if (strVacantTimer == null) {
-            this.vacantTimer = 0;
-        } else {
-            this.vacantTimer = Integer.parseInt(strVacantTimer);
         }
         this.configSection = configSection;
         this.contestID = contestID;
@@ -53,7 +47,7 @@ public class Contest {
         this.isWilderness = configSection.getBoolean("IsWilderness");
     }
 
-    public static ConfigurationSection initializeContest(ConfigurationSection contestSection, Nation attackingNation, DiplomacyChunk diplomacyChunk, boolean isWilderness) {
+    public static ConfigurationSection initializeContest(ConfigurationSection contestSection, Nation attackingNation, DiplomacyChunk diplomacyChunk) {
 
         contestSection.set("AttackingNation", attackingNation.getName());
         Nation defendingNation = diplomacyChunk.getNation();
@@ -120,11 +114,23 @@ public class Contest {
     public void sendSubtitles() {
         var defendingNation = diplomacyChunk.getNation();
         var chunk = diplomacyChunk.getChunk();
-        for (var player : Bukkit.getOnlinePlayers()) {
-            var playerChunk = player.getLocation().getChunk();
-            if (chunk.equals(playerChunk)) {
-                var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
-                sendPlayerSubtitle(diplomacyPlayer, attackingNation, defendingNation);
+        for (var entity : chunk.getEntities()) {
+            if (entity instanceof Player) {
+                var player = (Player) entity;
+                var playerChunk = player.getLocation().getChunk();
+                if (chunk.equals(playerChunk)) {
+                    var diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
+                    sendPlayerSubtitle(diplomacyPlayer, attackingNation, defendingNation);
+                }
+            }
+        }
+    }
+
+    public void sendGlow() {
+        var chunk = diplomacyChunk.getChunk();
+        for (var entity : chunk.getEntities()) {
+            if (entity instanceof Player || GuardManager.getInstance().isGuard(entity)) {
+                ContestManager.getInstance().addGlow(entity);
             }
         }
     }
@@ -325,15 +331,6 @@ public class Contest {
     public void setProgress(double progress) {
         this.progress = progress;
         configSection.set("Progress", progress);
-    }
-
-    public int getVacantTimer() {
-        return vacantTimer;
-    }
-
-    public void setVacantTimer(int vacantTimer) {
-        this.vacantTimer = vacantTimer;
-        configSection.set("VacantTimer", vacantTimer);
     }
 
     public Nation getAttackingNation() {
