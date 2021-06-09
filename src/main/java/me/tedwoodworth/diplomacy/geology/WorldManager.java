@@ -331,33 +331,75 @@ public class WorldManager {
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         private void onBlockPistonExtend(BlockPistonExtendEvent event) {
-            var blocks = event.getBlocks();
-            for (var block : blocks) {
-                var world = block.getWorld();
-                blockEventCheck(block, world);
+            var world = event.getBlock().getWorld();
+            var y = event.getBlock().getY();
+            if (world.equals(WorldManager.getInstance().overworld) && y <= 9) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(subworld) && y >= 118) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(subworld) && y <= 9) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(nether) && y >= 153) {
+                event.setCancelled(true);
+                return;
             }
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         private void onBlockPistonRetract(BlockPistonRetractEvent event) {
-            var blocks = event.getBlocks();
-            for (var block : blocks) {
-                var world = block.getWorld();
-                blockEventCheck(block, world);
+            var world = event.getBlock().getWorld();
+            var y = event.getBlock().getY();
+            if (world.equals(WorldManager.getInstance().overworld) && y <= 9) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(subworld) && y >= 118) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(subworld) && y <= 9) {
+                event.setCancelled(true);
+                return;
+            } else if (world.equals(nether) && y >= 153) {
+                event.setCancelled(true);
+                return;
             }
         }
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         private void onBlockPlace(BlockPlaceEvent event) {
             var block = event.getBlock();
+            var type = block.getType();
             var world = block.getWorld();
-            blockEventCheck(block, world);
-        }
+            var y = block.getY();
+            boolean redstone = type == Material.REDSTONE || type == Material.REDSTONE_BLOCK || type == Material.REDSTONE_TORCH || type == Material.REDSTONE_WALL_TORCH || type == Material.PISTON || type == Material.STICKY_PISTON;
+            if (world.equals(WorldManager.getInstance().overworld) && block.getY() <= 9) {
+                if (redstone) {
+                    event.setCancelled(true);
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot place this item below y = 10 in the overworld.");
+                    return;
+                }
+            } else if (world.equals(subworld) && y >= 118) {
+                if (redstone) {
+                    event.setCancelled(true);
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot place this item above y = 117 in the subworld.");
+                    return;
+                }
+            } else if (world.equals(subworld) && y <= 9) {
+                if (redstone) {
+                    event.setCancelled(true);
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot place this item below y = 10 in the subworld.");
+                    return;
+                }
+            } else if (world.equals(nether) && y >= 153) {
+                if (redstone) {
+                    event.setCancelled(true);
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot place this item above y = 152 in the overworld.");
+                    return;
+                }
+            }
 
-        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-        private void onBlockRedstone(BlockRedstoneEvent event) {
-            var block = event.getBlock();
-            var world = block.getWorld();
             blockEventCheck(block, world);
         }
 

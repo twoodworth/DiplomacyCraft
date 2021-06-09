@@ -51,7 +51,7 @@ public class CustomItemRecipes {
                                 count++;
                             }
                         }
-                        if (count != 6) {
+                        if (count != 8) {
                             inv.setResult(new ItemStack(Material.AIR));
                             return;
                         }

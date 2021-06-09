@@ -7,7 +7,10 @@ import me.tedwoodworth.diplomacy.events.NationJoinEvent;
 import me.tedwoodworth.diplomacy.events.NationLeaveEvent;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.nations.*;
+import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
+import me.tedwoodworth.diplomacy.nations.Nation;
+import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.ScoreboardManager;
 import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
@@ -23,7 +26,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BannerMeta;
 
 import java.awt.*;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.List;
@@ -1050,7 +1052,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
             var testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+            if (testPlayerNation == null) continue;
             var testMemberClass = testPlayerNation.getMemberClass(testDiplomacyPlayer);
+            if (testMemberClass == null) continue;
             var testPermissions = testMemberClass.getPermissions();
             boolean testCanAllyNations = testPermissions.get("CanAllyNations");
             if (Objects.equals(testPlayerNation, receiverNation) && testCanAllyNations) {
@@ -1306,7 +1310,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             for (var testPlayer : Bukkit.getOnlinePlayers()) {
                 var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(testPlayer.getUniqueId());
                 var testPlayerNation = Nations.getInstance().get(testDiplomacyPlayer);
+                if (testPlayerNation == null) continue;
                 var testMemberClass = testPlayerNation.getMemberClass(testDiplomacyPlayer);
+                if (testMemberClass == null) continue;
                 var testPermissions = testMemberClass.getPermissions();
                 boolean testCanNeutralNations = testPermissions.get("CanNeutralNations");
                 if (Objects.equals(testPlayerNation, otherNation) && testCanNeutralNations) {
@@ -2263,6 +2269,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var senderDiplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
         var senderNation = Nations.getInstance().get(senderDiplomacyPlayer);
 
+        if (senderNation == null) {
+            sender.sendMessage(ChatColor.RED + "You must be in a nation to kick players.");
+            return;
+        }
         var senderClass = senderNation.getMemberClass(senderDiplomacyPlayer);
         var senderPermissions = senderClass.getPermissions();
         var canKickPlayers = senderPermissions.get("CanKickPlayers");
