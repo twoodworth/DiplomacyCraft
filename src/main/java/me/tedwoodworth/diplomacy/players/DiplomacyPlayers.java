@@ -457,6 +457,11 @@ public class DiplomacyPlayers {
             var fromChunk = event.getFrom().getChunk();
             var toChunk = to.getChunk();
             if (!fromChunk.equals(toChunk)) {
+                WorldManager.getInstance().adjustChunks(toChunk.getX(), toChunk.getZ()); //todo remove
+                WorldManager.getInstance().adjustChunks(toChunk.getX() + 1, toChunk.getZ()); //todo remove
+                WorldManager.getInstance().adjustChunks(toChunk.getX() - 1, toChunk.getZ()); //todo remove
+                WorldManager.getInstance().adjustChunks(toChunk.getX(), toChunk.getZ() + 1); //todo remove
+                WorldManager.getInstance().adjustChunks(toChunk.getX(), toChunk.getZ() - 1); //todo remove
                 var fromDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(fromChunk);
                 var toDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(toChunk);
 
@@ -749,10 +754,10 @@ public class DiplomacyPlayers {
             if (canBuild) return;
             var isBorder = isBorder(DiplomacyChunks.getInstance().getDiplomacyChunk(block.getChunk()));
             if (isBorder) {
-                event.setDropItems(false);
-                event.setExpToDrop(0);
+                event.setCancelled(true);
                 var state = block.getState();
                 griefedBlocks.putIfAbsent(block, state);
+                block.setType(Material.AIR, false);
                 player.sendMessage(ChatColor.RED + "Block destroyed, but will regenerate back in 5 seconds.");
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
                             var originalState = griefedBlocks.get(block);
@@ -889,6 +894,7 @@ public class DiplomacyPlayers {
             explodedBlocks.remove(blocks);
             var array = blocks.keySet().toArray();
             var size = blocks.size();
+            if (size == 0) return;
             var r = (int) (Math.random() * size);
             var block = array[r];
             var state = blocks.get(block);

@@ -306,7 +306,7 @@ public class Contest {
         for (var entity : chunk.getEntities()) {
             if (entity instanceof Player) {
                 var player = (Player) entity;
-                player.playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1, 1);
+                player.playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.5f, 1);
             }
         }
     }

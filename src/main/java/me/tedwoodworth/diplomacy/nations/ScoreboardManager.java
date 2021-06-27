@@ -49,17 +49,24 @@ public class ScoreboardManager {
                 nationPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] ";
                 team.setColor(ChatColor.DARK_GRAY);
             } else if (nation != null && Objects.equals(Nations.getInstance().get(testDiplomacyPlayer), nation)) {
-                nationPrefix = ChatColor.GRAY + "[" + ChatColor.GREEN + testNation.getName() + ChatColor.GRAY + "] ";
+                var color = testNation.getColor();
+                nationPrefix = ChatColor.GRAY + "[" + net.md_5.bungee.api.ChatColor.of(color) + testNation.getName() + ChatColor.GRAY + "] ";
                 team.setColor(ChatColor.GREEN);
             } else if (nation != null && nation.getAllyNationIDs().contains(testNation.getNationID())) {
-                nationPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GREEN + testNation.getName() + ChatColor.GRAY + "] ";
+                var color = testNation.getColor();
+                nationPrefix = ChatColor.GRAY + "[" + net.md_5.bungee.api.ChatColor.of(color) + testNation.getName() + ChatColor.GRAY + "] ";
                 team.setColor(ChatColor.DARK_GREEN);
             } else if (nation != null && nation.getEnemyNationIDs().contains(testNation.getNationID())) {
-                nationPrefix = ChatColor.GRAY + "[" + ChatColor.RED + testNation.getName() + ChatColor.GRAY + "] ";
+                var color = testNation.getColor();
+                nationPrefix = ChatColor.GRAY + "[" + net.md_5.bungee.api.ChatColor.of(color) + testNation.getName() + ChatColor.GRAY + "] ";
                 team.setColor(ChatColor.RED);
-            } else {
-                nationPrefix = ChatColor.GRAY + "[" + ChatColor.BLUE + testNation.getName() + ChatColor.GRAY + "] ";
+            } else if (nation != null) {
+                var color = testNation.getColor();
+                nationPrefix = ChatColor.GRAY + "[" + net.md_5.bungee.api.ChatColor.of(color) + testNation.getName() + ChatColor.GRAY + "] ";
                 team.setColor(ChatColor.BLUE);
+            } else {
+                nationPrefix = ChatColor.GRAY + "[" + ChatColor.DARK_GRAY + "Nomad" + ChatColor.GRAY + "] ";
+                team.setColor(ChatColor.DARK_GRAY);
             }
             prefix.append(nationPrefix);
 

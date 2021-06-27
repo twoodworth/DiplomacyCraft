@@ -670,9 +670,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 .color(net.md_5.bungee.api.ChatColor.of(color))
                 .create();
 
+        ScoreboardManager.getInstance().updateScoreboards();
+
         for (var member : nation.getMembers()) {
             if (member.getOfflinePlayer().isOnline()) {
-
                 member.getOfflinePlayer().getPlayer().spigot().sendMessage(message);
             }
         }

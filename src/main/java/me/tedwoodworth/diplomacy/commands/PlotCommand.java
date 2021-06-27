@@ -251,24 +251,22 @@ public class PlotCommand implements CommandExecutor, TabCompleter {
 
         var defenderCount = 0;
         var guardCount = 0;
-        var attackerCount = 0;
 
         for (var entity : chunk.getEntities()) {
             if (entity instanceof Player) {
                 ContestManager.getInstance().addGlow(entity);
-                var tempPlayer = ((Player) entity);
-                var tempDiplomacyPlayer = DiplomacyPlayers.getInstance().get(tempPlayer.getUniqueId());
-                var nation = Nations.getInstance().get(tempDiplomacyPlayer);
-                if (nation == null) continue;
-                var nationID = nation.getNationID();
-                var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
-                var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
-                var isAttackingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), attackingNation);
-                var isDefendingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), defendingNation);
-                if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
-                    defenderCount++;
-                } else if (isAttackingNation || isAttackingNationAlly && !isDefendingNationAlly) {
-                    attackerCount++;
+                if (!isWilderness) {
+                    var tempPlayer = ((Player) entity);
+                    var tempDiplomacyPlayer = DiplomacyPlayers.getInstance().get(tempPlayer.getUniqueId());
+                    var nation = Nations.getInstance().get(tempDiplomacyPlayer);
+                    if (nation == null) continue;
+                    var nationID = nation.getNationID();
+                    var isAttackingNationAlly = nationID != null && attackingNation.getAllyNationIDs().contains(nationID);
+                    var isDefendingNationAlly = defendingNation.getAllyNationIDs().contains(nationID);
+                    var isDefendingNation = Objects.equals(Nations.getInstance().get(tempDiplomacyPlayer), defendingNation);
+                    if (isDefendingNation || isDefendingNationAlly && !isAttackingNationAlly) {
+                        defenderCount++;
+                    }
                 }
             } else if (GuardManager.getInstance().isGuard(entity)) {
                 ContestManager.getInstance().addGlow(entity);

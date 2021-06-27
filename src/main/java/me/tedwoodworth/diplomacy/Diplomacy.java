@@ -9,6 +9,7 @@ import me.tedwoodworth.diplomacy.commands.*;
 import me.tedwoodworth.diplomacy.dynmap.DiplomacyDynmap;
 import me.tedwoodworth.diplomacy.dynmap.OurServerListener;
 import me.tedwoodworth.diplomacy.entities.EntityManager;
+import me.tedwoodworth.diplomacy.geology.RandomTicker;
 import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
@@ -31,6 +32,9 @@ public class Diplomacy extends JavaPlugin {
     public void onEnable() {
         instance = this;
         //noinspection ConstantConditions
+        EntityManager.getInstance().registerEvents();
+        EntityManager.getInstance().loadInitialPregnant();
+        System.out.println("[Diplomacy] Loaded entity events");
         WorldManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded worlds & registered world events");
         PlotCommand.register(getCommand("plot"));
@@ -97,8 +101,8 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded dynmap events");
         DiplomacyDynmap.getInstance().load();
         System.out.println("[Diplomacy] Loaded Diplomacy-dynmap");
-        EntityManager.getInstance();
-        System.out.println("[Diplomacy] Loaded entity manager");
+        DiplomacyDynmap.getInstance().scheduleSyncDelayedTask(new RandomTicker(), 2L);
+        System.out.println("[Diplomacy] Loaded random ticker");
     }
 
     @Override

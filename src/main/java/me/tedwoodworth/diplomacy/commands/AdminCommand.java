@@ -1,5 +1,6 @@
 package me.tedwoodworth.diplomacy.commands;
 
+import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.DiplomacyConfig;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
@@ -29,6 +30,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String removeChunkNationUsage = "/admin removeChunkNation";
     private static final String fireArrowUsage = "/admin fireArrow <speed> <spread>";
     private static final String generateChunkUsage = "/admin generateChunk";
+    private static final String generateAllChunksUsage = "/admin generateAllChunks";
     private static final String censorUsage = "/admin censor <word>";
     private static final String uncensorUsage = "/admin uncensor <word>";
     private static final String superCensorUsage = "/admin superCensor <word>";
@@ -83,6 +85,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                     } else {
                         sender.sendMessage(incorrectUsage + generateChunkUsage);
                     }
+                } else if (args[0].equalsIgnoreCase("generateAllChunks")) {
+                    if (args.length == 1) {
+                        generateAllChunks(sender);
+                    } else {
+                        sender.sendMessage(incorrectUsage + generateAllChunksUsage);
+                    }
                 } else if (args[0].equalsIgnoreCase("censor")) {
                     if (args.length == 2) {
                         addCensoredWord(sender, args[1]);
@@ -126,6 +134,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                             "removeChunkNation",
                             "fireArrow",
                             "generateChunk",
+                            "generateAllChunks",
                             "censor",
                             "uncensor",
                             "superCensor",
@@ -172,6 +181,39 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         var x = chunk.getX();
         var z = chunk.getZ();
         WorldManager.getInstance().adjustChunks(x, z);
+
+    }
+
+    private void generateAllChunks(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Must be a player.");
+            return;
+        }
+        generateAllChunksTask(360, 171);
+    }
+
+    private void generateAllChunksTask(int curX, int curZ) {
+        WorldManager.getInstance().adjustChunks(curX, curZ);
+        System.out.println("Generated " + ((1026 * (curZ + 1)) + (curX + 1)) + " / 1052676 chunks.\n");
+        if (curX % 128 == 0) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "bcast Nether is " + String.format("%.2f", (((1026 * (curZ + 1)) + (curX + 1)) / 1052676.0) * 100) + "% generated.");
+        }
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> {
+            var x = curX;
+            x++;
+            var z = curZ;
+            if (x == 1025) {
+                x = 0;
+                z++;
+            }
+            if (z == 1025) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "bcast Nether is fully generated!");
+                System.out.println("Finished generating nether.");
+                return;
+            }
+            generateAllChunksTask(x, z);
+
+        }, 5L);
 
     }
 

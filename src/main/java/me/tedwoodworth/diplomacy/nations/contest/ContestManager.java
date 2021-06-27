@@ -31,14 +31,14 @@ public class ContestManager {
 
     private static ContestManager instance = null;
 
-    private File ongoingContestsFile = new File(Diplomacy.getInstance().getDataFolder(), "ongoingContests.yml");
-    private YamlConfiguration config;
+    private final File ongoingContestsFile = new File(Diplomacy.getInstance().getDataFolder(), "ongoingContests.yml");
+    private final YamlConfiguration config;
 
-    private Map<DiplomacyChunk, Contest> contests = new HashMap<>();
-    private Map<Entity, Integer> glowing = new HashMap<>();
+    private final Map<DiplomacyChunk, Contest> contests = new HashMap<>();
+    private final Map<Entity, Integer> glowing = new HashMap<>();
 
-    private int contestTaskID = -1;
-    private int particleTaskID = -1;
+    private int contestTaskID;
+    private int particleTaskID;
 
     public void registerEvents() {
         Bukkit.getPluginManager().registerEvents(new EventListener(), Diplomacy.getInstance());
@@ -246,9 +246,9 @@ public class ContestManager {
             }
             var attackingPlayerCount = attackingPlayers.size();
             if (attackingPlayerCount > 0) { // if there are attackers
-                contest.setProgress(contest.getProgress() + 5.0 / 200.0 * attackingPlayerCount);
+                contest.setProgress(contest.getProgress() + 10.0 / 200.0 * attackingPlayerCount);
             } else { // if there are no defenders and no attackers
-                contest.setProgress(contest.getProgress() - 5.0 / 200.0 * 2);
+                contest.setProgress(contest.getProgress() - 10.0 / 200.0);
             }
         } else {
             var defendingNation = diplomacyChunk.getNation();
@@ -297,20 +297,12 @@ public class ContestManager {
                     }
                 }
             } else if (attackingPlayerCount > 0) { // if there are attackers and no defenders
-                contest.setProgress(contest.getProgress() + 5.0 / 1200.0 * attackingPlayerCount);
+                contest.setProgress(contest.getProgress() + 10.0 / 1200.0 * attackingPlayerCount);
             } else if (defendingCount > 0) { // if there are defenders and no attackers
-                contest.setProgress(contest.getProgress() - 5.0 / 1200.0 * defendingCount);
+                contest.setProgress(contest.getProgress() - 10.0 / 1200.0 * defendingCount);
             } else { // if there are no defenders and no attackers
-                contest.setProgress(contest.getProgress() - 5.0 / 1200.0 * 0.5);
+                contest.setProgress(contest.getProgress() - 10.0 / 1200.0 * 0.5);
             }
-        }
-    }
-
-    public double getProgressCoefficient(boolean isWilderness) {
-        if (isWilderness) {
-            return 5.0 / 200.0;
-        } else {
-            return 5.0 / 1200.0;
         }
     }
 

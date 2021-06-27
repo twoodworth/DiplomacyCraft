@@ -10,6 +10,7 @@ import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
 import me.tedwoodworth.diplomacy.nations.Nation;
 import me.tedwoodworth.diplomacy.nations.Nations;
+import me.tedwoodworth.diplomacy.nations.contest.ContestManager;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayer;
 import me.tedwoodworth.diplomacy.players.DiplomacyPlayers;
 import org.bukkit.*;
@@ -44,6 +45,7 @@ public class GuardManager {
     private final NamespacedKey HEALTH_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_health");
     private final NamespacedKey NOTIFY_DAMAGE_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_notify_damage");
     private final NamespacedKey NAME_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_name");
+    private final NamespacedKey GUARD_STARS_KEY = new NamespacedKey(Diplomacy.getInstance(), "guard_stars");
 
     // attacking guards
     private final NamespacedKey ATTACK_TRESPASSERS = new NamespacedKey(Diplomacy.getInstance(), "guard_tresspassers");
@@ -1049,17 +1051,23 @@ public class GuardManager {
         var type = getType(entity);
         var level = getLevel(entity);
         var name = getName(entity);
+        var starCount = getStarCount(entity);
+        var stars = "";
+        for (int i = 0; i < starCount; i++) {
+            stars += "\u272f";
+        }
+
         return switch (type) {
-            case BASIC -> ChatColor.DARK_AQUA + "[" + name + " | Level " + level + " Guard] " + ChatColor.WHITE;
-            case SNIPER -> ChatColor.DARK_GREEN + "[" + name + " | Level " + level + " Sniper] " + ChatColor.WHITE;
-            case GUNNER -> ChatColor.DARK_GRAY + "[" + name + " | Level " + level + " Gunner] " + ChatColor.WHITE;
-            case FLAMETHROWER -> ChatColor.RED + "[" + name + " | Level " + level + " Flamethrower] " + ChatColor.WHITE;
-            case GRENADER -> ChatColor.DARK_RED + "[" + name + " | Level " + level + " Grenader] " + ChatColor.WHITE;
-            case HEALER -> ChatColor.LIGHT_PURPLE + "[" + name + " | Level " + level + " Healer] " + ChatColor.WHITE;
-            case TANK -> ChatColor.DARK_PURPLE + "[" + name + " | Level " + level + " Tank] " + ChatColor.WHITE;
-            case TELEPORTER -> ChatColor.YELLOW + "[" + name + " | Level " + level + " Teleporter] " + ChatColor.WHITE;
-            case GENERATOR -> ChatColor.GOLD + "[" + name + " | Level " + level + " Generator] " + ChatColor.WHITE;
-            case SNOWMAKER -> ChatColor.AQUA + "[" + name + " | Level " + level + " Snowmaker] " + ChatColor.WHITE;
+            case BASIC -> ChatColor.DARK_AQUA + stars + " [" + name + " | Level " + level + " Guard] " + ChatColor.WHITE;
+            case SNIPER -> ChatColor.DARK_GREEN + stars + " [" + name + " | Level " + level + " Sniper] " + ChatColor.WHITE;
+            case GUNNER -> ChatColor.DARK_GRAY + stars + " [" + name + " | Level " + level + " Gunner] " + ChatColor.WHITE;
+            case FLAMETHROWER -> ChatColor.RED + stars + " [" + name + " | Level " + level + " Flamethrower] " + ChatColor.WHITE;
+            case GRENADER -> ChatColor.DARK_RED + stars + " [" + name + " | Level " + level + " Grenader] " + ChatColor.WHITE;
+            case HEALER -> ChatColor.LIGHT_PURPLE + stars + " [" + name + " | Level " + level + " Healer] " + ChatColor.WHITE;
+            case TANK -> ChatColor.DARK_PURPLE + stars + " [" + name + " | Level " + level + " Tank] " + ChatColor.WHITE;
+            case TELEPORTER -> ChatColor.YELLOW + stars + " [" + name + " | Level " + level + " Teleporter] " + ChatColor.WHITE;
+            case GENERATOR -> ChatColor.GOLD + stars + " [" + name + " | Level " + level + " Generator] " + ChatColor.WHITE;
+            case SNOWMAKER -> ChatColor.AQUA + stars + " [" + name + " | Level " + level + " Snowmaker] " + ChatColor.WHITE;
         };
     }
 
@@ -1144,6 +1152,21 @@ public class GuardManager {
         } else {
             return (short) 0;
         }
+    }
+
+    public short getStarCount(Entity entity) {
+        var container = entity.getPersistentDataContainer();
+        if (container.has(GUARD_STARS_KEY, PersistentDataType.SHORT)) {
+            return entity.getPersistentDataContainer().get(GUARD_STARS_KEY, PersistentDataType.SHORT);
+        } else {
+            return (short) 0;
+        }
+    }
+
+    public void setStarCount(Entity entity, int count) {
+        var container = entity.getPersistentDataContainer();
+        container.set(GUARD_STARS_KEY, PersistentDataType.SHORT, (short) count);
+        setHealth(entity, getHealth(entity));
     }
 
     public short getCost(Entity entity) {
@@ -1752,6 +1775,9 @@ public class GuardManager {
             if (isGuard(entity)) {
                 Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> interactSet.remove(player), 5L);
                 var type = getType(entity);
+                // emerald block, netherite ingot, nether star
+
+
                 switch (type) {
                     case TELEPORTER -> {
                         interactSet.add(player);
@@ -1798,8 +1824,7 @@ public class GuardManager {
                 var trueDamager = getTrueDamager(damager);
                 if (damager instanceof Projectile) {
                     if (!isGuardProjectile(damager)) {
-                        if (damager instanceof Trident) {
-                        } else {
+                        if (!(damager instanceof Trident)) {
                             damager.remove();
                         }
                     }
@@ -1807,23 +1832,42 @@ public class GuardManager {
 
                 if (trueDamager instanceof Player) {
                     var player = ((Player) trueDamager);
-                    damage = damage * (1 - getResistance(entity));
-                    var health = getHealth(entity);
-                    health = health - damage;
                     var loc = entity.getLocation();
+                    var stars = getStarCount(entity);
+                    var starResistant = false;
+                    var radius = 8 * Math.pow(2, stars);
+                    if (stars > 0) {
+                        var nearby = entity.getNearbyEntities(radius, radius, radius);
+                        for (var e : nearby) {
+                            if (isGuard(e) && !entity.equals(e) && getNation(entity).equals(getNation(e)) && getStarCount(e) < stars && e.getLocation().distanceSquared(loc) <= Math.pow(radius, 2)) {
+                                ContestManager.getInstance().addGlow(e);
+                                starResistant = true;
+                            }
+                        }
+                    }
+
                     if (damager instanceof Projectile) {
                         player.playSound(trueDamager.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
                     }
                     loc.getWorld().playSound(loc, Sound.BLOCK_NETHERITE_BLOCK_HIT, 2, 1);
-                    if (health <= 0.0) {
-                        var message = getKillMessage(player, entity);
-                        sendGuardNotification(entity, message);
-                        killGuard(entity);
+
+                    if (starResistant) {
+                        player.sendMessage(ChatColor.RED + "Damage deflected. This is a " + stars + "-star guard. You must destroy all sub-" +
+                                stars + "-star guards within a " + ((int) radius) + " block radius before you can damage it.");
                     } else {
-                        setHealth(entity, health);
-                        if (getNotifyDamage(entity)) {
-                            var message = getDamageMessage(player, entity);
+                        damage = damage * (1 - getResistance(entity));
+                        var health = getHealth(entity);
+                        health = health - damage;
+                        if (health <= 0.0) {
+                            var message = getKillMessage(player, entity);
                             sendGuardNotification(entity, message);
+                            killGuard(entity);
+                        } else {
+                            setHealth(entity, health);
+                            if (getNotifyDamage(entity)) {
+                                var message = getDamageMessage(player, entity);
+                                sendGuardNotification(entity, message);
+                            }
                         }
                     }
                     if (canGetAutoOutlawed(player, entity)) {

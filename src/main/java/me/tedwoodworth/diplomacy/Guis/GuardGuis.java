@@ -6,7 +6,10 @@ import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
 import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -15,7 +18,6 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 
@@ -247,6 +249,129 @@ public class GuardGuis {
                     },
                     ChatColor.YELLOW + "Level up to level " + (level + 1),
                     ChatColor.BLUE + "Cost: " + color + cost + " Magical Dust"
+            );
+        }
+    }
+
+
+    private StaticGuiElement getStarUpElement(Entity guard, Player viewer) {
+        var stars = GuardManager.getInstance().getStarCount(guard);
+        if (stars == 3) {
+            return new StaticGuiElement('k',
+                    new ItemStack(Material.NETHER_STAR),
+                    "" + ChatColor.GOLD + ChatColor.BOLD + "Max Stars Reached");
+        } else if (stars == 2) {
+            ChatColor color;
+            Material material;
+            if (CustomItems.getInstance().contains(viewer.getInventory(), Material.NETHER_STAR)) {
+                material = Material.EXPERIENCE_BOTTLE;
+                color = ChatColor.GREEN;
+            } else {
+                material = Material.GLASS_BOTTLE;
+                color = ChatColor.RED;
+            }
+
+            return new StaticGuiElement('k',
+                    new ItemStack(material),
+                    click -> {
+                        if (material == Material.EXPERIENCE_BOTTLE) {
+                            var clicker = click.getEvent().getWhoClicked();
+                            var inv = clicker.getInventory();
+                            if (CustomItems.getInstance().contains(inv, Material.NETHER_STAR)) {
+                                CustomItems.getInstance().removeItems(inv, Material.NETHER_STAR, 1);
+                                GuardManager.getInstance().setStarCount(guard, stars + 1);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                generateGui(guard, viewer).show(clicker);
+                            } else {
+                                generateGui(guard, viewer).show(clicker);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+                                (clicker).sendMessage(ChatColor.RED + "Error: Cost items not found.");
+                            }
+                        }
+                        return true;
+                    },
+                    ChatColor.YELLOW + "Upgrade to three stars (\u272f\u272f\u272f)",
+                    ChatColor.BLUE + "Cost: " + color + 1 + " Nether Star",
+                    "",
+                    ChatColor.GRAY + "Guards with three stars cannot be damaged",
+                    ChatColor.GRAY + "until all two-star, one-star, and zero-star",
+                    ChatColor.GRAY + "guards within a 64-block radius of them are",
+                    ChatColor.GRAY + "destroyed."
+            );
+        } else if (stars == 1) {
+            ChatColor color;
+            Material material;
+            if (CustomItems.getInstance().contains(viewer.getInventory(), Material.NETHERITE_INGOT)) {
+                material = Material.EXPERIENCE_BOTTLE;
+                color = ChatColor.GREEN;
+            } else {
+                material = Material.GLASS_BOTTLE;
+                color = ChatColor.RED;
+            }
+
+            return new StaticGuiElement('k',
+                    new ItemStack(material),
+                    click -> {
+                        if (material == Material.EXPERIENCE_BOTTLE) {
+                            var clicker = click.getEvent().getWhoClicked();
+                            var inv = clicker.getInventory();
+                            if (CustomItems.getInstance().contains(inv, Material.NETHERITE_INGOT)) {
+                                CustomItems.getInstance().removeItems(inv, Material.NETHERITE_INGOT, 1);
+                                GuardManager.getInstance().setStarCount(guard, stars + 1);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                generateGui(guard, viewer).show(clicker);
+                            } else {
+                                generateGui(guard, viewer).show(clicker);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+                                (clicker).sendMessage(ChatColor.RED + "Error: Cost items not found.");
+                            }
+                        }
+                        return true;
+                    },
+                    ChatColor.YELLOW + "Upgrade to two stars (\u272f\u272f)",
+                    ChatColor.BLUE + "Cost: " + color + 1 + " Netherite Ingot",
+                    "",
+                    ChatColor.GRAY + "Guards with two stars cannot be damaged",
+                    ChatColor.GRAY + "until all one-star and zero-star guards",
+                    ChatColor.GRAY + "within a 32-block radius of them are",
+                    ChatColor.GRAY + "destroyed."
+            );
+        } else {
+            ChatColor color;
+            Material material;
+            if (CustomItems.getInstance().contains(viewer.getInventory(), Material.EMERALD, 8)) {
+                material = Material.EXPERIENCE_BOTTLE;
+                color = ChatColor.GREEN;
+            } else {
+                material = Material.GLASS_BOTTLE;
+                color = ChatColor.RED;
+            }
+
+            return new StaticGuiElement('k',
+                    new ItemStack(material),
+                    click -> {
+                        if (material == Material.EXPERIENCE_BOTTLE) {
+                            var clicker = click.getEvent().getWhoClicked();
+                            var inv = clicker.getInventory();
+                            if (CustomItems.getInstance().contains(inv, Material.EMERALD, 8)) {
+                                CustomItems.getInstance().removeItems(inv, Material.EMERALD, 8);
+                                GuardManager.getInstance().setStarCount(guard, stars + 1);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                generateGui(guard, viewer).show(clicker);
+                            } else {
+                                generateGui(guard, viewer).show(clicker);
+                                ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+                                (clicker).sendMessage(ChatColor.RED + "Error: Cost items not found.");
+                            }
+                        }
+                        return true;
+                    },
+                    ChatColor.YELLOW + "Upgrade to one star (\u272f)",
+                    ChatColor.BLUE + "Cost: " + color + 8 + " Emerald",
+                    "",
+                    ChatColor.GRAY + "Guards with one star cannot be damaged",
+                    ChatColor.GRAY + "until all zero-star guards within a 16-block",
+                    ChatColor.GRAY + "radius of them are destroyed."
             );
         }
     }
@@ -688,7 +813,7 @@ public class GuardGuis {
                                         }
                                     }
                                     var nGui = generateGui(guard, viewer);
-                                    ((Player) clicker).playSound(((Player) clicker).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    ((Player) clicker).playSound(clicker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     nGui.show(clicker);
                                 } else {
                                     clicker.sendMessage(ChatColor.RED + "Error: guard is already set to this type.");
@@ -928,7 +1053,7 @@ public class GuardGuis {
                 // Crate setup
                 String[] guiSetup = {
                         "         ",
-                        " lABCDE J",
+                        "lkABCDE J",
                         "         ",
                 };
 
@@ -936,6 +1061,7 @@ public class GuardGuis {
                 gui.setCloseAction(close -> false);
                 gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
                 gui.addElement(getLevelUpElement(guard, viewer)); // level up
+                gui.addElement(getStarUpElement(guard, viewer)); // star up
                 gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
                 gui.addElement(getAttackTrespassers(guard, viewer)); // tresspassers
                 gui.addElement(getAttackAllies(guard, viewer)); // allies
@@ -954,7 +1080,7 @@ public class GuardGuis {
                     // Crate setup
                     String[] guiSetup = {
                             "         ",
-                            " lABC   J",
+                            "lkABC   J",
                             "         ",
                     };
 
@@ -962,6 +1088,7 @@ public class GuardGuis {
                     gui.setCloseAction(close -> false);
                     gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
                     gui.addElement(getLevelUpElement(guard, viewer)); // level up
+                    gui.addElement(getStarUpElement(guard, viewer)); // star up
                     gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
                     gui.addElement(getToggleIncomingTeleportersElement(guard, viewer, gui)); // toggle teleporters
                     gui.addElement(getViewDestinationsElement(guard, viewer, gui)); // view destinations
@@ -978,7 +1105,7 @@ public class GuardGuis {
                 // Crate setup
                 String[] guiSetup = {
                         "         ",
-                        " lA    J ",
+                        "lkA    J ",
                         "         ",
                         " mnopqrs ",
                         " tuvw    ",
@@ -1003,6 +1130,7 @@ public class GuardGuis {
                 gui.setCloseAction(close -> false);
                 gui.setFiller(new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
                 gui.addElement(getLevelUpElement(guard, viewer)); // level up
+                gui.addElement(getStarUpElement(guard, viewer)); // star up
                 gui.addElement(getNotifyDamageElement(guard, viewer)); // guard notify damage
                 gui.addElement(getSelfDestructElement(guard, gui)); // auto kill
 
