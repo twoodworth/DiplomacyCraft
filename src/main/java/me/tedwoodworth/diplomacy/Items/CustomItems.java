@@ -3,7 +3,6 @@ package me.tedwoodworth.diplomacy.Items;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -152,27 +151,6 @@ public class CustomItems {
                 ChatColor.GREEN + "Guard Crystal",
                 ChatColor.GRAY + "Once placed, the crystal cannot be moved. It must be killed if you want to remove it."
         );
-        gInstance.generateCustomItem(
-                addEnchant(new ItemStack(Material.FIREWORK_STAR)),
-                CustomID.GRENADE,
-                "Grenade",
-                ChatColor.YELLOW + "Right Click: " + ChatColor.GRAY + "Overhand throw",
-                ChatColor.YELLOW + "Left Click: " + ChatColor.GRAY + "Underhand throw",
-                ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Unpin and wait until releasing shift to throw",
-                "",
-                ChatColor.RED + "Grenade will explode 4-6 seconds after thrown."
-        );
-        gInstance.generateCustomItem(
-                new ItemStack(Material.TNT),
-                CustomID.THROWN_GRENADE,
-                "Thrown Grenade",
-                ChatColor.YELLOW + "Right Click: " + ChatColor.GRAY + "Overhand throw",
-                ChatColor.YELLOW + "Left Click: " + ChatColor.GRAY + "Underhand throw",
-                ChatColor.YELLOW + "Hold Shift: " + ChatColor.GRAY + "Unpin and wait until releasing shift to throw",
-                "",
-                ChatColor.RED + "Grenade will explode 4-6 seconds after thrown."
-        );
-
     }
 
 }
