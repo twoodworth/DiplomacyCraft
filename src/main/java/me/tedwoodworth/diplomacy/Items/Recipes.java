@@ -84,6 +84,16 @@ public class Recipes {
         diamondHorseR.setIngredient('D', DIAMOND);
         Diplomacy.getInstance().getServer().addRecipe(diamondHorseR);
 
+        // grenade
+        var grenade = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.GRENADE, 2);
+
+        var grenadeRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "grenade"), grenade);
+        grenadeRecipe.shape("RII", "IFI", "III");
+        grenadeRecipe.setIngredient('I', IRON_NUGGET);
+        grenadeRecipe.setIngredient('R', REDSTONE);
+        grenadeRecipe.setIngredient('F', FIRE_CHARGE);
+        Diplomacy.getInstance().getServer().addRecipe(grenadeRecipe);
+
         // apple of life
         var apple = CustomItemGenerator.getInstance().getCustomItem(CustomItems.CustomID.APPLE_OF_LIFE, 1);
         var appleRecipe = new ShapedRecipe(new NamespacedKey(Diplomacy.getInstance(), "apple_of_life"), apple);

@@ -4,6 +4,7 @@ import me.tedwoodworth.diplomacy.Diplomacy;
 import me.tedwoodworth.diplomacy.Guis.GuardGuis;
 import me.tedwoodworth.diplomacy.Items.CustomItemGenerator;
 import me.tedwoodworth.diplomacy.Items.CustomItems;
+import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.data.BooleanPersistentDataType;
 import me.tedwoodworth.diplomacy.events.NationRemoveChunksEvent;
 import me.tedwoodworth.diplomacy.nations.DiplomacyChunks;
@@ -1495,6 +1496,8 @@ public class GuardManager {
     public Entity getTrueDamager(Entity damager) {
         if (damager instanceof Projectile) {
             return (Entity) ((Projectile) damager).getShooter();
+        } else if (damager instanceof Item && Items.getInstance().isGrenade(((Item) damager).getItemStack())) {
+            return Items.getInstance().grenadeThrowerMap.get(damager);
         } else if (damager instanceof TNTPrimed) {
             var primer = ((TNTPrimed) damager).getSource();
             if (primer == null) return damager;
@@ -1915,6 +1918,9 @@ public class GuardManager {
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof Player) message += ((Player) shooter).getName();
+            } else if (damager instanceof Item && Items.getInstance().isGrenade(((Item) damager).getItemStack())) {
+                var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
+                if (shooter instanceof Player) message += shooter.getName();
             } else if (damager instanceof Player) {
                 message += damager.getName();
             }
@@ -1927,6 +1933,9 @@ public class GuardManager {
             if (damager instanceof Projectile) {
                 var shooter = ((Projectile) damager).getShooter();
                 if (shooter instanceof Player) message += ((Player) shooter).getName();
+            } else if (damager instanceof Item) {
+                var shooter = Items.getInstance().grenadeThrowerMap.get(damager);
+                if (shooter instanceof Player) message += shooter.getName();
             } else if (damager instanceof Player) {
                 message += damager.getName();
             }

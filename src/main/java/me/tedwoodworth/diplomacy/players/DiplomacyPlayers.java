@@ -2,6 +2,7 @@ package me.tedwoodworth.diplomacy.players;
 
 import com.google.common.collect.ImmutableMap;
 import me.tedwoodworth.diplomacy.Diplomacy;
+import me.tedwoodworth.diplomacy.Items.Items;
 import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroup;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
@@ -854,6 +855,13 @@ public class DiplomacyPlayers {
         @EventHandler(priority = EventPriority.HIGHEST)
         private void onDamage(EntityDamageEvent event) {
             var entity = event.getEntity();
+            if (entity instanceof Item) {
+                var item = (Item) entity;
+                if (Items.getInstance().isGrenade(item.getItemStack()) && item.getItemStack().getType() == Material.TNT) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
             if (!(entity instanceof LivingEntity) && DiplomacyChunks.getInstance().getDiplomacyChunk(entity.getLocation().getChunk()).getNation() != null)
                 event.setCancelled(true);//todo figure out
 
