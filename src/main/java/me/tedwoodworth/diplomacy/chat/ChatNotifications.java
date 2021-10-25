@@ -7,11 +7,28 @@ import org.bukkit.ChatColor;
 
 import java.util.List;
 
+/**
+ * Is used to send notifications / tips in chat at regular
+ * intervals.
+ */
 public class ChatNotifications {
 
+    /**
+     * Singleton instance of ChatNotifications
+     */
     private static ChatNotifications instance = null;
+
+    /**
+     * TaskID of the task being scheduled. Set to -1 if the task
+     * is not running.
+     */
     private int messageTaskID = -1;
 
+    /**
+     * Returns the singleton instance of ChatNotifications
+     *
+     * @return instance of ChatNotifications
+     */
     public static ChatNotifications getInstance() {
         if (instance == null) {
             instance = new ChatNotifications();
@@ -19,6 +36,10 @@ public class ChatNotifications {
         return instance;
     }
 
+    /**
+     * Starts the scheduler, which schedules the task to be
+     * executed regularly at a configured interval.
+     */
     public void startScheduler() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(Diplomacy.getInstance(),
                 new MessageSender((int) (Math.random() * DiplomacyConfig.getInstance().getMessages().size())),
