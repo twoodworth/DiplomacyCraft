@@ -12,7 +12,6 @@ import me.tedwoodworth.diplomacy.entities.EntityManager;
 import me.tedwoodworth.diplomacy.geology.RandomTicker;
 import me.tedwoodworth.diplomacy.geology.WorldManager;
 import me.tedwoodworth.diplomacy.groups.DiplomacyGroups;
-import me.tedwoodworth.diplomacy.guards.GuardManager;
 import me.tedwoodworth.diplomacy.lives.LivesCommand;
 import me.tedwoodworth.diplomacy.lives.LivesManager;
 import me.tedwoodworth.diplomacy.nations.Nations;
@@ -95,7 +94,6 @@ public class Diplomacy extends JavaPlugin {
         System.out.println("[Diplomacy] Loaded schedulers");
         Recipes.getInstance().loadRecipes();
         System.out.println("[Diplomacy] Loaded recipes");
-        GuardManager.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded guard events");
         OurServerListener.getInstance().registerEvents();
         System.out.println("[Diplomacy] Loaded dynmap events");
