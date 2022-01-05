@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="diplomacy:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/diplomacy_jar</output-path>
+    <root id="archive" name="diplomacy.jar">
+      <element id="module-output" name="diplomacy.main" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/us.dynmap/DynmapCoreAPI/3.1-SNAPSHOT/3daf5c96f7e798e0cb34ac88d448137ed070bdf9/DynmapCoreAPI-3.1-SNAPSHOT.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/junit/junit/4.12/2973d150c0dc1fefe998f834810d68f278ea58ec/junit-4.12.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/16.0.2/dab5655eb9abe23f2245c34e66c9813c7daf4563/annotations-16.0.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/us.dynmap/DynmapCoreAPI/3.1-SNAPSHOT/60b3c8ad75e293425cb893710ad68ebb722d1a8c/DynmapCoreAPI-3.1-SNAPSHOT-all.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.bukkit/bukkit/1.7.10-R0.1-SNAPSHOT/f969406cca35112620b34b540f813ef979fdac3e/bukkit-1.7.10-R0.1-SNAPSHOT.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/us.dynmap/dynmap-api/3.1-SNAPSHOT/68e0e523e666748d2b5b6e5ead70d3a061a67c9a/dynmap-api-3.1-SNAPSHOT.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/de.themoep/inventorygui/1.4.2-SNAPSHOT/e267fdc94f77f1a27b91c994c67f6ea0f4caca6/inventorygui-1.4.2-SNAPSHOT.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
