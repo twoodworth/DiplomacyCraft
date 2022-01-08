@@ -11,10 +11,10 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 
-public class ConnectionManager {
+public class DBConnectionManager {
     private static Connection connection = null;
 
-    private ConnectionManager() {
+    private DBConnectionManager() {
     }
 
     public static void close() {
@@ -30,7 +30,7 @@ public class ConnectionManager {
     // SQL creation stuff, You can leave the blow stuff untouched.
     static Connection getSQLConnection() {
         var plugin = Diplomacy.getInstance();
-        var dbname = plugin.getConfig().getString("SQLite.Filename", "diplomacy");
+        var dbname = plugin.getConfig().getString("SQLite.Filename", "database");
         var folder = plugin.getDataFolder();
         if (!folder.exists()) {
             folder.mkdir();
@@ -42,7 +42,6 @@ public class ConnectionManager {
                     throw new IOException();
                 }
             } catch (IOException e) {
-                System.out.println("Error"); //todo remove
                 plugin.getLogger().log(Level.SEVERE, "File write error: " + dbname + ".db");
             }
         }

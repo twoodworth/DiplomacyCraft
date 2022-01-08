@@ -1,92 +1,59 @@
 package me.tedwoodworth.diplomacy;
 
-import me.tedwoodworth.diplomacy.database.ConnectionManager;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
+import me.tedwoodworth.diplomacy.commands.HubCommand;
+import me.tedwoodworth.diplomacy.database.DBConnectionManager;
 import me.tedwoodworth.diplomacy.database.DBManager;
-import me.tedwoodworth.diplomacy.time.TimeManager;
-import me.tedwoodworth.diplomacy.world.Worlds;
+import me.tedwoodworth.diplomacy.hub.HubListener;
+import me.tedwoodworth.diplomacy.hub.HubTimer;
+import me.tedwoodworth.diplomacy.survival.SurvivalWorld;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.logging.Level;
 
-public class Diplomacy extends JavaPlugin {
+public class Diplomacy extends JavaPlugin implements PluginMessageListener {
     private static Diplomacy instance;
     private static Economy economy = null;
+    private static boolean isHubServer;
 
     @Override
     public void onEnable() {
         instance = this;
-        DBManager.initialize();
-        DBManager.registerEvents();
-        Worlds.getInstance().registerEvents();
-        TimeManager.startScheduler();
+        var port = Bukkit.getServer().getPort();
+        if (port == 25566) { // hub server
+            isHubServer = true;
+            HubTimer.startScheduler();
+            Bukkit.getPluginManager().registerEvents(new HubListener(), this);
+        } else if (port == 25567) {
+            isHubServer = false;
+            DBManager.initialize();
+            DBManager.registerEvents();
+            SurvivalWorld.getInstance().registerEvents();
+            HubTimer.startScheduler();
+            HubCommand.register(this.getCommand("hub"));
+        } else {
+            instance.getLogger().log(Level.SEVERE, "Unknown server, disabling.");
+            instance.getPluginLoader().disablePlugin(instance);
+            return;
+        }
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
         //noinspection ConstantConditions
-//        PlotCommand.register(getCommand("plot"));
-//        NationCommand.register(getCommand("nation"));
-//        GuardCommand.register(getCommand("guard"));
-//        GroupCommand.register(getCommand("group"));
-//        MenuCommand.register(getCommand("menu"));
-//        ClassCommand.register(getCommand("class"));
-//        ChatCommand.register(getCommand("nc"));
-//        ChatCommand.register(getCommand("gc"));
-//        ChatCommand.register(getCommand("lc"));
-//        ChatCommand.register(getCommand("ac"));
-//        LivesCommand.register(getCommand("lives"));
-//        TeleportCommand.register(getCommand("ott"));
-//        TeleportCommand.register(getCommand("ottConfirm"));
-//        TeleportCommand.register(getCommand("ottCancel"));
-//        TeleportCommand.register(getCommand("ottAccept"));
-//        TeleportCommand.register(getCommand("ottDecline"));
-//        TeleportCommand.register(getCommand("spawn"));
-//        LinkCommand.register(getCommand("map"));
-//        LinkCommand.register(getCommand("discord"));
-//        PlayerCommand.register(getCommand("player"));
-//        TogglePickupCommand.register(getCommand("ta"));
-//        RecipeCommand.register(getCommand("recipes"));
-//        AdminCommand.register(getCommand("admin"));
-//        GeoCommand.register(getCommand("geo"));
-//        System.out.println("[Diplomacy] Loaded commands");
-//        DiplomacyConfig.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded config events");
-//        CustomItemGenerator.getInstance();
-//        CustomItemRecipes.getInstance().registerEvents();
-//        CustomItems.getInstance();
-//        System.out.println("[Diplomacy] Loaded custom recipe events");
-//        Items.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded item events");
-//        LivesManager.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded life events");
-//        Nations.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded nation events");
-//        ChatManager.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded chat events");
-//        DiplomacyPlayers.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded player events");
-//        ContestManager.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded contest events");
-//        System.out.println("[Diplomacy] Loaded group events");
-//        Guis.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded Gui events");
-//        PlotManager.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded Gui events");
-//        Guis.getInstance().loadNationMenus();
-//        System.out.println("[Diplomacy] Loaded nation menus");
-//        RecipeGuis.getInstance().loadRecipeMenus();
-//        System.out.println("[Diplomacy] Loaded recipe menus");
-//        LivesManager.getInstance().startScheduler();
-//        ChatNotifications.getInstance().startScheduler();
-//        System.out.println("[Diplomacy] Loaded schedulers");
-//        Recipes.getInstance().loadRecipes();
-//        System.out.println("[Diplomacy] Loaded recipes");
-//        OurServerListener.getInstance().registerEvents();
-//        System.out.println("[Diplomacy] Loaded dynmap events");
-//        DiplomacyDynmap.getInstance().load();
-//        System.out.println("[Diplomacy] Loaded Diplomacy-dynmap");
     }
 
     @Override
     public void onDisable() {
-        ConnectionManager.close();
+        if (!isHubServer) DBConnectionManager.close();
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
+
 //        for (var grenade : Items.getInstance().grenadeThrowerMap.keySet()) {
 //            grenade.remove();
 //        }
@@ -106,5 +73,21 @@ public class Diplomacy extends JavaPlugin {
         return instance;
     }
 
+    public boolean isHubServer() {
+        return isHubServer;
+    }
 
+    @Override
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, @NotNull byte[] message) {
+        if (!channel.equals("BungeeCord")) {
+            return;
+        }
+        ByteArrayDataInput in = ByteStreams.newDataInput(message);
+        String subchannel = in.readUTF();
+        if (subchannel.equals("SomeSubChannel")) {
+            // Use the code sample in the 'Response' sections below to read
+            // the data.
+        }
+    }
 }
+

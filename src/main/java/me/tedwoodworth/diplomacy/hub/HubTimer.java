@@ -1,8 +1,6 @@
-package me.tedwoodworth.diplomacy.time;
+package me.tedwoodworth.diplomacy.hub;
 
 import me.tedwoodworth.diplomacy.Diplomacy;
-import me.tedwoodworth.diplomacy.players.PlayerUtil;
-import me.tedwoodworth.diplomacy.world.Worlds;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
@@ -12,26 +10,30 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class TimeManager {
+public class HubTimer {
     /**
-     * Equals the hour of the day that the server opens, in UTC.
+     * Equals the hour of the day that the server opens, in America/New_York time.
      */
-    public static final int OPEN_HOUR = 5;
+    public static final int OPEN_HOUR = 20;
 
     /**
      * Equals the minute of the day that the server opens.
      */
-    public static final int OPEN_MINUTE = 35;
+    public static final int OPEN_MINUTE = 0;
 
     /**
-     * Equals the hour of the day that the server closes, in UTC.
+     * Equals the hour of the day that the server closes, in America/New_York time.
      */
-    public static final int CLOSE_HOUR = 6;
+    public static final int CLOSE_HOUR = 21;
 
     /**
      * Equals the minute of the day that the server closes.
      */
-    public static final int CLOSE_MINUTE = 35;
+    public static final int CLOSE_MINUTE = 0;
+
+    public static int curH = 0;
+    public static int curM = 0;
+    public static int curS = 0;
 
     public static boolean isOpen = false;
     private static boolean started = false;
@@ -40,12 +42,11 @@ public class TimeManager {
         if (started) return;
         started = true;
 
-        var now = ZonedDateTime.now(ZoneId.of("UTC"));
+        var now = ZonedDateTime.now(ZoneId.of("America/New_York"));
         var open = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0);
         var close = now.withHour(CLOSE_HOUR).withMinute(CLOSE_MINUTE).withSecond(0);
         isOpen = now.compareTo(open) > 0 && now.compareTo(close) < 0;
-        if (isOpen) tickDay();
-
+        tickDay();
 
         // 12 hours before open
         var nextRun = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0).minusHours(12);
@@ -91,6 +92,17 @@ public class TimeManager {
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
 
+        // 20 minutes before open
+        nextRun = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0).minusMinutes(20);
+        if (now.compareTo(nextRun) > 0) nextRun = nextRun.plusDays(1);
+        duration = Duration.between(now, nextRun);
+        initalDelay = duration.getSeconds();
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(() -> Bukkit.broadcastMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Server opens in 20 minutes."),
+                initalDelay,
+                TimeUnit.DAYS.toSeconds(1),
+                TimeUnit.SECONDS);
+
         // 10 minutes before open
         nextRun = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0).minusMinutes(10);
         if (now.compareTo(nextRun) > 0) nextRun = nextRun.plusDays(1);
@@ -130,7 +142,7 @@ public class TimeManager {
         duration = Duration.between(now, nextRun);
         initalDelay = duration.getSeconds();
         scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(TimeManager::openServer,
+        scheduler.scheduleAtFixedRate(HubTimer::openServer,
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
@@ -176,13 +188,13 @@ public class TimeManager {
                 TimeUnit.SECONDS);
 
         // 10 seconds before
-        now = ZonedDateTime.now(ZoneId.of("UTC"));
+        now = ZonedDateTime.now(ZoneId.of("America/New_York"));
         nextRun = now.withHour(CLOSE_HOUR).withMinute(CLOSE_MINUTE).withSecond(0).minusSeconds(10);
         boolean afterClose = now.compareTo(nextRun) > 0;
         if (afterClose) nextRun = nextRun.plusDays(1);
         duration = Duration.between(now, nextRun);
         initalDelay = duration.getSeconds();
-        scheduler.scheduleAtFixedRate(TimeManager::closeServer,
+        scheduler.scheduleAtFixedRate(HubTimer::closeServer,
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
@@ -195,16 +207,14 @@ public class TimeManager {
     private static void tickDay() {
         var total = 24000;
 
-        // Dawn: 23000 to 999 (2/24) (adjustment: 3/24) 21,000 to 23,999
-        // Day: 1000 to 10,999 (10/24) (adjustment: 12/24) 0 or 24,000 to 11,999
-        // Dusk: 11000 to 12,999 (2/24) (adjustment: 3/24) 12,000 to 14,999
-        // Night: 13000 to 22999 (10/24) (adjustment: 6/24) 15,000 to 20,999
-
         // Day: 1000 to 9000
         //
-        var now = ZonedDateTime.now(ZoneId.of("UTC"));
-        var open = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0);
-        var close = now.withHour(CLOSE_HOUR).withMinute(CLOSE_MINUTE).withSecond(0);
+        var now = ZonedDateTime.now(ZoneId.of("America/New_York"));
+        var open = now.withHour(0).withMinute(0).withSecond(0);
+        var close = now.withHour(23).withMinute(59).withSecond(59);
+        curH = now.getHour();
+        curM = now.getMinute();
+        curS = now.getSecond();
 
         var openUnix = open.toEpochSecond();
         var closeUnix = close.toEpochSecond();
@@ -215,32 +225,19 @@ public class TimeManager {
 
         var tick = 24000L - (long) (total * percentRemaining);
         if (tick >= 24000L) tick -= 24000L;
-        long time;
-        if (tick < 12000) {
-            time = (long) (((double) tick) / 11999 * 9999 + 1000);
-        } else if (tick < 15000) {
-            time = (long) (((double) tick - 12000.0) / 2999 * 1999 + 11000);
-        } else if (tick < 21000) {
-            time = (long) (((double) tick - 15000) / 5999 * 9999 + 13000);
-        } else {
-            time = (long) (((double) tick - 21000) / 2999 * 1999  + 23000);
-            if (time >= 24000L) time -= 24000L;
-        }
-        Worlds.getInstance().getWorld().setTime(time);
+        tick -= 6000L;
+        if (tick < 6000L) tick += 24000L;
+        HubWorld.getInstance().getHub().setTime(tick);
 
-        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(),
-                () -> {
-                    if (isOpen) tickDay();
-                },
-                20L);
+        Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), HubTimer::tickDay, 20L);
     }
 
     private static void openServer(int seconds) {
         if (seconds == 0) {
             isOpen = true;
             Bukkit.broadcastMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Server is now open.");
-            Worlds.getInstance().getWorld().setTime(0);
-            tickDay();
+//            Worlds.getInstance().getWorld().setTime(0);
+//            tickDay();
         } else {
             Bukkit.broadcastMessage("" + ChatColor.GREEN + ChatColor.BOLD + "Server opens in " + seconds + " seconds.");
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> openServer(seconds - 1), 20L);
@@ -254,7 +251,7 @@ public class TimeManager {
     private static void closeServer(int seconds) {
         if (seconds == 0) {
             isOpen = false;
-            var now = ZonedDateTime.now(ZoneId.of("UTC"));
+            var now = ZonedDateTime.now(ZoneId.of("America/New_York"));
             var nextRun = now.withHour(OPEN_HOUR).withMinute(OPEN_MINUTE).withSecond(0);
             if (now.compareTo(nextRun) > 0) nextRun = nextRun.plusDays(1);
             Duration duration = Duration.between(now, nextRun);
@@ -266,18 +263,18 @@ public class TimeManager {
 
             Bukkit.broadcastMessage("" + ChatColor.RED + ChatColor.BOLD + "Server is now closed.");
             Bukkit.broadcastMessage("" + ChatColor.RED + ChatColor.BOLD + "Server will reopen in " + h + "h " + m + "m " + s + "s ");
-            for (var player : Bukkit.getOnlinePlayers()) {
-                // save last location
-                // save health
-                // save hunger
-                // save experience
-                var hub = Worlds.getInstance().getHub();
-                if (player.getWorld().equals(hub)) continue;
-                player.closeInventory();
-                PlayerUtil.saveInventory(player);
-                player.getInventory().clear();
-                player.teleport(hub.getSpawnLocation());
-            }
+//            for (var player : Bukkit.getOnlinePlayers()) {
+//                // save last location
+//                // save health
+//                // save hunger
+//                // save experience
+//                var hub = Worlds.getInstance().getHub();
+//                if (player.getWorld().equals(hub)) continue;
+//                player.closeInventory();
+//                PlayerUtil.saveInventory(player);
+//                player.getInventory().clear();
+//                player.teleport(hub.getSpawnLocation());
+//            }
         } else {
             Bukkit.broadcastMessage("" + ChatColor.RED + ChatColor.BOLD + "Server closes in " + seconds + " seconds.");
             Bukkit.getScheduler().runTaskLater(Diplomacy.getInstance(), () -> closeServer(seconds - 1), 20L);
