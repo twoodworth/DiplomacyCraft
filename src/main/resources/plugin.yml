@@ -1,11 +1,11 @@
 name: Diplomacy
 main: me.tedwoodworth.diplomacy.Diplomacy
-version: 0.3.0
+version: 0.2.3
 description: This plugin allows players to create nations, and modifies the game to enhance geopolitical and economic strategy.
 author: Tedsworth
 
 api-version: 1.16
-#depend: [ dynmap ]
+depend: [ dynmap ]
 
 commands:
   plot:
