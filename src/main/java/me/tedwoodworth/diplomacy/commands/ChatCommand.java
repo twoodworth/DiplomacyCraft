@@ -28,7 +28,7 @@ public class ChatCommand implements CommandExecutor, TabCompleter {
     /**
      * Registers ChatCommand to the plugin
      *
-     * @param pluginCommand
+     * @param pluginCommand: command to register
      */
     public static void register(PluginCommand pluginCommand) {
         var chatCommand = new ChatCommand();
