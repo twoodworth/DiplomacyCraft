@@ -100,15 +100,25 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
-
+    /**
+     * Checks the entity a specified player is currently looking at.
+     * @param player: Player to check
+     * @return entity being looked at, or null
+     */
     private Entity getEntityLookedAt(Player player) {
+        // get the player's eye location & direction, as a vector
         var location = player.getEyeLocation().clone();
         var direction = location.getDirection();
+
+        // iterate through vector to check for any intersections with a block or entity
         for (int i = 0; i <= 20; i++) {
             var block = location.getBlock();
+            // if block is not passable, player must be looking at the block and not an entity; return null
             if (!block.getType().equals(Material.AIR) && !block.getType().equals(Material.WATER) && !block.isPassable()) {
                 return null;
             }
+
+            // check if any entities have a bounding box which overlaps the current location on the vector
             var nearby = player.getNearbyEntities(i, i, i);
             for (var entity : nearby) {
                 var box = entity.getBoundingBox().clone();
@@ -117,18 +127,29 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
                     return entity;
                 }
             }
+
+            // move along vector to the next location to be checked
             location.setX(location.getX() + direction.getX() * 0.25);
             location.setY(location.getY() + direction.getY() * 0.25);
             location.setZ(location.getZ() + direction.getZ() * 0.25);
         }
+        // return null if no entity intersection found
         return null;
     }
 
+    /**
+     * Renames the guard currently being looked at
+     * @param sender: Sender of command
+     * @param newName: New name of guard
+     */
     private void renameGuard(CommandSender sender, String newName) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
+
+        // cancel if name is too long
         if (newName.length() > 20) {
             sender.sendMessage(ChatColor.RED + "Error: Name cannot exceed 20 characters");
             return;
@@ -138,11 +159,13 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
 
         var dp = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         var nation = Nations.getInstance().get(dp);
+        // cancel if player does not belong to a nation
         if (nation == null) {
             sender.sendMessage(ChatColor.RED + "Error: You must belong to a nation to use this command.");
             return;
         }
 
+        // cancel if insufficient permission
         var permissions = nation.getMemberClass(dp).getPermissions();
         var canManageGuards = permissions.get("CanManageGuards");
         if (!canManageGuards) {
@@ -150,29 +173,43 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        // cancel if player is not facing any entities
         var lookedAt = getEntityLookedAt(player);
         if (lookedAt == null) {
             player.sendMessage(ChatColor.RED + "Error: You are not looking at a guard, or guard is too far away.");
             return;
         }
 
+        // cancel if player is not facing a guard
         if (!GuardManager.getInstance().isGuard(lookedAt)) {
             player.sendMessage(ChatColor.RED + "Error: You are not looking at a guard.");
             return;
         }
 
+        // cancel if guard belongs to another nation
         var gNation = GuardManager.getInstance().getNation(lookedAt);
         if (!nation.equals(gNation)) {
             player.sendMessage(ChatColor.RED + "Error: This guard crystal does not belong to your nation.");
             return;
         }
+
+        // rename guard
         GuardManager.getInstance().setName(lookedAt, newName);
+
+        // send notification
         sender.sendMessage(ChatColor.GREEN + "Guard name set to '" + newName + "'.");
     }
 
+    /**
+     * Provides the player with the stats of a type of guard at a given level
+     * @param sender: Sender of command
+     * @param type: Guard type
+     * @param strLevel: Guard Level
+     */
     private void guardStats(CommandSender sender, String type, String strLevel) {
-
         int level;
+
+        // cancel if strLevel is not properly formatted
         try {
             level = Integer.parseInt(strLevel);
         } catch (NumberFormatException e) {
@@ -180,11 +217,14 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        // cancel if level is out of range
         if (level < 1 || level > 100) {
             sender.sendMessage(ChatColor.RED + "Level must be from 1 - 100.");
             return;
         }
 
+
+        // send stats based on the guard type & level, or cancel if guard type does not exist
         final var lower = type.toLowerCase();
         var instance = GuardManager.getInstance();
         switch (lower) {
