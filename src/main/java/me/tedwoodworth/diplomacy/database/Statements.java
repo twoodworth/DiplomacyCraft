@@ -8,9 +8,6 @@ public class Statements {
                     "PRIMARY KEY (market_id)" +
                     ");";
 
-    public static final String selectPlayer =
-            "SELECT * FROM player WHERE uuid=?;";
-
 
     public static final String createChunkTable =
             "CREATE TABLE IF NOT EXISTS chunk (" +
@@ -25,16 +22,11 @@ public class Statements {
     public static final String createPlayerTable =
             "CREATE TABLE IF NOT EXISTS player (" +
                     "uuid VARCHAR(200) NOT NULL," +
+                    "health NUMERIC(6, 3) NOT NULL," +
+                    "hunger NUMERIC(2, 0) NOT NULL," +
                     "balance NUMERIC(14, 2)," +
                     "PRIMARY KEY (uuid)" +
                     ");";
-
-    public static final String insertPlayer =
-            "INSERT INTO player (uuid, balance)" +
-                    "VALUES (?, ?);";
-
-    public static final String selectBalance =
-            "SELECT balance FROM player WHERE uuid=?;";
 
     public static final String createCoordinateTable =
             "CREATE TABLE IF NOT EXISTS coordinate (" +

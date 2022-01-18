@@ -8,11 +8,6 @@ api-version: 1.16
 #depend: [ dynmap ]
 
 commands:
-  hub:
-    description: Teleports player to hub.
-    aliases: [lobby]
-    usage: "Usage: /hub"
-
   plot:
     description: Manage a plot.
     aliases: [p]

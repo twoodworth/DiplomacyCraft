@@ -1,4 +1,4 @@
-package me.tedwoodworth.diplomacy.survival;
+package me.tedwoodworth.diplomacy.world;
 
 public enum Plot {
     NORMAL,
