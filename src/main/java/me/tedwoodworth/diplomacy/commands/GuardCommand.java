@@ -138,8 +138,9 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Renames the guard currently being looked at
-     * @param sender: Sender of command
+     * Used by a player in order to rename a guard
+     *
+     * @param sender:  Sender of command
      * @param newName: New name of guard
      */
     private void renameGuard(CommandSender sender, String newName) {
@@ -201,9 +202,10 @@ public class GuardCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Provides the player with the stats of a type of guard at a given level
-     * @param sender: Sender of command
-     * @param type: Guard type
+     * Used by a player to view the stats of a guard at a specified level and type.
+     *
+     * @param sender:   Sender of command
+     * @param type:     Guard type
      * @param strLevel: Guard Level
      */
     private void guardStats(CommandSender sender, String type, String strLevel) {

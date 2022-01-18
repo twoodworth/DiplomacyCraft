@@ -120,8 +120,8 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Sends the player a hyperlink in chat to the server's live map
-     * @param sender
+     * Used by a player to receive a link to the server's live map ("dynmap")
+     * @param sender: Sender of command
      */
     private void map(CommandSender sender) {
         // cancel if sender is not a player
@@ -153,7 +153,7 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Sends the player a link to the Discord server
+     * Used by a player to recieve a link to the Discord server
      * @param sender
      */
     private void discord(CommandSender sender) {

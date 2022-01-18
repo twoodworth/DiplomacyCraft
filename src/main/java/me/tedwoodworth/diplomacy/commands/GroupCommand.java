@@ -720,7 +720,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Disbands a group
+     * Used for disbanding a group
      * @param sender: Sender of command
      * @param strGroup: Group name
      */
@@ -799,7 +799,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Adds a new member to a group
+     * Used by a group leader to add a new member to their group
      * @param sender: Sender of command
      * @param strName: Name of new member
      * @param strGroup: Name of group
@@ -1051,7 +1051,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Sets the group's banner
+     * Used by a group leader to set the group's banner
      * @param sender: Sender of command
      * @param strGroup: Group name
      */
@@ -1281,7 +1281,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Promotes a member to leader within a specified group
+     * Used by a player to premote a specified member to leader in a specified group
      * @param sender: Sender of command
      * @param strPlayer: Name of player to promote
      * @param strGroup: Name of group
@@ -1376,7 +1376,7 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Demotes a group leader to group member within a given group
+     * Used by a player to demote a specified leader within a specified group
      * @param sender: Sender of command
      * @param strPlayer: Name of player to demote
      * @param strGroup: Group name

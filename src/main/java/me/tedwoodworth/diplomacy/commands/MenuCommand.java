@@ -68,12 +68,19 @@ public class MenuCommand implements CommandExecutor, TabCompleter {
         return list;
     }
 
+    /**
+     * Used by a player to view the menu GUI
+     *
+     * @param sender: Sender of command
+     */
     private void menu(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
 
+        // generate menu and show it to player
         var gui = NationGuiFactory.createMenu((Player) sender);
         gui.show((Player) sender);
     }
