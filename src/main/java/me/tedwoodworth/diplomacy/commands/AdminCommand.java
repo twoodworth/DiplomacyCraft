@@ -29,7 +29,7 @@ import java.util.*;
 public class AdminCommand implements CommandExecutor, TabCompleter {
 
     /*
-        Constants used by this class to be sent to the user when a command is incorrectly used.
+        Constants used by this class to be sent to the user to show proper command usage.
      */
     private static final String incorrectUsage = ChatColor.RED + "Incorrect usage, try: ";
     private static final String adminUsage = "/admin <command>";
@@ -154,7 +154,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
      * @param command: Command being sent
      * @param s:       Alias of command used
      * @param args:    Arguments of command
-     * @return true if sender is player, otherwise false
+     * @return list of arguments, or null if none should be sent.
      */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
