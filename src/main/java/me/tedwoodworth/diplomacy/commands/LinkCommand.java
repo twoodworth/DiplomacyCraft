@@ -78,11 +78,20 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
+    /**
+     * Determines the cardinal direction a given player is currently facing.
+     *
+     * @param player: Player to check
+     * @return String name of cardinal direction
+     */
     public static String getCardinalDirection(Player player) {
+        // get player angle relative to world, converted to 360-degree system
         double rotation = (player.getLocation().getYaw() - 90.0F) % 360.0F;
         if (rotation < 0.0D) {
             rotation += 360.0D;
         }
+
+        // return direction corresponding to the given angle
         if ((0.0D <= rotation) && (rotation < 22.5D)) {
             return "N";
         }
@@ -110,20 +119,27 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
         return "N";
     }
 
+    /**
+     * Sends the player a hyperlink in chat to the server's live map
+     * @param sender
+     */
     private void map(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
 
+        // gets the map link from the config file
         var mapLink = DiplomacyConfig.getInstance().getMapLink();
 
-
+        // create link component
         var hoverComponent = new ComponentBuilder()
                 .append(mapLink)
                 .color(net.md_5.bungee.api.ChatColor.AQUA)
                 .create();
 
+        // create message
         var message = new ComponentBuilder()
                 .append("[Click me to open the map]")
                 .color(net.md_5.bungee.api.ChatColor.AQUA)
@@ -132,23 +148,31 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverComponent)))
                 .create();
 
+        // send message
         sender.spigot().sendMessage(message);
     }
 
+    /**
+     * Sends the player a link to the Discord server
+     * @param sender
+     */
     private void discord(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
 
+        // get discord link from the config file
         var discordLink = DiplomacyConfig.getInstance().getDiscordLink();
 
-
+        // create hover component
         var hoverComponent = new ComponentBuilder()
                 .append(discordLink)
                 .color(net.md_5.bungee.api.ChatColor.AQUA)
                 .create();
 
+        // create message
         var message = new ComponentBuilder()
                 .append("[Click me to open discord]")
                 .color(net.md_5.bungee.api.ChatColor.AQUA)
@@ -157,6 +181,7 @@ public class LinkCommand implements CommandExecutor, TabCompleter {
                 .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverComponent)))
                 .create();
 
+        // send message
         sender.spigot().sendMessage(message);
     }
 }
