@@ -85,6 +85,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         pluginCommand.setTabCompleter(nationCommand);
     }
 
+    /**
+     * Removes request keys that are more than 60 seconds old from the requests set.
+     */
     private void onRequestTask() {
         for (var requestKey : new ArrayList<>(requests.keySet())) {
             if (Instant.now().getEpochSecond() - requests.get(requestKey) > 60) {
@@ -96,6 +99,9 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Cancels the request task
+     */
     private void cancelTask() {
         Bukkit.getScheduler().cancelTask(requestTaskID);
         requestTaskID = -1;
@@ -578,11 +584,18 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         return null;
     }
 
+    /**
+     * Used by a player to view page 1 of the list of nation commands.
+     *
+     * @param sender: Sender of command.
+     */
     private void nation(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
+        // send list of commands
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "1" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
         sender.sendMessage(ChatColor.GOLD + "/nation list" + ChatColor.WHITE + " Get a list of all nations");
         sender.sendMessage(ChatColor.GOLD + "/nation info" + ChatColor.WHITE + " Get info about a nation");
@@ -597,11 +610,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 2 " + ChatColor.GOLD + "to read the next page.");
     }
 
+
+    /**
+     * Used by a player to view page 2 of the list of nation commands.
+     *
+     * @param sender: Sender of command.
+     */
     private void nation2(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
+        // send list of commands
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "2" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
         sender.sendMessage(ChatColor.GOLD + "/nation kick" + ChatColor.WHITE + " Kick a player from your nation");
         sender.sendMessage(ChatColor.GOLD + "/nation disband" + ChatColor.WHITE + " Disband your nation");
@@ -615,11 +636,20 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "Type " + ChatColor.RED + "/nation 3 " + ChatColor.GOLD + "to read the next page.");
     }
 
+
+    /**
+     * Used by a player to view page 3 of the list of nation commands.
+     *
+     * @param sender: Sender of command.
+     */
     private void nation3(CommandSender sender) {
+        // cancel if not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
         }
+
+        // send list of commands
         sender.sendMessage(ChatColor.YELLOW + "----" + ChatColor.GOLD + " Nations " + ChatColor.YELLOW + "--" + ChatColor.GOLD + " Page " + ChatColor.RED + "3" + ChatColor.GOLD + "/" + ChatColor.RED + "3" + ChatColor.YELLOW + " ----");
         sender.sendMessage(ChatColor.GOLD + "/nation outlaw" + ChatColor.WHITE + " Add/remove outlaws");
         sender.sendMessage(ChatColor.GOLD + "/nation outlaws" + ChatColor.WHITE + " View nation outlaws");
@@ -629,7 +659,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "/nation banner" + ChatColor.WHITE + " Set your nation's banner");
     }
 
+    /**
+     * Used by a player to view the info GUI of a specific nation
+     *
+     * @param sender:    Sender of command
+     * @param strNation: Nation name
+     */
     private void nationInfo(CommandSender sender, String strNation) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -638,16 +675,27 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var player = (Player) sender;
         var nation = Nations.getInstance().get(strNation);
 
+        // cancel if nation does not exist
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Nation not found.");
             return;
         }
 
+        // show nation GUI to player
         var gui = Guis.getInstance().getNationMenu(nation);
         gui.show(player);
     }
 
+    /**
+     * Used by a player to set the map color of their nation
+     *
+     * @param sender:   Sender of command
+     * @param strRed:   Red RGB value
+     * @param strGreen: Green RGB value
+     * @param strBlue:  Blue RGB value
+     */
     private void nationColor(CommandSender sender, String strRed, String strGreen, String strBlue) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -656,6 +704,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
         var nation = Nations.getInstance().get(diplomacyPlayer);
 
+        // cancel if player is not in a nation
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
             return;
@@ -663,6 +712,8 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
         var nationClass = nation.getMemberClass(diplomacyPlayer);
         boolean canSetNationColor = nationClass.getPermissions().get("CanSetNationColor");
+
+        // cancel if insufficient permission
         if (!canSetNationColor) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to set the nation's color.");
             return;
@@ -672,6 +723,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var green = 0;
         var blue = 0;
 
+        // parse int RGB values. Cancel if improperly formatted
         try {
             red = Integer.parseInt(strRed);
             green = Integer.parseInt(strGreen);
@@ -681,16 +733,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        // cancel if values are out of range
         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
             sender.sendMessage(ChatColor.DARK_RED + "Numbers cannot be below 0 or above 255.");
             return;
         }
 
+        // cancel if color is already set to the provided color
         if (nation.getColor().getRed() == red && nation.getColor().getGreen() == green && nation.getColor().getBlue() == blue) {
             sender.sendMessage(ChatColor.DARK_RED + "Your nation's color is already set to that.");
             return;
         }
 
+        // Update nation color
         nation.setColor(red, green, blue);
         var color = new Color(red, green, blue);
         var message = new ComponentBuilder()
@@ -701,8 +756,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
                 .color(net.md_5.bungee.api.ChatColor.of(color))
                 .create();
 
+        // update scoreboard to reflect new color
         ScoreboardManager.getInstance().updateScoreboards();
 
+        // send notifications
         for (var member : nation.getMembers()) {
             if (member.getOfflinePlayer().isOnline()) {
                 member.getOfflinePlayer().getPlayer().spigot().sendMessage(message);
@@ -711,7 +768,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 
     }
 
+    /**
+     * Used by a player to create a new nation
+     *
+     * @param sender: Sender of command
+     * @param name:   Name of new nation
+     */
     private void nationCreate(CommandSender sender, String name) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -722,22 +786,28 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var nation = Nations.getInstance().get(leader);
         var sameName = Nations.getInstance().get(name) != null;
 
+        // cancel if sender is already part of a nation
         if (nation != null) {
             sender.sendMessage(ChatColor.DARK_RED + "You must leave your current nation before you can establish a new nation.");
             return;
         }
 
+        // cancel if nation name is already taken
         if (sameName) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is taken, choose another name.");
             return;
         }
 
+        // cancel if name is too long
         if (name.length() > 16) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
         }
 
+        // create nation
         Nations.getInstance().createNation(name, leader);
         sender.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.GREEN + name + ChatColor.AQUA + " has been founded.");
+
+        // send notifications
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (!Objects.equals(uuid, onlinePlayer.getUniqueId())) {
                 onlinePlayer.sendMessage(ChatColor.AQUA + "The nation of " + ChatColor.BLUE + name + ChatColor.AQUA + " has been founded.");
@@ -745,7 +815,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Used by a player to rename a nation
+     *
+     * @param sender: Sender of command
+     * @param name:   New name of nation
+     */
     private void nationRename(CommandSender sender, String name) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -754,11 +831,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var diplomacyPlayer = DiplomacyPlayers.getInstance().get(((Player) sender).getUniqueId());
         var nation = Nations.getInstance().get(diplomacyPlayer);
 
+        // cancel if sender is not in a nation
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "You are not in a nation.");
             return;
         }
 
+        // cancel if insufficient permission
         var nationClass = nation.getMemberClass(diplomacyPlayer);
         boolean canRenameNation = nationClass.getPermissions().get("CanRenameNation");
         if (!canRenameNation) {
@@ -766,25 +845,30 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
+        // cancel if the old name is the same as the new name
         var oldName = nation.getName();
         if (oldName.equals(name)) {
             sender.sendMessage(ChatColor.DARK_RED + "The nation is already named " + name + ".");
             return;
         }
 
+        // cancel if the new name is already taken
         var nameTaken = Nations.getInstance().get(name) != null;
         if (nameTaken) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is taken, choose another name.");
             return;
         }
 
+        // cancel if the new name is too long
         if (name.length() > 16) {
             sender.sendMessage(ChatColor.DARK_RED + "The name " + name + " is too long, choose another name.");
             return;
         }
 
+        // rename nation
         Nations.getInstance().rename(nation, name);
 
+        // send notifications
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
@@ -800,7 +884,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Used by a player to surrender their nation to another nation
+     *
+     * @param sender:          Sender of command
+     * @param otherNationName: Name of nation to surrender to
+     */
     private void nationSurrender(CommandSender sender, String otherNationName) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -810,6 +901,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         Nation nation = Nations.getInstance().get(diplomacyPlayer);
 
+        // cancel if sender is not in a nation
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to surrender a nation.");
             return;
@@ -820,22 +912,26 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var permissions = memberClass.getPermissions();
         boolean canSurrender = permissions.get("CanSurrenderNation");
 
+        // cancel if insufficient permission
         if (!canSurrender) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to surrender your nation.");
             return;
         }
 
+        // cancel if otherNation does not exist
         Nation otherNation = Nations.getInstance().get(otherNationName);
         if (otherNation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "The nation of " + ChatColor.BLUE + otherNationName + ChatColor.DARK_RED + " does not exist.");
             return;
         }
 
+        // cancel if nation and otherNation are the same
         if (Objects.equals(nation, otherNation)) {
             sender.sendMessage(ChatColor.DARK_RED + "You cannot surrender your nation to itself.");
             return;
         }
 
+        // send notifications
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             if (Nations.getInstance().get(testDiplomacyPlayer) != null) {
@@ -858,6 +954,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        // transfer members if otherNation has open borders
         var members = nation.getMembers();
         for (var member : members) {
             if (otherNation.getIsOpen()) {
@@ -866,12 +963,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeMember(member);
         }
 
+        // call events
         if (otherNation.getIsOpen())
             Bukkit.getPluginManager().callEvent(new NationJoinEvent(members, otherNation));
-
         Bukkit.getPluginManager().callEvent(new NationLeaveEvent(members, nation));
 
 
+        // send pop-ups to players located in effected chunks
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
             var testNation = testDiplomacyChunk.getNation();
@@ -890,11 +988,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        // transfer groups
         var groups = nation.getGroups();
         for (var group : groups) {
             group.setNation(otherNation);
         }
 
+        // cancel contests in effected chunks
         var contests = ContestManager.getInstance().getContests();
         for (var contest : contests) {
             var attackingNation = contest.getAttackingNation();
@@ -909,14 +1009,18 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        //tranfer chunks
         var diplomacyChunks = nation.getChunks();
         for (var diplomacyChunk : diplomacyChunks) {
             nation.removeChunk(diplomacyChunk);
             otherNation.addChunk(diplomacyChunk);
         }
+
+        // send chunk change events
         Bukkit.getPluginManager().callEvent(new NationAddChunksEvent(otherNation, diplomacyChunks));
         Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
+        // remove data related to the surrendurring nation
         for (var testNationID : nation.getAllyNationIDs()) {
             var testNation = Nations.getInstance().getFromID(testNationID);
             Objects.requireNonNull(testNation).removeAllyNation(nation);
@@ -929,11 +1033,18 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeEnemyNation(testNation);
         }
 
+        // remove nation
         Nations.getInstance().removeNation(nation);
 
     }
 
+    /**
+     * Used by a player to disband their nation
+     *
+     * @param sender: Sender of command
+     */
     private void nationDisband(CommandSender sender) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;
@@ -943,6 +1054,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         DiplomacyPlayer diplomacyPlayer = DiplomacyPlayers.getInstance().get(player.getUniqueId());
         Nation nation = Nations.getInstance().get(diplomacyPlayer);
 
+        // cancel if sender is not in a nation
         if (nation == null) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be in a nation to disband a nation.");
             return;
@@ -953,11 +1065,13 @@ public class NationCommand implements CommandExecutor, TabCompleter {
         var permissions = memberClass.getPermissions();
         boolean canSurrender = permissions.get("CanSurrenderNation");
 
+        // cancel if insufficient permission
         if (!canSurrender) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to disband your nation.");
             return;
         }
 
+        // send pop-up to players in effected chunks
         for (var testPlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyChunk = DiplomacyChunks.getInstance().getDiplomacyChunk(testPlayer.getLocation().getChunk());
             var testNation = testDiplomacyChunk.getNation();
@@ -966,6 +1080,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        // disband groups belonging to nation
         var groups = nation.getGroups();
         for (var group : groups) {
             var leaders = DiplomacyPlayers.getInstance().getLeaders(group);
@@ -981,6 +1096,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             DiplomacyGroups.getInstance().removeGroup(group);
         }
 
+        // cancel contests in effected chunks
         var contests = ContestManager.getInstance().getContests();
         for (var contest : contests) {
             var attackingNation = contest.getAttackingNation();
@@ -991,12 +1107,14 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        // remove chunks from nation
         var diplomacyChunks = nation.getChunks();
         for (var diplomacyChunk : diplomacyChunks) {
             nation.removeChunk(diplomacyChunk);
         }
         Bukkit.getPluginManager().callEvent(new NationRemoveChunksEvent(nation, diplomacyChunks));
 
+        // send notifications
         for (var onlinePlayer : Bukkit.getOnlinePlayers()) {
             var testDiplomacyPlayer = DiplomacyPlayers.getInstance().get(onlinePlayer.getUniqueId());
             var testNation = Nations.getInstance().get(testDiplomacyPlayer);
@@ -1011,6 +1129,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             onlinePlayer.sendMessage(ChatColor.AQUA + "The nation " + color + nation.getName() + ChatColor.AQUA + " has disbanded.");
         }
 
+        // remove data of nation
         for (var testNationID : nation.getAllyNationIDs()) {
             var testNation = Nations.getInstance().getFromID(testNationID);
             Objects.requireNonNull(testNation).removeAllyNation(nation);
@@ -1023,12 +1142,19 @@ public class NationCommand implements CommandExecutor, TabCompleter {
             nation.removeEnemyNation(testNation);
         }
 
+        // remove nation
         Nations.getInstance().removeNation(nation);
 
 
     }
 
+    /**
+     * Used by a player to form an alliance between their nation and another nation
+     * @param sender: Sender of command
+     * @param strAllyNation: Name of other nation
+     */
     private void nationAlly(CommandSender sender, String strAllyNation) {
+        // cancel if sender is not a player
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command.");
             return;

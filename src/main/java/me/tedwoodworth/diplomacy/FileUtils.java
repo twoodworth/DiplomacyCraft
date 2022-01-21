@@ -10,7 +10,18 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * Utility class used for dealing with files.
+ */
 public class FileUtils {
+
+    /**
+     * Copies a file from one location to another
+     *
+     * @param toCopy:   File to copy
+     * @param destFile: destination file to paste at
+     * @return
+     */
     public static boolean copyFile(final File toCopy, final File destFile) {
         try {
             return FileUtils.copyStream(new FileInputStream(toCopy),
@@ -21,6 +32,14 @@ public class FileUtils {
         return false;
     }
 
+    /**
+     * Copies a file from one location to another, and supports the copying of
+     * directories via recursion.
+     *
+     * @param toCopy: File to copy
+     * @param destDir: Destination file to paste at
+     * @return true if successful, otherwise false
+     */
     private static boolean copyFilesRecusively(final File toCopy,
                                                final File destDir) {
         assert destDir.isDirectory();
@@ -41,6 +60,13 @@ public class FileUtils {
         return true;
     }
 
+    /**
+     * Used for copying the resources of a JAR file
+     * @param destDir: Destination directory to paste to
+     * @param jarConnection: Connection to JAR file
+     * @return true if successful, otherwise false
+     * @throws IOException if an error related to directory creation takes place
+     */
     public static boolean copyJarResourcesRecursively(final File destDir,
                                                       final JarURLConnection jarConnection) throws IOException {
 
@@ -70,23 +96,12 @@ public class FileUtils {
         return true;
     }
 
-    public static boolean copyResourcesRecursively( //
-                                                    final URL originUrl, final File destination) {
-        try {
-            final URLConnection urlConnection = originUrl.openConnection();
-            if (urlConnection instanceof JarURLConnection) {
-                return FileUtils.copyJarResourcesRecursively(destination,
-                        (JarURLConnection) urlConnection);
-            } else {
-                return FileUtils.copyFilesRecusively(new File(originUrl.getPath()),
-                        destination);
-            }
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
+    /**
+     * Used for copying an input stream into a file
+     * @param is: Stream to copy
+     * @param f: File to copy into
+     * @return true if successful, otherwise false
+     */
     private static boolean copyStream(final InputStream is, final File f) {
         try {
             return FileUtils.copyStream(is, new FileOutputStream(f));
@@ -96,6 +111,12 @@ public class FileUtils {
         return false;
     }
 
+    /**
+     * Used for copying an input stream into an output stream
+     * @param is: input stream to copy
+     * @param os: output stream to paste into
+     * @return true if successful, otherwise false
+     */
     private static boolean copyStream(final InputStream is, final OutputStream os) {
         try {
             final byte[] buf = new byte[1024];
@@ -113,6 +134,11 @@ public class FileUtils {
         return false;
     }
 
+    /**
+     * Used to validate that a file/directory was successfully created/exists
+     * @param f: File to check
+     * @return true if exists, otherwise false
+     */
     private static boolean ensureDirectoryExists(final File f) {
         return f.exists() || f.mkdir();
     }
